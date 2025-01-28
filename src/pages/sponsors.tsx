@@ -37,10 +37,10 @@ const Sponsors: NextPage = () => {
             </Button>
             <Button
               variant="outlined"
-              href="https://github.com/sponsors/LiteLDev"
+              href="https://5g8svn.sharepoint.com/:x:/s/LiteLDev/EXx2ndbuC-9Bj5SR-FlJ-HUBZWy0wODjQCDb8OkzuKTFJg?e=QBF6nQ"
               external
             >
-              GitHub Sponsors
+              Sponsors List
             </Button>
           </div>
         </div>
