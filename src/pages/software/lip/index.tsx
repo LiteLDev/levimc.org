@@ -24,7 +24,7 @@ const LipHome = (): ReactElement => {
         header={<>Mod installing never been easier</>}
         description="lip is our officially recommended package installer for Bedrock mods."
         github="https://github.com/futrime/lip"
-        documentation="https://lip.futrime.com"
+        documentation="https://lip.levimc.org"
       />
       <section
         id="why"
@@ -107,7 +107,7 @@ const LipHome = (): ReactElement => {
             </h2>
             <p className="md:(mt-6 text-xl) text-gray-900 dark:text-gray-100 mt-3">
               For those who prefer a graphical interface, we&apos;ve developed
-              <span className="font-semibold"> lipui </span>- a user-friendly
+              <span className="font-semibold"> lip.GUI </span>- a user-friendly
               desktop application that provides all of lip&apos;s functionality
               without requiring command line knowledge. With an intuitive
               interface and streamlined workflow, lipui makes mod management
@@ -116,7 +116,7 @@ const LipHome = (): ReactElement => {
             <div className="flex flex-row gap-4 mt-8">
               <Button
                 variant="filled"
-                href="https://github.com/futrime/lipui"
+                href="https://github.com/futrime/lip"
                 external
                 dense
               >
