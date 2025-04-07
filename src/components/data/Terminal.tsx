@@ -41,7 +41,7 @@ export function Terminal() {
       "[LeviLamina]",
       "[LeviLamina]",
       "[LeviLamina] LeviLamina is a free software licensed under LGPLv3",
-      "[LeviLamina] Help us translate & improve text -> https://translate.liteldev.com/",
+      "[LeviLamina] Help us translate & improve text -> https://translate.levimc.org/",
       "[LeviLamina] Loading mods...",
       "[LeviLamina] 114 mod(s) loaded",
     ];
