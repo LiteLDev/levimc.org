@@ -92,7 +92,7 @@ const LeviLaminaHome = (): ReactElement => {
             <div className="flex flex-row gap-4 mt-8">
               <Button
                 variant="filled"
-                href="hhttps://bedrinth.com/?q=platform:levilamina%20type:mod"
+                href="https://bedrinth.com/?q=platform:levilamina%20type:mod"
                 external
                 dense
               >
