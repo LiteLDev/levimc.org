@@ -21,7 +21,7 @@
     "swr": "2.3.3"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.5",
+    "@cloudflare/next-on-pages": "^1.13.16",
     "@svgr/webpack": "8.1.0",
     "@types/node": "24.7.2",
     "@types/react": "19.2.2",
