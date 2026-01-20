@@ -4,7 +4,7 @@ import Hero from './components/Hero';
 import ProjectCard from './components/ProjectCard';
 import Features from './components/Features';
 import Footer from './components/Footer';
-import { PROJECTS, PROJECT_CONFIGS } from './constants';
+import { useProjects, PROJECT_CONFIGS } from './constants';
 import { ArrowRight } from 'lucide-react';
 import { getMultipleRepos, RepoInfo, getDiscordInfo, DiscordInfo, getRepoInfo, formatStarCount } from './services/githubService';
 import { I18nContext, useI18nProvider, useI18n } from './i18n';
@@ -120,7 +120,7 @@ const Home: React.FC<NavProps> = ({ onNavigate, repoData, discordInfo, totalStar
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {PROJECTS.slice(0, 4).map((project) => {
+            {useProjects().slice(0, 4).map((project) => {
               const data = repoData?.get(project.id);
               return (
                 <ProjectCard
@@ -331,7 +331,7 @@ const ProjectsPage: React.FC<{ repoData?: Map<string, RepoInfo>; loading?: boole
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {PROJECTS.map((project) => {
+          {useProjects().map((project) => {
             const data = repoData?.get(project.id);
             return (
               <ProjectCard

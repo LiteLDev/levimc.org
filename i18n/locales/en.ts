@@ -91,6 +91,17 @@ const en = {
     connect: 'Connect',
     copyright: 'LeviMC',
   },
+
+  // Project descriptions
+  projects_desc: {
+    levilamina: 'A lightweight, modular and versatile mod loader for Minecraft Bedrock Edition.',
+    legacyscriptengine: 'Run JavaScript, Lua, and Python plugins on LeviLamina.',
+    levilaunchroid: 'A launcher for Minecraft Bedrock Edition on Android.',
+    levilauncher: 'Minecraft Bedrock Edition GDK Launcher for Windows.',
+    levioptimize: 'Performance optimization mod for LeviLamina servers.',
+    levianticheat: 'Anti-cheating solution for LeviLamina servers..',
+    moredimensions: 'Expand your Minecraft Bedrock world with new dimensions and biomes.',
+  },
 };
 
 export default en;

@@ -95,6 +95,17 @@ const zh = {
     connect: '联系我们',
     copyright: 'LeviMC',
   },
+
+  // Project descriptions
+  projects_desc: {
+    levilamina: '轻量、模块化且功能丰富的 Minecraft 基岩版模组加载器。',
+    legacyscriptengine: '在 LeviLamina 上运行 JavaScript、Lua 和 Python 插件。',
+    levilaunchroid: '适用于 Android 的 Minecraft 基岩版启动器。',
+    levilauncher: '适用于 Windows 的 Minecraft 基岩版 GDK 启动器。',
+    levioptimize: '为 LeviLamina 服务器提供性能优化的模组。',
+    levianticheat: '为 LeviLamina 服务器提供反作弊解决方案。',
+    moredimensions: '为 Minecraft 基岩版世界添加新的维度和生物群系。',
+  }
 };
 
 export default zh;
