@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X, Github, Globe, Sun, Moon } from 'lucide-react';
 import { useI18n, localeNames, Locale } from '../i18n';
 import { useTheme } from '../theme';
+import logoUrl from '../icons/logo.svg';
 
 interface HeaderProps {
   activePage: string;
@@ -10,7 +11,7 @@ interface HeaderProps {
 
 const LogoIcon: React.FC = () => (
   <div className="w-8 h-8 rounded-lg border border-lite-500/40 bg-lite-500/10 text-lite-500 flex items-center justify-center">
-    <img src={"/icons/logo.svg"} alt="LeviMC logo" className="w-6 h-6" />
+    <img src={logoUrl} alt="LeviMC logo" className="w-6 h-6" />
   </div>
 );
 
