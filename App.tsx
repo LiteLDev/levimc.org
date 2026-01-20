@@ -5,6 +5,7 @@ import ProjectCard from './components/ProjectCard';
 import Features from './components/Features';
 import Footer from './components/Footer';
 import Support from './components/Support';
+import About from './components/About';
 import { useProjects, PROJECT_CONFIGS } from './constants';
 import { ArrowRight } from 'lucide-react';
 import { getMultipleRepos, RepoInfo, getDiscordInfo, DiscordInfo } from './services/githubService';
@@ -524,12 +525,6 @@ const CommunityPage: React.FC = () => {
   );
 };
 
-const SupportPage: React.FC = () => {
-  return (
-    <Support />
-  );
-};
-
 const App: React.FC = () => {
   const { repoData, discordInfo, loading } = useExternalData();
   const i18n = useI18nProvider();
@@ -552,7 +547,8 @@ const App: React.FC = () => {
               <Route path="/projects" element={<ProjectsPage repoData={repoData} loading={loading} />} />
               <Route path="/features" element={<FeaturesPage />} />
               <Route path="/community" element={<CommunityPage />} />
-              <Route path="/support" element={<SupportPage />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/support" element={<Support />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>

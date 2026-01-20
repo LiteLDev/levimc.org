@@ -5,6 +5,7 @@ const zh = {
     home: '首页',
     projects: '项目',
     features: '特性',
+    about: '关于我们',
     community: '社区',
     support: '支持我们',
   },
@@ -24,6 +25,22 @@ const zh = {
     stars: 'GitHub 星标',
     forks: 'Forks',
     languages: '开发语言',
+  },
+
+  // About page
+  about: {
+    pageTitle: '关于 LeviMC',
+    pageSubtitle: '一个无名小团队的故事。',
+    intro: 'LeviMC(原LiteLDev)起始于2021年1月27日，最初的目的是开发一款替代BedrockX的Bedrock Dedicated Server插件加载器，也就是LiteLoaderBDS，起初只有三人。后来LiteXLoader开发团队的成员也加入了LeviMC，随着时间的推移，团队逐渐壮大。在2021年12月9日，LiteLoaderBDS迭代到了v2.0版本，将LiteXLoader并入了LiteLoaderBDS，开始从BedrockX的技术路线上开始发展创新，首次引入了延迟加载机制实现了无需在头文件中调用符号查找函数实现函数的调用，以及完成了自研的头文件生成系统。后来由于LiteLoaderBDS的代码库中的历史遗留问题，LeviMC决定从头开始开发一款全新的模组加载器，2023年12月1日，LeviLamina发布了，吸取了LiteLoaderBDS过于耦合的经验教训，采用了模块化的设计理念，极大的提升了加载器的可维护性和扩展性，并且进一步优化了头文件生成，进一步优化了Hook，引入了诸多新特性。',
+    missionTitle: '使命',
+    missionBody: '让基岩版模组开发变得触手可及。',
+    valuesTitle: '我们在乎什么',
+    valueOneTitle: '开发者优先',
+    valueOneBody: '为基岩版模组开发者提供海量原版API，并封装易用的接口，确保模组开发体验顺畅。',
+    valueTwoTitle: '开源 DNA',
+    valueTwoBody: 'LeviMC的发展壮大离不开开源社区，欢迎所有开发者加入我们。',
+    teamTitle: '团队成员',
+    teamSubtitle: '认识我们的团队成员。',
   },
 
   // Projects section

@@ -5,6 +5,7 @@ const en = {
     home: 'Home',
     projects: 'Projects',
     features: 'Features',
+    about: 'About',
     community: 'Community',
     support: 'Support Us',
   },
@@ -24,6 +25,22 @@ const en = {
     stars: 'GitHub Stars',
     forks: 'Forks',
     languages: 'Languages',
+  },
+
+  // About page
+  about: {
+    pageTitle: 'About LeviMC',
+    pageSubtitle: 'The story of a small team.',
+    intro: 'LeviMC (formerly LiteLDev) began on January 27, 2021. It started as a project to develop a Bedrock Dedicated Server plugin loader to replace BedrockX—LiteLoaderBDS—with an initial team of three. Later, members of the LiteXLoader team joined and the team grew. On December 9, 2021, LiteLoaderBDS reached v2.0, merging LiteXLoader and introducing innovations beyond the BedrockX approach, including a delay-loading mechanism that enabled function calls without requiring symbol lookup in headers and a custom header-generation system. Due to legacy issues in the codebase, the team decided to rebuild the mod loader from scratch. On December 1, 2023, LeviLamina was released, adopting a modular design to improve maintainability and extensibility, while further optimizing header generation, hooks, and adding many new features.',
+    missionTitle: 'Mission',
+    missionBody: 'Make Bedrock mod development accessible.',
+    valuesTitle: 'What we care about',
+    valueOneTitle: 'Developers first',
+    valueOneBody: 'Provide Bedrock mod developers with extensive vanilla APIs and easy-to-use wrappers to ensure a smooth development experience.',
+    valueTwoTitle: 'Open-source DNA',
+    valueTwoBody: "LeviMC's growth relies on the open-source community; we welcome all developers to contribute.",
+    teamTitle: 'Team members',
+    teamSubtitle: 'Meet our team members.',
   },
 
   // Projects section

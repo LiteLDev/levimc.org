@@ -25,6 +25,7 @@ const Header: React.FC = () => {
     { label: t.nav.projects, path: '/projects' },
     { label: t.nav.features, path: '/features' },
     { label: t.nav.community, path: '/community' },
+    { label: t.nav.about, path: '/about' },
     { label: t.nav.support, path: '/support' },
   ];
 
