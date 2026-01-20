@@ -27,6 +27,7 @@ const Header: React.FC<HeaderProps> = ({ activePage, onNavigate }) => {
     { label: t.nav.projects, href: 'projects' },
     { label: t.nav.features, href: 'features' },
     { label: t.nav.community, href: 'community' },
+    { label: t.nav.support, href: 'support' },
   ];
 
   useEffect(() => {

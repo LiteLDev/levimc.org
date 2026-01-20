@@ -6,6 +6,7 @@ const en = {
     projects: 'Projects',
     features: 'Features',
     community: 'Community',
+    support: 'Support Us',
   },
 
   // Hero section
@@ -79,6 +80,21 @@ const en = {
     githubTitle: 'GitHub',
     githubDesc: 'Contribute to the project, report issues, and browse the source code.',
     viewOnGitHub: 'View on GitHub',
+  },
+
+  // Support page
+  support: {
+    pageTitle: 'Support LeviMC',
+    pageDesc: 'Help us build the Bedrock modding ecosystem—contribute code or support financially.',
+    contributeTitle: 'Contribute code',
+    contributeDesc: 'Pick an issue, improve docs, or add a feature. Every pull request helps the community.',
+    contributeCta: 'View contributing guide',
+    donateTitle: 'Donate to the project',
+    donateDesc: 'Your support keeps our infrastructure running and lets us spend more time on features.',
+    donateChannels: 'Donation channels',
+    channelAfdian: 'Afdian',
+    channelOpenCollective: 'OpenCollective',
+    donorList: 'Donor list',
   },
 
   // Footer

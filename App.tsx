@@ -4,6 +4,7 @@ import Hero from './components/Hero';
 import ProjectCard from './components/ProjectCard';
 import Features from './components/Features';
 import Footer from './components/Footer';
+import Support from './components/Support';
 import { useProjects, PROJECT_CONFIGS } from './constants';
 import { ArrowRight } from 'lucide-react';
 import { getMultipleRepos, RepoInfo, getDiscordInfo, DiscordInfo, getRepoInfo, formatStarCount } from './services/githubService';
@@ -530,6 +531,12 @@ const CommunityPage: React.FC = () => {
   );
 };
 
+const SupportPage: React.FC = () => {
+  return (
+    <Support />
+  );
+};
+
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('home');
   const { repoData, discordInfo, totalStars, loading } = useExternalData();
@@ -549,6 +556,7 @@ const App: React.FC = () => {
             {currentPage === 'projects' && <ProjectsPage repoData={repoData} loading={loading} />}
             {currentPage === 'features' && <FeaturesPage />}
             {currentPage === 'community' && <CommunityPage />}
+            {currentPage === 'support' && <SupportPage />}
           </main>
 
           <Footer />

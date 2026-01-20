@@ -6,6 +6,7 @@ const zh = {
     projects: '项目',
     features: '特性',
     community: '社区',
+    support: '支持我们',
   },
 
   // Hero section
@@ -83,6 +84,21 @@ const zh = {
     qqDesc: '加入我们的 QQ 群或频道与中文社区交流。',
     qqGroups: '交流群',
     qqChannel: '官方频道',
+  },
+
+  // Support page
+  support: {
+    pageTitle: '支持 LeviMC',
+    pageDesc: '帮助我们建设基岩版模组生态——贡献代码或资助项目。',
+    contributeTitle: '贡献代码',
+    contributeDesc: '挑选一个 Issue、完善文档或添加新特性。每个 PR 都能帮助社区。',
+    contributeCta: '查看贡献指南',
+    donateTitle: '捐助项目',
+    donateDesc: '你的支持能帮助我们维持基础设施，并投入更多时间开发新功能。',
+    donateChannels: '捐助渠道',
+    channelAfdian: '爱发电',
+    channelOpenCollective: 'OpenCollective',
+    donorList: '捐赠者列表',
   },
 
   // Footer
