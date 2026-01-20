@@ -28,9 +28,6 @@ const Support: React.FC = () => {
                             backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(34,197,94,0.12), transparent 40%), radial-gradient(circle at 80% 0%, rgba(16,185,129,0.12), transparent 35%)'
                         }}></div>
                         <div className="relative space-y-4">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-lite-500/10 text-lite-500 border border-lite-500/30 w-fit">
-                                {t.support.contributeTitle}
-                            </div>
                             <h3 className={`text-2xl font-bold ${theme === 'light' ? 'text-stone-900' : 'text-white'}`}>{t.support.contributeTitle}</h3>
                             <p className={`${theme === 'light' ? 'text-stone-600' : 'text-zinc-400'} leading-relaxed`}>{t.support.contributeDesc}</p>
                             <div className="flex flex-wrap gap-3">
@@ -65,9 +62,6 @@ const Support: React.FC = () => {
                             backgroundImage: 'radial-gradient(circle at 15% 30%, rgba(52,211,153,0.18), transparent 35%), radial-gradient(circle at 85% 10%, rgba(59,130,246,0.14), transparent 30%)'
                         }}></div>
                         <div className="relative space-y-4">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 w-fit">
-                                {t.support.donateTitle}
-                            </div>
                             <h3 className={`text-2xl font-bold ${theme === 'light' ? 'text-stone-900' : 'text-white'}`}>{t.support.donateTitle}</h3>
                             <p className={`${theme === 'light' ? 'text-stone-600' : 'text-zinc-400'} leading-relaxed`}>{t.support.donateDesc}</p>
 
