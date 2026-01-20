@@ -2,6 +2,13 @@ import React from 'react';
 import { Github, MessageCircle, Hexagon, XIcon, MailIcon, YoutubeIcon, VideoIcon } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme';
+import logoUrl from '../icons/logo.svg';
+
+const LogoIcon: React.FC = () => (
+  <div className="w-8 h-8 rounded-lg border border-lite-500/40 bg-lite-500/10 text-lite-500 flex items-center justify-center">
+    <img src={logoUrl} alt="LeviMC logo" className="w-6 h-6" />
+  </div>
+);
 
 const Footer: React.FC = () => {
   const { t } = useI18n();
@@ -15,7 +22,7 @@ const Footer: React.FC = () => {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <Hexagon className="w-6 h-6 text-lite-500 fill-lite-500/20" />
+              <LogoIcon />
               <span className={`text-xl font-bold tracking-tight ${theme === 'light' ? 'text-stone-900' : 'text-white'}`}>
                 Levi<span className="text-lite-500">MC</span>
               </span>
