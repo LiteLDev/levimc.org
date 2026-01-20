@@ -7,9 +7,10 @@ import Footer from './components/Footer';
 import Support from './components/Support';
 import { useProjects, PROJECT_CONFIGS } from './constants';
 import { ArrowRight } from 'lucide-react';
-import { getMultipleRepos, RepoInfo, getDiscordInfo, DiscordInfo, getRepoInfo, formatStarCount } from './services/githubService';
+import { getMultipleRepos, RepoInfo, getDiscordInfo, DiscordInfo } from './services/githubService';
 import { I18nContext, useI18nProvider, useI18n } from './i18n';
 import { ThemeContext, useThemeProvider, useTheme } from './theme';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 
 const Background: React.FC = () => {
   const { theme } = useTheme();
@@ -53,7 +54,6 @@ const Background: React.FC = () => {
 function useExternalData() {
   const [repoData, setRepoData] = useState<Map<string, RepoInfo>>(new Map());
   const [discordInfo, setDiscordInfo] = useState<DiscordInfo | null>(null);
-  const [totalStars, setTotalStars] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -63,37 +63,30 @@ function useExternalData() {
       getMultipleRepos(PROJECT_CONFIGS.map(p => ({ owner: p.owner, repo: p.repo }))),
       // Discord info - use server ID for widget API
       getDiscordInfo('849252980430864384'),
-      // Main repo for total stars
-      getRepoInfo('LiteLDev', 'LeviLamina'),
-    ]).then(([repos, discord, mainRepo]) => {
+    ]).then(([repos, discord]) => {
       setRepoData(repos);
       setDiscordInfo(discord);
-      // Calculate total stars from all repos
-      let stars = 0;
-      repos.forEach(r => stars += r.stars);
-      setTotalStars(stars);
       setLoading(false);
     });
   }, []);
 
-  return { repoData, discordInfo, totalStars, loading };
+  return { repoData, discordInfo, loading };
 }
 
-interface NavProps {
-  onNavigate: (page: string) => void;
+interface HomeProps {
   repoData?: Map<string, RepoInfo>;
   discordInfo?: DiscordInfo | null;
-  totalStars?: number | null;
   loading?: boolean;
 }
 
-const Home: React.FC<NavProps> = ({ onNavigate, repoData, discordInfo, totalStars, loading }) => {
+const Home: React.FC<HomeProps> = ({ repoData, discordInfo, loading }) => {
   const { t, locale } = useI18n();
   const { theme } = useTheme();
+  const navigate = useNavigate();
 
   return (
     <>
-      <Hero onNavigate={onNavigate} />
+      <Hero />
 
       {/* Projects section with unique layout */}
       <section className="py-32 relative">
@@ -111,7 +104,7 @@ const Home: React.FC<NavProps> = ({ onNavigate, repoData, discordInfo, totalStar
             </div>
             <div className="flex items-end">
               <button
-                onClick={() => { onNavigate('projects'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                onClick={() => { navigate('/projects'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 className="group flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
               >
                 <span>{t.projects.viewAll}</span>
@@ -538,8 +531,7 @@ const SupportPage: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState('home');
-  const { repoData, discordInfo, totalStars, loading } = useExternalData();
+  const { repoData, discordInfo, loading } = useExternalData();
   const i18n = useI18nProvider();
   const themeProvider = useThemeProvider();
 
@@ -548,15 +540,21 @@ const App: React.FC = () => {
       <I18nContext.Provider value={i18n}>
         <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-lite-500/30 selection:text-lite-200 flex flex-col relative">
           <Background />
-          <Header activePage={currentPage} onNavigate={setCurrentPage} />
+          <Header />
 
           {/* Main content with z-index to sit above background */}
           <main className="flex-grow relative z-10">
-            {currentPage === 'home' && <Home onNavigate={setCurrentPage} repoData={repoData} discordInfo={discordInfo} totalStars={totalStars} loading={loading} />}
-            {currentPage === 'projects' && <ProjectsPage repoData={repoData} loading={loading} />}
-            {currentPage === 'features' && <FeaturesPage />}
-            {currentPage === 'community' && <CommunityPage />}
-            {currentPage === 'support' && <SupportPage />}
+            <Routes>
+              <Route
+                path="/"
+                element={<Home repoData={repoData} discordInfo={discordInfo} loading={loading} />}
+              />
+              <Route path="/projects" element={<ProjectsPage repoData={repoData} loading={loading} />} />
+              <Route path="/features" element={<FeaturesPage />} />
+              <Route path="/community" element={<CommunityPage />} />
+              <Route path="/support" element={<SupportPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           </main>
 
           <Footer />

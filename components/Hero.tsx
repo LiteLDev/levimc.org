@@ -4,10 +4,6 @@ import { getLatestRelease, getRepoInfo, formatStarCount } from '../services/gith
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme';
 
-interface HeroProps {
-  onNavigate: (page: string) => void;
-}
-
 // Code examples for different languages
 const CODE_EXAMPLES = {
   cpp: {
@@ -139,7 +135,7 @@ const CODE_EXAMPLES = {
   },
 };
 
-const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
+const Hero: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'cpp' | 'js' | 'lua'>('cpp');
   const [version, setVersion] = useState<string | null>(null);
   const [stats, setStats] = useState<{ stars: number; forks: number } | null>(null);

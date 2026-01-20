@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Github, Globe, Sun, Moon } from 'lucide-react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useI18n, localeNames, Locale } from '../i18n';
 import { useTheme } from '../theme';
 import logoUrl from '../icons/logo.svg';
-
-interface HeaderProps {
-  activePage: string;
-  onNavigate: (page: string) => void;
-}
 
 const LogoIcon: React.FC = () => (
   <div className="w-8 h-8 rounded-lg border border-lite-500/40 bg-lite-500/10 text-lite-500 flex items-center justify-center">
@@ -15,19 +11,21 @@ const LogoIcon: React.FC = () => (
   </div>
 );
 
-const Header: React.FC<HeaderProps> = ({ activePage, onNavigate }) => {
+const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const { locale, setLocale, t } = useI18n();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const navItems = [
-    { label: t.nav.home, href: 'home' },
-    { label: t.nav.projects, href: 'projects' },
-    { label: t.nav.features, href: 'features' },
-    { label: t.nav.community, href: 'community' },
-    { label: t.nav.support, href: 'support' },
+    { label: t.nav.home, path: '/' },
+    { label: t.nav.projects, path: '/projects' },
+    { label: t.nav.features, path: '/features' },
+    { label: t.nav.community, path: '/community' },
+    { label: t.nav.support, path: '/support' },
   ];
 
   useEffect(() => {
@@ -38,8 +36,8 @@ const Header: React.FC<HeaderProps> = ({ activePage, onNavigate }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleNavClick = (pageId: string) => {
-    onNavigate(pageId);
+  const handleNavClick = (path: string) => {
+    navigate(path);
     setIsMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -57,7 +55,7 @@ const Header: React.FC<HeaderProps> = ({ activePage, onNavigate }) => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <button
-            onClick={() => handleNavClick('home')}
+            onClick={() => handleNavClick('/')}
             className="flex-shrink-0 flex items-center gap-2 cursor-pointer focus:outline-none"
           >
             <LogoIcon />
@@ -69,10 +67,12 @@ const Header: React.FC<HeaderProps> = ({ activePage, onNavigate }) => {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <button
-                key={item.href}
-                onClick={() => handleNavClick(item.href)}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none ${activePage === item.href
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === '/'}
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none ${isActive
                   ? 'text-lite-500 bg-lite-500/10'
                   : theme === 'light'
                     ? 'text-stone-600 hover:text-lite-600'
@@ -80,7 +80,7 @@ const Header: React.FC<HeaderProps> = ({ activePage, onNavigate }) => {
                   }`}
               >
                 {item.label}
-              </button>
+              </NavLink>
             ))}
 
             {/* Theme Toggle */}
@@ -182,9 +182,9 @@ const Header: React.FC<HeaderProps> = ({ activePage, onNavigate }) => {
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navItems.map((item) => (
               <button
-                key={item.href}
-                onClick={() => handleNavClick(item.href)}
-                className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium focus:outline-none ${activePage === item.href
+                key={item.path}
+                onClick={() => handleNavClick(item.path)}
+                className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium focus:outline-none ${location.pathname === item.path
                   ? 'text-lite-500 bg-lite-500/10'
                   : theme === 'light'
                     ? 'text-stone-600 hover:text-lite-600'
