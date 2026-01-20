@@ -20,4 +20,4 @@ npm run preview
 
 ## License
 
-LGPL-3.0
+MIT
