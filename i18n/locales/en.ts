@@ -8,6 +8,7 @@ const en = {
     about: 'About',
     community: 'Community',
     support: 'Support Us',
+    mods: 'Mods',
   },
 
   // Hero section

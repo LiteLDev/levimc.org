@@ -22,6 +22,7 @@ const Header: React.FC = () => {
 
   const navItems = [
     { label: t.nav.home, path: '/' },
+    { label: t.nav.mods, path: 'https://bedrinth.com/?platform=levilamina', external: true },
     { label: t.nav.projects, path: '/projects' },
     { label: t.nav.features, path: '/features' },
     { label: t.nav.community, path: '/community' },
@@ -37,7 +38,13 @@ const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleNavClick = (path: string) => {
+  const handleNavClick = (path: string, external?: boolean) => {
+    if (external) {
+      window.open(path, '_blank', 'noopener,noreferrer');
+      setIsMobileMenuOpen(false);
+      return;
+    }
+
     navigate(path);
     setIsMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -68,20 +75,35 @@ const Header: React.FC = () => {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.path === '/'}
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none ${isActive
-                  ? 'text-lite-500 bg-lite-500/10'
-                  : theme === 'light'
+              item.external ? (
+                <a
+                  key={item.path}
+                  href={item.path}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none ${theme === 'light'
                     ? 'text-stone-600 hover:text-lite-600'
                     : 'text-zinc-300 hover:text-lite-400'
-                  }`}
-              >
-                {item.label}
-              </NavLink>
+                    }`}
+                >
+                  {item.label}
+                </a>
+              ) : (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/'}
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none ${isActive
+                    ? 'text-lite-500 bg-lite-500/10'
+                    : theme === 'light'
+                      ? 'text-stone-600 hover:text-lite-600'
+                      : 'text-zinc-300 hover:text-lite-400'
+                    }`}
+                >
+                  {item.label}
+                </NavLink>
+              )
             ))}
 
             {/* Theme Toggle */}
@@ -184,8 +206,8 @@ const Header: React.FC = () => {
             {navItems.map((item) => (
               <button
                 key={item.path}
-                onClick={() => handleNavClick(item.path)}
-                className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium focus:outline-none ${location.pathname === item.path
+                onClick={() => handleNavClick(item.path, item.external)}
+                className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium focus:outline-none ${!item.external && location.pathname === item.path
                   ? 'text-lite-500 bg-lite-500/10'
                   : theme === 'light'
                     ? 'text-stone-600 hover:text-lite-600'

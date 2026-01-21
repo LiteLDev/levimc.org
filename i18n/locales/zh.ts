@@ -8,6 +8,7 @@ const zh = {
     about: '关于我们',
     community: '社区',
     support: '支持我们',
+    mods: '模组',
   },
 
   // Hero section
