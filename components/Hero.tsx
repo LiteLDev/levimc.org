@@ -225,7 +225,7 @@ const Hero: React.FC = () => {
             {/* CTA buttons */}
             <div className="flex flex-wrap items-center gap-4 pt-4">
               <a
-                href="https://lamina.levimc.org/quickstart/"
+                href="https://lamina.levimc.org/user_guides/install/"
                 target="_blank"
                 rel="noreferrer"
                 className="group px-6 py-3 rounded-lg bg-gradient-to-r from-lite-500 to-emerald-500 text-white font-semibold shadow-lg shadow-lite-500/25 hover:shadow-lite-500/40 hover:from-lite-600 hover:to-emerald-600 transition-all flex items-center gap-2"
