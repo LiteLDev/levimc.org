@@ -22,7 +22,7 @@ const Header: React.FC = () => {
 
   const navItems = [
     { label: t.nav.home, path: '/' },
-    { label: t.nav.mods, path: 'https://bedrinth.com/?platform=levilamina', external: true },
+    { label: t.nav.mods, path: 'https://pkg.levimc.org/', external: true },
     { label: t.nav.projects, path: '/projects' },
     { label: t.nav.features, path: '/features' },
     { label: t.nav.community, path: '/community' },
