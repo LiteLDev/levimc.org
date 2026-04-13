@@ -272,17 +272,6 @@ const Home: React.FC<HomeProps> = ({ repoData, discordInfo, loading }) => {
                       >
                         850517473
                       </a>
-                      <a
-                        href="https://pd.qq.com/s/a13gu04rv"
-                        target="_blank"
-                        rel="noreferrer"
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${theme === 'light'
-                          ? 'bg-orange-100 border border-orange-300 text-orange-700 hover:bg-orange-200'
-                          : 'bg-orange-500/20 border border-orange-500/40 text-orange-300 hover:bg-orange-500/30'
-                          }`}
-                      >
-                        {t.community.qqChannel}
-                      </a>
                     </div>
                   </div>
                 )}
@@ -504,17 +493,6 @@ const CommunityPage: React.FC = () => {
                     }`}
                 >
                   850517473
-                </a>
-                <a
-                  href="https://pd.qq.com/s/a13gu04rv"
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${theme === 'light'
-                    ? 'bg-orange-100 border border-orange-300 text-orange-700 hover:bg-orange-200'
-                    : 'bg-orange-500/20 border border-orange-500/40 text-orange-300 hover:bg-orange-500/30'
-                    }`}
-                >
-                  {t.community.qqChannel}
                 </a>
               </div>
             </div>
