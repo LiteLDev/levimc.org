@@ -110,8 +110,7 @@ const en = {
       "Contribute to the project, report issues, and browse the source code.",
     viewOnGitHub: "View on GitHub",
     qqTitle: "QQ Group",
-    qqDesc:
-      "Join our QQ group or channel to communicate with the Chinese community.",
+    qqDesc: "Join our QQ group to communicate with the Chinese community.",
     qqGroups: "Communication Groups",
   },
 

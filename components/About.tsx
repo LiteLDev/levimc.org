@@ -171,7 +171,7 @@ const About: React.FC = () => {
                         <h1 className={`text-4xl lg:text-5xl font-bold leading-tight ${theme === 'light' ? 'text-stone-900' : 'text-white'}`}>
                             {t.about.pageSubtitle}
                         </h1>
-                        <p className={`${theme === 'light' ? 'text-stone-600' : 'text-zinc-400'} text-lg`}>{t.about.intro}</p>
+                        <p style={{ whiteSpace: 'pre-line' }} className={`${theme === 'light' ? 'text-stone-600' : 'text-zinc-400'} text-lg`}>{t.about.intro}</p>
                     </div>
                 </section>
 
