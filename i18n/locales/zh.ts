@@ -121,7 +121,14 @@ const zh = {
     donateChannels: "捐助渠道",
     channelAfdian: "爱发电",
     channelOpenCollective: "OpenCollective",
-    donorList: "捐赠者列表",
+    donorsSectionTitle: "支持者",
+    donorsSectionDesc: "十分感谢以下支持者对 LeviMC 的慷慨支持。",
+    donorsLoading: "正在从 CSV 加载捐赠者...",
+    donorsErrorTitle: "无法加载捐赠数据",
+    donorsError: "无法从 donors.csv 读取捐赠者列表。",
+    donorsEmptyTitle: "还没有捐赠记录",
+    donorsEmpty: "向 public/donors.csv 中添加一行或多行数据后刷新页面即可。",
+    donorLinkLabel: "打开链接",
   },
 
   // Footer

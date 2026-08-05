@@ -127,7 +127,16 @@ const en = {
     donateChannels: "Donation channels",
     channelAfdian: "Afdian",
     channelOpenCollective: "OpenCollective",
-    donorList: "Donor list",
+    donorsSectionTitle: "Supporters",
+    donorsSectionDesc:
+      "Greatly appreciate the generous support of the following supporters to LeviMC.",
+    donorsLoading: "Loading donors from CSV...",
+    donorsErrorTitle: "Could not load donor data",
+    donorsError: "The donor list could not be loaded from donors.csv.",
+    donorsEmptyTitle: "No donor entries yet",
+    donorsEmpty:
+      "Add one or more rows to public/donors.csv and refresh this page.",
+    donorLinkLabel: "Open link",
   },
 
   // Footer
