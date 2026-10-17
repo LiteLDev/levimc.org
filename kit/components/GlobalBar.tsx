@@ -73,7 +73,7 @@ export function GlobalBar({ current, currentDocs, locale, strings, end, items: c
         {children}
       </RouterLink>
     ) : (
-      <a key={key} href={url} {...props}>
+      <a key={key} className={props.className} href={url} aria-current={props['aria-current']}>
         {children}
       </a>
     );
