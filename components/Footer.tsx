@@ -37,9 +37,9 @@ const Footer: React.FC = () => {
             <h4 className={`text-sm font-semibold uppercase tracking-wider mb-4 ${theme === 'light' ? 'text-stone-500' : 'text-zinc-400'
               }`}>{t.footer.resources}</h4>
             <ul className="space-y-3">
-              <li><a href="https://docs.levimc.org/LeviLamina" target="_blank" rel="noreferrer" className={`text-sm transition-colors ${theme === 'light' ? 'text-stone-600 hover:text-stone-900' : 'text-zinc-500 hover:text-white'
+              <li><a href="https://docs.levimc.org/LeviLamina/" target="_blank" rel="noreferrer" className={`text-sm transition-colors ${theme === 'light' ? 'text-stone-600 hover:text-stone-900' : 'text-zinc-500 hover:text-white'
                 }`}>{t.footer.ll_documentation}</a></li>
-              <li><a href="https://docs.levimc.org/LegacyScriptEngine" target="_blank" rel="noreferrer" className={`text-sm transition-colors ${theme === 'light' ? 'text-stone-600 hover:text-stone-900' : 'text-zinc-500 hover:text-white'
+              <li><a href="https://docs.levimc.org/LegacyScriptEngine/" target="_blank" rel="noreferrer" className={`text-sm transition-colors ${theme === 'light' ? 'text-stone-600 hover:text-stone-900' : 'text-zinc-500 hover:text-white'
                 }`}>{t.footer.lse_documentation}</a></li>
               <li><a href="https://blog.levimc.org" target="_blank" rel="noreferrer" className={`text-sm transition-colors ${theme === 'light' ? 'text-stone-600 hover:text-stone-900' : 'text-zinc-500 hover:text-white'
                 }`}>{t.footer.blog}</a></li>

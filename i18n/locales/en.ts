@@ -54,6 +54,8 @@ const en = {
     allProjectsDesc: "The complete toolkit for Bedrock server development.",
     moreOnGitHub: "More projects on GitHub",
     explore: "Explore",
+    docs: "Docs",
+    github: "GitHub",
   },
 
   // Features section

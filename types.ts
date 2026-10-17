@@ -7,6 +7,7 @@ export interface Project {
   icon: ReactNode;
   tags: string[];
   link: string;
+  docs?: string;
   stars?: number;
 }
 

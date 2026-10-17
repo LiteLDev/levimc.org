@@ -1,7 +1,8 @@
 import React from 'react';
-import { Star, ArrowUpRight } from 'lucide-react';
+import { Star, BookOpen, Github } from 'lucide-react';
 import { Project } from '../types';
 import { useTheme } from '../theme';
+import { useI18n } from '../i18n';
 
 interface ProjectCardProps {
   project: Project;
@@ -14,12 +15,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, stars, language, loa
   const displayStars = stars ?? project.stars;
   const displayTags = language ? [language, ...project.tags.filter(t => t.toLowerCase() !== language.toLowerCase())].slice(0, 2) : project.tags.slice(0, 2);
   const { theme } = useTheme();
+  const { t } = useI18n();
+  const linkClass = `inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${theme === 'light'
+    ? 'text-stone-700 border-stone-200 hover:border-lite-500/40 hover:text-lite-600 hover:bg-lite-50'
+    : 'text-zinc-300 border-zinc-700/70 hover:border-lite-500/40 hover:text-white hover:bg-lite-500/10'
+    }`;
 
   return (
-    <a
-      href={project.link}
-      target="_blank"
-      rel="noreferrer"
+    <div
       className={`group relative backdrop-blur-sm border rounded-2xl p-6 flex flex-col transition-all duration-300 ${theme === 'light'
         ? 'bg-white border-stone-200/80 hover:border-lite-500/40 hover:shadow-lg hover:shadow-lite-500/5'
         : 'bg-zinc-900/30 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/60'
@@ -37,8 +40,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, stars, language, loa
             }`}>
             {project.icon}
           </div>
-          <ArrowUpRight className={`w-5 h-5 group-hover:text-lite-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all ${theme === 'light' ? 'text-stone-400' : 'text-zinc-600'
-            }`} />
         </div>
 
         {/* Title */}
@@ -52,6 +53,20 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, stars, language, loa
           }`}>
           {project.description}
         </p>
+
+        {/* Links */}
+        <div className="flex items-center gap-2 mt-5">
+          {project.docs && (
+            <a href={project.docs} target="_blank" rel="noreferrer" className={linkClass}>
+              <BookOpen className="w-3.5 h-3.5" />
+              {t.projects.docs}
+            </a>
+          )}
+          <a href={project.link} target="_blank" rel="noreferrer" className={linkClass}>
+            <Github className="w-3.5 h-3.5" />
+            {t.projects.github}
+          </a>
+        </div>
 
         {/* Footer - fixed at bottom */}
         <div className={`flex items-center justify-between pt-4 mt-4 border-t ${theme === 'light' ? 'border-stone-100' : 'border-zinc-800/50'
@@ -79,7 +94,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, stars, language, loa
           </div>
         </div>
       </div>
-    </a>
+    </div>
   );
 };
 

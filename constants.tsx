@@ -74,6 +74,7 @@ export function useProjects(): Project[] {
       icon: <Layers className="w-8 h-8 text-lite-400" />,
       tags: ['Mod Loader'],
       link: 'https://github.com/LiteLDev/LeviLamina',
+      docs: 'https://docs.levimc.org/LeviLamina/',
     },
     {
       id: 'legacyscriptengine',
@@ -82,6 +83,7 @@ export function useProjects(): Project[] {
       icon: <Code className="w-8 h-8 text-lite-400" />,
       tags: ['Script Engine'],
       link: 'https://github.com/LiteLDev/LegacyScriptEngine',
+      docs: 'https://docs.levimc.org/LegacyScriptEngine/',
     },
     {
       id: 'levilaunchroid',
@@ -90,6 +92,7 @@ export function useProjects(): Project[] {
       icon: <Smartphone className="w-8 h-8 text-lite-400" />,
       tags: ['Android'],
       link: 'https://github.com/LiteLDev/LeviLaunchroid',
+      docs: 'https://docs.levimc.org/LeviLaunchroid/',
     },
     {
       id: 'levilauncher',
@@ -98,6 +101,7 @@ export function useProjects(): Project[] {
       icon: <Rocket className="w-8 h-8 text-lite-400" />,
       tags: ['Windows'],
       link: 'https://github.com/LiteLDev/LeviLauncher',
+      docs: 'https://docs.levimc.org/LeviLauncher/',
     },
     {
       id: 'levioptimize',

@@ -53,6 +53,8 @@ const zh = {
     allProjectsDesc: "基岩版服务器开发的完整工具集。",
     moreOnGitHub: "更多项目请访问 GitHub",
     explore: "探索",
+    docs: "文档",
+    github: "GitHub",
   },
 
   // Features section

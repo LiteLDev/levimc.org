@@ -234,7 +234,7 @@ const Hero: React.FC = () => {
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </a>
               <a
-                href="https://docs.levimc.org/LeviLamina"
+                href="https://docs.levimc.org/LeviLamina/"
                 target="_blank"
                 rel="noreferrer"
                 className={`px-6 py-3 rounded-lg border font-medium transition-all flex items-center gap-2 ${theme === 'light'
