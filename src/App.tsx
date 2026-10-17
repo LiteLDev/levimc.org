@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Route, Routes, useLocation, useNavigationType } from 'react-router';
-import { GlobalBar, PaintedBackdrop, ThemeProvider, uiStrings, type SiteId } from '../kit/components';
+import { PaintedBackdrop, ThemeProvider, uiStrings } from '../kit/components';
 import SiteHeader from './components/SiteHeader';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -12,15 +12,7 @@ import Support from './pages/Support';
 import NotFound from './pages/NotFound';
 import { I18nProvider, useI18n, kitLocale } from './i18n';
 import { markHydrated } from './hooks/useExternalData';
-import { pathOf, routeIdOf, routeMeta, type RouteId } from './routes';
-
-/** Which item of the cross-site GlobalBar this page belongs to. */
-const GLOBAL_BAR_CURRENT: Partial<Record<RouteId, SiteId>> = {
-  home: 'home',
-  projects: 'projects',
-  community: 'community',
-  about: 'about',
-};
+import { pathOf, routeIdOf, routeMeta } from './routes';
 
 function Shell() {
   const { t, locale } = useI18n();
@@ -48,8 +40,7 @@ function Shell() {
       <a className="kit-skip-link" href="#main">
         {ui.skipToContent}
       </a>
-      <GlobalBar current={routeId ? GLOBAL_BAR_CURRENT[routeId] : undefined} locale={kitLocale[locale]} />
-      <SiteHeader />
+      <SiteHeader current={routeId} />
       <main id="main" className="kit-above-backdrop" tabIndex={-1}>
         <Routes>
           <Route path={pathOf('home')} element={<Home />} />

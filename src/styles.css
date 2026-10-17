@@ -1,7 +1,7 @@
 /* levimc.org — Tailwind v4 + levimc-kit ("Impression, Craft"). The kit owns tokens, fonts and the pixel /
    painterly vocabulary; this file only lays out the site's pages with those tokens. No new colours or fonts. */
 @import "../kit/theme/tailwind.css";
-/* site header, mobile drawer and 404 card come from the kit's docs layout */
+/* the themed 404 card comes from the kit's docs layout */
 @import "../kit/docs/app/docs.css";
 @source "./";
 
@@ -13,6 +13,31 @@
     animation: lm-reveal 0s linear 2.5s forwards;
   }
 
+  /* ================================================================== header: the kit GlobalBar is the site's nav */
+  .lm-banner {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+  }
+  /* the language trigger carries a short label ("EN"), so it is wider than the bar's square icon buttons */
+  .lm-banner .lm-gbar-locale > .kit-menu-trigger {
+    width: auto;
+  }
+  /* nine entries instead of the kit's six: fold them into the bar's menu before they can crowd the controls */
+  @media (max-width: 1023px) {
+    .lm-banner .kit-gbar-nav {
+      display: none;
+    }
+    .lm-banner .kit-gbar-more {
+      display: block;
+    }
+  }
+  /* the language items are buttons (the language is not part of the URL) */
+  .lm-gbar-locale button.kit-menu-item {
+    width: 100%;
+    text-align: start;
+    cursor: pointer;
+  }
   /* ================================================================== layout */
   .lm-container {
     width: 100%;
@@ -116,12 +141,6 @@
   .dark .lm-gradient-text {
     background-image: linear-gradient(115deg, var(--color-primary) 10%, var(--color-mc-diamond) 60%, var(--color-accent-4) 100%);
   }
-  .lm-brand-accent {
-    color: var(--color-primary-strong);
-  }
-  .dark .lm-brand-accent {
-    color: var(--color-primary);
-  }
 
   .lm-page-head {
     max-width: 48rem;
@@ -187,6 +206,28 @@
   }
   .lm-hero .kit-hero-tagline {
     max-width: min(36rem, 100%);
+  }
+  @media (min-width: 961px) {
+    /* Keep the copy on calm canvas. The kit scrim fades at fixed viewport percentages (opaque to 30 %, gone
+       at 68 %), which leaves the end of the tagline over the painted bridge from ~960 to ~1440 px. Here the
+       scrim follows the copy column instead: opaque to just past its right edge, then fading into the
+       painting. The column sits in the kit's centred 80rem container with 1.5rem padding. */
+    .lm-hero {
+      --lm-copy-w: min(37rem, 52vw);
+      --lm-copy-end: calc(max(0px, (100% - 80rem) / 2) + 1.5rem + var(--lm-copy-w));
+    }
+    .lm-hero .kit-hero-copy {
+      max-width: var(--lm-copy-w);
+    }
+    .lm-hero .kit-hero-scrim {
+      background: linear-gradient(
+        90deg,
+        var(--color-canvas) 0,
+        color-mix(in srgb, var(--color-canvas) 94%, transparent) calc(var(--lm-copy-end) + 1.5rem),
+        color-mix(in srgb, var(--color-canvas) 55%, transparent) calc(var(--lm-copy-end) + 9rem),
+        transparent calc(var(--lm-copy-end) + 17rem)
+      );
+    }
   }
   .lm-hero .lm-hero-top {
     order: -1;
@@ -301,8 +342,35 @@
   .lm-code-block pre {
     min-height: calc(10 * 1.7 * 0.8125rem + 1.75rem);
   }
+  /* token roles → the kit Shiki palette (set once on .lm-code-block by CodeCard) */
   .lm-tok-comment {
+    --shiki-light: var(--lm-tok-comment-light);
+    --shiki-dark: var(--lm-tok-comment-dark);
     font-style: italic;
+  }
+  .lm-tok-keyword {
+    --shiki-light: var(--lm-tok-keyword-light);
+    --shiki-dark: var(--lm-tok-keyword-dark);
+  }
+  .lm-tok-type {
+    --shiki-light: var(--lm-tok-type-light);
+    --shiki-dark: var(--lm-tok-type-dark);
+  }
+  .lm-tok-func {
+    --shiki-light: var(--lm-tok-func-light);
+    --shiki-dark: var(--lm-tok-func-dark);
+  }
+  .lm-tok-string {
+    --shiki-light: var(--lm-tok-string-light);
+    --shiki-dark: var(--lm-tok-string-dark);
+  }
+  .lm-tok-param {
+    --shiki-light: var(--lm-tok-param-light);
+    --shiki-dark: var(--lm-tok-param-dark);
+  }
+  .lm-tok-punct {
+    --shiki-light: var(--lm-tok-punct-light);
+    --shiki-dark: var(--lm-tok-punct-dark);
   }
   .lm-code-item {
     display: flex;
@@ -319,9 +387,6 @@
     margin: 0;
   }
   @media (min-width: 1200px) {
-    .lm-hero .kit-hero-copy {
-      max-width: 37rem;
-    }
     /* beside the copy, low enough to leave the bridge / the sunrise visible */
     .lm-code {
       position: absolute;
@@ -386,6 +451,7 @@
   .lm-project-tags {
     display: flex;
     flex-wrap: wrap;
+    gap: 0.375rem;
     min-width: 0;
   }
   .lm-project-stars {
@@ -583,21 +649,24 @@
     grid-template-columns: minmax(0, 1fr);
     gap: 1.25rem;
   }
+  /* One story per row (title column + body): the three stories differ in length by up to 4×, so side-by-side
+     cards would leave a viewport-tall empty column next to the long one. */
   @media (min-width: 1024px) {
-    .lm-story-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      align-items: start;
-    }
-    .lm-story-wide {
-      grid-column: 1 / -1;
+    .lm-story {
       display: grid;
       grid-template-columns: minmax(0, 19rem) minmax(0, 1fr);
       gap: 0 3.5rem;
     }
-    .lm-story-wide .lm-story-title {
+    /* the title follows the reader down a long story */
+    .lm-story-lead {
+      position: sticky;
+      top: calc(var(--spacing-globalbar) + 1.5rem);
+      align-self: start;
+    }
+    .lm-story .lm-story-title {
       margin-bottom: 0;
     }
-    .lm-story-wide .lm-story-body {
+    .lm-story .lm-story-body {
       padding-top: 0.25rem;
     }
   }
@@ -812,21 +881,24 @@
     min-width: 0;
     padding: 1.125rem 1.25rem;
   }
+  /* a long name keeps its words whole: the amount badge drops below it instead */
   .lm-donor-head {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: 0.5rem 0.75rem;
   }
   .lm-donor-id {
     min-width: 0;
+    max-width: 100%;
   }
   .lm-donor-name {
     margin: 0;
     font-size: 1rem;
     font-weight: 650;
     line-height: 1.35;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
   .lm-donor-date {
     margin: 0.25rem 0 0;

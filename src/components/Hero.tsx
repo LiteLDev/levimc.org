@@ -8,11 +8,14 @@ import logoUrl from '../icons/logo.svg';
 export default function Hero() {
   const { t } = useI18n();
   const { version, stats } = useLeviLaminaStats();
+  // The trailing space keeps a word boundary between the two block-level title lines in textContent
+  // ("Mod Bedrock your way."); at the end of a line it collapses, so nothing moves.
+  const titleName = <>{t.hero.title1} </>;
 
   return (
     <PaintedHero
       className="lm-hero"
-      name={t.hero.title1}
+      name={titleName}
       text={t.hero.title2}
       tagline={
         <>

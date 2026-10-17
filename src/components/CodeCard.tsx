@@ -3,7 +3,8 @@ import { HotbarTabs, PixelIcon } from '../../kit/components';
 import { SHIKI_PALETTES } from '../../kit/docs/node/markdown/shiki-themes.ts';
 
 // Token colours come from the kit's Shiki palettes (the same ones the docs use), so the snippet matches
-// the code blocks on docs.levimc.org in both themes.
+// the code blocks on docs.levimc.org in both themes. A token only carries its role class; the palette is set
+// once on the block as custom properties, which src/styles.css maps onto --shiki-light / --shiki-dark.
 type Role = 'comment' | 'keyword' | 'type' | 'func' | 'string' | 'param' | 'punct';
 const PALETTE_KEY: Record<Role, keyof typeof SHIKI_PALETTES.light> = {
   comment: 'comment',
@@ -14,16 +15,14 @@ const PALETTE_KEY: Record<Role, keyof typeof SHIKI_PALETTES.light> = {
   param: 'number',
   punct: 'punct',
 };
+const PALETTE_VARS = Object.fromEntries(
+  (Object.keys(PALETTE_KEY) as Role[]).flatMap((role) => [
+    [`--lm-tok-${role}-light`, SHIKI_PALETTES.light[PALETTE_KEY[role]]],
+    [`--lm-tok-${role}-dark`, SHIKI_PALETTES.dark[PALETTE_KEY[role]]],
+  ]),
+) as CSSProperties;
 
-function tok(role: Role, text: string): ReactNode {
-  const k = PALETTE_KEY[role];
-  const style = { '--shiki-light': SHIKI_PALETTES.light[k], '--shiki-dark': SHIKI_PALETTES.dark[k] } as CSSProperties;
-  return (
-    <span style={style} className={role === 'comment' ? 'lm-tok-comment' : undefined}>
-      {text}
-    </span>
-  );
-}
+const tok = (role: Role, text: string): ReactNode => <span className={`lm-tok-${role}`}>{text}</span>;
 const c = (text: string) => tok('comment', text);
 const kw = (text: string) => tok('keyword', text);
 const ty = (text: string) => tok('type', text);
@@ -86,8 +85,10 @@ export default function CodeCard({ label }: { label: string }) {
     <div className="lm-code">
       <div className="px-card lm-code-window">
         <HotbarTabs tabs={EXAMPLES.map((e) => ({ id: e.id, label: e.name }))} value={active} onChange={(id) => setActive(id as typeof active)} label={label}>
-          <div className="kit-code lm-code-block" data-lang={example.id} data-linenos="">
-            <pre className="shiki kit-shiki">
+          <div className="kit-code lm-code-block" data-lang={example.id} data-linenos="" style={PALETTE_VARS}>
+            {/* focusable like the kit's docs code blocks, so keyboard users can scroll it sideways on phones
+                (the tab panel around it is already named by its tab, e.g. "main.cpp") */}
+            <pre className="shiki kit-shiki" tabIndex={0}>
               <code>
                 {example.lines.map((line, i) => (
                   <Fragment key={`${example.id}-${i}`}>

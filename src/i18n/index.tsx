@@ -12,6 +12,9 @@ export const locales: Record<Locale, Messages> = {
   zh,
 };
 
+/** Longest wait for the web fonts before a translated page is revealed (see I18nProvider). */
+const FONT_WAIT_MS = 600;
+
 // Stored preference first, then the browser language (client only).
 function getInitialLocale(): Locale {
   if (typeof window === 'undefined') return DEFAULT_LOCALE;
@@ -57,8 +60,15 @@ export function I18nProvider({ children }: { children?: ReactNode }) {
 
   useEffect(() => {
     if (!ready) return;
-    document.documentElement.lang = locale;
-    document.documentElement.classList.remove(LOCALE_PENDING_CLASS);
+    const root = document.documentElement;
+    root.lang = locale;
+    if (!root.classList.contains(LOCALE_PENDING_CLASS)) return;
+    // Reveal the translated page once the web fonts are in (or after a short cap, for visitors on whose
+    // network Google Fonts is slow), so the font swap does not shift the page right after it appears.
+    const reveal = () => root.classList.remove(LOCALE_PENDING_CLASS);
+    const timer = window.setTimeout(reveal, FONT_WAIT_MS);
+    document.fonts?.ready.then(reveal, reveal);
+    return () => window.clearTimeout(timer);
   }, [locale, ready]);
 
   const setLocale = useCallback((next: Locale) => {

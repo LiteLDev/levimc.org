@@ -51,6 +51,8 @@ export interface DiscordInfo {
   memberCount: number;
   onlineCount: number;
   inviteUrl: string;
+  /** True when the widget could not be reached: the counts are placeholders and must not be shown. */
+  isFallback?: boolean;
 }
 
 // Cache with longer duration to reduce API calls
@@ -226,12 +228,13 @@ export async function getLatestRelease(owner: string, repo: string): Promise<Rel
   };
 }
 
-// Discord fallback data
+// Discord fallback data (flagged, so the UI never presents these numbers as live)
 const DISCORD_FALLBACK: DiscordInfo = {
   name: 'LiteLDev',
   memberCount: 3500, // Widget API doesn't provide total members, only online count
   onlineCount: 200,
   inviteUrl: 'https://discord.gg/v5R5P4vRZk',
+  isFallback: true,
 };
 
 // Fetch Discord server info using Widget API (supports CORS)
@@ -242,13 +245,13 @@ export async function getDiscordInfo(serverId: string = '849252980430864384'): P
   try {
     const data = await fetchWithCache<DiscordWidgetResponse>(widgetUrl, 3000);
 
-    if (data && data.name) {
+    // presence_count is the online member count
+    if (data && data.name && typeof data.presence_count === 'number') {
       return {
         name: data.name,
         // Widget API doesn't have total member count, use fallback
         memberCount: DISCORD_FALLBACK.memberCount,
-        // presence_count is the online member count
-        onlineCount: data.presence_count || DISCORD_FALLBACK.onlineCount,
+        onlineCount: data.presence_count,
         inviteUrl: data.instant_invite || DISCORD_FALLBACK.inviteUrl,
       };
     }

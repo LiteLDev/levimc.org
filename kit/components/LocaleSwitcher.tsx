@@ -8,6 +8,8 @@ export interface LocaleOption {
   code: string;
   /** Native label, e.g. "English", "简体中文". */
   label: string;
+  /** Shorter label for the closed trigger, e.g. "EN" (defaults to `label`; the menu always shows `label`). */
+  short?: string;
   /** BCP-47 language tag for hreflang/lang. */
   lang: string;
   /** Destination for this locale (the equivalent page, or that locale's home). */
@@ -45,7 +47,7 @@ export function LocaleSwitcher({ options, current, onSelect, linkComponent, show
     <details ref={ref} className={className ? `kit-menu kit-locale ${className}` : 'kit-menu kit-locale'}>
       <summary className="mc-icon-btn kit-menu-trigger" data-kit-locale-switcher="" aria-label={`${t.language}: ${cur.label}`} title={t.language}>
         <PixelIcon name="globe" />
-        {showLabel ? <span className="kit-menu-trigger-label">{cur.label}</span> : null}
+        {showLabel ? <span className="kit-menu-trigger-label">{cur.short ?? cur.label}</span> : null}
         <PixelIcon name="chevronDown" className="kit-menu-chevron" />
       </summary>
       <div className="kit-menu-panel" role="menu" aria-label={t.language}>

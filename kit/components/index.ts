@@ -1,5 +1,5 @@
 // levimc-kit — shared React components for every LeviMC site.
-export { GlobalBar, type GlobalBarProps } from './GlobalBar';
+export { GlobalBar, type GlobalBarProps, type GlobalNavItem } from './GlobalBar';
 export { SiteFooter, type SiteFooterProps } from './SiteFooter';
 export { ThemeToggle, type ThemeToggleProps } from './ThemeToggle';
 export { LocaleSwitcher, type LocaleSwitcherProps, type LocaleOption, type LinkLikeProps } from './LocaleSwitcher';

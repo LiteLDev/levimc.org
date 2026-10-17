@@ -1,12 +1,20 @@
-import { useRef, type ReactNode } from 'react';
+import { useRef, type ComponentType, type ReactNode } from 'react';
 import { PixelIcon, BrandIcon } from './PixelIcon';
 import { useDismissableDetails } from './menu';
 import { uiStrings, type UiStrings } from './i18n';
 import { DOCS_PROJECTS, LINKS, globalNav, type DocsProjectId, type SiteId } from './projects';
+import type { LinkLikeProps } from './LocaleSwitcher';
+
+/** One entry of the bar. `id: 'docs'` renders the Docs menu; `id: 'home'` also sets the brand link. */
+export interface GlobalNavItem {
+  id: string;
+  label: string;
+  url: string;
+}
 
 export interface GlobalBarProps {
-  /** Which LeviMC site this is (highlights the matching item). */
-  current?: SiteId;
+  /** Which LeviMC site this is (highlights the matching item; with custom `items`, any item id). */
+  current?: SiteId | (string & {});
   /** On docs.levimc.org: which project's docs are open. */
   currentDocs?: DocsProjectId | string;
   /** UI locale (any BCP-47 tag). */
@@ -14,6 +22,13 @@ export interface GlobalBarProps {
   strings?: Partial<UiStrings>;
   /** Extra controls rendered at the right end (e.g. ThemeToggle/LocaleSwitcher on non-docs sites). */
   end?: ReactNode;
+  /**
+   * Replaces the default network items (`globalNav()`), e.g. on levimc.org, where the bar is also the
+   * site's own navigation. Root-relative URLs (`/about/`) are rendered with `linkComponent`.
+   */
+  items?: GlobalNavItem[];
+  /** Router-aware link component for root-relative item URLs (same-site navigation without a reload). */
+  linkComponent?: ComponentType<LinkLikeProps>;
   className?: string;
 }
 
@@ -35,26 +50,46 @@ function DocsMenuPanel({ t, currentDocs }: { t: UiStrings; currentDocs?: string 
   );
 }
 
+const isSameSite = (url: string) => url.startsWith('/') && !url.startsWith('//');
+
 /**
  * The thin cross-site bar shown at the very top of every LeviMC site (levimc.org, pkg.levimc.org,
  * docs.levimc.org/*, Doxygen API pages). Uses <details> dropdowns so it works without JavaScript.
  */
-export function GlobalBar({ current, currentDocs, locale, strings, end, className }: GlobalBarProps) {
+export function GlobalBar({ current, currentDocs, locale, strings, end, items: customItems, linkComponent, className }: GlobalBarProps) {
   const t = uiStrings(locale, strings);
   const docsRef = useRef<HTMLDetailsElement>(null);
   const moreRef = useRef<HTMLDetailsElement>(null);
   useDismissableDetails(docsRef);
   useDismissableDetails(moreRef);
-  const items = globalNav(t);
-  const isCurrent = (id: SiteId) => (id === current ? 'page' : undefined);
+  const items: GlobalNavItem[] = customItems ?? globalNav(t);
+  const homeItem = items.find((i) => i.id === 'home');
+  const homeUrl = homeItem?.url ?? LINKS.home;
+  const isCurrent = (id: string) => (id === current ? 'page' : undefined);
+  const RouterLink = linkComponent;
+  const link = (url: string, props: { className: string; 'aria-current'?: 'page' }, children: ReactNode, key?: string) =>
+    RouterLink && isSameSite(url) ? (
+      <RouterLink key={key} href={url} {...props}>
+        {children}
+      </RouterLink>
+    ) : (
+      <a key={key} href={url} {...props}>
+        {children}
+      </a>
+    );
 
   return (
     <div className={className ? `kit-gbar ${className}` : 'kit-gbar'} data-kit-globalbar="">
       <div className="kit-gbar-inner">
-        <a className="kit-gbar-brand" href={LINKS.home} aria-current={isCurrent('home')}>
-          <PixelIcon name="grass" size={16} />
-          <span className="kit-gbar-brand-text">LeviMC</span>
-        </a>
+        {link(
+          homeUrl,
+          // with a Home entry in the nav, that entry is the one marked as the current page
+          { className: 'kit-gbar-brand', 'aria-current': homeItem ? undefined : isCurrent('home') },
+          <>
+            <PixelIcon name="grass" size={16} />
+            <span className="kit-gbar-brand-text">LeviMC</span>
+          </>,
+        )}
         <nav className="kit-gbar-nav" aria-label={t.network}>
           <ul>
             {items.map((item) =>
@@ -71,11 +106,7 @@ export function GlobalBar({ current, currentDocs, locale, strings, end, classNam
                   </details>
                 </li>
               ) : (
-                <li key={item.id}>
-                  <a className="kit-gbar-link" href={item.url} aria-current={isCurrent(item.id)}>
-                    {item.label}
-                  </a>
-                </li>
+                <li key={item.id}>{link(item.url, { className: 'kit-gbar-link', 'aria-current': isCurrent(item.id) }, item.label)}</li>
               ),
             )}
           </ul>
@@ -91,16 +122,10 @@ export function GlobalBar({ current, currentDocs, locale, strings, end, classNam
             </summary>
             <div className="kit-menu-panel kit-gbar-more-panel">
               <nav aria-label={t.network}>
-                <a className="kit-gbar-more-link" href={LINKS.home} aria-current={isCurrent('home')}>
-                  {t.home}
-                </a>
+                {link(homeUrl, { className: 'kit-gbar-more-link', 'aria-current': isCurrent('home') }, t.home)}
                 {items
-                  .filter((i) => i.id !== 'docs')
-                  .map((item) => (
-                    <a key={item.id} className="kit-gbar-more-link" href={item.url} aria-current={isCurrent(item.id)}>
-                      {item.label}
-                    </a>
-                  ))}
+                  .filter((i) => i.id !== 'docs' && i.id !== 'home')
+                  .map((item) => link(item.url, { className: 'kit-gbar-more-link', 'aria-current': isCurrent(item.id) }, item.label, item.id))}
                 <p className="kit-gbar-more-heading">{t.docs}</p>
                 <DocsMenuPanel t={t} currentDocs={currentDocs} />
               </nav>

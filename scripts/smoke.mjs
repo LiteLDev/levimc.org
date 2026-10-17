@@ -35,19 +35,33 @@ const assert = (c, msg) => {
   if (!c) throw new Error(msg);
 };
 
-const browser = await chromium.launch({ proxy: { server: 'http://127.0.0.1:1080', bypass: 'localhost,127.0.0.1' } });
+// Use the environment's proxy when there is one (for the live-data checks); loopback always goes direct.
+const proxy = process.env.HTTPS_PROXY || process.env.https_proxy || process.env.HTTP_PROXY || process.env.http_proxy;
+const browser = await chromium.launch(proxy ? { proxy: { server: proxy, bypass: '<-loopback>,localhost,127.0.0.1' } } : {});
 const newContext = async ({ locale, width = 1440, height = 900, scheme = 'light', mobile = false } = {}) => {
   const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme, isMobile: mobile, hasTouch: mobile, deviceScaleFactor: mobile ? 2 : 1 });
   if (locale) await ctx.addInitScript((l) => localStorage.setItem('locale', l), locale);
   return ctx;
 };
+// Third-party hosts whose failures the site tolerates: web fonts, and the live-data endpoints (GitHub /
+// Shields / Discord, which may rate-limit or be blocked; the site falls back silently) and GitHub avatars.
+const TOLERATED = /^https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com|api\.github\.com|img\.shields\.io|discord\.com|avatars\.githubusercontent\.com)\//;
 const watch = (page) => {
   const errs = [];
   page.on('pageerror', (e) => errs.push(`pageerror: ${e.message}`));
   page.on('console', (m) => {
-    // third-party data endpoints (GitHub / Shields / Discord) may rate-limit; the site falls back silently
-    if ((m.type() === 'error' || m.type() === 'warning') && !/fonts\.(googleapis|gstatic)|api\.github\.com|img\.shields\.io|discord\.com|Failed to load resource/.test(m.text()))
-      errs.push(`${m.type()}: ${m.text()}`);
+    if (m.type() !== 'error' && m.type() !== 'warning') return;
+    // Chromium's "Failed to load resource" text has no URL; the request listeners below report it with one
+    if (/^Failed to load resource/.test(m.text())) return;
+    errs.push(`${m.type()}: ${m.text()}`);
+  });
+  page.on('requestfailed', (r) => {
+    if (!TOLERATED.test(r.url())) errs.push(`request failed: ${r.url()} (${r.failure()?.errorText})`);
+  });
+  page.on('response', (r) => {
+    // the page's own status is asserted by each check (the 404 page answers 404 on purpose)
+    if (r.request().isNavigationRequest() && r.request().frame() === page.mainFrame()) return;
+    if (r.status() >= 400 && !TOLERATED.test(r.url())) errs.push(`HTTP ${r.status()}: ${r.url()}`);
   });
   return errs;
 };
@@ -110,18 +124,38 @@ await check('unknown path → 404 status, themed page, per-locale text', async (
   return 'en + zh';
 });
 
+await check('/index.html and /<route>/index.html show their page at the canonical URL (no 404, no hydration error)', async () => {
+  const ctx = await newContext();
+  for (const [path, r] of [['index.html', ''], ['about/index.html', 'about/'], ['projects/index.html?ref=x#top', 'projects/'], ['support//', 'support/']]) {
+    const page = await ctx.newPage();
+    const errs = watch(page);
+    const res = await page.goto(base + path, { waitUntil: 'networkidle' });
+    assert(res?.status() === 200, `${path} → ${res?.status()}`);
+    const h1 = (await page.locator('h1').first().innerText()).replace(/\s+/g, ' ').trim();
+    assert(h1.startsWith(H1.en[r]), `${path}: h1 "${h1}"`);
+    assert(!(await page.title()).startsWith('404'), `${path}: title "${await page.title()}"`);
+    const u = new URL(page.url());
+    assert(u.pathname === new URL(base + r).pathname, `${path}: URL ${u.pathname}`);
+    if (path.includes('?')) assert(u.search === '?ref=x' && u.hash === '#top', `${path}: query/hash lost (${u.search}${u.hash})`);
+    assert(!errs.length, `${path}: ${errs.join(' | ')}`);
+    await page.close();
+  }
+  await ctx.close();
+  return '/index.html, /about/index.html, /projects/index.html?…#…, /support//';
+});
+
 await check('client-side navigation from the header (no full reload, canonical URL)', async () => {
   const ctx = await newContext();
   const page = await ctx.newPage();
   const errs = watch(page);
   await page.goto(base, { waitUntil: 'networkidle' });
   await page.evaluate(() => (window.__lmMarker = 1));
-  await page.click('.kit-site-nav a[href="/projects/"]');
+  await page.click('.kit-gbar-nav a[href="/projects/"]');
   await page.waitForURL((u) => u.pathname === '/projects/');
   await page.waitForSelector('h1:has-text("All Projects")');
   assert((await page.evaluate(() => window.__lmMarker)) === 1, 'page reloaded');
   await page.waitForFunction(() => document.title.startsWith('All Projects'), null, { timeout: 5000 });
-  await page.click('.kit-site-nav a[href="/about/"]');
+  await page.click('.kit-gbar-nav a[href="/about/"]');
   await page.waitForURL((u) => u.pathname === '/about/');
   assert((await page.evaluate(() => window.__lmMarker)) === 1, 'page reloaded');
   assert(!errs.length, errs.join(' | '));
@@ -165,16 +199,19 @@ await check('language switcher: en ⇄ zh, stored in localStorage "locale", kept
   const page = await ctx.newPage();
   const errs = watch(page);
   await page.goto(base + 'community/', { waitUntil: 'networkidle' });
+  assert((await page.locator('[data-kit-locale-switcher]').innerText()).trim() === 'EN', 'trigger label is not "EN"');
   await page.click('[data-kit-locale-switcher]');
   await page.click('.kit-locale [role="menuitemradio"][data-locale="zh"]');
   await page.waitForFunction(() => document.documentElement.lang === 'zh');
+  assert((await page.locator('[data-kit-locale-switcher]').innerText()).trim() === 'ZH', 'trigger label is not "ZH"');
+  assert(!(await page.locator('.kit-locale').evaluate((d) => d.open)), 'language menu still open');
   assert(new URL(page.url()).pathname === '/community/', `moved to ${page.url()}`);
   assert((await page.locator('h1').innerText()).includes('参与进来'), 'h1 not translated');
   assert((await page.locator('.lm-qq-group').count()) === 3, 'QQ groups missing in zh');
   assert((await page.evaluate(() => localStorage.getItem('locale'))) === 'zh', 'not stored');
   await page.reload({ waitUntil: 'networkidle' });
   assert((await page.locator('h1').innerText()).includes('参与进来'), 'not kept after reload');
-  await page.click('.kit-site-nav a[href="/about/"]');
+  await page.click('.kit-gbar-nav a[href="/about/"]');
   await page.waitForURL((u) => u.pathname === '/about/');
   await page.waitForFunction(() => document.title === '关于 LeviMC', null, { timeout: 5000 });
   await page.click('[data-kit-locale-switcher]');
@@ -233,40 +270,85 @@ await check('live data: release badge and project stars fill in after hydration'
   return `LeviLamina ${v}`;
 });
 
-await check('mobile (390px): drawer opens, traps focus, closes on Escape and after navigating', async () => {
+await check('mobile (390px): the bar folds its entries into its menu; it closes on Escape and after navigating', async () => {
   const ctx = await newContext({ width: 390, height: 844, mobile: true });
   const page = await ctx.newPage();
   const errs = watch(page);
   await page.goto(base, { waitUntil: 'networkidle' });
-  const toggle = page.locator('[data-kit-nav-toggle]');
-  assert(await toggle.isVisible(), 'toggle hidden');
+  assert(!(await page.locator('.kit-gbar-nav').isVisible()), 'inline nav still visible');
+  const toggle = page.locator('.kit-gbar-more > summary');
+  assert(await toggle.isVisible(), 'menu button hidden');
   await toggle.click();
-  await page.waitForSelector('#kit-drawer', { state: 'visible' });
-  assert((await toggle.getAttribute('aria-expanded')) === 'true', 'aria-expanded');
-  for (let i = 0; i < 25; i++) await page.keyboard.press('Tab');
-  assert(await page.evaluate(() => !!document.activeElement?.closest('#kit-drawer')), 'focus escaped');
+  const panel = page.locator('.kit-gbar-more-panel');
+  await panel.waitFor({ state: 'visible' });
+  const labels = await panel.locator('.kit-gbar-more-link').allInnerTexts();
+  assert(labels.join('|') === 'Home|Mods|Projects|Features|Community|Blog|About|Support Us', `menu entries: ${labels.join('|')}`);
   await page.keyboard.press('Escape');
-  await page.waitForSelector('#kit-drawer', { state: 'detached' });
+  await panel.waitFor({ state: 'hidden' });
+  assert(await page.evaluate(() => !!document.activeElement?.closest('.kit-gbar-more')), 'focus not returned to the menu button');
+  await page.evaluate(() => (window.__lmMarker = 1));
   await toggle.click();
-  await page.click('#kit-drawer a[href="/support/"]');
+  await page.click('.kit-gbar-more-panel a[href="/support/"]');
   await page.waitForURL((u) => u.pathname === '/support/');
-  await page.waitForSelector('#kit-drawer', { state: 'detached' });
-  assert(!(await page.evaluate(() => document.documentElement.classList.contains('kit-scroll-lock'))), 'scroll still locked');
+  await panel.waitFor({ state: 'hidden' });
+  assert((await page.evaluate(() => window.__lmMarker)) === 1, 'page reloaded');
   assert(!errs.length, errs.join(' | '));
   await ctx.close();
   return 'ok';
 });
 
-await check('GlobalBar: docs menu opens; cross-site links are canonical', async () => {
+await check('header: one bar, every destination once; docs menu opens; cross-site links are canonical', async () => {
   const ctx = await newContext();
   const page = await ctx.newPage();
   await page.goto(base + 'projects/', { waitUntil: 'networkidle' });
+  assert((await page.locator('[data-kit-globalbar]').count()) === 1 && (await page.locator('header.lm-banner [data-kit-globalbar]').count()) === 1, 'expected one GlobalBar, inside the banner <header>');
+  const hrefs = await page.locator('.lm-banner .kit-gbar-nav a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
+  assert(new Set(hrefs).size === hrefs.length, `duplicate destinations: ${hrefs.join(' ')}`);
+  assert((await page.locator('.lm-banner a[href="https://github.com/LiteLDev"]').count()) === 1, 'GitHub link missing or repeated');
   assert((await page.locator('.kit-gbar-link[aria-current="page"]').innerText()) === 'Projects', 'Projects not current');
   await page.click('.kit-gbar-docs > summary');
   assert(await page.locator('.kit-gbar-docs-panel a[href="https://docs.levimc.org/LeviLamina/"]').isVisible(), 'docs menu');
   await page.keyboard.press('Escape');
   await ctx.close();
   return 'ok';
+});
+
+await check('header fits: inline entries from 1024 px up (en, zh), folded into the menu below', async () => {
+  const seen = [];
+  for (const locale of ['en', 'zh']) {
+    for (const width of [1023, 1024, 1100, 1280]) {
+      const ctx = await newContext({ locale: locale === 'zh' ? 'zh' : undefined, width });
+      const page = await ctx.newPage();
+      await page.goto(base, { waitUntil: 'networkidle' });
+      const s = await page.evaluate(() => {
+        const inner = document.querySelector('.kit-gbar-inner');
+        const nav = document.querySelector('.kit-gbar-nav');
+        const end = document.querySelector('.kit-gbar-end');
+        const shown = getComputedStyle(nav).display !== 'none';
+        return { shown, overflow: inner.scrollWidth > inner.clientWidth, room: shown ? Math.round(end.getBoundingClientRect().left - nav.getBoundingClientRect().right) : null };
+      });
+      assert(!s.overflow, `${locale}@${width}: the bar overflows`);
+      assert(s.shown === width >= 1024, `${locale}@${width}: inline nav ${s.shown ? 'shown' : 'hidden'}`);
+      if (s.shown) {
+        assert(s.room >= 24, `${locale}@${width}: only ${s.room}px between the entries and the controls`);
+        seen.push(`${locale}@${width} ${s.room}px`);
+      }
+      await ctx.close();
+    }
+  }
+  return `room left: ${seen.join(', ')}`;
+});
+
+await check('Discord unreachable: no invented "online" count', async () => {
+  const ctx = await newContext({ locale: 'zh' });
+  await ctx.route(/discord\.com/, (r) => r.abort());
+  const page = await ctx.newPage();
+  await page.goto(base + 'community/', { waitUntil: 'networkidle' });
+  await page.waitForFunction(() => !document.querySelector('.lm-community-card .lm-skeleton'), null, { timeout: 15000 });
+  const card = (await page.locator('.lm-accent-discord').first().innerText()).replace(/\s+/g, ' ');
+  assert(!/\d+ (在线|online)/.test(card), `Discord card shows "${card}"`);
+  await ctx.close();
+  return 'no presence line';
 });
 
 await browser.close();

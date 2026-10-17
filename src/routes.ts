@@ -22,9 +22,18 @@ export const NOT_FOUND_PATH = '/404';
 
 export const pathOf = (id: RouteId): string => ROUTES.find((r) => r.id === id)!.path;
 
-/** Route id for a pathname (with or without the trailing slash), or null for unknown paths. */
+/**
+ * The canonical form of a pathname that GitHub Pages serves with the same file: repeated slashes collapsed
+ * and a trailing "index.html" dropped ("/about/index.html" and "/about//" both serve about/index.html).
+ */
+export function canonicalPath(pathname: string): string {
+  return pathname.replace(/\/{2,}/g, '/').replace(/(^|\/)index\.html$/, '$1') || '/';
+}
+
+/** Route id for a pathname (with or without the trailing slash, or ending in index.html), or null for unknown paths. */
 export function routeIdOf(pathname: string): RouteId | null {
-  const p = pathname.endsWith('/') ? pathname : pathname + '/';
+  const c = canonicalPath(pathname);
+  const p = c.endsWith('/') ? c : c + '/';
   return ROUTES.find((r) => r.path === p)?.id ?? null;
 }
 

@@ -162,7 +162,6 @@ export default function About() {
     icon: PixelIconName;
     badge: string;
     number: string;
-    wide?: boolean;
   }[] = [
     {
       title: t.about.pageSubtitle,
@@ -170,7 +169,6 @@ export default function About() {
       icon: "bookQuill",
       badge: t.about.pageTitle,
       number: "01",
-      wide: true,
     },
     {
       title: t.about.question1Title,
@@ -195,7 +193,7 @@ export default function About() {
           // The first card introduces the page, so its title is the page heading.
           const Title = index === 0 ? "h1" : "h2";
           return (
-            <article key={card.number} className={card.wide ? "px-card lm-story lm-story-wide" : "px-card lm-story"}>
+            <article key={card.number} className="px-card lm-story">
               <div className="lm-story-lead">
                 <div className="lm-story-head">
                   <span className="kit-slot lm-story-slot" aria-hidden="true">

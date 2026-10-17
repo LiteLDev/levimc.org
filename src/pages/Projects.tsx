@@ -23,6 +23,7 @@ export default function Projects() {
               stars={data?.stars}
               language={data?.language}
               loading={loading}
+              headingLevel={2}
             />
           );
         })}

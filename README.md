@@ -28,7 +28,8 @@ npm run preview
 npm run linkcheck
 
 # Browser smoke test against the preview server
-# (needs Playwright: `npm i --no-save playwright`, or LEVIMC_PW_DIR=<dir containing node_modules/playwright>)
+# (needs Playwright: `npm i --no-save playwright`, or LEVIMC_PW_DIR=<dir containing node_modules/playwright>;
+#  an HTTPS_PROXY / HTTP_PROXY in the environment is used for the external live-data requests)
 npm run smoke
 ```
 

@@ -11,11 +11,11 @@ export default function Community() {
     <div className="lm-page lm-container lm-container-narrow">
       <PageHeader eyebrow={t.nav.community.toUpperCase()} title={t.community.pageTitle} lead={t.community.pageDesc} />
       <div className="lm-grid-2">
-        <DiscordCard info={discordInfo} />
-        <TelegramCard />
-        <GitHubCard />
+        <DiscordCard info={discordInfo} headingLevel={2} />
+        <TelegramCard headingLevel={2} />
+        <GitHubCard headingLevel={2} />
         {/* QQ Card - Only show in Chinese */}
-        {locale === 'zh' && <QQCard />}
+        {locale === 'zh' && <QQCard headingLevel={2} />}
       </div>
     </div>
   );

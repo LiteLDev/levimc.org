@@ -22,7 +22,7 @@ export default function Support() {
           <span className="kit-slot lm-way-slot" aria-hidden="true">
             <PixelIcon name="pickaxe" size={32} />
           </span>
-          <h3 className="lm-way-title">{t.support.contributeTitle}</h3>
+          <h2 className="lm-way-title">{t.support.contributeTitle}</h2>
           <p className="lm-way-desc">{t.support.contributeDesc}</p>
           <div className="lm-way-actions">
             <PixelButton href="https://docs.levimc.org/LeviLamina/maintainer_guides/cpp_style_guide/" variant="primary">
@@ -36,7 +36,7 @@ export default function Support() {
           <span className="kit-slot lm-way-slot" aria-hidden="true">
             <PixelIcon name="emerald" size={32} />
           </span>
-          <h3 className="lm-way-title">{t.support.donateTitle}</h3>
+          <h2 className="lm-way-title">{t.support.donateTitle}</h2>
           <p className="lm-way-desc">{t.support.donateDesc}</p>
           <div className="lm-channels">
             <div className="lm-channels-label">{t.support.donateChannels}</div>

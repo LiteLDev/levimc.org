@@ -25,6 +25,8 @@ const QQ_GROUPS = [
 ];
 
 type Accent = 'discord' | 'telegram' | 'github' | 'qq';
+/** 3 under a section heading (Home), 2 directly under the page h1 (/community/). */
+type HeadingLevel = 2 | 3;
 
 function QQGlyph({ size = 22 }: { size?: number }) {
   return (
@@ -34,24 +36,43 @@ function QQGlyph({ size = 22 }: { size?: number }) {
   );
 }
 
-function CardHead({ accent, glyph, title, sub }: { accent: Accent; glyph: ReactNode; title: string; sub?: ReactNode }) {
+function CardHead({ accent, glyph, title, sub, level }: { accent: Accent; glyph: ReactNode; title: string; sub?: ReactNode; level: HeadingLevel }) {
+  const Title = level === 2 ? 'h2' : 'h3';
   return (
     <div className="lm-community-head">
       <span className={`kit-slot lm-brand-slot lm-accent-${accent}`} aria-hidden="true">
         {glyph}
       </span>
       <div className="lm-community-heading">
-        <h3 className="lm-community-title">{title}</h3>
+        <Title className="lm-community-title">{title}</Title>
         {sub ? <div className="lm-community-sub">{sub}</div> : null}
       </div>
     </div>
   );
 }
 
-function LinkCard({ href, accent, icon, title, sub, desc, cta }: { href: string; accent: Accent; icon: BrandIconName; title: string; sub?: ReactNode; desc: string; cta: string }) {
+function LinkCard({
+  href,
+  accent,
+  icon,
+  title,
+  sub,
+  desc,
+  cta,
+  level,
+}: {
+  href: string;
+  accent: Accent;
+  icon: BrandIconName;
+  title: string;
+  sub?: ReactNode;
+  desc: string;
+  cta: string;
+  level: HeadingLevel;
+}) {
   return (
     <a href={href} target="_blank" rel="noopener" className={`px-card lm-community-card lm-accent-${accent}`}>
-      <CardHead accent={accent} glyph={<BrandIcon name={icon} size={22} />} title={title} sub={sub} />
+      <CardHead accent={accent} glyph={<BrandIcon name={icon} size={22} />} title={title} sub={sub} level={level} />
       <p className="lm-community-desc">{desc}</p>
       <span className="lm-community-cta">
         {cta}
@@ -61,7 +82,7 @@ function LinkCard({ href, accent, icon, title, sub, desc, cta }: { href: string;
   );
 }
 
-/** Live Discord presence ("● 1029 online"); empty until the widget data has loaded. */
+/** Live Discord presence ("● 1029 online"); a placeholder until the widget data has loaded. */
 function DiscordPresence({ info }: { info?: DiscordInfo }) {
   const { t } = useI18n();
   if (!info) return <span className="lm-skeleton lm-skeleton-sm" />;
@@ -73,25 +94,27 @@ function DiscordPresence({ info }: { info?: DiscordInfo }) {
   );
 }
 
-export function DiscordCard({ info }: { info?: DiscordInfo }) {
+export function DiscordCard({ info, headingLevel = 3 }: { info?: DiscordInfo; headingLevel?: HeadingLevel }) {
   const { t } = useI18n();
   return (
     <LinkCard
+      level={headingLevel}
       href={DISCORD_URL}
       accent="discord"
       icon="discord"
       title="Discord"
-      sub={<DiscordPresence info={info} />}
+      sub={info?.isFallback ? undefined : <DiscordPresence info={info} />}
       desc={t.community.discordDesc}
       cta={t.community.joinDiscord}
     />
   );
 }
 
-export function TelegramCard() {
+export function TelegramCard({ headingLevel = 3 }: { headingLevel?: HeadingLevel }) {
   const { t } = useI18n();
   return (
     <LinkCard
+      level={headingLevel}
       href={TELEGRAM_URL}
       accent="telegram"
       icon="telegram"
@@ -103,17 +126,28 @@ export function TelegramCard() {
   );
 }
 
-export function GitHubCard() {
+export function GitHubCard({ headingLevel = 3 }: { headingLevel?: HeadingLevel }) {
   const { t } = useI18n();
-  return <LinkCard href={GITHUB_URL} accent="github" icon="github" title="GitHub" sub="LiteLDev" desc={t.community.githubDesc} cta={t.community.viewOnGitHub} />;
+  return (
+    <LinkCard
+      level={headingLevel}
+      href={GITHUB_URL}
+      accent="github"
+      icon="github"
+      title="GitHub"
+      sub="LiteLDev"
+      desc={t.community.githubDesc}
+      cta={t.community.viewOnGitHub}
+    />
+  );
 }
 
 /** QQ groups (shown to Chinese readers only). One colour everywhere: redstone. */
-export function QQCard() {
+export function QQCard({ headingLevel = 3 }: { headingLevel?: HeadingLevel }) {
   const { t } = useI18n();
   return (
     <div className="px-card lm-community-card lm-accent-qq">
-      <CardHead accent="qq" glyph={<QQGlyph />} title={t.community.qqTitle} sub={t.community.qqGroups} />
+      <CardHead accent="qq" glyph={<QQGlyph />} title={t.community.qqTitle} sub={t.community.qqGroups} level={headingLevel} />
       <p className="lm-community-desc">{t.community.qqDesc}</p>
       <div className="lm-qq-groups">
         {QQ_GROUPS.map((g) => (

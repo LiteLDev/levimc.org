@@ -8,9 +8,12 @@ interface ProjectCardProps {
   stars?: number;
   language?: string;
   loading?: boolean;
+  /** 3 under a section heading (Home), 2 directly under the page h1 (/projects/). */
+  headingLevel?: 2 | 3;
 }
 
-export default function ProjectCard({ project, stars, language, loading }: ProjectCardProps) {
+export default function ProjectCard({ project, stars, language, loading, headingLevel = 3 }: ProjectCardProps) {
+  const Name = headingLevel === 2 ? 'h2' : 'h3';
   const displayStars = stars ?? project.stars;
   const displayTags = language
     ? [language, ...project.tags.filter((t) => t.toLowerCase() !== language.toLowerCase())].slice(0, 2)
@@ -23,7 +26,7 @@ export default function ProjectCard({ project, stars, language, loading }: Proje
         <PixelIcon name={project.icon} size={32} />
       </span>
 
-      <h3 className="lm-project-name">{project.name}</h3>
+      <Name className="lm-project-name">{project.name}</Name>
       <p className="lm-project-desc">{project.description}</p>
 
       <div className="lm-project-links">
