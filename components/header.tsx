@@ -12,7 +12,7 @@ export function Header() {
           className="inline-flex items-center gap-2 font-bold text-xl tracking-tight hover:opacity-80 transition-opacity shrink-0"
         >
           <Image
-            src="/icon"
+            src="/icon.png"
             alt="Bedrinth icon"
             width={22}
             height={22}

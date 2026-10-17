@@ -1,7 +1,18 @@
 on:
   pull_request:
   push:
+  # The site is a snapshot of the lipr index, so rebuild it to pick up new
+  # packages and versions. lipr can also send a `lipr-updated` dispatch.
+  schedule:
+    - cron: "17 * * * *"
+  repository_dispatch:
+    types:
+      - lipr-updated
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -21,6 +32,24 @@ jobs:
 
       - run: |
           pnpm build
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: out
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
 
   lint:
     runs-on: ubuntu-latest

@@ -1,18 +1,17 @@
 import FlexSearch from "flexsearch";
-import { Package, PackageIndex } from "@/types";
+import { Package, PackageIndex, PackageInfo, RawPackageEntry } from "@/types";
 
 const PACKAGE_INDEX_URL = "https://lipr.levimc.org/index.json";
 const PACKAGE_REGISTRY_URL = "https://lipr.levimc.org";
 
 export const ITEMS_PER_PAGE = 60;
-export const REVALIDATE_SECONDS = 3600;
 const SEARCH_LIMIT = 1000;
 const SEARCH_NAME_WEIGHT = 3;
 const SEARCH_TAG_WEIGHT = 2;
 const MAX_RANK_BASE = 1000;
 
-// Reuse a built search index across warm Worker requests to avoid rebuilding
-// FlexSearch on every request.
+// Reuse a built search index across searches to avoid rebuilding FlexSearch
+// every time the query changes.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let cachedSearchIndex: any | null = null;
 let cachedSearchFingerprint = "";
@@ -89,9 +88,9 @@ function getSearchIndex(packages: Package[]): any {
 // ---------------------------------------------------------------------------
 
 export async function fetchPackageIndex(): Promise<PackageIndex> {
-  const res = await fetch(PACKAGE_INDEX_URL, {
-    next: { revalidate: REVALIDATE_SECONDS },
-  });
+  // Every page of the export needs the index; `force-cache` has the build
+  // fetch it once rather than once per page.
+  const res = await fetch(PACKAGE_INDEX_URL, { cache: "force-cache" });
   if (!res.ok) throw new Error("Failed to fetch package index");
   return res.json();
 }
@@ -102,7 +101,7 @@ export async function fetchPackages(): Promise<Package[]> {
 }
 
 // ---------------------------------------------------------------------------
-// Search  (FlexSearch, index reused across warm requests)
+// Search  (FlexSearch, index reused across searches)
 // ---------------------------------------------------------------------------
 
 export function searchPackages(
@@ -215,7 +214,7 @@ export function extractTags(packages: Package[]): string[] {
 // ---------------------------------------------------------------------------
 
 export function getPackageManifestUrl(tooth: string, version: string): string {
-  return `${PACKAGE_REGISTRY_URL}/${tooth}@${version}/tooth.json`;
+  return `${PACKAGE_REGISTRY_URL}/packages/${tooth}@${version}/tooth.json`;
 }
 
 export interface RepoBaseUrls {
@@ -241,6 +240,119 @@ export function getRepoBaseUrls(tooth: string, version: string): RepoBaseUrls {
   };
 }
 
-export function getReadmeUrl(tooth: string, version: string): string | null {
+export function getReadmeUrl(tooth: string, version: string): string {
   return `${getRepoBaseUrls(tooth, version).raw}README.md`;
+}
+
+// ---------------------------------------------------------------------------
+// Package details  (fetched at build time for the latest version, and in the
+// browser for any other; both hosts allow cross-origin reads)
+// ---------------------------------------------------------------------------
+
+export async function fetchManifestInfo(
+  tooth: string,
+  version: string,
+): Promise<PackageInfo | null> {
+  try {
+    const res = await fetch(getPackageManifestUrl(tooth, version));
+    if (!res.ok) return null;
+    const manifest = await res.json();
+    return manifest?.info ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchReadme(
+  tooth: string,
+  version: string,
+): Promise<string | null> {
+  try {
+    const res = await fetch(getReadmeUrl(tooth, version));
+    if (!res.ok) return null;
+    return await res.text();
+  } catch {
+    return null;
+  }
+}
+
+/** Variants in display order, the default (`""`) variant first. */
+export function getSortedVariants(pkg: RawPackageEntry): string[] {
+  return Object.keys(pkg.variants).sort((a, b) => {
+    if (a === "") return -1;
+    if (b === "") return 1;
+    return a.localeCompare(b);
+  });
+}
+
+export function getVersionsForVariant(
+  pkg: RawPackageEntry,
+  variant: string,
+): string[] {
+  const variantMeta = pkg.variants[variant];
+  if (!variantMeta) return [];
+  return Array.from(new Set(variantMeta.versions));
+}
+
+export interface PackageSelection {
+  variant: string;
+  version: string;
+}
+
+/** What a package page shows when the URL asks for nothing in particular. */
+export function getDefaultSelection(
+  pkg: RawPackageEntry,
+): PackageSelection | null {
+  for (const variant of getSortedVariants(pkg)) {
+    const version = getVersionsForVariant(pkg, variant).at(-1);
+    if (version) return { variant, version };
+  }
+  return null;
+}
+
+/**
+ * Honors the requested variant and version where the package has them, and
+ * falls back to the default variant and its latest version otherwise.
+ */
+export function resolveSelection(
+  pkg: RawPackageEntry,
+  requestedVariant: string | null,
+  requestedVersion: string | null,
+): PackageSelection | null {
+  const fallback = getDefaultSelection(pkg);
+  if (!fallback) return null;
+
+  const variant =
+    requestedVariant !== null &&
+    getVersionsForVariant(pkg, requestedVariant).length > 0
+      ? requestedVariant
+      : fallback.variant;
+  const versions = getVersionsForVariant(pkg, variant);
+  const version =
+    requestedVersion !== null && versions.includes(requestedVersion)
+      ? requestedVersion
+      : versions.at(-1)!;
+  return { variant, version };
+}
+
+/** Links to the bare page for the default selection, so it has one URL. */
+export function buildPackageUrl(
+  tooth: string,
+  pkg: RawPackageEntry,
+  selection: PackageSelection,
+): string {
+  const fallback = getDefaultSelection(pkg);
+  const base = `/packages/${tooth}/`;
+  if (
+    fallback &&
+    fallback.variant === selection.variant &&
+    fallback.version === selection.version
+  ) {
+    return base;
+  }
+
+  const query = new URLSearchParams();
+  query.set("variant", selection.variant);
+  query.set("version", selection.version);
+  return `${base}?${query.toString()}`;
 }

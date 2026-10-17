@@ -31,7 +31,7 @@ export function PackageCard({ pkg }: Readonly<PackageCardProps>) {
             <div className="min-w-0">
               <CardTitle className="text-xl truncate block" title={pkg.info.name}>
                 <Link
-                  href={`/packages/${pkg.tooth}`}
+                  href={`/packages/${pkg.tooth}/`}
                   className="hover:underline"
                   prefetch={false}
                 >
