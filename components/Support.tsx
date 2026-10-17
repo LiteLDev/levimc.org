@@ -165,7 +165,7 @@ const Support: React.FC = () => {
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
-                  href="https://lamina.levimc.org/maintainer_guides/cpp_style_guide/"
+                  href="https://docs.levimc.org/LeviLamina/maintainer_guides/cpp_style_guide/"
                   target="_blank"
                   rel="noreferrer"
                   className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-lite-500 to-emerald-500 text-white font-semibold shadow-lg shadow-lite-500/25 hover:shadow-lite-500/40 hover:from-lite-600 hover:to-emerald-600 transition-all"

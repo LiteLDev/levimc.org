@@ -106,7 +106,7 @@ const Features: React.FC = () => {
               <p className={theme === 'light' ? 'text-stone-600' : 'text-zinc-500'}>{t.features.ctaDesc}</p>
             </div>
             <a
-              href="https://lamina.levimc.org"
+              href="https://docs.levimc.org/LeviLamina"
               target="_blank"
               rel="noreferrer"
               className={`flex items-center gap-2 px-6 py-3 font-semibold rounded-lg transition-colors ${theme === 'light'
