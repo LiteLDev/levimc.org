@@ -1,0 +1,97 @@
+import { Badge, PixelButton, PixelIcon } from '../../kit/components';
+import { PageHeader } from '../components/ui';
+import { DONORS } from '../data/donors';
+import { useI18n } from '../i18n';
+
+const DONATION_CHANNELS = [
+  { id: 'afdian', href: 'https://afdian.com/a/liteldev' },
+  { id: 'opencollective', href: 'https://opencollective.com/levimc' },
+] as const;
+
+export default function Support() {
+  const { t } = useI18n();
+  const donors = DONORS;
+  const channelLabel = { afdian: t.support.channelAfdian, opencollective: t.support.channelOpenCollective };
+
+  return (
+    <div className="lm-page lm-container lm-container-mid">
+      <PageHeader title={t.support.pageTitle} lead={t.support.pageDesc} />
+
+      <div className="lm-grid-2 lm-support-ways">
+        <section className="px-card lm-way">
+          <span className="kit-slot lm-way-slot" aria-hidden="true">
+            <PixelIcon name="pickaxe" size={32} />
+          </span>
+          <h3 className="lm-way-title">{t.support.contributeTitle}</h3>
+          <p className="lm-way-desc">{t.support.contributeDesc}</p>
+          <div className="lm-way-actions">
+            <PixelButton href="https://docs.levimc.org/LeviLamina/maintainer_guides/cpp_style_guide/" variant="primary">
+              {t.support.contributeCta}
+            </PixelButton>
+            <PixelButton href="https://github.com/LiteLDev">GitHub</PixelButton>
+          </div>
+        </section>
+
+        <section className="px-card lm-way">
+          <span className="kit-slot lm-way-slot" aria-hidden="true">
+            <PixelIcon name="emerald" size={32} />
+          </span>
+          <h3 className="lm-way-title">{t.support.donateTitle}</h3>
+          <p className="lm-way-desc">{t.support.donateDesc}</p>
+          <div className="lm-channels">
+            <div className="lm-channels-label">{t.support.donateChannels}</div>
+            <div className="lm-channels-list">
+              {DONATION_CHANNELS.map((c) => (
+                <a key={c.id} href={c.href} target="_blank" rel="noopener" className="px-card lm-channel">
+                  <span>{channelLabel[c.id]}</span>
+                  <PixelIcon name="arrowRight" />
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section className="lm-donors">
+        <div className="lm-donors-head">
+          <h2 className="lm-title lm-title-sm">{t.support.donorsSectionTitle}</h2>
+          <p className="lm-lead lm-donors-desc">{t.support.donorsSectionDesc}</p>
+        </div>
+
+        {donors.length === 0 ? (
+          <div className="px-card lm-donors-empty">
+            <p className="lm-donors-empty-title">{t.support.donorsEmptyTitle}</p>
+            <p>{t.support.donorsEmpty}</p>
+          </div>
+        ) : (
+          <div className="lm-donor-grid">
+            {donors.map((donor, index) => (
+              <article key={`${donor.name}-${donor.date}-${index}`} className="px-card lm-donor">
+                <div className="lm-donor-head">
+                  <div className="lm-donor-id">
+                    <h3 className="lm-donor-name">{donor.name}</h3>
+                    {donor.date && <p className="lm-donor-date">{donor.date}</p>}
+                  </div>
+                  {donor.amount && (
+                    <Badge tone="gold" className="lm-donor-amount">
+                      {donor.amount}
+                    </Badge>
+                  )}
+                </div>
+
+                {donor.message && <p className="lm-donor-message">{donor.message}</p>}
+
+                {donor.link && (
+                  <a href={donor.link} target="_blank" rel="noopener" className="lm-donor-link">
+                    {t.support.donorLinkLabel}
+                    <PixelIcon name="arrowRight" />
+                  </a>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
