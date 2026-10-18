@@ -24,7 +24,14 @@ export type BlogView =
   | { kind: 'archives'; year?: string; month?: string; page: number };
 
 /** Resolve a pathname (exact, case-sensitive — like GitHub Pages) to a blog view. */
-export function resolveBlogPath(pathname: string): BlogView | null {
+export function resolveBlogPath(rawPathname: string): BlogView | null {
+  // location.pathname is percent-encoded (/blog/tags/%E5%8F%8D…/); the routes are not
+  let pathname = rawPathname;
+  try {
+    pathname = decodeURI(rawPathname);
+  } catch {
+    /* malformed escape: compare as is */
+  }
   if (!ROUTE_SET.has(pathname)) return null;
   let rest = pathname.slice('/blog/'.length);
   let page = 1;
@@ -60,14 +67,19 @@ export function docIdOf(view: BlogView | null): string | null {
 
 const cache = new Map<string, BlogDoc>();
 
+/** The rendered markdown of a post/page, or undefined when its chunk cannot be loaded (e.g. after a redeploy). */
 export async function loadBlogDoc(id: string): Promise<BlogDoc | undefined> {
   const hit = cache.get(id);
   if (hit) return hit;
   const load = docs[id];
   if (!load) return undefined;
-  const doc = (await load()).default;
-  cache.set(id, doc);
-  return doc;
+  try {
+    const doc = (await load()).default;
+    cache.set(id, doc);
+    return doc;
+  } catch {
+    return undefined;
+  }
 }
 
 /** Load the markdown of the page at `pathname` before hydrating it (so the first render matches the HTML). */
@@ -77,12 +89,13 @@ export function preloadBlogPath(pathname: string): Promise<unknown> {
 }
 
 /** The rendered markdown of `id`: synchronously when already loaded (prerender, first load), else after loading. */
-export function useBlogDoc(id: string): BlogDoc | undefined {
-  const [loaded, setLoaded] = useState<{ id: string; doc: BlogDoc | undefined } | null>(null);
+export function useBlogDoc(id: string): BlogDoc | null | undefined {
+  const [loaded, setLoaded] = useState<{ id: string; doc: BlogDoc | null } | null>(null);
   useEffect(() => {
     if (cache.has(id)) return;
     let live = true;
-    void loadBlogDoc(id).then((doc) => live && setLoaded({ id, doc }));
+    // null: the chunk failed to load (the caller offers a full page load instead)
+    void loadBlogDoc(id).then((doc) => live && setLoaded({ id, doc: doc ?? null }));
     return () => {
       live = false;
     };

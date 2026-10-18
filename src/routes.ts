@@ -97,13 +97,3 @@ function blogMeta(pathname: string, t: Messages): { title: string; description: 
       return { title: paged(`${view.year ? b.archiveTitle(view.year, view.month) : b.archives} - ${site}`, view.page), description };
   }
 }
-
-/**
- * GitHub Pages paths are case-sensitive (/About/ is a 404). The 404 page sends a visitor who only got the case
- * wrong to the page they meant: the route whose path matches ignoring case (see prerender.mjs).
- */
-export function caseInsensitiveRoute(pathname: string): string | null {
-  const c = canonicalPath(pathname);
-  const p = (c.endsWith('/') ? c : c + '/').toLowerCase();
-  return ROUTE_PATHS.find((r) => r.toLowerCase() === p) ?? null;
-}

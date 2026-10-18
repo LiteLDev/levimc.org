@@ -59,7 +59,8 @@ export function hardBreaks(markdown: string): string {
   return markdown
     .split('\n')
     .map((line) => {
-      const m = /^ {0,3}(`{3,}|~{3,})/.exec(line);
+      // any indentation: fences nested in list items count too
+      const m = /^\s*(`{3,}|~{3,})/.exec(line);
       if (fence) {
         if (m && m[1]![0] === fence[0] && m[1]!.length >= fence.length && !/\S/.test(line.slice(m[0].length))) fence = null;
         return line;

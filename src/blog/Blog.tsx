@@ -1,6 +1,6 @@
 // levimc.org/blog/ — the LeviMC blog (moved from blog.levimc.org): index, posts, tags, categories, archives and
 // the blog's own pages, in the kit's language (painted hero, pixel cards, hotbar, prose canvas).
-import { useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { Badge, PaintedHero, Pagination, PixelIcon, uiStrings, type PixelIconName } from '../../kit/components';
 import { useI18n, kitLocale, type Messages } from '../i18n';
@@ -25,8 +25,16 @@ function BlogNav({ view }: { view: BlogView }) {
     ...(blog.pages.about ? [{ key: 'about' as const, href: blog.pages.about.url, label: b.about, icon: 'quote' as const, active: view.kind === 'page' && view.name === 'about' }] : []),
     ...(blog.pages.friends ? [{ key: 'friends' as const, href: blog.pages.friends.url, label: b.friends, icon: 'heart' as const, active: view.kind === 'page' && view.name === 'friends' }] : []),
   ];
+  // phones: the row scrolls sideways; keep the current section in view
+  const ref = useRef<HTMLElement>(null);
+  const active = items.find((i) => i.active)?.key;
+  useEffect(() => {
+    const nav = ref.current;
+    const cur = nav?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (nav && cur && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = Math.max(0, cur.offsetLeft - (nav.clientWidth - cur.offsetWidth) / 2);
+  }, [active]);
   return (
-    <nav className="lm-blog-nav" aria-label={b.sections}>
+    <nav ref={ref} className="lm-blog-nav" aria-label={b.sections}>
       <div className="hotbar">
         {items.map((i) => (
           <Link key={i.key} to={i.href} aria-current={i.active ? 'page' : undefined}>
@@ -179,7 +187,7 @@ function Sidebar({ b }: { b: B }) {
             y.months.map((m) => (
               <li key={y.year + m.month}>
                 <Link to={`/blog/archives/${y.year}/${m.month}/`} className="lm-blog-term">
-                  <span>{b.archiveTitle(y.year, m.month).replace(/^[^:：]*[:：]\s*/, '')}</span>
+                  <span>{b.monthLabel(y.year, m.month)}</span>
                   <span className="lm-blog-count">{m.count}</span>
                 </Link>
               </li>
@@ -350,9 +358,18 @@ function Toc({ toc, label }: { toc: { level: number; id: string; text: string }[
 }
 
 function Prose({ id, lang }: { id: string; lang: string }) {
+  const { t } = useI18n();
   const doc = useBlogDoc(id);
   const ref = useRef<HTMLDivElement>(null);
   useProseEnhancements(ref, doc ? id : '');
+  if (doc === null)
+    return (
+      <p className="lm-blog-loading">
+        <a href={typeof location !== 'undefined' ? location.href : '#'}>
+          {t.blog.reload}
+        </a>
+      </p>
+    );
   if (!doc) return <div className="lm-blog-loading" aria-busy="true" />;
   return <div ref={ref} className="kit-prose lm-blog-prose" lang={lang} data-doc-content="" dangerouslySetInnerHTML={{ __html: doc.html }} />;
 }
@@ -471,7 +488,7 @@ export default function Blog() {
       const prefix = view.year ? `${view.year}-${view.month ?? ''}` : '';
       const posts = blog.posts.filter((p) => p.date.startsWith(prefix));
       const base = `/blog/archives/${view.year ? `${view.year}/` : ''}${view.month ? `${view.month}/` : ''}`;
-      return <ListPage view={view} eyebrow={b.archives} title={view.year ? b.archiveTitle(view.year, view.month).replace(/^[^:：]*[:：]\s*/, '') : b.archives} posts={posts} base={base} page={view.page} />;
+      return <ListPage view={view} eyebrow={b.archives} title={view.year ? (view.month ? b.monthLabel(view.year, view.month) : view.year) : b.archives} posts={posts} base={base} page={view.page} />;
     }
   }
 }

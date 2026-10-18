@@ -915,6 +915,7 @@
     }
   }
   .lm-blog-nav {
+    position: relative;
     margin: 0 0 2.25rem;
     padding: 2px;
     overflow-x: auto;

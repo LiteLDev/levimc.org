@@ -18,6 +18,9 @@ export default function Comments({ path }: { path: string }) {
   const instance = useRef<WalineInstance | null>(null);
   const [state, setState] = useState<'idle' | 'loading' | 'ready' | 'failed'>('idle');
   const lang = info.lang === 'en' ? 'en' : 'zh-CN';
+  // the language at the moment the client finishes loading (it may change while it loads)
+  const langRef = useRef(lang);
+  langRef.current = lang;
 
   useEffect(() => {
     const target = box.current;
@@ -32,7 +35,7 @@ export default function Comments({ path }: { path: string }) {
             el: el.current,
             serverURL: WALINE_SERVER,
             path,
-            lang,
+            lang: langRef.current,
             dark: 'html.dark',
             emoji: EMOJI,
             meta: ['nick', 'mail', 'link'],
