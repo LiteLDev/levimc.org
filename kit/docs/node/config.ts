@@ -141,6 +141,7 @@ export interface DocsConfig {
   /** Heading levels shown in "On this page" (default [2, 3]). */
   outline?: number | [number, number];
   social?: { icon: 'github' | 'discord' | 'telegram' | 'x' | 'youtube' | 'email'; link: string; label?: string }[];
+  /** @deprecated kit 2: the LeviMC footer is the same on every site (no per-site message or copyright); ignored. */
   footer?: { message?: string; copyright?: string };
   /** Override chrome strings per locale code. */
   ui?: Record<string, Partial<UiStrings>>;

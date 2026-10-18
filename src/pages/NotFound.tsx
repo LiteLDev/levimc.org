@@ -22,7 +22,7 @@ export default function NotFound() {
             <PixelIcon name="grass" />
             {t.nav.home}
           </Link>
-          <Link className="mc-btn" to={pathOf('projects')}>
+          <Link className="mc-btn" to="/#projects">
             <PixelIcon name="map" />
             {t.nav.projects}
           </Link>

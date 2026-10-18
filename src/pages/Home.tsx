@@ -1,4 +1,3 @@
-import { Link } from 'react-router';
 import { BrandIcon, PixelIcon } from '../../kit/components';
 import Hero from '../components/Hero';
 import Features from '../components/Features';
@@ -8,7 +7,6 @@ import { Eyebrow } from '../components/ui';
 import { useProjects } from '../data/projects';
 import { useDiscordInfo, useRepoData } from '../hooks/useExternalData';
 import { useI18n } from '../i18n';
-import { pathOf } from '../routes';
 
 export default function Home() {
   const { t, locale } = useI18n();
@@ -20,21 +18,21 @@ export default function Home() {
     <>
       <Hero />
 
-      {/* Core projects */}
-      <section className="lm-section lm-container">
+      {/* Every project (the bar's Projects menu lists the same ones) */}
+      <section className="lm-section lm-container" id="projects">
         <div className="lm-section-head">
           <div>
             <Eyebrow>{t.projects.label}</Eyebrow>
             <h2 className="lm-title">{t.projects.title}</h2>
           </div>
-          <Link to={pathOf('projects')} className="mc-btn mc-btn-ghost lm-view-all">
-            <span>{t.projects.viewAll}</span>
+          <a href={GITHUB_URL} target="_blank" rel="noopener" className="mc-btn mc-btn-ghost lm-view-all">
+            <span>{t.projects.moreOnGitHub}</span>
             <PixelIcon name="arrowRight" />
-          </Link>
+          </a>
         </div>
 
         <div className="lm-grid-4">
-          {projects.slice(0, 4).map((project) => {
+          {projects.map((project) => {
             const data = repoData?.get(project.id);
             return (
               <ProjectCard

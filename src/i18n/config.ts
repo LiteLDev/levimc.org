@@ -9,15 +9,13 @@ export interface SiteLocale {
   code: Locale;
   /** BCP-47 tag: <html lang>, the kit chrome's locale, and the value stored as the cross-site preference. */
   lang: string;
-  /** Native name in the language menu. */
+  /** Native name in the language menu (and its trigger, like on every LeviMC site). */
   label: string;
-  /** Trigger text of the language menu. */
-  short: string;
 }
 
 export const LOCALES: readonly SiteLocale[] = [
-  { code: 'en', lang: 'en', label: 'English', short: 'EN' },
-  { code: 'zh', lang: 'zh-CN', label: '中文', short: 'ZH' },
+  { code: 'en', lang: 'en', label: 'English' },
+  { code: 'zh', lang: 'zh-CN', label: '中文' },
 ];
 export const DEFAULT_LOCALE: Locale = 'en';
 

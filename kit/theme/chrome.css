@@ -221,6 +221,39 @@
     height: 16px;
     flex: none;
   }
+  /* The LeviMC mark: the leaf on a small parchment tile in a wooden frame (the hero's item frame in miniature), so
+     the pale-green leaf reads on the dark bar and the soil footer in both themes. The leaf is assets/levimc-mark.svg
+     (fill paths only, coordinates cut to one decimal) as a data URI, so foreign pages (Doxygen) need no asset. */
+  .kit-brand-mark {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    background: color-mix(in srgb, var(--color-linen, #f6efe1) 86%, var(--color-mc-dirt, #8a5a33));
+    box-shadow:
+      inset 0 0 0 2px var(--color-mc-dirt, #8a5a33),
+      inset 2px 2px 0 2px color-mix(in srgb, var(--color-mc-dirt, #8a5a33) 70%, #fff),
+      inset -2px -2px 0 2px var(--color-mc-dirt-dark, #6e4526);
+  }
+  .kit-brand-mark::before {
+    content: "";
+    width: 14px;
+    height: 20px;
+    background: url("data:image/svg+xml,%3Csvg viewBox=%22290 205 414 580%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath d=%22m558.8,583.9q-11.6,22.8 -18.6,47.6q-2.0,7.2 -4.5,19.4c-3.5,17.1 -6.7,34.9 -10.8,51.4q-8.7,35.4 -22.4,69.4q-0.1,0.4 -0.6,0.4l-24.1,0.0q-0.9,0 -0.5,-0.8q19.4,-41.9 29.6,-87.5q15.3,-68.3 2.6,-137.2q-0.7,-4.2 -3.4,-13.1c-3.7,-12.5 -9.6,-27.5 -12.8,-37.4q-19.1,-59.2 4.7,-115.1q12.0,-28.3 32.8,-55.9c28.0,-37.3 60.2,-71.0 91.4,-105.5q0.5,-0.6 0.9,0.1q24.2,55.2 43.6,112.2c11.8,34.9 21.1,75.1 22.6,112.4c0.7,17.9 -1.7,38.6 -8.1,55.7q-19.4,52.0 -73.3,71.5q-23.4,8.4 -47.9,11.2a1.4,1.4 0 0 0 -1.1,0.7zm-48.9,-171.7c-6.9,28.9 -3.8,57.4 5.6,85.4q4.0,11.9 8.0,23.8q10.1,30.3 11.7,62.4a0.1,0.1 0 0 0 0.2,0.0q2.2,-4.9 4.8,-9.8c16.2,-30.6 31.7,-62.0 44.8,-93.8q5.8,-14.1 11.9,-34.4q10.9,-36.0 10.6,-72.6q1.3,-34.9 -10.3,-68.1a1.6,1.6 -29.3 0 1 0.5,-1.8l13.9,-11.1a0.7,0.7 59.5 0 1 1.2,0.3q8.8,21.4 13.3,44.4c3.9,28.1 3.7,57.4 -1.6,85.3c-5.9,30.1 -16.2,59 -29.1,86.7q-0.2,0.4 0.2,0.2q9.4,-3.6 16.8,-8.2c16.8,-8.9 28.3,-19.9 41.4,-31.8a0.7,0.7 -17.4 0 1 1.3,0.6c-1.3,9.9 -4.6,18.7 -10.8,27.1q-22.3,30.1 -59.5,39.8q-2.0,0.2 -3.3,2.8q-6.9,14.0 -9.3,18.9q-0.2,0.5 0.3,0.4q28.4,-3.6 50.6,-18.2q36.7,-24.1 43.2,-68.5q3.2,-23.3 0.5,-46.5q-4.6,-39.1 -16.4,-76.7q-13.4,-42.7 -30.6,-84.0q-1.6,-3.9 -3.5,-7.6a0.5,0.5 53.1 0 0 -0.9,-0.1c-16.5,17.6 -32.1,36.0 -47.8,54.3q-24.7,28.6 -43.4,61.5q-9.7,17.2 -14.5,39.1z%22 fill=%22%23294c2d%22/%3E%3Cpath d=%22m666.8,472.3l-0.1,-0.7a0.2,0.2 45.6 0 0 -0.4,-0.0c-3.2,12.8 -11.4,23.5 -20.8,33.7q-20.8,22.7 -49.9,30.2q-5.8,1.4 -10.2,1.2q37.2,-9.6 59.5,-39.8c6.1,-8.3 9.5,-17.1 10.8,-27.1a0.7,0.7 -17.4 0 0 -1.3,-0.6c-13.1,11.8 -24.6,22.9 -41.4,31.8q5.9,-13.6 11.2,-26.3c14.1,-33.8 18.9,-70.4 11.3,-106.5q-3.3,-16.0 -7.9,-31.7q-0.1,-0.5 -0.6,-0.2q-0.3,0.2 -0.4,0.7q-4.4,-23.0 -13.3,-44.4a0.7,0.7 59.5 0 0 -1.2,-0.3l-13.9,11.1a1.6,1.6 -29.3 0 0 -0.5,1.8q11.7,33.2 10.3,68.1q-5.2,22.4 -14.4,42.6c-16.1,35.9 -36.3,70.0 -54.9,104.8q-0.2,0.4 -0.6,0.0c-12.7,-14.2 -20.5,-35.0 -24.1,-53.5q-4.8,-24.2 -3.0,-53.1q0.1,-2.7 -0.7,-2.0q4.7,-21.9 14.5,-39.1q18.6,-32.9 43.4,-61.5c15.7,-18.2 31.3,-36.7 47.8,-54.3a0.5,0.5 53.1 0 1 0.9,0.1q1.9,3.7 3.5,7.6q17.1,41.3 30.6,84.0q11.8,37.5 16.4,76.7q2.7,23.2 -0.5,46.5z%22 fill=%22%237ba46d%22/%3E%3Cpath d=%22m612.8,501.1q-7.4,4.6 -16.8,8.2q-0.4,0.1 -0.2,-0.2c12.9,-27.7 23.2,-56.6 29.1,-86.7c5.4,-27.9 5.6,-57.2 1.6,-85.3q0.0,-0.5 0.4,-0.7q0.4,-0.3 0.6,0.2q4.5,15.6 7.9,31.7c7.5,36.1 2.7,72.6 -11.3,106.5q-5.3,12.7 -11.2,26.3z%22 fill=%22%23f6f3ea%22/%3E%3Cpath d=%22m607.9,373.3q0.2,36.5 -10.6,72.6q-6.1,20.3 -11.9,34.4c-13.0,31.7 -28.5,63.1 -44.8,93.8q-2.5,4.8 -4.8,9.8a0.1,0.1 0 0 1 -0.2,-0.0q-1.6,-32.0 -11.7,-62.4q-3.9,-11.9 -8.0,-23.8c-9.4,-27.9 -12.6,-56.4 -5.6,-85.4q0.9,-0.7 0.7,2.0q-1.7,28.9 3.0,53.1c3.6,18.4 11.4,39.3 24.1,53.5q0.3,0.4 0.6,-0.0c18.5,-34.7 38.7,-68.8 54.9,-104.8q9.1,-20.2 14.4,-42.6z%22 fill=%22%23f6f3ea%22/%3E%3Cpath d=%22m466.6,577.7q5.1,-30.4 -10.8,-55.2c-16.7,-25.9 -44.6,-39.8 -75.5,-41.6q-20.7,-1.1 -48.5,-1.6q-0.1,0 -0.3,-0.0q-0.2,-0.1 -0.3,-0.1a0.6,0.6 0 0 0 -0.8,0.7c5.5,36.0 20.6,78.1 49.5,102.0q28.0,23.2 65.7,24.5a0.2,0.2 61 0 0 0.1,-0.5q-23.9,-14.0 -38.1,-37.6q-1.7,-2.8 -5.6,-10.8q13.6,8.6 25.2,14.5c12.7,6.4 25.4,13.1 35.9,21.4q16.7,13.1 28.6,30.9q0.2,0.3 -0.2,0.4q-19.4,2.6 -34.1,3.1c-38.5,1.3 -75.0,-11.6 -101.0,-39.4c-21.9,-23.4 -37.4,-59.9 -44.2,-90.7q-4.3,-19.8 -8.8,-39.5q-0.1,-0.4 0.3,-0.4q41.2,1.0 74.9,2.8c36.1,1.9 70.3,16.3 91.5,46.5c18,25.5 23.3,56.3 15.3,86.9a0.3,0.2 -62.1 0 1 -0.4,0.1l-18.2,-16.1z%22 fill=%22%23294c2d%22/%3E%3Cpath d=%22m666.8,472.3q-6.5,44.3 -43.2,68.5q-22.1,14.5 -50.6,18.2q-0.6,0.0 -0.3,-0.4q2.3,-4.8 9.3,-18.9q1.2,-2.6 3.3,-2.8q4.3,0.2 10.2,-1.2q29.0,-7.4 49.9,-30.2c9.3,-10.2 17.5,-20.9 20.8,-33.7a0.2,0.2 45.6 0 1 0.4,0.0l0.1,0.7z%22 fill=%22%23f6f3ea%22/%3E%3Cpath d=%22m466.6,577.7c-19.1,-13.2 -42.1,-24.5 -57.3,-35.5q-24.7,-18.0 -49.8,-43.1q-2.5,-2.4 -6.2,-1.1q-0.5,0.1 -0.3,0.6q7.0,17.3 20.4,32.8q13.6,15.7 28.3,25.8q3.9,8.0 5.6,10.8q14.1,23.6 38.1,37.6a0.2,0.2 61 0 1 -0.1,0.5q-37.6,-1.3 -65.7,-24.5c-28.9,-23.8 -43.9,-65.9 -49.5,-102.0a0.6,0.6 0 0 1 0.8,-0.7q0.0,0.0 0.3,0.1q0.1,0.0 0.3,0.0q27.7,0.4 48.5,1.6c30.8,1.7 58.8,15.7 75.5,41.6q16.0,24.8 10.8,55.2z%22 fill=%22%237ba46d%22/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  .kit-brand-mark-lg {
+    width: 36px;
+    height: 36px;
+    box-shadow:
+      inset 0 0 0 3px var(--color-mc-dirt, #8a5a33),
+      inset 3px 3px 0 3px color-mix(in srgb, var(--color-mc-dirt, #8a5a33) 70%, #fff),
+      inset -3px -3px 0 3px var(--color-mc-dirt-dark, #6e4526);
+  }
+  .kit-brand-mark-lg::before {
+    width: 20px;
+    height: 28px;
+  }
   .kit-gbar-brand-text {
     font-family: var(--font-pixel);
     font-size: 0.8125rem;
@@ -277,55 +310,134 @@
     background: var(--color-mc-grass);
     box-shadow: 0 -1px 0 0 #8fd45e;
   }
-  .kit-gbar-docs .kit-menu-panel {
+  /* Projects ▾ — a mega menu: every project by group; the row opens its docs (or repository), with explicit
+     Docs and GitHub links beside it; the GitHub organisation at the bottom. */
+  .kit-gbar-projects .kit-menu-panel {
     left: -0.5rem;
     right: auto;
-    width: min(34rem, calc(100vw - 2rem));
-    padding: 0.5rem;
+    width: min(54rem, calc(100vw - 2rem));
+    padding: 0;
   }
-  .kit-gbar-docs-grid {
+  .kit-proj-groups {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.25rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.25rem 0.75rem;
+    padding: 0.75rem;
   }
-  .kit-gbar-docs-item {
+  @media (max-width: 960px) {
+    .kit-proj-groups {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .kit-proj-heading {
+    margin: 0.25rem 0.5rem 0.375rem;
+    font-size: 0.6875rem;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .kit-proj-group > ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .kit-proj-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0.125rem 0;
+  }
+  .kit-proj-main {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.5rem;
+    padding: 0.5rem 0.5rem 1.875rem;
     color: var(--color-ink);
     text-decoration: none;
     line-height: 1.3;
   }
-  .kit-gbar-docs-item:hover {
+  .kit-proj-main:hover {
     background: color-mix(in srgb, var(--color-ink) 6%, transparent);
   }
-  .kit-gbar-docs-item:focus-visible {
-    outline: var(--px) solid var(--color-focus);
-    outline-offset: calc(var(--px) * -1);
-  }
-  .kit-gbar-docs-item[aria-current="page"] {
+  .kit-proj-main[aria-current="page"] {
     background: var(--color-primary-soft);
+    box-shadow: inset 3px 0 0 0 var(--color-primary);
   }
-  .kit-gbar-docs-slot {
+  .kit-proj-slot {
     width: 2.25rem;
     height: 2.25rem;
     flex: none;
+    align-self: flex-start;
   }
-  .kit-gbar-docs-text {
+  .kit-proj-text {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
     min-width: 0;
     overflow-wrap: anywhere;
   }
-  .kit-gbar-docs-name {
+  .kit-proj-name {
     font-size: 0.875rem;
     font-weight: 650;
   }
-  .kit-gbar-docs-blurb {
+  .kit-proj-blurb {
     font-size: 0.75rem;
     color: var(--color-muted);
+  }
+  /* Docs · GitHub: under the name, inside the row's padding (siblings of the row link, not nested in it) */
+  .kit-proj-links {
+    position: absolute;
+    left: calc(0.5rem + 2.25rem + 0.75rem);
+    bottom: 0.5rem;
+    display: flex;
+    gap: 0.25rem;
+  }
+  .kit-proj-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.0625rem 0.4375rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    color: var(--color-muted);
+    text-decoration: none;
+    background: color-mix(in srgb, var(--color-ink) 5%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 14%, transparent);
+  }
+  .kit-proj-link:hover {
+    color: var(--color-primary-strong);
+    background: var(--color-primary-soft);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+  }
+  .dark .kit-proj-link:hover {
+    color: var(--color-primary);
+  }
+  .kit-proj-all {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-top: 1px solid var(--color-line);
+    background: color-mix(in srgb, var(--color-ink) 3%, transparent);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  .kit-proj-all:hover {
+    color: var(--color-primary-strong);
+  }
+  .dark .kit-proj-all:hover {
+    color: var(--color-primary);
+  }
+  .kit-proj-all > svg:last-child {
+    margin-left: auto;
+  }
+  :is(.kit-proj-main, .kit-proj-link, .kit-proj-all):focus-visible {
+    outline: var(--px) solid var(--color-focus);
+    outline-offset: calc(var(--px) * -1);
   }
   /* right-hand controls: language · theme · GitHub (· menu on phones) — the same on every site */
   .kit-gbar-end {
@@ -400,8 +512,36 @@
       radial-gradient(farthest-side at 50% 100%, rgb(0 0 0 / 0.2), transparent) center bottom / 100% 0.75rem no-repeat scroll,
       var(--color-surface);
   }
-  .kit-gbar-list .kit-gbar-docs-grid {
+  /* phones: the Projects menu inside the bar's menu (or a docs drawer) — one column */
+  .kit-gbar-list .kit-proj-groups {
     grid-template-columns: 1fr;
+    padding: 0 0.25rem;
+  }
+  .kit-gbar-list .kit-proj-all {
+    margin: 0.25rem 0 0.5rem;
+    padding: 0.625rem 0.75rem;
+    border: 0;
+    background: none;
+  }
+  .kit-gbar-more-acc > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    list-style: none;
+  }
+  .kit-gbar-more-acc > summary::-webkit-details-marker {
+    display: none;
+  }
+  .kit-gbar-more-acc > summary:hover {
+    background: color-mix(in srgb, var(--color-ink) 6%, transparent);
+  }
+  .kit-gbar-more-acc[open] > summary .kit-menu-chevron {
+    transform: rotate(180deg);
+  }
+  .kit-gbar-more-acc[open] {
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--color-line);
   }
   .kit-gbar-more-link {
     display: block;
@@ -481,6 +621,9 @@
     z-index: 1;
     margin-top: 5rem;
     color: #eadfcb;
+    /* fixed metrics: the footer looks the same inside hosts with another root size (Doxygen: 15.5px) */
+    font-size: 16px;
+    line-height: 1.5;
   }
   .kit-footer .grass-divider {
     position: relative;
@@ -500,42 +643,40 @@
   .kit-footer-soil > * {
     image-rendering: auto;
   }
+  /* one row: the mark + tagline on the left, the social channels on the right (stacked on phones) */
   .kit-footer-inner {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
-    gap: 2.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem 2.5rem;
     max-width: 80rem;
     margin: 0 auto;
-    padding: 3rem 1.5rem 2.5rem;
-  }
-  @media (max-width: 860px) {
-    .kit-footer-inner {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 2rem;
-    }
-    .kit-footer-brand {
-      grid-column: 1 / -1;
-    }
+    padding: 2.25rem 1.5rem 2rem;
   }
   @media (max-width: 480px) {
     .kit-footer-inner {
-      padding: 2.5rem 1rem 2rem;
+      padding: 2rem 1rem 1.75rem;
     }
   }
+  .kit-footer-brand {
+    min-width: 0;
+    max-width: 34rem;
+  }
   .kit-footer-logo {
-    display: inline-flex;
+    display: flex;
+    width: fit-content;
     align-items: center;
     gap: 0.75rem;
     color: #fff;
     text-decoration: none;
     font-family: var(--font-pixel);
-    font-size: 1.125rem;
+    font-size: 18px;
     letter-spacing: 0.04em;
   }
   .kit-footer-tagline {
-    max-width: 26rem;
-    margin: 1rem 0 1.25rem;
-    font-size: 0.875rem;
+    margin: 0.875rem 0 0;
+    font-size: 14px;
     line-height: 1.6;
     color: #d8c9b0;
   }
@@ -572,33 +713,6 @@
     outline: var(--px) solid var(--color-mc-diamond);
     outline-offset: 3px;
   }
-  .kit-footer-heading {
-    margin: 0.25rem 0 0.875rem;
-    font-size: 0.75rem;
-    font-weight: 650;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #c9f0a8;
-  }
-  .kit-footer-col ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .kit-footer-col li {
-    margin: 0.5rem 0;
-  }
-  .kit-footer-col a {
-    overflow-wrap: anywhere;
-    font-size: 0.875rem;
-    color: #e0d3bc;
-    text-decoration: none;
-  }
-  .kit-footer-col a:hover {
-    color: #fff;
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
-  }
   .kit-footer a:focus-visible {
     outline: var(--px) solid var(--color-mc-diamond);
     outline-offset: 2px;
@@ -608,24 +722,34 @@
     background: rgb(0 0 0 / 0.16);
   }
   .kit-footer-legal-inner {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem 1.5rem;
+    gap: 0.375rem 1.5rem;
     padding-top: 1rem;
     padding-bottom: 1rem;
-    font-size: 0.8125rem;
+    font-size: 13px;
     color: #cdbd9f;
   }
   .kit-footer-legal-inner p {
     margin: 0;
   }
-  .kit-footer-extra {
-    color: #cdbd9f;
-  }
-  .kit-footer-extra a {
+  .kit-footer-support {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
     color: #eadfcb;
+    text-decoration: none;
+  }
+  .kit-footer-support > svg {
+    width: 14px;
+    height: 14px;
+    color: #f2a3a3;
+  }
+  .kit-footer-support:hover {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .kit-footer-notice {
+    color: #b9a98c;
   }
   .kit-footer-sep {
     margin: 0 0.5rem;

@@ -20,11 +20,12 @@ export interface UiStrings {
   close: string;
   // footer
   tagline: string;
-  footerDocs: string;
-  footerEcosystem: string;
   footerConnect: string;
   email: string;
+  /** Trademark notice of the footer's legal row (Minecraft brand guidelines wording). */
   notAffiliated: string;
+  /** Footer link to levimc.org/support/. */
+  supportUs: string;
   rights: string;
   // theme & locale
   theme: string;
@@ -62,8 +63,12 @@ export interface UiStrings {
   modsName: string;
   /** One-line description of pkg.levimc.org. */
   modsBlurb: string;
-  /** Short description of each docs project, keyed by project id. */
+  /** Short description of each project, keyed by project id. */
   projectBlurbs: Record<string, string>;
+  /** Group headings of the Projects menu, keyed by ProjectGroupId. */
+  projectGroups: Record<string, string>;
+  /** The Projects menu's link to the GitHub organisation. */
+  allRepositories: string;
 }
 
 const en: UiStrings = {
@@ -79,11 +84,10 @@ const en: UiStrings = {
   menu: 'Menu',
   close: 'Close',
   tagline: 'Open-source modding for Minecraft Bedrock Edition — mod loader, script engine, package manager and launchers.',
-  footerDocs: 'Documentation',
-  footerEcosystem: 'Ecosystem',
   footerConnect: 'Connect',
   email: 'Email',
-  notAffiliated: 'Not affiliated with Mojang Studios.',
+  notAffiliated: 'Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.',
+  supportUs: 'Support us',
   rights: 'LeviMC',
   theme: 'Theme',
   themeLight: 'Light',
@@ -122,7 +126,12 @@ const en: UiStrings = {
     lip: 'General-purpose package installer',
     LeviLauncher: 'Bedrock (GDK) launcher for Windows',
     LeviLaunchroid: 'Bedrock launcher for Android',
+    LeviOptimize: 'Performance optimizations for LeviLamina servers',
+    LeviAntiCheat: 'Anti-cheat for LeviLamina servers',
+    MoreDimensions: 'More dimensions for Bedrock worlds',
   },
+  projectGroups: { core: 'Core', launchers: 'Launchers', mods: 'Official mods' },
+  allRepositories: 'All repositories on GitHub',
 };
 
 const zhCN: UiStrings = {
@@ -138,11 +147,10 @@ const zhCN: UiStrings = {
   menu: '菜单',
   close: '关闭',
   tagline: '面向 Minecraft 基岩版的开源模组生态——模组加载器、脚本引擎、包管理器与启动器。',
-  footerDocs: '文档',
-  footerEcosystem: '生态',
   footerConnect: '联系我们',
   email: '邮箱',
-  notAffiliated: '与 Mojang Studios 无关联。',
+  notAffiliated: '非 Minecraft 官方产品，未经 Mojang 或 Microsoft 批准，也与其无关。',
+  supportUs: '支持我们',
   rights: 'LeviMC',
   theme: '主题',
   themeLight: '浅色',
@@ -181,7 +189,12 @@ const zhCN: UiStrings = {
     lip: '通用包管理器',
     LeviLauncher: 'Windows 基岩版（GDK）启动器',
     LeviLaunchroid: 'Android 基岩版启动器',
+    LeviOptimize: '为 LeviLamina 服务器优化性能',
+    LeviAntiCheat: '为 LeviLamina 服务器提供反作弊',
+    MoreDimensions: '为基岩版世界添加更多维度',
   },
+  projectGroups: { core: '核心', launchers: '启动器', mods: '官方模组' },
+  allRepositories: '在 GitHub 上查看全部仓库',
 };
 
 const zhHK: UiStrings = {
@@ -197,11 +210,10 @@ const zhHK: UiStrings = {
   menu: '選單',
   close: '關閉',
   tagline: '面向 Minecraft 基岩版的開源模組生態——模組載入器、腳本引擎、套件管理器與啟動器。',
-  footerDocs: '文檔',
-  footerEcosystem: '生態',
   footerConnect: '聯絡我們',
   email: '電郵',
-  notAffiliated: '與 Mojang Studios 無關聯。',
+  notAffiliated: '非 Minecraft 官方產品，未經 Mojang 或 Microsoft 批准，亦與其無關。',
+  supportUs: '支持我們',
   theme: '主題',
   themeLight: '淺色',
   themeDark: '深色',
@@ -239,7 +251,12 @@ const zhHK: UiStrings = {
     lip: '通用套件管理器',
     LeviLauncher: 'Windows 基岩版（GDK）啟動器',
     LeviLaunchroid: 'Android 基岩版啟動器',
+    LeviOptimize: '為 LeviLamina 伺服器優化效能',
+    LeviAntiCheat: '為 LeviLamina 伺服器提供反作弊',
+    MoreDimensions: '為基岩版世界加入更多維度',
   },
+  projectGroups: { core: '核心', launchers: '啟動器', mods: '官方模組' },
+  allRepositories: '在 GitHub 上查看全部儲存庫',
 };
 
 const es: UiStrings = {
@@ -255,11 +272,10 @@ const es: UiStrings = {
   menu: 'Menú',
   close: 'Cerrar',
   tagline: 'Modding de código abierto para Minecraft Bedrock Edition: cargador de mods, motor de scripts, gestor de paquetes y lanzadores.',
-  footerDocs: 'Documentación',
-  footerEcosystem: 'Ecosistema',
   footerConnect: 'Contacto',
   email: 'Correo',
-  notAffiliated: 'No afiliado a Mojang Studios.',
+  notAffiliated: 'No es un producto oficial de Minecraft. No está aprobado por Mojang ni Microsoft ni asociado con ellos.',
+  supportUs: 'Apóyanos',
   rights: 'LeviMC',
   theme: 'Tema',
   themeLight: 'Claro',
@@ -298,7 +314,12 @@ const es: UiStrings = {
     lip: 'Instalador de paquetes de uso general',
     LeviLauncher: 'Lanzador de Bedrock (GDK) para Windows',
     LeviLaunchroid: 'Lanzador de Bedrock para Android',
+    LeviOptimize: 'Optimización del rendimiento para servidores LeviLamina',
+    LeviAntiCheat: 'Anticheat para servidores LeviLamina',
+    MoreDimensions: 'Más dimensiones para mundos de Bedrock',
   },
+  projectGroups: { core: 'Núcleo', launchers: 'Lanzadores', mods: 'Mods oficiales' },
+  allRepositories: 'Todos los repositorios en GitHub',
 };
 
 const ru: UiStrings = {
@@ -314,11 +335,10 @@ const ru: UiStrings = {
   menu: 'Меню',
   close: 'Закрыть',
   tagline: 'Моддинг Minecraft Bedrock Edition с открытым исходным кодом: загрузчик модов, скриптовый движок, менеджер пакетов и лаунчеры.',
-  footerDocs: 'Документация',
-  footerEcosystem: 'Экосистема',
   footerConnect: 'Связь',
   email: 'Почта',
-  notAffiliated: 'Не связано с Mojang Studios.',
+  notAffiliated: 'Не является официальным продуктом Minecraft. Не одобрено Mojang или Microsoft и не связано с ними.',
+  supportUs: 'Поддержать нас',
   rights: 'LeviMC',
   theme: 'Тема',
   themeLight: 'Светлая',
@@ -357,7 +377,12 @@ const ru: UiStrings = {
     lip: 'Универсальный установщик пакетов',
     LeviLauncher: 'Лаунчер Bedrock (GDK) для Windows',
     LeviLaunchroid: 'Лаунчер Bedrock для Android',
+    LeviOptimize: 'Оптимизация производительности серверов LeviLamina',
+    LeviAntiCheat: 'Античит для серверов LeviLamina',
+    MoreDimensions: 'Новые измерения для миров Bedrock',
   },
+  projectGroups: { core: 'Ядро', launchers: 'Лаунчеры', mods: 'Официальные моды' },
+  allRepositories: 'Все репозитории на GitHub',
 };
 
 const de: UiStrings = {
@@ -373,11 +398,10 @@ const de: UiStrings = {
   menu: 'Menü',
   close: 'Schließen',
   tagline: 'Open-Source-Modding für Minecraft Bedrock Edition – Mod-Loader, Skript-Engine, Paketmanager und Launcher.',
-  footerDocs: 'Dokumentation',
-  footerEcosystem: 'Ökosystem',
   footerConnect: 'Kontakt',
   email: 'E-Mail',
-  notAffiliated: 'Nicht mit Mojang Studios verbunden.',
+  notAffiliated: 'Kein offizielles Minecraft-Produkt. Nicht von Mojang oder Microsoft genehmigt oder mit ihnen verbunden.',
+  supportUs: 'Unterstütze uns',
   rights: 'LeviMC',
   theme: 'Design',
   themeLight: 'Hell',
@@ -416,7 +440,12 @@ const de: UiStrings = {
     lip: 'Universeller Paketinstaller',
     LeviLauncher: 'Bedrock-(GDK-)Launcher für Windows',
     LeviLaunchroid: 'Bedrock-Launcher für Android',
+    LeviOptimize: 'Leistungsoptimierung für LeviLamina-Server',
+    LeviAntiCheat: 'Anti-Cheat für LeviLamina-Server',
+    MoreDimensions: 'Mehr Dimensionen für Bedrock-Welten',
   },
+  projectGroups: { core: 'Kern', launchers: 'Launcher', mods: 'Offizielle Mods' },
+  allRepositories: 'Alle Repositorys auf GitHub',
 };
 
 const ja: UiStrings = {
@@ -432,11 +461,10 @@ const ja: UiStrings = {
   menu: 'メニュー',
   close: '閉じる',
   tagline: 'Minecraft 統合版のためのオープンソース Mod 環境 — Mod ローダー、スクリプトエンジン、パッケージマネージャー、ランチャー。',
-  footerDocs: 'ドキュメント',
-  footerEcosystem: 'エコシステム',
   footerConnect: 'つながる',
   email: 'メール',
-  notAffiliated: 'Mojang Studios とは関係ありません。',
+  notAffiliated: 'Minecraft の公式製品ではありません。Mojang および Microsoft による承認を受けておらず、関係もありません。',
+  supportUs: '支援する',
   rights: 'LeviMC',
   theme: 'テーマ',
   themeLight: 'ライト',
@@ -475,7 +503,12 @@ const ja: UiStrings = {
     lip: '汎用パッケージインストーラー',
     LeviLauncher: 'Windows 向け統合版（GDK）ランチャー',
     LeviLaunchroid: 'Android 向け統合版ランチャー',
+    LeviOptimize: 'LeviLamina サーバーのパフォーマンス最適化',
+    LeviAntiCheat: 'LeviLamina サーバー向けアンチチート',
+    MoreDimensions: '統合版ワールドに新しいディメンションを追加',
   },
+  projectGroups: { core: 'コア', launchers: 'ランチャー', mods: '公式 Mod' },
+  allRepositories: 'GitHub のすべてのリポジトリ',
 };
 
 const ko: UiStrings = {
@@ -491,11 +524,10 @@ const ko: UiStrings = {
   menu: '메뉴',
   close: '닫기',
   tagline: 'Minecraft 베드락 에디션을 위한 오픈 소스 모딩 — 모드 로더, 스크립트 엔진, 패키지 관리자, 런처.',
-  footerDocs: '문서',
-  footerEcosystem: '생태계',
   footerConnect: '연결',
   email: '이메일',
-  notAffiliated: 'Mojang Studios와 관련이 없습니다.',
+  notAffiliated: '공식 Minecraft 제품이 아닙니다. Mojang 또는 Microsoft의 승인을 받지 않았으며 관련이 없습니다.',
+  supportUs: '후원하기',
   rights: 'LeviMC',
   theme: '테마',
   themeLight: '라이트',
@@ -534,7 +566,12 @@ const ko: UiStrings = {
     lip: '범용 패키지 설치 도구',
     LeviLauncher: 'Windows용 베드락(GDK) 런처',
     LeviLaunchroid: 'Android용 베드락 런처',
+    LeviOptimize: 'LeviLamina 서버 성능 최적화',
+    LeviAntiCheat: 'LeviLamina 서버용 안티치트',
+    MoreDimensions: '베드락 월드에 새로운 차원 추가',
   },
+  projectGroups: { core: '핵심', launchers: '런처', mods: '공식 모드' },
+  allRepositories: 'GitHub의 모든 저장소',
 };
 
 const fr: UiStrings = {
@@ -550,11 +587,10 @@ const fr: UiStrings = {
   menu: 'Menu',
   close: 'Fermer',
   tagline: 'Modding open source pour Minecraft Bedrock Edition : chargeur de mods, moteur de scripts, gestionnaire de paquets et lanceurs.',
-  footerDocs: 'Documentation',
-  footerEcosystem: 'Écosystème',
   footerConnect: 'Nous suivre',
   email: 'E-mail',
-  notAffiliated: 'Non affilié à Mojang Studios.',
+  notAffiliated: 'Produit non officiel de Minecraft. Non approuvé par Mojang ou Microsoft et non associé à ces derniers.',
+  supportUs: 'Nous soutenir',
   rights: 'LeviMC',
   theme: 'Thème',
   themeLight: 'Clair',
@@ -593,7 +629,12 @@ const fr: UiStrings = {
     lip: 'Installateur de paquets polyvalent',
     LeviLauncher: 'Lanceur Bedrock (GDK) pour Windows',
     LeviLaunchroid: 'Lanceur Bedrock pour Android',
+    LeviOptimize: 'Optimisation des performances des serveurs LeviLamina',
+    LeviAntiCheat: 'Anti-triche pour les serveurs LeviLamina',
+    MoreDimensions: 'Plus de dimensions pour les mondes Bedrock',
   },
+  projectGroups: { core: 'Noyau', launchers: 'Lanceurs', mods: 'Mods officiels' },
+  allRepositories: 'Tous les dépôts sur GitHub',
 };
 
 export const UI_STRINGS: Record<UiLocale, UiStrings> = {
@@ -625,7 +666,7 @@ export function resolveUiLocale(tag: string | undefined | null): UiLocale {
 
 export function uiStrings(tag: string | undefined | null, overrides?: Partial<UiStrings>): UiStrings {
   const base = UI_STRINGS[resolveUiLocale(tag)];
-  return overrides ? { ...base, ...overrides, projectBlurbs: { ...base.projectBlurbs, ...overrides.projectBlurbs } } : base;
+  return overrides ? { ...base, ...overrides, projectBlurbs: { ...base.projectBlurbs, ...overrides.projectBlurbs }, projectGroups: { ...base.projectGroups, ...overrides.projectGroups } } : base;
 }
 
 /** Native names of the UI locales (the chrome's language menu lists each in its own language). */
@@ -640,3 +681,14 @@ export const UI_LOCALE_NAMES: Record<UiLocale, string> = {
   ko: '한국어',
   fr: 'Français',
 };
+
+/**
+ * The kit's name of a language (UI_LOCALE_NAMES), or undefined when the tag is none of the UI locales: the bar's
+ * language menu names every language the same way on every LeviMC site ("zh", "zh-CN" → 简体中文).
+ */
+export function uiLocaleName(tag: string): string | undefined {
+  const t = tag.toLowerCase();
+  const loc = resolveUiLocale(t);
+  return loc !== 'en' || t.split(/[-_]/)[0] === 'en' ? UI_LOCALE_NAMES[loc] : undefined;
+}
+

@@ -6,7 +6,7 @@ import { Sidebar } from './Sidebar';
 import { useFocusTrap } from './focus';
 import { afterPaint, revealIn } from './reveal';
 import { PixelIcon } from '../../../components/PixelIcon';
-import { GlobalNavList } from '../../../components/GlobalBar';
+import { BrandMark, GlobalNavList } from '../../../components/GlobalBar';
 import type { UiStrings } from '../../../components/i18n';
 
 /**
@@ -120,13 +120,12 @@ export function MobileDrawer({
         ) : null}
         <nav className="kit-drawer-network" aria-label={chromeT.network} lang={chromeLang}>
           <GlobalNavList
-            current="docs"
-            currentDocs={site.project}
+            currentProject={site.project}
             locale={chromeLang}
             strings={chromeT}
             heading={
               <p className="kit-drawer-network-title">
-                <PixelIcon name="grass" size={16} />
+                <BrandMark />
                 <span>LeviMC</span>
               </p>
             }

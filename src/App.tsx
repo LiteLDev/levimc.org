@@ -4,8 +4,6 @@ import { PaintedBackdrop, ThemeProvider, uiStrings } from '../kit/components';
 import SiteHeader from './components/SiteHeader';
 import Footer from './components/Footer';
 import Home from './pages/Home';
-import Projects from './pages/Projects';
-import FeaturesPage from './pages/FeaturesPage';
 import Community from './pages/Community';
 import About from './pages/About';
 import Support from './pages/Support';
@@ -47,8 +45,6 @@ function Shell() {
       <main id="main" className="kit-above-backdrop" tabIndex={-1}>
         <Routes>
           <Route caseSensitive path={pathOf('home')} element={<Home />} />
-          <Route caseSensitive path={pathOf('projects')} element={<Projects />} />
-          <Route caseSensitive path={pathOf('features')} element={<FeaturesPage />} />
           <Route caseSensitive path={pathOf('community')} element={<Community />} />
           <Route caseSensitive path={pathOf('about')} element={<About />} />
           <Route caseSensitive path={pathOf('support')} element={<Support />} />
