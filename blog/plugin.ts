@@ -3,6 +3,7 @@
 //   virtual:levimc-blog/doc/<id>   one lazily loaded chunk per post / page ({ html, toc, lang })
 //   virtual:levimc-blog/tokens.css Shiki token colours of the code blocks
 // and emits the feeds (blog/rss.xml, blog/atom.xml, blog/feed.json) with the client build.
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { Plugin, ViteDevServer } from 'vite';
 import { buildBlog, type BuiltBlog } from './content.ts';
@@ -61,10 +62,23 @@ export function levimcBlog(): Plugin {
       if (id === R_TOKENS) return (await ensure()).tokenCss;
       return null;
     },
-    async generateBundle() {
+    async generateBundle(_out, bundle) {
       if (isSsr) return;
       const b = await ensure();
       for (const [fileName, source] of Object.entries(feeds(b))) this.emitFile({ type: 'asset', fileName, source });
+      // route → its markdown chunk, so prerender.mjs can modulepreload it (the client waits for it before hydrating)
+      const chunkOf = new Map<string, string>();
+      for (const c of Object.values(bundle))
+        if (c.type === 'chunk' && c.facadeModuleId?.startsWith(R_DOC)) chunkOf.set(decodeURIComponent(c.facadeModuleId.slice(R_DOC.length)), c.fileName);
+      const preload: Record<string, string> = {};
+      const add = (url: string, id: string) => {
+        const file = chunkOf.get(id);
+        if (file) preload[url] = file;
+      };
+      for (const p of b.data.posts) add(p.url, p.slug);
+      for (const [name, page] of Object.entries(b.data.pages)) add(page.url, `page:${name}`);
+      mkdirSync(join(root, '.kit'), { recursive: true });
+      writeFileSync(join(root, '.kit/blog-preload.json'), JSON.stringify(preload, null, 2) + '\n');
     },
     configureServer(server: ViteDevServer) {
       const dir = join(root, 'content/blog');

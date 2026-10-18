@@ -7,7 +7,7 @@ import { RouterLink } from './SiteHeader';
 /**
  * The shared LeviMC footer (its Home / Projects / Mods / Blog / About / Community labels are the GlobalBar's,
  * so header and footer name every destination alike), with this site's tagline and its own "Resources" row:
- * the docs, the blog and the two pages that have no tab in the network bar (Features, Support Us).
+ * the docs and the two pages that have no tab in the network bar (Features, Support Us).
  */
 export default function Footer() {
   const { t, locale } = useI18n();
@@ -27,9 +27,6 @@ export default function Footer() {
             </li>
             <li>
               <a href="https://docs.levimc.org/LegacyScriptEngine/">{t.footer.lse_documentation}</a>
-            </li>
-            <li>
-              <Link to={pathOf('blog')}>{t.footer.blog}</Link>
             </li>
             <li>
               <Link to={pathOf('features')}>{t.nav.features}</Link>

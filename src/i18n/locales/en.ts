@@ -10,7 +10,6 @@ const en = {
     about: "About",
     community: "Community",
     support: "Support Us",
-    mods: "Mods",
   },
 
   // Hero section
@@ -150,7 +149,6 @@ const en = {
     resources: "Resources",
     ll_documentation: "LeviLamina Documentation",
     lse_documentation: "LegacyScriptEngine Documentation",
-    blog: "Blog",
     connect: "Connect",
     copyright: "LeviMC",
   },

@@ -63,13 +63,14 @@ const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
 // Static fallback data for when all APIs fail
 const FALLBACK_DATA: Record<string, Partial<RepoInfo>> = {
-  'levilamina': { stars: 1475, forks: 120, language: 'C++' },
-  'legacyscriptengine': { stars: 87, forks: 14, language: 'C++' },
-  'levilaunchroid': { stars: 188, forks: 36, language: 'Java' },
-  'levilauncher': { stars: 131, forks: 6, language: 'TypeScript' },
-  'levioptimize': { stars: 56, forks: 2, language: 'C++' },
-  'levianticheat': { stars: 41, forks: 0, language: 'C++' },
-  'moredimensions': { stars: 21, forks: 1, language: 'C++' },
+  // refreshed 2026-10-18 (GitHub API)
+  'levilamina': { stars: 1695, forks: 129, language: 'C++' },
+  'legacyscriptengine': { stars: 114, forks: 17, language: 'C++' },
+  'levilaunchroid': { stars: 627, forks: 153, language: 'Java' },
+  'levilauncher': { stars: 429, forks: 87, language: 'TypeScript' },
+  'levioptimize': { stars: 66, forks: 5, language: 'C++' },
+  'levianticheat': { stars: 46, forks: 1, language: 'C++' },
+  'moredimensions': { stars: 25, forks: 4, language: 'C++' },
 };
 
 async function fetchWithCache<T>(url: string, timeout = 5000): Promise<T | null> {
@@ -112,14 +113,7 @@ async function getStarsFromShields(owner: string, repo: string): Promise<number 
   const url = `https://img.shields.io/github/stars/${owner}/${repo}.json`;
   const data = await fetchWithCache<{ value: string }>(url);
 
-  if (!data?.value) return null;
-
-  // Parse "1.4k" or "1475" format
-  const value = data.value.toLowerCase();
-  if (value.endsWith('k')) {
-    return Math.round(parseFloat(value) * 1000);
-  }
-  return parseInt(value, 10) || null;
+  return parseCount(data?.value);
 }
 
 // Use Shields.io for forks
@@ -127,20 +121,35 @@ async function getForksFromShields(owner: string, repo: string): Promise<number 
   const url = `https://img.shields.io/github/forks/${owner}/${repo}.json`;
   const data = await fetchWithCache<{ value: string }>(url);
 
-  if (!data?.value) return null;
-
-  const value = data.value.toLowerCase();
-  if (value.endsWith('k')) {
-    return Math.round(parseFloat(value) * 1000);
-  }
-  return parseInt(value, 10) || null;
+  return parseCount(data?.value);
 }
 
 // Get version from Shields.io
 async function getVersionFromShields(owner: string, repo: string): Promise<string | null> {
   const url = `https://img.shields.io/github/v/release/${owner}/${repo}.json`;
   const data = await fetchWithCache<{ value: string }>(url);
-  return data?.value || null;
+  return parseVersion(data?.value);
+}
+
+/**
+ * A release tag such as "v1.6.0" or "1.6.0-rc.1" (one token containing a dotted version), or null. Shields
+ * answers 200 with its error text in `value` ("invalid", "repo not found", "Unable to select next GitHub token
+ * from pool" …) when it cannot reach GitHub.
+ */
+export function parseVersion(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const v = value.trim();
+  return v.length <= 40 && /^\S*\d+\.\d+\S*$/.test(v) ? v : null;
+}
+
+/** "1.4k" / "1475" → a count, or null for shields' error texts. */
+function parseCount(value: unknown): number | null {
+  if (typeof value !== 'string') return null;
+  const m = /^(\d+(?:\.\d+)?)(k)?$/i.exec(value.trim());
+  if (!m) return null;
+  const [, num = '', k] = m;
+  const n = k ? Math.round(parseFloat(num) * 1000) : parseInt(num, 10);
+  return n > 0 ? n : null;
 }
 
 export async function getRepoInfo(owner: string, repo: string): Promise<RepoInfo | null> {
@@ -218,7 +227,7 @@ export async function getLatestRelease(owner: string, repo: string): Promise<Rel
   const url = `https://api.github.com/repos/${owner}/${repo}/releases/latest`;
   const data = await fetchWithCache<GitHubReleaseResponse>(url);
 
-  if (!data) return null;
+  if (!data || !parseVersion(data.tag_name)) return null;
 
   return {
     tagName: data.tag_name,

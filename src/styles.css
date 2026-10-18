@@ -165,6 +165,28 @@
     height: 0.875rem;
   }
 
+  /* ================================================================== bar brand */
+  /* The LeviMC leaf in the network bar, on a small parchment tile in a wooden frame (the hero's item frame in
+     miniature), so the pale-green mark reads on the dark bar in both themes and sits a pixel taller than the
+     kit's 16px grass sprite. */
+  .lm-bar-logo {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    background: color-mix(in srgb, var(--color-linen) 86%, var(--color-mc-dirt));
+    box-shadow:
+      inset 0 0 0 2px var(--color-mc-dirt),
+      inset 2px 2px 0 2px color-mix(in srgb, var(--color-mc-dirt) 70%, #fff),
+      inset -2px -2px 0 2px var(--color-mc-dirt-dark);
+  }
+  .lm-bar-logo img {
+    display: block;
+    width: 14px;
+    height: 20px;
+  }
+
   /* ================================================================== hero */
   .lm-hero .kit-hero-copy {
     display: flex;
@@ -351,7 +373,12 @@
     margin: 0;
   }
   @media (min-width: 1200px) {
-    /* the hero's aside column (PaintedHero aside): beside the copy */
+    /* the hero's aside column (PaintedHero aside): beside the copy, sitting low in the hero (as before the
+       kit slot) so the painting's focal point above it — the bridge by day, the rising sun at night — stays clear */
+    .lm-hero .kit-hero-aside {
+      align-self: end;
+      margin-bottom: 1.5rem;
+    }
     .lm-code {
       margin: 0;
     }
@@ -934,6 +961,21 @@
     flex: none;
     white-space: nowrap;
   }
+  /* scroll cue while the row continues past an edge (set by BlogNav) */
+  .lm-blog-nav[data-fade] {
+    --lm-fade: 2.5rem;
+    -webkit-mask-image: var(--lm-fade-mask);
+    mask-image: var(--lm-fade-mask);
+  }
+  .lm-blog-nav[data-fade='end'] {
+    --lm-fade-mask: linear-gradient(90deg, #000 calc(100% - var(--lm-fade)), transparent);
+  }
+  .lm-blog-nav[data-fade='start'] {
+    --lm-fade-mask: linear-gradient(90deg, transparent, #000 var(--lm-fade));
+  }
+  .lm-blog-nav[data-fade='both'] {
+    --lm-fade-mask: linear-gradient(90deg, transparent, #000 var(--lm-fade), #000 calc(100% - var(--lm-fade)), transparent);
+  }
   .lm-blog-head {
     margin-bottom: 1.75rem;
   }
@@ -1474,8 +1516,94 @@
     margin: 0 0 1.5rem !important;
     box-shadow: none !important;
   }
+  /* one heading: the section's own "Comments" (Waline's "N Comments" would repeat it) */
+  .lm-waline .wl-meta-head .wl-count {
+    display: none !important;
+  }
+  .lm-waline .wl-meta-head {
+    justify-content: flex-end !important;
+  }
+  /* buttons: the kit's MC bevel buttons (.mc-btn / .mc-btn-primary), drawn with the same stepped frame */
+  .lm-waline .wl-btn {
+    --mc-btn-bg: #ebe5d6;
+    --mc-btn-bg-hover: #f3eee2;
+    --mc-btn-ink: var(--color-ink);
+    --px-border: #2a343c;
+    --px-bevel: inset 0 var(--px) 0 0 rgb(255 255 255 / 0.75), inset 0 calc(var(--px) * -2) 0 0 rgb(60 48 30 / 0.16);
+    margin: var(--px) calc(var(--px) * 2) var(--px) var(--px) !important;
+    padding: 0.375rem 0.875rem 0.5rem !important;
+    border: 0 !important;
+    font-weight: 600 !important;
+    color: var(--mc-btn-ink) !important;
+    background: var(--mc-btn-bg) !important;
+    box-shadow:
+      0 calc(var(--px) * -1) 0 0 var(--px-border),
+      0 var(--px) 0 0 var(--px-border),
+      calc(var(--px) * -1) 0 0 0 var(--px-border),
+      var(--px) 0 0 0 var(--px-border),
+      var(--px-bevel) !important;
+    transition: background-color 0.15s var(--ease-soft), transform 0.06s linear !important;
+  }
+  .lm-waline .wl-btn:hover {
+    background: var(--mc-btn-bg-hover) !important;
+  }
+  .lm-waline .wl-btn:active {
+    transform: translateY(var(--px));
+    --px-bevel: inset 0 var(--px) 0 0 rgb(60 48 30 / 0.18);
+  }
+  .lm-waline .wl-btn:focus-visible {
+    outline: var(--px) solid var(--color-focus) !important;
+    outline-offset: calc(var(--px) * 2);
+  }
+  .lm-waline .wl-btn:disabled {
+    opacity: 0.55;
+    transform: none;
+  }
+  .dark .lm-waline .wl-btn {
+    --mc-btn-bg: #22384c;
+    --mc-btn-bg-hover: #2a4560;
+  }
   .lm-waline .wl-btn.primary {
-    color: var(--color-on-primary) !important;
+    --mc-btn-bg: var(--color-primary-strong);
+    --mc-btn-bg-hover: #43804f;
+    --mc-btn-ink: var(--color-on-primary);
+    --px-border: #183520;
+    --px-bevel: inset 0 var(--px) 0 0 rgb(255 255 255 / 0.28), inset 0 calc(var(--px) * -2) 0 0 rgb(0 0 0 / 0.24);
+    text-shadow: 0 1px 0 rgb(0 0 0 / 0.18);
+  }
+  /* sort: hotbar slots (.hotbar), the selected order in the bright frame */
+  .lm-waline .wl-sort {
+    display: inline-flex !important;
+    gap: var(--px);
+    margin: var(--px) !important;
+    padding: var(--px) !important;
+    list-style: none;
+    background: color-mix(in srgb, var(--color-ink) 7%, var(--color-surface-2));
+    box-shadow:
+      0 calc(var(--px) * -1) 0 0 color-mix(in srgb, var(--color-ink) 30%, var(--color-line-strong)),
+      0 var(--px) 0 0 color-mix(in srgb, var(--color-ink) 30%, var(--color-line-strong)),
+      calc(var(--px) * -1) 0 0 0 color-mix(in srgb, var(--color-ink) 30%, var(--color-line-strong)),
+      var(--px) 0 0 0 color-mix(in srgb, var(--color-ink) 30%, var(--color-line-strong));
+  }
+  .lm-waline .wl-sort li {
+    margin: 0 !important;
+    padding: 0.25rem 0.625rem !important;
+    font-size: 0.8125rem !important;
+    color: color-mix(in srgb, var(--color-ink) 72%, var(--color-muted)) !important;
+  }
+  .lm-waline .wl-sort li:hover {
+    color: var(--color-ink) !important;
+    background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  }
+  .lm-waline .wl-sort li.active {
+    font-weight: 600;
+    color: var(--color-ink) !important;
+    background: var(--color-surface);
+    box-shadow:
+      0 calc(var(--px) * -1) 0 0 var(--color-ink),
+      0 var(--px) 0 0 var(--color-ink),
+      calc(var(--px) * -1) 0 0 0 var(--color-ink),
+      var(--px) 0 0 0 var(--color-ink);
   }
 
   /* ================================================================== footer: the site's own "Resources" row */

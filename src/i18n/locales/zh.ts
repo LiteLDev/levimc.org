@@ -10,7 +10,6 @@ const zh: typeof en = {
     about: "关于我们",
     community: "社区",
     support: "支持我们",
-    mods: "模组",
   },
 
   // Hero section
@@ -142,7 +141,6 @@ const zh: typeof en = {
     resources: "资源",
     ll_documentation: "LeviLamina文档",
     lse_documentation: "LegacyScriptEngine文档",
-    blog: "博客",
     connect: "联系我们",
     copyright: "LeviMC",
   },

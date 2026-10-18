@@ -33,6 +33,29 @@ function BlogNav({ view }: { view: BlogView }) {
     const cur = nav?.querySelector<HTMLElement>('[aria-current="page"]');
     if (nav && cur && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = Math.max(0, cur.offsetLeft - (nav.clientWidth - cur.offsetWidth) / 2);
   }, [active]);
+  // scroll cue: fade the edge(s) the row continues past (data-fade = start | end | both; absent when it fits)
+  useEffect(() => {
+    const nav = ref.current;
+    if (!nav) return;
+    const update = () => {
+      const max = nav.scrollWidth - nav.clientWidth;
+      const start = max > 1 && nav.scrollLeft > 1;
+      const end = max > 1 && nav.scrollLeft < max - 1;
+      const fade = start && end ? 'both' : start ? 'start' : end ? 'end' : null;
+      if (fade) nav.dataset.fade = fade;
+      else delete nav.dataset.fade;
+    };
+    update();
+    nav.addEventListener('scroll', update, { passive: true });
+    // the row's own width changes too (language switch, web fonts) while the nav box keeps its size
+    const ro = new ResizeObserver(update);
+    ro.observe(nav);
+    if (nav.firstElementChild) ro.observe(nav.firstElementChild);
+    return () => {
+      nav.removeEventListener('scroll', update);
+      ro.disconnect();
+    };
+  }, []);
   return (
     <nav ref={ref} className="lm-blog-nav" aria-label={b.sections}>
       <div className="hotbar">
@@ -404,7 +427,7 @@ function PostView({ post }: { post: BlogPost }) {
               <TermChips post={post} />
               {locale !== 'zh' ? (
                 <Badge tone="pond" className="lm-blog-lang">
-                  <span lang="zh-CN">{b.writtenIn}</span>
+                  {b.writtenIn}
                 </Badge>
               ) : null}
             </div>

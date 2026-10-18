@@ -295,9 +295,13 @@ await check('live data: release badge and project stars fill in after hydration'
   await page.goto(base, { waitUntil: 'networkidle' });
   await page.waitForSelector('.lm-release-version', { timeout: 15000 });
   await page.waitForFunction(() => !document.querySelector('.lm-project-stars .lm-skeleton'), null, { timeout: 15000 });
-  const v = await page.locator('.lm-release-version').innerText();
+  const v = (await page.locator('.lm-release-version').innerText()).trim();
+  const stars = await page.locator('.lm-stat-value').first().innerText();
   await ctx.close();
-  return `LeviLamina ${v}`;
+  // shields.io answers 200 with its error text as the value under rate pressure: only a version may show here
+  assert(/^\S*\d+\.\d+\S*$/.test(v), `release badge shows "${v}", not a version`);
+  assert(/^\d+(\.\d+)?k?$/.test(stars.trim()), `star count shows "${stars}"`);
+  return `LeviLamina ${v}, ${stars} stars`;
 });
 
 await check('mobile (390px): the bar folds its entries into its menu; it closes on Escape and after navigating', async () => {
@@ -441,11 +445,25 @@ await check('blog: feeds (rss.xml, atom.xml, feed.json) list every post with abs
   const items = (rss.match(/<item>/g) || []).length;
   assert(items === 3, `rss.xml: ${items} items`);
   assert(rss.includes('<link>https://levimc.org/blog/2024/08/11/fix-empty-packet-spam-by-patch/</link>'), 'rss link');
-  assert(!/(src|href)="\/(?!\/)/.test(rss.replace(/<!\[CDATA\[|\]\]>/g, '')), 'relative URL in rss.xml');
+  assert(!/(src|href)="[/#](?!\/)/.test(rss.replace(/<!\[CDATA\[|\]\]>/g, '')), 'relative URL or bare #anchor in rss.xml');
+  for (const item of rss.split('<item>').slice(1)) {
+    const cats = [...item.matchAll(/<category>([^<]*)<\/category>/g)].map((m) => m[1]);
+    assert(new Set(cats).size === cats.length, `rss.xml: repeated <category> in ${cats.join(', ')}`);
+  }
   const atom = await (await fetch(base + 'blog/atom.xml')).text();
   assert((atom.match(/<entry>/g) || []).length === 3, 'atom.xml entries');
+  for (const entry of atom.split('<entry>').slice(1)) {
+    const terms = [...entry.matchAll(/<category term="([^"]*)"/g)].map((m) => m[1]);
+    assert(new Set(terms).size === terms.length, `atom.xml: repeated category in ${terms.join(', ')}`);
+  }
   const json = await (await fetch(base + 'blog/feed.json')).json();
   assert(json.items.length === 3, 'feed.json items');
+  for (const it of json.items) assert(new Set(it.tags).size === it.tags.length, `feed.json: repeated tag in ${it.tags}`);
+  // a post hydrates after its markdown chunk: the prerendered page preloads it
+  const post = await (await fetch(base + 'blog/2023/07/26/original-fix-BeeCrash/')).text();
+  assert(/<link rel="modulepreload" crossorigin href="\/assets\/blog\/_levimc-blog-doc_original-fix-BeeCrash\.[^"]+\.js">/.test(post), 'post chunk not modulepreloaded');
+  // the old blog's assets keep their paths under /blog/
+  for (const a of ['avatar.png', 'icon.png', 'favicon.ico']) assert((await fetch(base + 'blog/assets/' + a)).status === 200, `blog/assets/${a}`);
   const home = await (await fetch(base + 'blog/')).text();
   assert(home.includes('<link rel="alternate" type="application/rss+xml"'), 'no rss <link rel="alternate">');
   assert(sitemap.includes('<loc>https://levimc.org/blog/</loc>'), 'blog not in sitemap.xml');

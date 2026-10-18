@@ -7,14 +7,19 @@ export const BLOG_DESCRIPTION = 'Everything about development';
 const FEED_LIMIT = 20;
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-/** Feed readers get absolute URLs. */
-const absolutize = (html: string) => html.replace(/\s(href|src)="\/(?!\/)/g, ` $1="${SITE_ORIGIN}/`);
+/** Feed readers get absolute URLs: site-relative paths, and in-page anchors resolved against the post. */
+const absolutize = (html: string, postUrl: string) =>
+  html
+    .replace(/\s(href|src)="\/(?!\/)/g, ` $1="${SITE_ORIGIN}/`)
+    .replace(/\shref="#/g, ` href="${SITE_ORIGIN}${postUrl}#`);
+/** A post's category and tags as one list of distinct names (the category is usually also a tag). */
+const termNames = (p: BuiltBlog['data']['posts'][number]) => [...new Set([p.category?.name, ...p.tags.map((t) => t.name)].filter((n): n is string => !!n))];
 
 export function feeds(b: BuiltBlog): Record<string, string> {
   const posts = b.data.posts.slice(0, FEED_LIMIT);
   const updated = posts[0]?.date ?? '2023-07-26T00:00:00+08:00';
   const home = `${SITE_ORIGIN}/blog/`;
-  const content = (slug: string) => absolutize(b.docs.get(slug)?.html ?? '');
+  const content = (p: { slug: string; url: string }) => absolutize(b.docs.get(p.slug)?.html ?? '', p.url);
 
   const rss =
     `<?xml version="1.0" encoding="utf-8"?>\n` +
@@ -27,9 +32,8 @@ export function feeds(b: BuiltBlog): Record<string, string> {
           `  <item>\n    <title>${esc(p.title)}</title>\n    <link>${SITE_ORIGIN}${p.url}</link>\n    <guid isPermaLink="true">${SITE_ORIGIN}${p.url}</guid>\n` +
           `    <pubDate>${new Date(p.date).toUTCString()}</pubDate>\n` +
           (p.author ? `    <author>contact@levimc.org (${esc(p.author.name)})</author>\n` : '') +
-          (p.category ? `    <category>${esc(p.category.name)}</category>\n` : '') +
-          p.tags.map((t) => `    <category>${esc(t.name)}</category>\n`).join('') +
-          `    <description>${esc(p.excerpt)}</description>\n    <content:encoded><![CDATA[${content(p.slug).replace(/]]>/g, ']]]]><![CDATA[>')}]]></content:encoded>\n  </item>\n`,
+          termNames(p).map((n) => `    <category>${esc(n)}</category>\n`).join('') +
+          `    <description>${esc(p.excerpt)}</description>\n    <content:encoded><![CDATA[${content(p).replace(/]]>/g, ']]]]><![CDATA[>')}]]></content:encoded>\n  </item>\n`,
       )
       .join('') +
     `</channel>\n</rss>\n`;
@@ -44,8 +48,8 @@ export function feeds(b: BuiltBlog): Record<string, string> {
           `  <entry>\n    <title>${esc(p.title)}</title>\n    <id>${SITE_ORIGIN}${p.url}</id>\n    <link href="${SITE_ORIGIN}${p.url}"/>\n` +
           `    <published>${p.date}</published>\n    <updated>${p.date}</updated>\n` +
           (p.author ? `    <author><name>${esc(p.author.name)}</name>${p.author.github ? `<uri>https://github.com/${p.author.github}</uri>` : ''}</author>\n` : '') +
-          [p.category, ...p.tags].filter(Boolean).map((t) => `    <category term="${esc(t!.name)}"/>\n`).join('') +
-          `    <summary>${esc(p.excerpt)}</summary>\n    <content type="html">${esc(content(p.slug))}</content>\n  </entry>\n`,
+          termNames(p).map((n) => `    <category term="${esc(n)}"/>\n`).join('') +
+          `    <summary>${esc(p.excerpt)}</summary>\n    <content type="html">${esc(content(p))}</content>\n  </entry>\n`,
       )
       .join('') +
     `</feed>\n`;
@@ -63,10 +67,10 @@ export function feeds(b: BuiltBlog): Record<string, string> {
         url: `${SITE_ORIGIN}${p.url}`,
         title: p.title,
         summary: p.excerpt,
-        content_html: content(p.slug),
+        content_html: content(p),
         date_published: p.date,
         authors: p.author ? [{ name: p.author.name, ...(p.author.github ? { url: `https://github.com/${p.author.github}` } : {}) }] : undefined,
-        tags: [p.category?.name, ...p.tags.map((t) => t.name)].filter(Boolean),
+        tags: termNames(p),
       })),
     },
     null,

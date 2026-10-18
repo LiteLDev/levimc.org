@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { GlobalBar, type LinkLikeProps, type SiteId } from '../../kit/components';
 import { useI18n, kitLocale, LOCALES } from '../i18n';
 import { SITE_ORIGIN, type RouteId } from '../routes';
-import logoUrl from '../icons/logo.svg';
+import logoMarkUrl from '../icons/logo-mark.svg';
 
 /** Same-site links of the bar and footer navigate inside the app (no full reload). */
 export function RouterLink({ href, children, ...rest }: LinkLikeProps) {
@@ -39,7 +39,11 @@ export default function SiteHeader({ current }: { current: RouteId | null }) {
       sticky
       siteOrigin={SITE_ORIGIN}
       linkComponent={RouterLink}
-      brandIcon={<img src={logoUrl} alt="" width={16} height={16} />}
+      brandIcon={
+        <span className="lm-bar-logo" aria-hidden="true">
+          <img src={logoMarkUrl} alt="" width={14} height={20} />
+        </span>
+      }
       languages={{ options: LANGUAGE_OPTIONS, current: locale, onSelect: (code) => setLocale(code as typeof locale) }}
     />
   );
