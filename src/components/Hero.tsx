@@ -60,10 +60,6 @@ export default function Hero() {
           {stats ? <div className="lm-stat-value">{stats.forks}+</div> : <div className="lm-skeleton lm-stat-skeleton" />}
           <div className="lm-stat-label">{t.hero.forks}</div>
         </div>
-        <div className="lm-stat">
-          <div className="lm-stat-value">4</div>
-          <div className="lm-stat-label">{t.hero.languages}</div>
-        </div>
       </div>
 
     </PaintedHero>
