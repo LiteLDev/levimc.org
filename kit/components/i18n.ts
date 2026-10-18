@@ -23,7 +23,6 @@ export interface UiStrings {
   footerConnect: string;
   email: string;
   /** Trademark notice of the footer's legal row (Minecraft brand guidelines wording). */
-  notAffiliated: string;
   /** Footer link to levimc.org/support/. */
   supportUs: string;
   rights: string;
@@ -86,7 +85,6 @@ const en: UiStrings = {
   tagline: 'Open-source modding for Minecraft Bedrock Edition — mod loader, script engine, package manager and launchers.',
   footerConnect: 'Connect',
   email: 'Email',
-  notAffiliated: 'Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.',
   supportUs: 'Support us',
   rights: 'LeviMC',
   theme: 'Theme',
@@ -149,7 +147,6 @@ const zhCN: UiStrings = {
   tagline: '面向 Minecraft 基岩版的开源模组生态——模组加载器、脚本引擎、包管理器与启动器。',
   footerConnect: '联系我们',
   email: '邮箱',
-  notAffiliated: '非 Minecraft 官方产品，未经 Mojang 或 Microsoft 批准，也与其无关。',
   supportUs: '支持我们',
   rights: 'LeviMC',
   theme: '主题',
@@ -212,7 +209,6 @@ const zhHK: UiStrings = {
   tagline: '面向 Minecraft 基岩版的開源模組生態——模組載入器、腳本引擎、套件管理器與啟動器。',
   footerConnect: '聯絡我們',
   email: '電郵',
-  notAffiliated: '非 Minecraft 官方產品，未經 Mojang 或 Microsoft 批准，亦與其無關。',
   supportUs: '支持我們',
   theme: '主題',
   themeLight: '淺色',
@@ -274,7 +270,6 @@ const es: UiStrings = {
   tagline: 'Modding de código abierto para Minecraft Bedrock Edition: cargador de mods, motor de scripts, gestor de paquetes y lanzadores.',
   footerConnect: 'Contacto',
   email: 'Correo',
-  notAffiliated: 'No es un producto oficial de Minecraft. No está aprobado por Mojang ni Microsoft ni asociado con ellos.',
   supportUs: 'Apóyanos',
   rights: 'LeviMC',
   theme: 'Tema',
@@ -337,7 +332,6 @@ const ru: UiStrings = {
   tagline: 'Моддинг Minecraft Bedrock Edition с открытым исходным кодом: загрузчик модов, скриптовый движок, менеджер пакетов и лаунчеры.',
   footerConnect: 'Связь',
   email: 'Почта',
-  notAffiliated: 'Не является официальным продуктом Minecraft. Не одобрено Mojang или Microsoft и не связано с ними.',
   supportUs: 'Поддержать нас',
   rights: 'LeviMC',
   theme: 'Тема',
@@ -400,7 +394,6 @@ const de: UiStrings = {
   tagline: 'Open-Source-Modding für Minecraft Bedrock Edition – Mod-Loader, Skript-Engine, Paketmanager und Launcher.',
   footerConnect: 'Kontakt',
   email: 'E-Mail',
-  notAffiliated: 'Kein offizielles Minecraft-Produkt. Nicht von Mojang oder Microsoft genehmigt oder mit ihnen verbunden.',
   supportUs: 'Unterstütze uns',
   rights: 'LeviMC',
   theme: 'Design',
@@ -463,7 +456,6 @@ const ja: UiStrings = {
   tagline: 'Minecraft 統合版のためのオープンソース Mod 環境 — Mod ローダー、スクリプトエンジン、パッケージマネージャー、ランチャー。',
   footerConnect: 'つながる',
   email: 'メール',
-  notAffiliated: 'Minecraft の公式製品ではありません。Mojang および Microsoft による承認を受けておらず、関係もありません。',
   supportUs: '支援する',
   rights: 'LeviMC',
   theme: 'テーマ',
@@ -526,7 +518,6 @@ const ko: UiStrings = {
   tagline: 'Minecraft 베드락 에디션을 위한 오픈 소스 모딩 — 모드 로더, 스크립트 엔진, 패키지 관리자, 런처.',
   footerConnect: '연결',
   email: '이메일',
-  notAffiliated: '공식 Minecraft 제품이 아닙니다. Mojang 또는 Microsoft의 승인을 받지 않았으며 관련이 없습니다.',
   supportUs: '후원하기',
   rights: 'LeviMC',
   theme: '테마',
@@ -589,7 +580,6 @@ const fr: UiStrings = {
   tagline: 'Modding open source pour Minecraft Bedrock Edition : chargeur de mods, moteur de scripts, gestionnaire de paquets et lanceurs.',
   footerConnect: 'Nous suivre',
   email: 'E-mail',
-  notAffiliated: 'Produit non officiel de Minecraft. Non approuvé par Mojang ou Microsoft et non associé à ces derniers.',
   supportUs: 'Nous soutenir',
   rights: 'LeviMC',
   theme: 'Thème',

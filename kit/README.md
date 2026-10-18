@@ -16,7 +16,7 @@ Display type is **Manrope** (a modern geometric sans), body **Inter**.
 Docs sites are compiled at build time (unified/remark/rehype + Shiki) and statically prerendered — one real
 HTML file per URL for GitHub Pages — then hydrated into a SPA.
 
-Version: see `VERSION` (2.0.0) and the [Changelog](#changelog) (with migration notes for every site).
+Version: see `VERSION` (2.1.1) and the [Changelog](#changelog) (with migration notes for every site).
 
 ---
 
@@ -803,6 +803,14 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 ## Changelog
 
+### 2.1.1 — 2026-10-18
+
+**Footer: no disclaimer.** The legal row drops the "Not an official Minecraft product…" notice; it is now © year ·
+**Support us** only. `UiStrings.notAffiliated`, `.kit-footer-notice` and `--kf-faint` are gone.
+
+#### Migrating a site to 2.1.1
+Nothing is required.
+
 ### 2.1.0 — 2026-10-18
 
 **Aesthetics: one edge, a modern face, more Monet.** Feedback: the grass-block strip between banner and page was
@@ -847,8 +855,7 @@ list re-attachment, `tests/preprocess-hoist.test.mjs`) are upstream.
   button always opens the LiteLDev organisation; language options carry the kit's names (`uiLocaleName`) and the
   trigger shows the full name.
 * Footer (following small OSS orgs: each channel once, no copy of the bar's links): mark + tagline, the social icons
-  (Discord, Telegram, X, YouTube, GitHub, Email), and one legal row — © year · **Support us** · "Not an official
-  Minecraft product. Not approved by or associated with Mojang or Microsoft." No link columns.
+  (Discord, Telegram, X, YouTube, GitHub, Email), and one legal row — © year · **Support us**. No link columns.
 * Doxygen: the bar and footer match the docs pages (line heights, weights, social tiles, screen-reader text no longer
   bent by doxygen.css / doxygen-awesome); `.kit-footer` has fixed metrics.
 

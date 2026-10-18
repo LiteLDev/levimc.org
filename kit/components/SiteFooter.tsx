@@ -95,9 +95,6 @@ export function SiteFooter({ locale, strings, year = BUILD_YEAR, siteOrigin, lin
                 <span data-kit-t="supportUs">{t.supportUs}</span>
               </FooterLink>
             </p>
-            <p className="kit-footer-notice" data-kit-t="notAffiliated">
-              {t.notAffiliated}
-            </p>
           </div>
         </div>
       </div>

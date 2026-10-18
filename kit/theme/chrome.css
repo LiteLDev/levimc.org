@@ -621,7 +621,6 @@
   .kit-footer {
     --kf-ink: var(--color-ink);
     --kf-muted: #3f4c55;
-    --kf-faint: #55626b;
     --kf-tile: rgb(255 253 247 / 0.72);
     --kf-tile-border: rgb(31 42 51 / 0.22);
     --kf-tile-hover: #ffffff;
@@ -640,7 +639,6 @@
   .dark .kit-footer {
     --kf-ink: #e6edf0;
     --kf-muted: #b6c4c9;
-    --kf-faint: #98a9af;
     --kf-tile: rgb(8 19 27 / 0.55);
     --kf-tile-border: rgb(230 237 240 / 0.2);
     --kf-tile-hover: rgb(111 191 115 / 0.24);
@@ -781,9 +779,6 @@
   .kit-footer-support:hover {
     text-decoration: underline;
     text-underline-offset: 0.2em;
-  }
-  .kit-footer-notice {
-    color: var(--kf-faint);
   }
   .kit-footer-sep {
     margin: 0 0.5rem;
