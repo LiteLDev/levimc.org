@@ -28,14 +28,19 @@ jobs:
           node-version: 24
 
       - run: |
-          pnpm install
+          pnpm install --frozen-lockfile
 
+      # The token lets the build look up where renamed package repositories
+      # live now (one GraphQL request per 100 packages); without it links keep
+      # the tooth path.
       - run: |
           pnpm build
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: out
+          path: dist
 
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
@@ -60,10 +65,17 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
+          cache: pnpm
           node-version: 24
 
       - run: |
-          pnpm install
+          pnpm install --frozen-lockfile
 
       - run: |
           pnpm lint
+
+      - run: |
+          pnpm typecheck
+
+      - run: |
+          pnpm test

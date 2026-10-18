@@ -2,35 +2,48 @@
   "name": "bedrinth",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "lint": "eslint"
+    "dev": "vite",
+    "build": "vite build && vite build --ssr src/entry-server.tsx --outDir .kit/ssr && node prerender.mjs",
+    "preview": "node kit/scripts/serve-pages.mjs dist --base / --port 4173",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
+    "test": "node --test \"src/**/*.test.ts\"",
+    "linkcheck": "node kit/scripts/linkcheck.mjs dist --base / --site-origin https://pkg.levimc.org",
+    "smoke": "node scripts/smoke.mjs --url http://127.0.0.1:4173/"
   },
   "dependencies": {
-    "flexsearch": "^0.8.212",
-    "lucide-react": "^0.577.0",
-    "next": "16.1.6",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "react-markdown": "^10.1.0",
-    "rehype-raw": "^7.0.0",
-    "rehype-sanitize": "^6.0.0",
-    "rehype-slug": "^6.0.0",
-    "remark-gfm": "^4.0.1",
-    "unist-util-visit": "^5.1.0"
+    "flexsearch": "0.8.212",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-markdown": "10.1.0",
+    "react-router": "7.18.4",
+    "rehype-raw": "7.0.0",
+    "rehype-sanitize": "6.0.0",
+    "rehype-slug": "6.0.0",
+    "remark-gfm": "4.0.1",
+    "unist-util-visit": "5.1.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.2",
-    "@tailwindcss/typography": "^0.5.19",
-    "@types/mdast": "^4.0.4",
-    "@types/node": "^26.5.1",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "eslint": "^9.39.4",
-    "eslint-config-next": "16.1.6",
-    "tailwindcss": "^4.3.3",
-    "typescript": "^5.9.3"
+    "@eslint/js": "10.0.1",
+    "@tailwindcss/vite": "4.3.3",
+    "@types/hast": "3.0.5",
+    "@types/mdast": "4.0.4",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "eslint": "10.13.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.13.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.2",
+    "vite": "8.3.4"
   },
   "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
 }

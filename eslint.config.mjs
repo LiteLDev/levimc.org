@@ -1,11 +1,26 @@
 import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import reactHooks from "eslint-plugin-react-hooks";
+import globals from "globals";
 
 const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
+  globalIgnores([
+    "dist/**",
+    ".kit/**",
+    // The vendored levimc-kit is linted where it is maintained.
+    "kit/**",
+  ]),
   {
+    files: ["**/*.{ts,tsx}"],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs.flat.recommended,
+    ],
+    languageOptions: {
+      globals: globals.browser,
+    },
     rules: {
       // Let components drop props they do not forward, as in the
       // `({ node, ...props })` react-markdown components use.
@@ -15,15 +30,20 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    ".open-next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
+  {
+    files: ["**/*.mjs", "vite.config.ts"],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
+    // Browser tests: callbacks passed to page.evaluate() run in the page.
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
+    },
+  },
 ]);
 
 export default eslintConfig;
