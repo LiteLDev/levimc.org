@@ -1,95 +1,10 @@
-import FlexSearch from "flexsearch";
-import type {
-  Package,
-  PackageIndex,
-  PackageInfo,
-  RawPackageEntry,
-} from "../types";
+import type { Manifest, PackageIndex, RawPackageEntry } from "../types";
 
 const PACKAGE_INDEX_URL = "https://lipr.levimc.org/index.json";
 const PACKAGE_REGISTRY_URL = "https://lipr.levimc.org";
 
-export const ITEMS_PER_PAGE = 60;
-const SEARCH_LIMIT = 1000;
-const SEARCH_NAME_WEIGHT = 3;
-const SEARCH_TAG_WEIGHT = 2;
-const MAX_RANK_BASE = 1000;
-
-// Reuse a built search index across searches to avoid rebuilding FlexSearch
-// every time the query changes.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let cachedSearchIndex: any | null = null;
-let cachedSearchFingerprint = "";
-
-export function normalizePackageIndex(index: PackageIndex): Package[] {
-  return Object.entries(index.packages).map(([tooth, pkg]) => ({
-    tooth,
-    info: {
-      ...pkg.info,
-      tags: Array.isArray(pkg.info.tags) ? pkg.info.tags : [],
-    },
-    stars: pkg.stargazer_count,
-    updated: pkg.updated_at,
-    versions: Array.from(
-      new Set(
-        Object.values(pkg.variants).flatMap((variant) => variant.versions),
-      ),
-    ),
-  }));
-}
-
-export type SortOption = "relevance" | "updated" | "stars";
-
-function getUpdatedTimestamp(updated: string): number {
-  const ts = Date.parse(updated);
-  return Number.isNaN(ts) ? 0 : ts;
-}
-
-function buildSearchFingerprint(packages: Package[]): string {
-  const first = packages[0];
-  const last = packages.at(-1);
-  if (!first || !last) return "0";
-
-  return [
-    String(packages.length),
-    first.tooth,
-    first.updated,
-    last.tooth,
-    last.updated,
-  ].join("|");
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getSearchIndex(packages: Package[]): any {
-  const nextFingerprint = buildSearchFingerprint(packages);
-  if (cachedSearchIndex && cachedSearchFingerprint === nextFingerprint) {
-    return cachedSearchIndex;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const idx: any = new FlexSearch.Document({
-    document: {
-      id: "tooth",
-      index: [
-        { field: "info:name", tokenize: "full" },
-        { field: "info:description", tokenize: "full" },
-        { field: "info:tags", tokenize: "strict" },
-      ],
-      store: true,
-    },
-  });
-
-  for (const pkg of packages) {
-    idx.add({ tooth: pkg.tooth, info: pkg.info });
-  }
-
-  cachedSearchIndex = idx;
-  cachedSearchFingerprint = nextFingerprint;
-  return idx;
-}
-
 // ---------------------------------------------------------------------------
-// Data Fetching
+// Data fetching
 // ---------------------------------------------------------------------------
 
 /**
@@ -97,7 +12,7 @@ function getSearchIndex(packages: Package[]): any {
  * single flaky request during the hourly rebuild would otherwise ship a page
  * without its README until the next one.
  */
-async function fetchWithRetry(url: string, attempts = 3): Promise<Response> {
+export async function fetchWithRetry(url: string, attempts = 3): Promise<Response> {
   for (let attempt = 1; ; attempt++) {
     try {
       const res = await fetch(url);
@@ -119,117 +34,18 @@ export async function fetchPackageIndex(): Promise<PackageIndex> {
 }
 
 // ---------------------------------------------------------------------------
-// Search  (FlexSearch, index reused across searches)
-// ---------------------------------------------------------------------------
-
-export function searchPackages(
-  packages: Package[],
-  query: string,
-): { results: Package[]; scores: Map<string, number> } {
-  if (!query.trim()) {
-    return { results: packages, scores: new Map() };
-  }
-
-  const idx = getSearchIndex(packages);
-
-  const searchResults = idx.search(query, { limit: SEARCH_LIMIT });
-  const scores = new Map<string, number>();
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  for (const fieldResult of searchResults as any[]) {
-    let weight = 1;
-    if (fieldResult.field === "info:name") weight = SEARCH_NAME_WEIGHT;
-    else if (fieldResult.field === "info:tags") weight = SEARCH_TAG_WEIGHT;
-
-    fieldResult.result.forEach((id: string, idx: number) => {
-      const rankScore = (MAX_RANK_BASE - idx) * weight;
-      scores.set(id, (scores.get(id) || 0) + rankScore);
-    });
-  }
-
-  if (searchResults.length === 0) {
-    return { results: [], scores };
-  }
-
-  const results = packages.filter((pkg) => scores.has(pkg.tooth));
-  return { results, scores };
-}
-
-// ---------------------------------------------------------------------------
-// Filtering
-// ---------------------------------------------------------------------------
-
-export function filterByTags(packages: Package[], tags: string[]): Package[] {
-  if (tags.length === 0) return packages;
-  return packages.filter((pkg) =>
-    tags.every((tag) => (pkg.info.tags ?? []).includes(tag)),
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Sorting
-// ---------------------------------------------------------------------------
-
-export function sortPackages(
-  packages: Package[],
-  sortBy: SortOption,
-  scores: Map<string, number>,
-  hasQuery: boolean,
-): Package[] {
-  return [...packages].sort((a, b) => {
-    if (sortBy === "relevance") {
-      if (!hasQuery) return 0;
-      return (scores.get(b.tooth) || 0) - (scores.get(a.tooth) || 0);
-    }
-    if (sortBy === "stars") {
-      return b.stars - a.stars;
-    }
-    // "updated"
-    return getUpdatedTimestamp(b.updated) - getUpdatedTimestamp(a.updated);
-  });
-}
-
-// ---------------------------------------------------------------------------
-// Pagination
-// ---------------------------------------------------------------------------
-
-export function paginatePackages(
-  packages: Package[],
-  page: number,
-  perPage: number = ITEMS_PER_PAGE,
-): { items: Package[]; totalPages: number } {
-  const totalPages = Math.max(1, Math.ceil(packages.length / perPage));
-  const safePage = Math.max(1, Math.min(page, totalPages));
-  const start = (safePage - 1) * perPage;
-  return {
-    items: packages.slice(start, start + perPage),
-    totalPages,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Tags
-// ---------------------------------------------------------------------------
-
-export function extractTags(packages: Package[]): string[] {
-  const tagCounts = new Map<string, number>();
-  for (const pkg of packages) {
-    const tags = pkg.info.tags ?? [];
-    for (const tag of tags) {
-      tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
-    }
-  }
-
-  return Array.from(tagCounts.keys()).sort((a, b) => {
-    const countDiff = (tagCounts.get(b) || 0) - (tagCounts.get(a) || 0);
-    if (countDiff !== 0) return countDiff;
-    return a.localeCompare(b);
-  });
-}
-
-// ---------------------------------------------------------------------------
 // URL helpers
 // ---------------------------------------------------------------------------
+
+/** The repository owner in a tooth (`github.com/<owner>/<repo>`). */
+export function ownerOf(tooth: string): string {
+  return tooth.split("/")[1] ?? tooth;
+}
+
+/** A GitHub user's or organisation's avatar (answers 200 directly, no redirect). */
+export function ownerAvatar(owner: string, size = 144): string {
+  return `https://avatars.githubusercontent.com/${encodeURIComponent(owner)}?s=${size}`;
+}
 
 /** The page of a package: `/packages/github.com/LiteLDev/LeviLamina/`. */
 export function packagePath(tooth: string): string {
@@ -247,18 +63,6 @@ export function toothFromPath(pathname: string): string | null {
   }
 }
 
-/**
- * A date as the visitor's browser formats it (their locale and time zone), or
- * — with `prerendered` — as the build prints it: US format in UTC. Pages
- * hydrate with the prerendered form and switch to the local one after.
- */
-export function formatDate(value: string, prerendered = false): string {
-  const date = new Date(value);
-  return prerendered
-    ? date.toLocaleDateString("en-US", { timeZone: "UTC" })
-    : date.toLocaleDateString();
-}
-
 export function getPackageManifestUrl(tooth: string, version: string): string {
   return `${PACKAGE_REGISTRY_URL}/packages/${tooth}@${version}/tooth.json`;
 }
@@ -272,8 +76,7 @@ export interface RepoBaseUrls {
 
 /**
  * The repository a tooth was published from: `https://<tooth>`, or where that
- * repository lives now when the build could find out (see
- * `server/repositories.ts`).
+ * repository lives now when the build could find out (see `server/github.ts`).
  */
 export function getRepositoryUrl(tooth: string, current?: string): string {
   return current ?? `https://${tooth}`;
@@ -301,20 +104,37 @@ export function getReadmeUrl(repository: string, version: string): string {
   return `${getRepoBaseUrls(repository, version).raw}README.md`;
 }
 
+/**
+ * A version's release page on GitHub when the build saw that release (its
+ * exact tag), else the repository's releases.
+ */
+export function getReleaseUrl(repository: string, release: { tag: string } | undefined): string {
+  return release ? `${repository}/releases/tag/${encodeURIComponent(release.tag)}` : `${repository}/releases`;
+}
+
 // ---------------------------------------------------------------------------
 // Package details  (fetched at build time for the latest version, and in the
 // browser for any other; both hosts allow cross-origin reads)
 // ---------------------------------------------------------------------------
 
-export async function fetchManifestInfo(
-  tooth: string,
-  version: string,
-): Promise<PackageInfo | null> {
+/** A version's manifest (`tooth.json`), or `null` when lipr has none for it. */
+export async function fetchManifest(tooth: string, version: string): Promise<Manifest | null> {
   try {
     const res = await fetchWithRetry(getPackageManifestUrl(tooth, version));
     if (!res.ok) return null;
-    const manifest = await res.json();
-    return manifest?.info ?? null;
+    const manifest = (await res.json()) as Partial<Manifest> | null;
+    if (!manifest?.info) return null;
+    return {
+      info: { ...manifest.info, tags: Array.isArray(manifest.info.tags) ? manifest.info.tags : [] },
+      variants: Array.isArray(manifest.variants)
+        ? manifest.variants.map(({ label, platform, dependencies, assets }) => ({
+            label: label ?? "",
+            ...(platform ? { platform } : {}),
+            ...(dependencies ? { dependencies } : {}),
+            ...(assets ? { assets: assets.map((a) => ({ placements: (a.placements ?? []).map((p) => ({ dest: p.dest })) })) } : {}),
+          }))
+        : [],
+    };
   } catch {
     return null;
   }
@@ -349,6 +169,16 @@ export function getVersionsForVariant(
   const variantMeta = pkg.variants[variant];
   if (!variantMeta) return [];
   return Array.from(new Set(variantMeta.versions));
+}
+
+/** Every version of a package, over all variants, in index order. */
+export function getAllVersions(pkg: RawPackageEntry): string[] {
+  return Array.from(new Set(Object.values(pkg.variants).flatMap((v) => v.versions)));
+}
+
+/** A semver pre-release (`1.0.0-rc.1`, `0.3.0-mc26.51`). */
+export function isPrerelease(version: string): boolean {
+  return /^\d+\.\d+\.\d+-/.test(version);
 }
 
 export interface PackageSelection {
@@ -392,24 +222,51 @@ export function resolveSelection(
   return { variant, version };
 }
 
-/** Links to the bare page for the default selection, so it has one URL. */
+/** The package page's tabs; Description is the default and has no `tab=`. */
+export const PACKAGE_TABS = ["description", "versions", "dependencies"] as const;
+export type PackageTab = (typeof PACKAGE_TABS)[number];
+
+export function parseTab(value: string | null): PackageTab {
+  return (PACKAGE_TABS as readonly string[]).includes(value ?? "") ? (value as PackageTab) : "description";
+}
+
+/**
+ * The URL of a selection (and tab). The default selection on the Description
+ * tab is the bare page, so it has one URL.
+ */
 export function buildPackageUrl(
   tooth: string,
   pkg: RawPackageEntry,
   selection: PackageSelection,
+  tab: PackageTab = "description",
 ): string {
   const fallback = getDefaultSelection(pkg);
   const base = packagePath(tooth);
-  if (
-    fallback &&
-    fallback.variant === selection.variant &&
-    fallback.version === selection.version
-  ) {
-    return base;
-  }
-
   const query = new URLSearchParams();
-  query.set("variant", selection.variant);
-  query.set("version", selection.version);
-  return `${base}?${query.toString()}`;
+  if (
+    !fallback ||
+    fallback.variant !== selection.variant ||
+    fallback.version !== selection.version
+  ) {
+    query.set("variant", selection.variant);
+    query.set("version", selection.version);
+  }
+  if (tab !== "description") query.set("tab", tab);
+  const qs = query.toString();
+  return qs ? `${base}?${qs}` : base;
+}
+
+/** The `lip install` command of a selection. */
+export function installCommand(tooth: string, variant: string, version: string): string {
+  return variant === "" ? `lip install ${tooth}@${version}` : `lip install ${tooth}#${variant}@${version}`;
+}
+
+/**
+ * A command in parts that never break inside: `lip install `, the tooth's
+ * path segments (`github.com/`, `LiteLDev/`, `LeviLamina`), then `#variant`
+ * and `@version` — so a phone wraps it between them, never at the hyphen of
+ * `1.0.0-rc.1`. Only a part wider than the whole box breaks (styles.css).
+ */
+export function commandParts(command: string): string[] {
+  return command.split(/(?<=\/)|(?=[@#])|(?<=^lip install )/);
 }

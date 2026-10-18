@@ -1,10 +1,19 @@
 import type { RepositoryRenames } from "./lib/markdown";
 import type { PackageSelection } from "./lib/packages";
-import type { Package, PackageInfo, RawPackageEntry } from "./types";
+import type {
+  Catalog,
+  CatalogEntry,
+  ManifestVariant,
+  PackageInfo,
+  RawPackageEntry,
+  RelatedPackage,
+  ReleaseInfo,
+} from "./types";
 
-/** A version's manifest info (`null`: use the index's) and README. */
+/** A version's manifest info and variants (`null`: lipr has no manifest for it) and README. */
 export interface PackageDetails {
   info: PackageInfo | null;
+  variants: ManifestVariant[] | null;
   /** `null` when the version has no README. */
   readme: string | null;
 }
@@ -15,28 +24,46 @@ export interface PackageDetails {
  * and read back from that HTML when the app navigates to another page.
  */
 export type PageData = (
-  | { kind: "home"; packages: Package[] }
+  | { kind: "home"; catalog: Catalog }
   | {
       kind: "package";
       tooth: string;
       pkg: RawPackageEntry;
+      entry: CatalogEntry;
       /** The package's repository, where it lives today (see `getRepositoryUrl`). */
       repository: string;
       /** The selection the page is prerendered for, and its details. */
       prerendered: PackageSelection & PackageDetails;
+      /** GitHub releases by version (empty without GitHub data). */
+      releases: Record<string, ReleaseInfo>;
+      /** The LeviLamina range of each version, per variant (empty without levilauncher.json). */
+      llRanges: Record<string, Record<string, string>>;
+      /** Packages whose latest version depends on this one. */
+      dependents: RelatedPackage[];
+      /** Packages any version depends on, by lower-case tooth (dependency cards). */
+      related: Record<string, RelatedPackage>;
+      /** The repository takes issues (an Issues link); false when unknown. */
+      hasIssues: boolean;
+      /** levilauncher.json was available ("Required by" is known). */
+      dependentsKnown: boolean;
     }
   | { kind: "not-found"; tooths: string[] }
 ) & {
   /**
    * Package repositories GitHub now serves under another name, so avatars
-   * and README links can skip the redirect (see `server/repositories.ts`).
+   * and README links can skip the redirect (see `server/github.ts`).
    */
   renames: RepositoryRenames;
 };
 
-export const SITE_NAME = "bedrinth";
-export const SITE_DESCRIPTION = "A package index for LeviLamina";
+export const SITE_NAME = "LeviMC Mods";
+export const SITE_TAGLINE = "Mods & plugins for Minecraft Bedrock";
 export const SITE_ORIGIN = "https://pkg.levimc.org";
+
+/** The home page's description, with the live counts. */
+export function siteDescription(projects: number): string {
+  return `Browse ${projects} mods and plugins for Minecraft Bedrock — LeviLamina, LegacyScriptEngine and Endstone. Install any of them with lip.`;
+}
 
 const PAGE_DATA_ID = "pkg-page-data";
 const PAGE_DATA_SCRIPT = new RegExp(
@@ -73,18 +100,18 @@ export function pageMeta(data: PageData): PageMeta {
   switch (data.kind) {
     case "home":
       return {
-        title: SITE_NAME,
-        description: SITE_DESCRIPTION,
+        title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+        description: siteDescription(data.catalog.stats.projects),
         canonical: `${SITE_ORIGIN}/`,
       };
     case "package":
       return {
-        title: `${data.pkg.info.name} | ${SITE_NAME}`,
-        description: data.pkg.info.description,
+        title: `${data.entry.name} | ${SITE_NAME}`,
+        description: data.pkg.info.description || `${data.entry.name} on ${SITE_NAME}`,
         canonical: `${SITE_ORIGIN}/packages/${data.tooth}/`,
       };
     case "not-found":
-      return { title: `Not Found | ${SITE_NAME}`, description: SITE_DESCRIPTION };
+      return { title: `Not Found | ${SITE_NAME}`, description: `${SITE_NAME} — ${SITE_TAGLINE}` };
   }
 }
 
@@ -110,6 +137,7 @@ export function pageHead(data: PageData): string {
     `<meta property="og:site_name" content="${SITE_NAME}" />`,
     `<meta property="og:title" content="${escapeHtml(meta.title)}" />`,
     `<meta property="og:description" content="${escapeHtml(meta.description)}" />`,
+    `<meta property="og:image" content="${SITE_ORIGIN}/icon.png" />`,
   );
   if (meta.canonical) {
     tags.push(`<meta property="og:url" content="${escapeHtml(meta.canonical)}" />`);

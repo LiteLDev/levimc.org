@@ -1,37 +1,32 @@
-import { useSearchParams } from "react-router";
-import { PaintedHero } from "../../kit/components";
-import { PackageBrowser, type BrowseParams } from "../components/package-browser";
-import { Search } from "../components/search";
-import { useHydrated } from "../page-store";
-import type { Package } from "../types";
+import { CompactHero } from "../components/compact-hero";
+import { PackageBrowser } from "../components/package-browser";
+import { formatNumber, useI18n } from "../i18n";
+import type { Catalog } from "../types";
 
 /**
- * The package list. The prerendered HTML is the unfiltered first page; the
- * query string (`?q=&tags=&sort=&page=`) is applied once the page hydrates.
+ * The listing. A compact painted hero with the catalogue's size, then the
+ * results right away.
  */
-export function HomePage({ packages }: { packages: Package[] }) {
-  const [searchParams] = useSearchParams();
-  const hydrated = useHydrated();
-  const params: BrowseParams = hydrated
-    ? {
-        q: searchParams.get("q") ?? undefined,
-        tags: searchParams.get("tags") ?? undefined,
-        sort: searchParams.get("sort") ?? undefined,
-        page: searchParams.get("page") ?? undefined,
-      }
-    : {};
-
+export function HomePage({ catalog }: { catalog: Catalog }) {
+  const { t, locale } = useI18n();
+  const { projects, authors, versions } = catalog.stats;
+  const n = (v: number) => formatNumber(v, locale);
   return (
     <main id="main" className="pkg-main pkg-home kit-above-backdrop" tabIndex={-1}>
-      <PaintedHero
-        className="pkg-hero"
-        name="bedrinth"
-        image={{ src: "/icon.png", alt: "Bedrinth icon", width: 64, height: 64 }}
-        seed={7}
-      >
-        <Search variant="hero" />
-      </PaintedHero>
-      <PackageBrowser packages={packages} params={params} />
+      <CompactHero name={t.siteName} tagline={t.tagline}>
+        <p className={`pkg-hero-stats${locale === "en" ? " kit-pixel-label" : ""}`}>
+          <span>{t.statProjects(n(projects))}</span>
+          <span className="pkg-hero-sep" aria-hidden="true">
+            ·
+          </span>
+          <span>{t.statAuthors(n(authors))}</span>
+          <span className="pkg-hero-sep pkg-hero-extra" aria-hidden="true">
+            ·
+          </span>
+          <span className="pkg-hero-extra">{t.statVersions(n(versions))}</span>
+        </p>
+      </CompactHero>
+      <PackageBrowser catalog={catalog} />
     </main>
   );
 }

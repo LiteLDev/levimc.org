@@ -1,77 +1,72 @@
-// Build-time data: the lipr index, each package's default README and
-// manifest, and where its repository lives. Only the server bundle (prerender,
-// dev server) imports this.
+// Build-time page data: the catalogue for `/`, and for each package page its
+// default README and manifest, releases, LeviLamina ranges and the packages it
+// depends on or is required by. Only the server bundle (prerender, dev server)
+// imports this.
 import {
-  fetchManifestInfo,
-  fetchPackageIndex,
   fetchReadme,
   getDefaultSelection,
   getRepositoryUrl,
-  normalizePackageIndex,
   packagePath,
   toothFromPath,
 } from "../lib/packages";
-import type { RepositoryRenames } from "../lib/markdown";
 import type { PageData } from "../page-data";
-import type { PackageIndex } from "../types";
-import { repositoryRenames, resolveRepositories } from "./repositories";
-
-let index: Promise<PackageIndex> | undefined;
-let repositories:
-  | Promise<{ urls: Map<string, string>; renames: RepositoryRenames }>
-  | undefined;
-
-/** The lipr index, fetched once per build. */
-function loadIndex(): Promise<PackageIndex> {
-  index ??= fetchPackageIndex();
-  return index;
-}
-
-/** Current repository URLs, and the ones that moved, looked up once per build. */
-function loadRepositories() {
-  repositories ??= loadIndex()
-    .then(({ packages }) => resolveRepositories(Object.keys(packages)))
-    .then((urls) => ({ urls, renames: repositoryRenames(urls) }));
-  return repositories;
-}
+import type { RelatedPackage } from "../types";
+import { allDependencies, leviLaminaRanges, loadBuildData, related } from "./catalog";
 
 /** `/` and every package that has a version to show. */
 export async function listRoutes(): Promise<string[]> {
-  const { packages } = await loadIndex();
+  const { index } = await loadBuildData();
   return [
     "/",
-    ...Object.entries(packages)
+    ...Object.entries(index.packages)
       .filter(([, pkg]) => getDefaultSelection(pkg))
       .map(([tooth]) => packagePath(tooth)),
   ];
 }
 
 export async function loadPageData(pathname: string): Promise<PageData> {
-  const packageIndex = await loadIndex();
-  const { urls: repositoryUrls, renames } = await loadRepositories();
+  const data = await loadBuildData();
+  const { index, catalog, renames } = data;
 
   if (pathname === "/") {
-    return { kind: "home", packages: normalizePackageIndex(packageIndex), renames };
+    return { kind: "home", catalog, renames };
   }
 
   const tooth = toothFromPath(pathname);
-  const pkg = tooth !== null ? packageIndex.packages[tooth] : undefined;
+  const pkg = tooth !== null ? index.packages[tooth] : undefined;
+  const entry = tooth !== null ? data.byTooth.get(tooth) : undefined;
   const selection = pkg && getDefaultSelection(pkg);
-  if (tooth !== null && pkg && selection) {
-    const repository = getRepositoryUrl(tooth, repositoryUrls.get(tooth));
-    const [info, readme] = await Promise.all([
-      fetchManifestInfo(tooth, selection.version),
-      fetchReadme(repository, selection.version),
-    ]);
+  if (tooth !== null && pkg && entry && selection) {
+    const repository = getRepositoryUrl(tooth, data.meta.get(tooth)?.url);
+    const manifest = data.manifests.get(tooth) ?? null;
+    const readme = await fetchReadme(repository, selection.version);
+    const relatedMap: Record<string, RelatedPackage> = {};
+    const deps = new Set(allDependencies(data, tooth));
+    for (const variant of manifest?.variants ?? []) {
+      for (const key of Object.keys(variant.dependencies ?? {})) deps.add(key.split("#")[0]!.toLowerCase());
+    }
+    for (const dep of deps) relatedMap[dep] = related(data, dep);
     return {
       kind: "package",
       tooth,
       pkg,
+      entry,
       repository,
-      prerendered: { ...selection, info, readme },
+      prerendered: {
+        ...selection,
+        info: manifest?.info ?? null,
+        variants: manifest?.variants ?? null,
+        readme,
+      },
+      releases: data.meta.get(tooth)?.releases ?? {},
+      llRanges: leviLaminaRanges(data, tooth),
+      dependents: (data.dependents.get(tooth.toLowerCase()) ?? []).map((t) => related(data, t)),
+      related: relatedMap,
+      hasIssues: data.meta.get(tooth)?.hasIssues ?? false,
+      dependentsKnown: data.launcher !== null,
       renames,
     };
   }
 
-  return { kind: "not-found", tooths: Object.keys(packageIndex.packages), renames };
+  return { kind: "not-found", tooths: Object.keys(index.packages), renames };
 }

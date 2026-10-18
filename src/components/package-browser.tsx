@@ -1,138 +1,211 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router";
+import { PixelIcon } from "../kit-ui";
+import { useI18n } from "../i18n";
 import {
-  searchPackages,
-  filterByTags,
-  sortPackages,
-  paginatePackages,
-  extractTags,
-  ITEMS_PER_PAGE,
-} from "../lib/packages";
-import type { SortOption } from "../lib/packages";
-import type { Package } from "../types";
-import { PackageList } from "./package-list";
-import { Pagination } from "./pagination";
-import { RouterLink } from "./router-link";
-import { Sidebar } from "./sidebar";
+  clearFilters,
+  DEFAULT_STATE,
+  filterCount,
+  parseQuery,
+  runQuery,
+  serializeQuery,
+  type QueryState,
+} from "../lib/catalog-query";
+import { searchCatalog } from "../lib/search";
+import { STORAGE_KEYS, writeStorage } from "../lib/storage";
+import { notifyStored, useStored } from "../lib/use-stored";
+import { useHydrated } from "../page-store";
+import type { Catalog } from "../types";
+import { ActiveFilters } from "./active-filters";
+import { FilterDrawer } from "./filter-drawer";
+import { FilterGroups } from "./filter-groups";
+import { ProjectRow } from "./project-row";
+import { PageSizeControl, Pager, ResultsToolbar, type ViewMode } from "./results-toolbar";
+import { ListingSearch } from "./search";
 
-export interface BrowseParams {
-  q?: string;
-  tags?: string;
-  sort?: string;
-  page?: string;
+/** Rows whose icons load at once; the rest load when scrolled to. */
+const EAGER_ROWS = 6;
+
+const readView = (): ViewMode => (document.documentElement.getAttribute("data-view") === "grid" ? "grid" : "list");
+
+/** List or grid, per viewer: the pre-paint script in index.html applies it before the first paint. */
+function useViewMode(): [ViewMode, (v: ViewMode) => void] {
+  const view = useStored(readView, "list");
+  const change = (v: ViewMode) => {
+    document.documentElement.setAttribute("data-view", v);
+    writeStorage(STORAGE_KEYS.view, v === "grid" ? "grid" : null);
+    notifyStored();
+  };
+  return [view, change];
 }
 
-interface PackageBrowserProps {
-  packages: Package[];
-  params: BrowseParams;
+function EmptyState({ state, apply }: { state: QueryState; apply: (s: QueryState) => void }) {
+  const { t } = useI18n();
+  const filters = filterCount(state);
+  const q = state.q.trim();
+  return (
+    <div className="pkg-empty">
+      <span className="kit-slot pkg-empty-slot" aria-hidden="true">
+        <PixelIcon name="compass" size={32} />
+      </span>
+      <p className="pkg-empty-title">
+        {q ? t.emptyQuery(q) + (filters ? t.emptyWithFilters(filters) : "") : t.emptyFilters}
+      </p>
+      <div className="pkg-empty-actions">
+        {q ? (
+          <button type="button" className="mc-btn mc-btn-sm" onClick={() => apply({ ...state, q: "", page: 1 })}>
+            {t.clearSearch}
+          </button>
+        ) : null}
+        {filters ? (
+          <button type="button" className="mc-btn mc-btn-sm" onClick={() => apply(clearFilters(state))}>
+            {t.clearAllFilters}
+          </button>
+        ) : null}
+      </div>
+      {q ? <p className="pkg-empty-hint">{t.emptyHint}</p> : null}
+    </div>
+  );
 }
-
-const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: "relevance", label: "Relevance" },
-  { value: "updated", label: "Updated" },
-  { value: "stars", label: "Stars" },
-];
 
 /**
- * Search, tag filters, sorting and pagination, all over the index baked into
- * the page: the query string never reaches the static host.
+ * The listing: search, filters, sort, page size, view and pagination, all
+ * over the catalogue baked into the page. The query string never reaches the
+ * static host: the page is prerendered in its default state and applies the
+ * URL right after hydrating.
  */
-export function PackageBrowser({ packages, params }: PackageBrowserProps) {
-  const query = params.q || "";
-  const selectedTags = params.tags
-    ? params.tags.split(",").filter(Boolean)
-    : [];
-  const sortBy: SortOption = (["relevance", "updated", "stars"] as const).includes(
-    params.sort as SortOption,
-  )
-    ? (params.sort as SortOption)
-    : "relevance";
-  const requestedPage = Math.max(1, parseInt(params.page || "1", 10) || 1);
-
-  // Extract tags from full dataset (before filtering)
-  const allTags = extractTags(packages);
-
-  // Search
-  const { results: searched, scores } = searchPackages(packages, query);
-
-  // Filter by tags
-  const filtered = filterByTags(searched, selectedTags);
-
-  // Sort
-  const sorted = sortPackages(filtered, sortBy, scores, !!query);
-
-  // Paginate
-  const { items: paginatedPackages, totalPages } = paginatePackages(
-    sorted,
-    requestedPage,
-    ITEMS_PER_PAGE,
+export function PackageBrowser({ catalog }: { catalog: Catalog }) {
+  const { t } = useI18n();
+  const [params] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const hydrated = useHydrated();
+  const key = hydrated ? params.toString() : "";
+  const state = useMemo(
+    () => (hydrated ? parseQuery(new URLSearchParams(key), catalog.features) : DEFAULT_STATE),
+    [hydrated, key, catalog.features],
   );
-  const page = Math.min(requestedPage, totalPages);
+  const scores = useMemo(() => searchCatalog(catalog.entries, state.q), [catalog.entries, state.q]);
+  const result = useMemo(() => runQuery(catalog.entries, state, scores), [catalog.entries, state, scores]);
+  const categoryOrder = useMemo(() => {
+    const totals = runQuery(catalog.entries, DEFAULT_STATE, null).counts.cat;
+    return Object.keys(totals).sort((a, b) => (totals[b] ?? 0) - (totals[a] ?? 0));
+  }, [catalog.entries]);
 
-  // Build base params for links (without page)
-  function buildUrl(overrides: Record<string, string | undefined>): string {
-    const p = new URLSearchParams();
-    const merged = { q: query, tags: params.tags, sort: sortBy, ...overrides };
-    if (merged.q) p.set("q", merged.q);
-    if (merged.tags) p.set("tags", merged.tags);
-    if (merged.sort && merged.sort !== "relevance") p.set("sort", merged.sort);
-    const pageVal = overrides.page;
-    if (pageVal && pageVal !== "1") p.set("page", pageVal);
-    const qs = p.toString();
-    return qs ? `/?${qs}` : "/";
-  }
+  const [view, setView] = useViewMode();
+  const [drawer, setDrawer] = useState(false);
+  const filtersButton = useRef<HTMLButtonElement>(null);
+
+  // The URL is applied: show the results (index.html hid them while a query was pending).
+  useEffect(() => {
+    if (hydrated) document.documentElement.removeAttribute("data-pkg-pending");
+  }, [hydrated]);
+
+  // "Back to search" on a package page returns to this exact listing.
+  useEffect(() => {
+    if (hydrated) writeStorage(STORAGE_KEYS.lastSearch, location.pathname + location.search, true);
+  }, [hydrated, location.pathname, location.search]);
+
+  const go = (href: string, replace = false) => navigate(href, { replace });
+  const apply = (next: QueryState) => go(serializeQuery(next));
+  const filters = filterCount(state);
+  const { items, matched, total, page, pageCount, counts } = result;
+  const from = matched.length ? (page - 1) * state.per + 1 : 0;
+  const to = (page - 1) * state.per + items.length;
+  const plain = !state.q.trim() && !filters;
+  const status = plain ? t.statusShowing(from, to, total) : t.statusResults(matched.length, total);
+  const groups = (flat: boolean) => (
+    <FilterGroups
+      state={state}
+      counts={counts}
+      features={catalog.features}
+      categoryOrder={categoryOrder}
+      apply={apply}
+      flat={flat}
+    />
+  );
+  const ownerHref = (owner: string) => serializeQuery({ ...DEFAULT_STATE, author: [owner] });
 
   return (
-    <div className="pkg-browse">
-      <Sidebar
-        tags={allTags}
-        selectedTags={selectedTags}
-        currentParams={params}
-      />
-
-      <section
-        className="pkg-results"
-        aria-labelledby="pkg-results-title"
-        data-pkg-results=""
-        data-scroll-anchor=""
-      >
-        <h2 id="pkg-results-title" className="kit-sr-only">
-          Packages
-        </h2>
-        <div className="pkg-toolbar">
-          <div className="pkg-sort">
-            <span className="pkg-sort-label">Sort by:</span>
-            <div className="hotbar">
-              {SORT_OPTIONS.map((opt) => (
-                <RouterLink
-                  key={opt.value}
-                  href={buildUrl({ sort: opt.value, page: "1" })}
-                  aria-current={sortBy === opt.value ? "true" : undefined}
-                  className={sortBy === opt.value ? "is-active" : undefined}
-                >
-                  {opt.label}
-                </RouterLink>
+    <>
+      <div className="pkg-browse">
+        <section className="pkg-results" aria-labelledby="pkg-results-title" data-pkg-results="" data-scroll-anchor="">
+          <h2 id="pkg-results-title" className="kit-sr-only">
+            {t.resultsHeading}
+          </h2>
+          <ListingSearch
+            query={state.q}
+            total={total}
+            onSearch={(q) => {
+              // the URL as it is now: a filter picked while the search was pending stays
+              const current = parseQuery(new URLSearchParams(window.location.search), catalog.features);
+              go(serializeQuery({ ...current, q, page: 1 }), true);
+            }}
+          />
+          <ResultsToolbar
+            state={state}
+            newest={catalog.features.created}
+            view={view}
+            onView={setView}
+            filterCount={filters}
+            onOpenFilters={() => setDrawer(true)}
+            filtersButton={filtersButton}
+            apply={apply}
+            page={page}
+            pageCount={matched.length ? pageCount : 1}
+            go={(href) => go(href)}
+          />
+          <div className="pkg-statusbar">
+            <p id="pkg-status" className="pkg-status" aria-live="polite" tabIndex={-1}>
+              {status}
+              <span className="pkg-status-page">{pageCount > 1 ? t.statusPage(page, pageCount) : ""}</span>
+            </p>
+            <ActiveFilters state={state} />
+          </div>
+          <div className="pkg-results-body">
+            {items.length ? (
+              <ol className="pkg-results-list">
+                {items.map((entry, i) => (
+                  <li key={entry.tooth}>
+                    <ProjectRow entry={entry} eager={i < EAGER_ROWS} ownerHref={ownerHref(entry.owner)} />
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <EmptyState state={state} apply={apply} />
+            )}
+            <div className="pkg-skeleton-list" aria-hidden="true">
+              {Array.from({ length: 5 }, (_, i) => (
+                <span key={i} className="px-card pkg-skeleton-row" />
               ))}
             </div>
           </div>
-
-          <div className="pkg-count">Showing {sorted.length} packages</div>
-        </div>
-
-        <PackageList packages={paginatedPackages} />
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={page}
-            windowPage={requestedPage}
-            totalPages={totalPages}
-            buildUrl={(p) => buildUrl({ page: String(p) })}
-          />
-        )}
-
-        {sorted.length === 0 && (
-          <p className="pkg-empty-note">No packages found</p>
-        )}
-      </section>
-    </div>
+          {matched.length ? (
+            <Pager state={state} page={page} pageCount={pageCount} go={(href) => go(href)} className="pkg-pager-bottom" />
+          ) : null}
+        </section>
+        <aside className="pkg-sidebar" aria-label={t.filters}>
+          {groups(false)}
+        </aside>
+      </div>
+      <FilterDrawer
+        open={drawer}
+        onClose={() => setDrawer(false)}
+        returnFocus={filtersButton}
+        resultCount={matched.length}
+        canClear={filters > 0}
+        onClearAll={() => apply(clearFilters(state))}
+        footerExtra={
+          <div className="pkg-drawer-per">
+            <span className="pkg-drawer-per-label" aria-hidden="true">
+              {t.perPageLabel}
+            </span>
+            <PageSizeControl value={state.per} onChange={(per) => apply({ ...state, per, page: 1 })} />
+          </div>
+        }
+      >
+        {drawer ? groups(true) : null}
+      </FilterDrawer>
+    </>
   );
 }

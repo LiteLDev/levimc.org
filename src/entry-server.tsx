@@ -8,8 +8,9 @@ import { PageStore } from "./page-store";
 import { loadPageData, listRoutes } from "./server/build-data";
 import { modulePreloadTags } from "./server/client-assets";
 
-// For prerender.mjs: the pages to write, and a check of what was written.
+// For prerender.mjs: the pages to write, a check of what was written, and the hero paintings.
 export { listRoutes, parsePageData };
+export { HERO_FILES, heroSvg } from "./server/hero";
 
 /**
  * Renders one page for prerender.mjs (and the dev server): `/`,

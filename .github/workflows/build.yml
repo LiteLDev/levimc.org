@@ -30,9 +30,11 @@ jobs:
       - run: |
           pnpm install --frozen-lockfile
 
-      # The token lets the build look up where renamed package repositories
-      # live now (one GraphQL request per 100 packages); without it links keep
-      # the tooth path.
+      # The token lets the build read each package repository from GitHub's
+      # GraphQL API (one request per 50 packages): where renamed repositories
+      # live now, release dates, license and creation date. Without it links
+      # keep the tooth path, dates come from the index, and there is no
+      # License filter and no "Newest" sort.
       - run: |
           pnpm build
         env:

@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
-import { PixelIcon } from "../../kit/components";
+import { PixelIcon } from "../kit-ui";
 import { RouterLink } from "../components/router-link";
+import { useI18n } from "../i18n";
 import { packagePath } from "../lib/packages";
 
 const PACKAGE_PATH = /^\/packages\/(.+?)\/?$/;
@@ -24,15 +25,17 @@ function usePackageRedirect(tooths: string[]) {
       return;
     }
     const tooth = tooths.find((t) => t.toLowerCase() === requested);
-    if (tooth) {
-      navigate(`${packagePath(tooth)}${window.location.search}`, {
-        replace: true,
-      });
-    }
+    if (!tooth) return;
+    const target = `${packagePath(tooth)}${window.location.search}`;
+    // With a #heading, load the prerendered page itself: the browser then
+    // scrolls to the heading as for any other deep link.
+    if (window.location.hash) window.location.replace(`${target}${window.location.hash}`);
+    else navigate(target, { replace: true });
   }, [navigate, tooths]);
 }
 
 export function NotFoundPage({ tooths }: { tooths: string[] }) {
+  const { t } = useI18n();
   usePackageRedirect(tooths);
 
   return (
@@ -44,13 +47,10 @@ export function NotFoundPage({ tooths }: { tooths: string[] }) {
         <h1 className="kit-hero-title pkg-notfound-code">
           <span className="kit-hero-name">404</span>
         </h1>
-        <p className="pkg-notfound-text">
-          The page you are looking for does not exist or the package could not be
-          found.
-        </p>
+        <p className="pkg-notfound-text">{t.notFoundText}</p>
         <RouterLink href="/" className="mc-btn mc-btn-primary">
           <PixelIcon name="grass" />
-          Back to packages
+          {t.backToSearch}
         </RouterLink>
       </div>
     </main>

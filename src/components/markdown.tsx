@@ -8,7 +8,8 @@ import {
   type ReactNode,
 } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
-import { PixelIcon, useTheme } from "../../kit/components";
+import { PixelIcon, useTheme } from "../kit-ui";
+import { useI18n } from "../i18n";
 import { copyText } from "../lib/clipboard";
 import {
   resolveMarkdownUrl,
@@ -46,6 +47,7 @@ const ReadmeContext = createContext<ReadmeContextValue>({
 
 /** A fenced block in the kit's code frame, with a copy button. */
 function CodeBlock({ children }: { children?: ReactNode }) {
+  const { t } = useI18n();
   // Counts copies, so each click restarts the "Copied!" timer.
   const [copies, setCopies] = useState(0);
   const copied = copies > 0;
@@ -62,8 +64,8 @@ function CodeBlock({ children }: { children?: ReactNode }) {
         type="button"
         className="kit-code-copy pkg-code-copy"
         data-kit-copy=""
-        data-copied={copied ? "Copied!" : undefined}
-        aria-label={copied ? "Copied" : "Copy code"}
+        data-copied={copied ? t.copied : undefined}
+        aria-label={copied ? t.copiedShort : t.copyCode}
         onClick={async (e) => {
           const code = e.currentTarget.parentElement?.querySelector("pre");
           if (!code || !(await copyText(code.innerText.replace(/\n$/, "")))) {
@@ -102,7 +104,7 @@ const components: Components = {
     const { bases, renames } = useContext(ReadmeContext);
     // `null` while hydrating (the server cannot know the theme), then the pick.
     const { preference, resolved } = useTheme();
-    const picked = preference && preference !== "system" ? resolved : null;
+    const picked = preference && preference !== "auto" ? resolved : null;
     return (
       <source
         media={themedMedia(media, picked)}

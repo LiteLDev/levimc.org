@@ -1,5 +1,5 @@
 {
-  "name": "bedrinth",
+  "name": "levimc-mods",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,11 +13,11 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
     "test": "node --test \"src/**/*.test.ts\"",
+    "budget": "node scripts/budget.mjs dist",
     "linkcheck": "node kit/scripts/linkcheck.mjs dist --base / --site-origin https://pkg.levimc.org",
     "smoke": "node scripts/smoke.mjs --url http://127.0.0.1:4173/"
   },
   "dependencies": {
-    "flexsearch": "0.8.212",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "react-markdown": "10.1.0",

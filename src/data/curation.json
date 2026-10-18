@@ -1,0 +1,1312 @@
+{
+  "github.com/amatouhake/LaminaPeek": {
+    "categories": [
+      "utility",
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/amatouhake/LaminaSort": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/amatouhake/Lamium": {
+    "categories": [
+      "utility",
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/carefly/RLXMoney": {
+    "categories": [
+      "economy"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/carefly/RLXTeleport": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/carefly/RLXWarp": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/cngege/AutoFishing": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/cngege/DispenserDestroyBlock": {
+    "categories": [
+      "game-mechanics",
+      "technology"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/cngege/DispenserGetLavaFromCauldron": {
+    "categories": [
+      "game-mechanics",
+      "technology"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/cngege/DropItemx100": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/cngege/TreeSliceOreDig": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/copper-lamp/BSChat": {
+    "categories": [
+      "social"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/copper-lamp/Dear-OreUI": {
+    "categories": [
+      "visual",
+      "library"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/CoralFans-Dev/CFSP": {
+    "categories": [
+      "technology"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/CoralFans-Dev/CoralFans": {
+    "categories": [
+      "technology",
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/CoralFans-Dev/CoralMap": {
+    "categories": [
+      "utility",
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/dmbkstudio/HitokotoWelcome": {
+    "categories": [
+      "social"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "js"
+  },
+  "github.com/dmblock/LeviBox": {
+    "categories": [
+      "developer"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/dmblock/levibox": {
+    "categories": [
+      "developer"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/Dofes/ContentLogBlocker": {
+    "categories": [
+      "developer",
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/Dofes/DataDrivenTagRegistry": {
+    "categories": [
+      "library",
+      "developer"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/Dofes/FuckCursorItemDump-release": {
+    "categories": [
+      "anticheat",
+      "bugfix"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/dreamguxiang/DynamicLights": {
+    "categories": [
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/dreamguxiang/Glacie-Release": {
+    "categories": [
+      "protocol"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/edshPC/PlayerRegister": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/engsr6982/DebugShape": {
+    "categories": [
+      "library",
+      "developer"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/engsr6982/FastMiner": {
+    "categories": [
+      "game-mechanics",
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/engsr6982/LeviTPSystem": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/engsr6982/PLand-LegacyRemoteCallApi": {
+    "categories": [
+      "library"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/FeixiangTMC/Stipuleroo": {
+    "categories": [
+      "utility",
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GlacieTeam/AntiXray": {
+    "categories": [
+      "anticheat"
+    ],
+    "platforms": [
+      "levilamina",
+      "endstone"
+    ]
+  },
+  "github.com/GlacieTeam/Glacie": {
+    "categories": [
+      "protocol"
+    ],
+    "platforms": [
+      "levilamina",
+      "endstone"
+    ]
+  },
+  "github.com/GlacieTeam/HigherWorld": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/glibcxx/figure_hack": {
+    "categories": [
+      "technology",
+      "developer"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/glibcxx/TimerFix": {
+    "categories": [
+      "bugfix",
+      "optimization"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/AccessHiddenItem": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/Cleaner": {
+    "categories": [
+      "optimization",
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/FreeCamera": {
+    "categories": [
+      "utility",
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/FuckNetherHeight": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/GMBlacklist": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/GMDebugStick": {
+    "categories": [
+      "technology"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/GMEssentials-Release": {
+    "categories": [
+      "utility",
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/GMLIB-LegacyRemoteCallApi": {
+    "categories": [
+      "library"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/GMLIB-Release": {
+    "categories": [
+      "library"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/GMSidebar": {
+    "categories": [
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/GMWhitelist": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/InventoryCheck": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/ModAPI-Release": {
+    "categories": [
+      "library"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/Phantom": {
+    "categories": [
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/GroupMountain/ThrowableFireball": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/haojie06/CommBridge": {
+    "categories": [
+      "social",
+      "developer"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/haojie06/LeviSafeZone": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/heyhey123-git/plenty-healing": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/honeymirror/RenderDragonShaderLoader": {
+    "categories": [
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/HuHoBot/BDSAdapter": {
+    "categories": [
+      "social"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "nodejs"
+  },
+  "github.com/HuoHuas001/HuHoBot-BDS": {
+    "categories": [
+      "social"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "js"
+  },
+  "github.com/IceBlcokMC/PLand": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/jasmijasmi/VV-toggle": {
+    "categories": [
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/killcerr/better-ban": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/killcerr/MinecartSpeedPlus": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/killcerr/rocksdb-storage": {
+    "categories": [
+      "optimization"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/kuangby/FuckMovementAuthority": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/kuangby/FuckPlayerActionsAuthority": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LeafKnife/FixBundleBug": {
+    "categories": [
+      "bugfix"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LeafKnife/ForbidExplosionBreak": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LeafKnife/ForbidPlayerSummonWither": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LeafKnife/SignIn": {
+    "categories": [
+      "social"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LeafKnife/Stats": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LeafKnife/ToolStats": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/lgc-LLDev/FormAPIEx": {
+    "categories": [
+      "library",
+      "developer"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "js"
+  },
+  "github.com/lgc-LLDev/NBSPlayer": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "js"
+  },
+  "github.com/lgc-LLDev/NbsPlayer": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "js"
+  },
+  "github.com/lgc-LLSEDev/FormAPIEx": {
+    "categories": [
+      "library",
+      "developer"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "js"
+  },
+  "github.com/lgc-LLSEDev/NbsPlayer": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "js"
+  },
+  "github.com/LiteLDev/iListenAttentively": {
+    "categories": [
+      "library"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LiteLDev/LegacyMoney": {
+    "categories": [
+      "economy",
+      "library"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LiteLDev/LegacyRemoteCall": {
+    "categories": [
+      "library"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LiteLDev/LegacyScriptEngine": {
+    "categories": [
+      "library",
+      "developer"
+    ],
+    "platforms": [
+      "levilamina",
+      "lse"
+    ]
+  },
+  "github.com/LiteLDev/LeviAntiCheat": {
+    "categories": [
+      "anticheat"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LiteLDev/LeviLamina": {
+    "categories": [
+      "library"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LiteLDev/levilamina-mod-template": {
+    "categories": [
+      "developer"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LiteLDev/LeviOptimize": {
+    "categories": [
+      "optimization"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LiteLDev/mimalloc": {
+    "categories": [
+      "optimization"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LiteLDev/MoreDimensions": {
+    "categories": [
+      "library",
+      "adventure"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LL-LSE-Lab/MelonRind": {
+    "categories": [
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/loitietu/LOICollectionA": {
+    "categories": [
+      "utility",
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LordBombardir/LLPowerRanks": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LordBombardir/LLRconServer": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LordBombardir/LLStructureLoader": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/LordBombardir/LLTranslatorApi": {
+    "categories": [
+      "library",
+      "developer"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/lwenk/LK-Stats": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/lwenk/PlandProjectileFix": {
+    "categories": [
+      "bugfix"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/lwenk/Stats": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/MarmieQi/LHolo": {
+    "categories": [
+      "technology",
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/Maskviva/levilamina-rust-loader": {
+    "categories": [
+      "developer"
+    ],
+    "platforms": [
+      "other"
+    ]
+  },
+  "github.com/Maskviva/Pier": {
+    "categories": [
+      "developer"
+    ],
+    "platforms": [
+      "other"
+    ]
+  },
+  "github.com/MC-MineFeng/LevelExp": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/MengHanLOVE1027/EasyBackuper": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "js"
+  },
+  "github.com/MengHanLOVE1027/lse-easybackuper": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "js"
+  },
+  "github.com/MiracleForest/iAutomaticFishing": {
+    "categories": [
+      "game-mechanics",
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/MiracleForest/iDisableVanillaAntiCheat": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/MiracleForest/iInfiniteNightVision": {
+    "categories": [
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/MiracleForest/iListenAttentively": {
+    "categories": [
+      "library"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/MiracleForest/iListenAttentively-LseExport": {
+    "categories": [
+      "library"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/MiracleForest/iListenAttentively-Release": {
+    "categories": [
+      "library"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/MiracleForest/iScale": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/MiracleForest/iStructuralShift": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/mrmagic2020/MForceAchievements": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/mrmagic2020/MWelcome": {
+    "categories": [
+      "social"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/MRUIAW/Animated-Mojang": {
+    "categories": [
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/MRUIAW/BedrockBoatHUD": {
+    "categories": [
+      "visual",
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/neverforward/Insight": {
+    "categories": [
+      "utility",
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/Nico6719/YEssential": {
+    "categories": [
+      "utility",
+      "management",
+      "economy"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "js"
+  },
+  "github.com/OEOTYAN/BedrockServerClientInterface": {
+    "categories": [
+      "library",
+      "protocol"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/pingguo114514/AddonsManager": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "js"
+  },
+  "github.com/pingguo114514/BetterStop": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/pingguo114514/DisconnectScreen": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/PuceLi/NameTagPlus": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/PuceLi/NoteBot": {
+    "categories": [
+      "utility",
+      "technology"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/qing85566/ChiyanMap": {
+    "categories": [
+      "utility",
+      "visual"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/quizhizhe/Tooth-LLCheckBag": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/sapidexs/lualoader": {
+    "categories": [
+      "developer"
+    ],
+    "platforms": [
+      "other"
+    ]
+  },
+  "github.com/sapidexs/lualoader-plugin-demo": {
+    "categories": [
+      "developer"
+    ],
+    "platforms": [
+      "other"
+    ]
+  },
+  "github.com/seetch/FastReconnect": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/ShangguanXi/Advancements-ll-release": {
+    "categories": [
+      "adventure"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/ShangguanXi/FarmersDelight-ll-release": {
+    "categories": [
+      "adventure"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/ShrBox/BackupHelper": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/ShrBox/ResourcePackEncryption": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/Shulker-Studio/STweaks": {
+    "categories": [
+      "bugfix",
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/SkyEye-FAST/offer-flowers-faster-bedrock": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/superx101/CALL": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "nodejs"
+  },
+  "github.com/SurvivalApparatusCommunication/BedrockBugFixes": {
+    "categories": [
+      "bugfix"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/TelluriumDev/BanExplosion": {
+    "categories": [
+      "management",
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/TheNevinPie/pocket-on-pc": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/Timiya-re/LL3_Mine2": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/Unny984/Zoomidy": {
+    "categories": [
+      "visual",
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/VincentZyuApps/levilamina-plugin-mclistener-ws-server": {
+    "categories": [
+      "social",
+      "developer"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/wardenre/ModerationX": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/wed150/EnchantX": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/wo55555/OptiPiston": {
+    "categories": [
+      "visual",
+      "technology"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/wo55555/Playback": {
+    "categories": [
+      "visual",
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/xianyubb/org_out": {
+    "categories": [
+      "social"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "nodejs"
+  },
+  "github.com/xianyubb/Organization": {
+    "categories": [
+      "social"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "nodejs"
+  },
+  "github.com/xianyubb/Strengthen": {
+    "categories": [
+      "adventure"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/yhzx233/CustomMap": {
+    "categories": [
+      "utility"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/yhzx233/FixChunkLeak": {
+    "categories": [
+      "bugfix",
+      "optimization"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/YoumiHa/Lip-Sese": {
+    "categories": [],
+    "platforms": [
+      "other"
+    ]
+  },
+  "github.com/zimuya4153/LSE_Waila": {
+    "categories": [
+      "utility",
+      "visual"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "js"
+  },
+  "github.com/ZMBlocks/Lac-IgnoreOperator": {
+    "categories": [
+      "anticheat"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/ZMBlocks/LL-BetterStop": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/ZMBlocks/LL-FuckVanillaCmd": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/ZMBlocks/LL-OrganicFertilizer": {
+    "categories": [
+      "game-mechanics"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/ZMBlocks/LL-ScalePersistenceFix": {
+    "categories": [
+      "bugfix"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/ZMBlocks/LL-TpOfflinePlayer": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/ZMBlocks/LL-UniteBan": {
+    "categories": [
+      "management"
+    ],
+    "platforms": [
+      "levilamina"
+    ]
+  },
+  "github.com/ZMBlocks/LSE_Waila": {
+    "categories": [
+      "utility",
+      "visual"
+    ],
+    "platforms": [
+      "lse"
+    ],
+    "lang": "js"
+  }
+}

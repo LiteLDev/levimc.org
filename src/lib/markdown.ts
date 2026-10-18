@@ -6,7 +6,7 @@ const ABSOLUTE_URL = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
 /**
  * Repositories GitHub now serves under another name, as `owner/repo` in
  * lower case → current `Owner/Repo`. The build adds every package repository
- * that moved (see `server/repositories.ts`); these are LiteLDev's own, which
+ * that moved (see `repositoryRenames` in `server/github.ts`); these are LiteLDev's own, which
  * READMEs link to but which are not packages.
  */
 export type RepositoryRenames = Readonly<Record<string, string>>;
@@ -86,7 +86,38 @@ const MOVED_PAGES: [RegExp, string][] = [
   ],
   // Afdian's old domain no longer resolves; its pages live on afdian.com.
   [/^https?:\/\/(?:www\.)?afdian\.tv(?=[/?#]|$)/i, "https://afdian.com"],
+  // LeviLamina 1.1.1's README links its usage guidelines where the docs were
+  // before they moved under `contents/` (the same tag has them there).
+  [
+    /^https:\/\/github\.com\/LiteLDev\/LeviLamina\/blob\/(v1\.1\.1)\/docs\/main\/common_guides\/usage_guidelines\.(en|zh)\.md(?=[?#]|$)/i,
+    "https://github.com/LiteLDev/LeviLamina/blob/$1/docs/main/contents/common_guides/usage_guidelines.$2.md",
+  ],
+  // Stable permanent redirects of third-party sites, so links answer without one.
+  [/^https?:\/\/opensource\.org\/licenses\/(?=[^/?#])/i, "https://opensource.org/license/"],
+  // cppreference dropped the /w/ prefix (/w/cpp/20 → /cpp/20)
+  [/^https?:\/\/en\.cppreference\.com\/w(?:\/|(?=[?#]|$))/i, "https://en.cppreference.com/"],
+  [/^https?:\/\/star-history\.com(?=[/?#]|$)/i, "https://www.star-history.com"],
+  [/^http:\/\/dl\.mcmcc\.cc(?=[/?#]|$)/i, "https://dl.mcmcc.cc"],
+  [/^(https:\/\/learn\.microsoft\.com\/[a-z]{2}-[a-z]{2}\/cpp\/[^?#]*)(?=#|$)/i, "$1?view=msvc-170"],
+  [/^(https?:\/\/(?:www\.)?bilibili\.com\/video\/[A-Za-z0-9]+)(?=[?#]|$)/i, "$1/"],
 ];
+
+/**
+ * GitHub serves raw files from raw.githubusercontent.com: `/raw/…` and
+ * `/blob/…?raw=true` redirect there — except for files in Git LFS, which
+ * redirect to media.githubusercontent.com while raw.githubusercontent.com
+ * answers with the LFS pointer. So README links are rewritten only for the
+ * repositories whose READMEs were seen linking this way and whose files were
+ * checked to be plain git blobs (lower-case `owner/repo`, current name).
+ */
+const RAW_FILES: [RegExp, string][] = [
+  [/^https?:\/\/(?:www\.)?github\.com\/([^/?#]+)\/([^/?#]+)\/raw\/([^?#]+)$/i, "https://raw.githubusercontent.com/$1/$2/$3"],
+  [/^https?:\/\/(?:www\.)?github\.com\/([^/?#]+)\/([^/?#]+)\/blob\/([^?#]+)\?raw=true$/i, "https://raw.githubusercontent.com/$1/$2/$3"],
+];
+const RAW_FILE_REPOS = new Set(["mrmagic2020/mwelcome", "miracleforest/lse_waila"]);
+
+/** Which `/raw/` links to rewrite: those of the checked repositories, or (icons, which the build loads to check) all. */
+export type RawFiles = "known" | "all";
 
 const HOST_URL = /^https?:\/\/([^/?#]+)([^?#]*)(\?[^#]*)?(#.*)?$/i;
 
@@ -126,12 +157,18 @@ function renameRepository(url: string, renames: RepositoryRenames): string {
  * manifests of published versions never change, so this happens when they are
  * rendered; the link text stays as the author wrote it.
  */
-export function updateUrl(url: string, renames: RepositoryRenames = {}): string {
+export function updateUrl(url: string, renames: RepositoryRenames = {}, rawFiles: RawFiles = "known"): string {
   const docs = moveRetiredDocs(url);
   if (docs !== null) return docs;
   const renamed = renameRepository(url, renames);
   for (const [from, to] of MOVED_PAGES) {
     if (from.test(renamed)) return renamed.replace(from, to);
+  }
+  for (const [from, to] of RAW_FILES) {
+    const match = from.exec(renamed);
+    if (match && (rawFiles === "all" || RAW_FILE_REPOS.has(`${match[1]}/${match[2]}`.toLowerCase()))) {
+      return renamed.replace(from, to);
+    }
   }
   return renamed;
 }
@@ -254,7 +291,7 @@ export function resolveAvatarUrl(
   url: string | undefined,
   renames: RepositoryRenames = {},
 ): string | undefined {
-  return url && updateUrl(url, renames);
+  return url && updateUrl(url, renames, "all");
 }
 
 const COLOR_SCHEME_QUERY = /^\s*\(\s*prefers-color-scheme\s*:\s*(dark|light)\s*\)\s*$/i;

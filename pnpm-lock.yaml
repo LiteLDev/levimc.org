@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      flexsearch:
-        specifier: 0.8.212
-        version: 0.8.212
       react:
         specifier: 19.3.1
         version: 19.3.1
@@ -761,9 +758,6 @@ packages:
 
   flatted@3.4.2:
     resolution: {integrity: sha512-PjDse7RzhcPkIJwy5t7KPWQSZ9cAbzQXcafsetQoD7sOJRQlGikNbx7yZp2OotDnJyrDcbyRq3Ttb18iYOqkxA==}
-
-  flexsearch@0.8.212:
-    resolution: {integrity: sha512-wSyJr1GUWoOOIISRu+X2IXiOcVfg9qqBRyCPRUdLMIGJqPzMo+jMRlvE83t14v1j0dRMEaBbER/adQjp6Du2pw==}
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -2179,8 +2173,6 @@ snapshots:
       hookified: 1.15.1
 
   flatted@3.4.2: {}
-
-  flexsearch@0.8.212: {}
 
   fsevents@2.3.3:
     optional: true

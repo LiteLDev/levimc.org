@@ -1,9 +1,13 @@
 import { useEffect, useId, useState } from "react";
-import { PixelIcon } from "../../kit/components";
+import { PixelIcon } from "../kit-ui";
+import { useI18n } from "../i18n";
 import { copyText } from "../lib/clipboard";
 
 interface CopyButtonProps {
   text: string;
+  /** The button's name; default: "Copy "<text>" to clipboard". */
+  label?: string;
+  className?: string;
 }
 
 /**
@@ -11,7 +15,8 @@ interface CopyButtonProps {
  * it does on hover and focus, then that it did. The tooltip lives inside the
  * button, so it never runs into the text next to it.
  */
-export function CopyButton({ text }: CopyButtonProps) {
+export function CopyButton({ text, label, className }: CopyButtonProps) {
+  const { t } = useI18n();
   // Counts copies, so each click restarts the "Copied!" timer.
   const [copies, setCopies] = useState(0);
   const copied = copies > 0;
@@ -32,17 +37,15 @@ export function CopyButton({ text }: CopyButtonProps) {
     <button
       type="button"
       onClick={handleCopy}
-      className="mc-icon-btn kit-tooltip-host pkg-copy"
+      className={`mc-icon-btn kit-tooltip-host pkg-copy${className ? ` ${className}` : ""}`}
       data-placement="top"
       data-copied={copied ? "" : undefined}
-      aria-label={copied ? "Copied" : `Copy "${text}" to clipboard`}
+      aria-label={copied ? t.copiedShort : (label ?? t.copyText(text))}
       aria-describedby={tipId}
     >
       <PixelIcon name={copied ? "check" : "copy"} />
       <span role="tooltip" id={tipId} className="mc-tooltip kit-tooltip">
-        <span className="mc-tooltip-title">
-          {copied ? "Copied!" : "Copy to clipboard"}
-        </span>
+        <span className="mc-tooltip-title">{copied ? t.copied : t.copyToClipboard}</span>
       </span>
     </button>
   );

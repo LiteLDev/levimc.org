@@ -138,12 +138,68 @@ test("LiteLDev repositories and pages that moved", () => {
   }
 });
 
+test("LeviLamina 1.1.1's usage guidelines link points at the tag's contents/ folder", () => {
+  for (const lang of ["en", "zh"]) {
+    assert.equal(
+      link(`https://github.com/LiteLDev/LeviLamina/blob/v1.1.1/docs/main/common_guides/usage_guidelines.${lang}.md`),
+      `https://github.com/LiteLDev/LeviLamina/blob/v1.1.1/docs/main/contents/common_guides/usage_guidelines.${lang}.md`,
+    );
+  }
+  // other tags already link the right place
+  const later = "https://github.com/LiteLDev/LeviLamina/blob/v1.2.0/docs/main/common_guides/usage_guidelines.en.md";
+  assert.equal(link(later), later);
+});
+
+test("stable third-party permanent redirects are followed in rendered READMEs", () => {
+  const cases: [string, string][] = [
+    ["https://opensource.org/licenses/MIT", "https://opensource.org/license/MIT"],
+    ["https://opensource.org/licenses/GPL-3.0", "https://opensource.org/license/GPL-3.0"],
+    ["https://en.cppreference.com/w/", "https://en.cppreference.com/"],
+    ["https://en.cppreference.com/w/cpp/20", "https://en.cppreference.com/cpp/20"],
+    ["https://github.com/mrmagic2020/MWelcome/raw/main/assets/toast.jpg", "https://raw.githubusercontent.com/mrmagic2020/MWelcome/main/assets/toast.jpg"],
+    [
+      "https://github.com/MiracleForest/LSE_Waila/blob/main/image/form.png?raw=true",
+      "https://raw.githubusercontent.com/MiracleForest/LSE_Waila/main/image/form.png",
+    ],
+    ["https://star-history.com/#LiteLDev/LeviLamina&Date", "https://www.star-history.com/#LiteLDev/LeviLamina&Date"],
+    ["http://dl.mcmcc.cc/files/a.zip", "https://dl.mcmcc.cc/files/a.zip"],
+    [
+      "https://learn.microsoft.com/en-us/cpp/build/reference/permissive-standards-conformance",
+      "https://learn.microsoft.com/en-us/cpp/build/reference/permissive-standards-conformance?view=msvc-170",
+    ],
+    ["https://www.bilibili.com/video/BV1Ab411c7XY", "https://www.bilibili.com/video/BV1Ab411c7XY/"],
+  ];
+  for (const [from, to] of cases) assert.equal(link(from), to, from);
+  for (const url of [
+    "https://en.cppreference.com/cpp/language/lambda",
+    "https://en.cppreference.com/wiki/",
+    "https://github.com/LeafKnife/SignIn/blob/main/logo.png",
+    "https://learn.microsoft.com/en-us/cpp/build/reference/permissive-standards-conformance?view=msvc-160",
+    "https://www.bilibili.com/video/BV1Ab411c7XY/?p=2",
+    "https://opensource.org/licenses/",
+  ]) {
+    assert.equal(link(url), url);
+  }
+});
+
+test("raw-file links of other repositories are kept (an LFS file is served from media.githubusercontent.com)", () => {
+  const lfs = "https://github.com/someone/big-assets/raw/main/video.mp4";
+  assert.equal(link(lfs), lfs);
+  assert.equal(link("https://github.com/someone/big-assets/blob/main/a.png?raw=true"), "https://github.com/someone/big-assets/blob/main/a.png?raw=true");
+  // icons are loaded by the build, which drops one that is not an image
+  assert.equal(updateUrl(lfs, {}, "all"), "https://raw.githubusercontent.com/someone/big-assets/main/video.mp4");
+});
+
 test("links to renamed package repositories skip GitHub's redirect", () => {
   const renames = { "zimuya4153/lse_waila": "MiracleForest/LSE_Waila", "lwenk/stats": "LeafKnife/Stats" };
   const at = (url: string) => resolveMarkdownUrl(url, "link", BASES, renames);
   assert.equal(
     at("https://github.com/zimuya4153/LSE_Waila/blob/main/image/form.png?raw=true"),
-    "https://github.com/MiracleForest/LSE_Waila/blob/main/image/form.png?raw=true",
+    "https://raw.githubusercontent.com/MiracleForest/LSE_Waila/main/image/form.png",
+  );
+  assert.equal(
+    at("https://github.com/zimuya4153/LSE_Waila/blob/main/README.md"),
+    "https://github.com/MiracleForest/LSE_Waila/blob/main/README.md",
   );
   assert.equal(at("https://github.com/lwenk/Stats/releases"), "https://github.com/LeafKnife/Stats/releases");
   assert.equal(at("https://GitHub.com/LWENK/stats"), "https://github.com/LeafKnife/Stats");
@@ -161,7 +217,7 @@ test("avatars on retired hosts and renamed repositories are rewritten, others ke
   assert.equal(resolveAvatarUrl("https://lamina.levimc.org/logo.svg"), "https://docs.levimc.org/LeviLamina/logo.svg");
   assert.equal(
     resolveAvatarUrl("https://github.com/lwenk/Stats/raw/main/logo.png", { "lwenk/stats": "LeafKnife/Stats" }),
-    "https://github.com/LeafKnife/Stats/raw/main/logo.png",
+    "https://raw.githubusercontent.com/LeafKnife/Stats/main/logo.png",
   );
   assert.equal(resolveAvatarUrl("https://example.com/a.png"), "https://example.com/a.png");
   assert.equal(resolveAvatarUrl(undefined), undefined);

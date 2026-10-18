@@ -1,46 +1,29 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
-import { PackageDetail } from "../components/package-detail";
-import {
-  fetchManifestInfo,
-  fetchReadme,
-  resolveSelection,
-} from "../lib/packages";
-import type { PackageSelection } from "../lib/packages";
+import { PackageDetail, type PackagePageData } from "../components/package-detail";
+import { fetchManifest, fetchReadme, parseTab, resolveSelection, type PackageSelection } from "../lib/packages";
 import type { PackageDetails } from "../page-data";
 import { useHydrated } from "../page-store";
-import type { RawPackageEntry } from "../types";
-
-interface PackagePageProps {
-  tooth: string;
-  pkg: RawPackageEntry;
-  /** Where the package's repository lives (READMEs are read from there). */
-  repository: string;
-  /** The selection the page was prerendered for, and its details. */
-  prerendered: PackageSelection & PackageDetails;
-}
 
 function selectionKey({ variant, version }: PackageSelection): string {
   return `${variant}@${version}`;
 }
 
 /**
- * Only the latest version is prerendered; picking another variant or version
- * through the query string fetches that version's manifest and README here.
- * Both lipr and GitHub allow cross-origin reads. (The app renders one of
- * these per tooth, so its state never outlives the package.)
+ * Only the latest version's Description is prerendered; another variant or
+ * version (`?variant=&version=`) fetches that version's manifest and README
+ * here, and the other tabs (`?tab=versions|dependencies`) render from the
+ * page data once hydrated. Both lipr and GitHub allow cross-origin reads.
+ * (The app renders one of these per tooth, so its state never outlives the
+ * package.)
  */
-export function PackagePage({ tooth, pkg, repository, prerendered }: PackagePageProps) {
+export function PackagePage({ data }: { data: PackagePageData }) {
+  const { tooth, pkg, repository, prerendered } = data;
   const [searchParams] = useSearchParams();
   const hydrated = useHydrated();
   const selection =
-    (hydrated &&
-      resolveSelection(
-        pkg,
-        searchParams.get("variant"),
-        searchParams.get("version"),
-      )) ||
-    prerendered;
+    (hydrated && resolveSelection(pkg, searchParams.get("variant"), searchParams.get("version"))) || prerendered;
+  const tab = hydrated ? parseTab(searchParams.get("tab")) : "description";
   const key = selectionKey(selection);
   const isPrerendered = key === selectionKey(prerendered);
 
@@ -51,12 +34,14 @@ export function PackagePage({ tooth, pkg, repository, prerendered }: PackagePage
 
     let cancelled = false;
     const [variant, version] = [selection.variant, selection.version];
-    Promise.all([
-      fetchManifestInfo(tooth, version),
-      fetchReadme(repository, version),
-    ]).then(([info, readme]) => {
+    Promise.all([fetchManifest(tooth, version), fetchReadme(repository, version)]).then(([manifest, readme]) => {
       if (cancelled) return;
-      setFetched({ key: selectionKey({ variant, version }), info, readme });
+      setFetched({
+        key: selectionKey({ variant, version }),
+        info: manifest?.info ?? null,
+        variants: manifest?.variants ?? null,
+        readme,
+      });
     });
     return () => {
       cancelled = true;
@@ -70,11 +55,11 @@ export function PackagePage({ tooth, pkg, repository, prerendered }: PackagePage
   return (
     <main id="main" className="pkg-main kit-above-backdrop" tabIndex={-1} data-pkg-detail="">
       <PackageDetail
-        tooth={tooth}
-        pkg={pkg}
-        repository={repository}
+        data={data}
         selection={selection}
+        tab={tab}
         info={details.info ?? null}
+        variants={details.variants}
         readme={details.readme}
       />
     </main>

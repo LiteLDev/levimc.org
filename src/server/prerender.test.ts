@@ -36,8 +36,9 @@ test("prerendered pages keep $&, $', $` and $$ as written", async () => {
     const { prerenderRoutes } = (await import(PRERENDER)) as PrerenderModule;
     await prerenderRoutes({ root, ssrEntry: "entry.js", routes: ["/a/"] });
 
+    // (kit 1.1 adds its generator meta to every page; not part of this check)
     assert.equal(
-      readFileSync(join(root, "dist", "a", "index.html"), "utf8"),
+      readFileSync(join(root, "dist", "a", "index.html"), "utf8").replace(/<meta name="generator"[^>]*>\n?/, ""),
       `<!doctype html><html lang="en"><head>${head}</head>` +
         `<body><div id="root">${body}</div></body></html>`,
     );

@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import { PixelIcon } from "../../kit/components";
+import { PixelIcon } from "../kit-ui";
+import { useI18n } from "../i18n";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -50,16 +51,17 @@ interface ErrorMessageProps {
 
 /** The error page: a painted card with the message and a way to try again. */
 export function ErrorMessage({ message, reset }: ErrorMessageProps) {
+  const { t } = useI18n();
   return (
     <main id="main" className="pkg-main pkg-notfound kit-above-backdrop" tabIndex={-1}>
       <div className="px-card kit-painted pkg-notfound-card" role="alert">
         <div className="kit-slot pkg-notfound-compass" aria-hidden="true">
           <PixelIcon name="tnt" size={64} />
         </div>
-        <h2 className="pkg-error-title">Something went wrong</h2>
+        <h2 className="pkg-error-title">{t.errorTitle}</h2>
         <p className="pkg-notfound-text">{message}</p>
         <button type="button" className="mc-btn mc-btn-primary" onClick={reset}>
-          Try again
+          {t.tryAgain}
         </button>
       </div>
     </main>

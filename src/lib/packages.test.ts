@@ -1,18 +1,20 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { Package, RawPackageEntry } from "../types.ts";
+import type { RawPackageEntry } from "../types.ts";
 import {
   buildPackageUrl,
-  extractTags,
-  filterByTags,
+  commandParts,
   getDefaultSelection,
+  getReleaseUrl,
   getRepoBaseUrls,
   getRepositoryUrl,
+  installCommand,
+  isPrerelease,
+  ownerAvatar,
+  ownerOf,
   packagePath,
-  paginatePackages,
+  parseTab,
   resolveSelection,
-  searchPackages,
-  sortPackages,
   toothFromPath,
 } from "./packages.ts";
 
@@ -27,24 +29,16 @@ const entry: RawPackageEntry = {
   },
 };
 
-const pkg = (tooth: string, name: string, tags: string[], stars: number, updated: string): Package => ({
-  tooth,
-  info: { name, description: `${name} description`, tags },
-  stars,
-  updated,
-  versions: ["1.0.0"],
-});
-const packages = [
-  pkg("github.com/a/alpha", "Alpha", ["mod", "lse"], 5, "2026-01-01T00:00:00Z"),
-  pkg("github.com/b/beta", "Beta", ["mod"], 50, "2026-03-01T00:00:00Z"),
-  pkg("github.com/c/levilamina-thing", "LeviLamina Thing", ["library"], 1, "2026-02-01T00:00:00Z"),
-];
-
 test("package paths round-trip", () => {
   assert.equal(packagePath(TOOTH), "/packages/github.com/LiteLDev/LeviLamina/");
   assert.equal(toothFromPath(packagePath(TOOTH)), TOOTH);
   assert.equal(toothFromPath("/packages/github.com/x"), null);
   assert.equal(toothFromPath("/"), null);
+});
+
+test("owners and their avatars", () => {
+  assert.equal(ownerOf(TOOTH), "LiteLDev");
+  assert.equal(ownerAvatar("LiteLDev"), "https://avatars.githubusercontent.com/LiteLDev?s=144");
 });
 
 test("the default selection is the default variant's latest version", () => {
@@ -58,12 +52,24 @@ test("selections fall back to what the package has", () => {
   assert.deepEqual(resolveSelection(entry, null, null), { variant: "", version: "1.1.0" });
 });
 
-test("the default selection has the bare URL", () => {
+test("the default selection has the bare URL; tabs add tab=", () => {
   assert.equal(buildPackageUrl(TOOTH, entry, { variant: "", version: "1.1.0" }), packagePath(TOOTH));
   assert.equal(
     buildPackageUrl(TOOTH, entry, { variant: "client", version: "1.0.0" }),
     `${packagePath(TOOTH)}?variant=client&version=1.0.0`,
   );
+  assert.equal(buildPackageUrl(TOOTH, entry, { variant: "", version: "1.1.0" }, "versions"), `${packagePath(TOOTH)}?tab=versions`);
+  assert.equal(
+    buildPackageUrl(TOOTH, entry, { variant: "client", version: "1.0.0" }, "dependencies"),
+    `${packagePath(TOOTH)}?variant=client&version=1.0.0&tab=dependencies`,
+  );
+});
+
+test("tabs: unknown values show the description", () => {
+  assert.equal(parseTab("versions"), "versions");
+  assert.equal(parseTab("dependencies"), "dependencies");
+  assert.equal(parseTab("gallery"), "description");
+  assert.equal(parseTab(null), "description");
 });
 
 test("repository URLs: the tooth, or where the repository lives now", () => {
@@ -79,33 +85,28 @@ test("repository URLs: the tooth, or where the repository lives now", () => {
   });
 });
 
-test("search ranks name matches and filters the rest out", () => {
-  const { results, scores } = searchPackages(packages, "levilamina");
-  assert.deepEqual(results.map((p) => p.info.name), ["LeviLamina Thing"]);
-  assert.ok((scores.get("github.com/c/levilamina-thing") ?? 0) > 0);
-  assert.equal(searchPackages(packages, "  ").results, packages);
+test("release links: the exact tag when known, else the releases page", () => {
+  const repo = "https://github.com/LiteLDev/LeviLamina";
+  assert.equal(getReleaseUrl(repo, { tag: "v1.1.0" }), `${repo}/releases/tag/v1.1.0`);
+  assert.equal(getReleaseUrl(repo, undefined), `${repo}/releases`);
 });
 
-test("tag filters need every selected tag", () => {
-  assert.deepEqual(filterByTags(packages, ["mod"]).map((p) => p.info.name), ["Alpha", "Beta"]);
-  assert.deepEqual(filterByTags(packages, ["mod", "lse"]).map((p) => p.info.name), ["Alpha"]);
+test("install commands and pre-releases", () => {
+  assert.equal(installCommand(TOOTH, "", "1.1.0"), `lip install ${TOOTH}@1.1.0`);
+  assert.equal(installCommand(TOOTH, "client", "1.0.0"), `lip install ${TOOTH}#client@1.0.0`);
+  assert.ok(isPrerelease("1.0.0-rc.1"));
+  assert.ok(isPrerelease("0.3.0-mc26.51"));
+  assert.ok(!isPrerelease("26.51.7"));
 });
 
-test("sorting by stars and by update time", () => {
-  const none = new Map<string, number>();
-  assert.deepEqual(sortPackages(packages, "stars", none, false).map((p) => p.stars), [50, 5, 1]);
-  assert.deepEqual(sortPackages(packages, "updated", none, false).map((p) => p.info.name), ["Beta", "LeviLamina Thing", "Alpha"]);
-  assert.deepEqual(sortPackages(packages, "relevance", none, false), packages);
-});
-
-test("pagination clamps the page", () => {
-  const many = Array.from({ length: 130 }, (_, i) => pkg(`github.com/x/p${i}`, `P${i}`, [], 0, ""));
-  assert.equal(paginatePackages(many, 1).items.length, 60);
-  assert.equal(paginatePackages(many, 3).items.length, 10);
-  assert.equal(paginatePackages(many, 99).items[0]?.info.name, "P120");
-  assert.equal(paginatePackages([], 1).totalPages, 1);
-});
-
-test("tags are ordered by use, then by name", () => {
-  assert.deepEqual(extractTags(packages), ["mod", "library", "lse"]);
+test("install commands break between the tooth's parts, never inside a version", () => {
+  assert.deepEqual(commandParts(`lip install ${TOOTH}#client@1.0.0-rc.1`), [
+    "lip install ",
+    "github.com/",
+    "LiteLDev/",
+    "LeviLamina",
+    "#client",
+    "@1.0.0-rc.1",
+  ]);
+  assert.equal(commandParts(installCommand(TOOTH, "", "1.1.0")).join(""), `lip install ${TOOTH}@1.1.0`);
 });

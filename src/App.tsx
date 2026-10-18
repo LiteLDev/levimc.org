@@ -1,20 +1,26 @@
-import { Suspense, use, useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
+import { Suspense, use, useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
 import { useLocation, useNavigationType } from "react-router";
 import {
   GlobalBar,
   PaintedBackdrop,
   SiteFooter,
   ThemeProvider,
-  ThemeToggle,
-} from "../kit/components";
+  usePreferredLocale,
+} from "./kit-ui";
 import { ErrorBoundary, ErrorMessage } from "./components/error-boundary";
 import { Header } from "./components/header";
-import { pageMeta, type PageData } from "./page-data";
+import { KitRouterLink } from "./components/router-link";
+import { LocaleContext, STRINGS, useI18n, type Strings } from "./i18n";
+import { LOCALES } from "./locales";
+import { pageMeta, SITE_ORIGIN, type PageData } from "./page-data";
 import { PageStoreContext, usePageStore, type PageStore } from "./page-store";
 import { HomePage } from "./pages/home-page";
 import { NotFoundPage } from "./pages/not-found-page";
 import { PackagePage } from "./pages/package-page";
 import { RenamesContext } from "./repository-renames";
+
+/** The site's repository: the LeviMC bar's GitHub button. */
+const REPOSITORY = "https://github.com/LiteLDev/pkg.levimc.org";
 
 /**
  * Sets a `<head>` element's attribute, adding the element first when the
@@ -56,9 +62,10 @@ const canonicalTag = () => {
  * page's `noindex` in step on navigation.
  */
 function useDocumentHead(data: PageData) {
+  const { locale, t } = useI18n();
   useEffect(() => {
     const meta = pageMeta(data);
-    document.title = meta.title;
+    document.title = locale === "en" ? meta.title : localizedTitle(data, t);
     setHeadTag('meta[name="description"]', metaTag("name", "description"), "content", meta.description);
     setHeadTag('link[rel="canonical"]', canonicalTag, "href", meta.canonical);
     setHeadTag('meta[property="og:title"]', metaTag("property", "og:title"), "content", meta.title);
@@ -75,19 +82,31 @@ function useDocumentHead(data: PageData) {
       "content",
       data.kind === "not-found" ? "noindex" : undefined,
     );
-  }, [data]);
+  }, [data, locale, t]);
+}
+
+/** The tab title in the interface language (pages are prerendered with the English one). */
+function localizedTitle(data: PageData, t: Strings): string {
+  switch (data.kind) {
+    case "home":
+      return `${t.siteName} — ${t.tagline}`;
+    case "package":
+      return `${data.entry.name} | ${t.siteName}`;
+    case "not-found":
+      return `${t.notFoundTitle} | ${t.siteName}`;
+  }
 }
 
 /** How far down the results may start before a new query brings them up. */
 const RESULTS_LOW = 0.6;
 
 /**
- * New pages open at the top. A query (a search, a tag, a sort order, the
- * next page) brings the results' top into view when it is above the viewport,
- * or so far down that the results hardly show (phones, where the hero and the
- * tags come first) — whether it was made on the package list or, like a search
- * in the header, from another page. Back and forward leave scrolling to the
- * browser.
+ * New pages open at the top. A query (a filter, a sort order, the next page)
+ * brings the results' top into view when it is above the viewport, or so far
+ * down that the results hardly show — whether it was made on the listing or,
+ * like a search in the header, from another page. Typing in the search field
+ * replaces the history entry and never scrolls. Back and forward leave
+ * scrolling to the browser.
  */
 function ScrollOnNavigate() {
   const location = useLocation();
@@ -101,6 +120,8 @@ function ScrollOnNavigate() {
     if (!samePage) {
       window.scrollTo(0, 0);
       if (!location.search) return;
+    } else if (navigationType === "REPLACE") {
+      return;
     }
     const anchor = document.querySelector<HTMLElement>("[data-scroll-anchor]");
     if (!anchor) return;
@@ -134,18 +155,12 @@ function LoadedPage({ data }: { data: PageData }) {
 function renderPage(data: PageData) {
   switch (data.kind) {
     case "home":
-      return <HomePage packages={data.packages} />;
+      return <HomePage catalog={data.catalog} />;
     case "package":
       return (
         <>
           <Header />
-          <PackagePage
-            key={data.tooth}
-            tooth={data.tooth}
-            pkg={data.pkg}
-            repository={data.repository}
-            prerendered={data.prerendered}
-          />
+          <PackagePage key={data.tooth} data={data} />
         </>
       );
     case "not-found":
@@ -171,32 +186,54 @@ function PageFallback() {
   );
 }
 
+/**
+ * The LeviMC bar (the site's languages, the shared theme menu, GitHub), the
+ * page and the LeviMC footer. The interface follows the visitor's cross-site
+ * language preference; pages are prerendered in English.
+ */
 function Shell({ children }: { children: ReactNode }) {
+  const [locale, setLocale] = usePreferredLocale(LOCALES, LOCALES[0]);
+  const i18n = useMemo(() => ({ locale: locale.code, t: STRINGS[locale.code] }), [locale.code]);
+  const { pathname } = useLocation();
+  useEffect(() => {
+    // the document's language is the interface's (prerendered as English)
+    document.documentElement.lang = locale.lang;
+  }, [locale.lang]);
   return (
-    <div className="kit-shell">
-      <PaintedBackdrop />
-      <a className="kit-skip-link" href="#main">
-        Skip to content
-      </a>
-      <GlobalBar current="packages" end={<ThemeToggle />} />
-      {children}
-      <SiteFooter />
-    </div>
+    <LocaleContext value={i18n}>
+      <div className="kit-shell" lang={locale.lang}>
+        <PaintedBackdrop scene={pathname !== "/" && pathname !== "/index.html"} />
+        <a className="kit-skip-link" href="#main">
+          {i18n.t.skipToContent}
+        </a>
+        <GlobalBar
+          current="packages"
+          locale={locale.lang}
+          sticky
+          github={REPOSITORY}
+          siteOrigin={SITE_ORIGIN}
+          linkComponent={KitRouterLink}
+          languages={{
+            options: LOCALES.map(({ code, label, lang }) => ({ code, label, lang })),
+            current: locale.code,
+            onSelect: setLocale,
+          }}
+        />
+        {children}
+        <SiteFooter locale={locale.lang} siteOrigin={SITE_ORIGIN} linkComponent={KitRouterLink} />
+      </div>
+    </LocaleContext>
   );
 }
 
 /** The current page, or an error message (cleared by going to another page). */
 function PageBoundary() {
   const { pathname, search } = useLocation();
+  const { t } = useI18n();
   return (
     <ErrorBoundary
       resetKey={pathname + search}
-      fallback={(reset) => (
-        <ErrorMessage
-          message="An unexpected error occurred while loading this page. Please try again."
-          reset={reset}
-        />
-      )}
+      fallback={(reset) => <ErrorMessage message={t.errorPage} reset={reset} />}
     >
       <Suspense fallback={<PageFallback />}>
         <Page />
@@ -211,10 +248,7 @@ export function App({ store }: { store: PageStore }) {
       <ErrorBoundary
         fallback={(reset) => (
           <div className="kit-shell">
-            <ErrorMessage
-              message="A critical error occurred. Please try refreshing the page."
-              reset={reset}
-            />
+            <ErrorMessage message={STRINGS.en.errorCritical} reset={reset} />
           </div>
         )}
       >
