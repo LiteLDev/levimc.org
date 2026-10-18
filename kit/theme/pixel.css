@@ -244,7 +244,8 @@
     --px-drop: 0 calc(var(--px) * 3) 0 0 color-mix(in srgb, var(--color-ink) 7%, transparent);
     position: relative;
     margin: var(--px);
-    background: var(--color-surface);
+    /* a little of the painted page shows through, so cards sit in the scene instead of on top of it */
+    background: color-mix(in srgb, var(--color-surface) 86%, transparent);
     transition:
       transform 0.18s var(--ease-soft),
       background-color 0.2s;
@@ -400,21 +401,99 @@
     color: #c8b6ff;
   }
 
-  /* ------------------------------------------------------------------ grass strip divider */
+  /* ------------------------------------------------------------------ pixel dissolve */
+  /* The kit's one transition between a painting and the plain canvas (hero, docs scene band, footer, pkg strip):
+     the painted element's edge breaks up into 6px blocks over 96px AND fades out over 160px, both at once — blocks
+     alone read too abruptly, a fade alone loses the craft. Put the class on the painted layer itself: it masks that
+     element, so whatever lies behind it (the page backdrop) shows through. Nest two elements to dissolve two edges
+     (PaintedHero: bottom on the wrapper, left on the art). Mask = fade ∩ (solid ∪ blocks). */
+  .kit-dissolve-bottom,
+  .kit-dissolve-top,
+  .kit-dissolve-left {
+    -webkit-mask-composite: source-in, source-over;
+    mask-composite: intersect, add;
+  }
+  .kit-dissolve-bottom {
+    -webkit-mask-image:
+      linear-gradient(to bottom, #000 calc(100% - 160px), rgb(0 0 0 / 0.1)),
+      linear-gradient(#000, #000),
+      var(--kit-dissolve-top);
+    mask-image:
+      linear-gradient(to bottom, #000 calc(100% - 160px), rgb(0 0 0 / 0.1)),
+      linear-gradient(#000, #000),
+      var(--kit-dissolve-top);
+    -webkit-mask-position: 0 0, 0 0, 0 100%;
+    mask-position: 0 0, 0 0, 0 100%;
+    -webkit-mask-size: 100% 100%, 100% calc(100% - 96px), 288px 96px;
+    mask-size: 100% 100%, 100% calc(100% - 96px), 288px 96px;
+    -webkit-mask-repeat: no-repeat, no-repeat, repeat-x;
+    mask-repeat: no-repeat, no-repeat, repeat-x;
+  }
+  .kit-dissolve-top {
+    -webkit-mask-image:
+      linear-gradient(to top, #000 calc(100% - 160px), rgb(0 0 0 / 0.1)),
+      linear-gradient(#000, #000),
+      var(--kit-dissolve-bottom);
+    mask-image:
+      linear-gradient(to top, #000 calc(100% - 160px), rgb(0 0 0 / 0.1)),
+      linear-gradient(#000, #000),
+      var(--kit-dissolve-bottom);
+    -webkit-mask-position: 0 0, 0 100%, 0 0;
+    mask-position: 0 0, 0 100%, 0 0;
+    -webkit-mask-size: 100% 100%, 100% calc(100% - 96px), 288px 96px;
+    mask-size: 100% 100%, 100% calc(100% - 96px), 288px 96px;
+    -webkit-mask-repeat: no-repeat, no-repeat, repeat-x;
+    mask-repeat: no-repeat, no-repeat, repeat-x;
+  }
+  .kit-dissolve-left {
+    -webkit-mask-image:
+      linear-gradient(to left, #000 calc(100% - 160px), rgb(0 0 0 / 0.1)),
+      linear-gradient(#000, #000),
+      var(--kit-dissolve-right);
+    mask-image:
+      linear-gradient(to left, #000 calc(100% - 160px), rgb(0 0 0 / 0.1)),
+      linear-gradient(#000, #000),
+      var(--kit-dissolve-right);
+    -webkit-mask-position: 0 0, 100% 0, 0 0;
+    mask-position: 0 0, 100% 0, 0 0;
+    -webkit-mask-size: 100% 100%, calc(100% - 96px) 100%, 96px 288px;
+    mask-size: 100% 100%, calc(100% - 96px) 100%, 96px 288px;
+    -webkit-mask-repeat: no-repeat, no-repeat, repeat-y;
+    mask-repeat: no-repeat, no-repeat, repeat-y;
+  }
+
+  /* Section rule: five paint dabs in the Giverny palette, drawn as pixels (lily, pond, wisteria, rose, sunlight).
+     Centred; .kit-rule-start aligns it left. (.grass-divider is its kit 2.0 name and renders the same.) */
+  :root {
+    /* the five dabs as one 64×8px image, for decorations that cannot take the class (pseudo-elements) */
+    --kit-rule-dabs: linear-gradient(
+      90deg,
+      var(--color-lily) 0 8px,
+      transparent 8px 14px,
+      var(--color-pond) 14px 22px,
+      transparent 22px 28px,
+      var(--color-wisteria) 28px 36px,
+      transparent 36px 42px,
+      var(--color-rose) 42px 50px,
+      transparent 50px 56px,
+      var(--color-sunlight) 56px 64px
+    );
+  }
+  .kit-rule,
   .grass-divider {
+    --kit-rule-x: 50%;
     display: block;
-    height: 16px;
     width: 100%;
+    height: 8px;
     border: 0;
     margin: 0;
-    background-image: var(--kit-grass-strip);
-    background-repeat: repeat-x;
-    background-size: 32px 16px;
-    image-rendering: pixelated;
+    background: var(--kit-rule-dabs) var(--kit-rule-x) 0 / 64px 8px no-repeat;
   }
-  .grass-divider-thin {
-    height: 8px;
-    background-size: 16px 8px;
+  .kit-rule-start {
+    --kit-rule-x: 0;
+  }
+  .dark :is(.kit-rule, .grass-divider) {
+    filter: saturate(0.85) brightness(0.95);
   }
 
   /* Pixel heading marker / bullets */

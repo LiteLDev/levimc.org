@@ -23,28 +23,33 @@
   .kit-backdrop-dabs {
     inset: -12%;
     background:
-      radial-gradient(28% 22% at 6% 10%, rgb(79 138 91 / 0.2), transparent 70%),
-      radial-gradient(20% 16% at 16% 4%, rgb(154 134 194 / 0.17), transparent 72%),
-      radial-gradient(24% 20% at 94% 8%, rgb(62 110 142 / 0.17), transparent 70%),
-      radial-gradient(16% 12% at 82% 2%, rgb(233 196 106 / 0.24), transparent 72%),
-      radial-gradient(14% 11% at 70% 14%, rgb(217 138 158 / 0.12), transparent 72%),
-      radial-gradient(26% 20% at 2% 92%, rgb(62 110 142 / 0.12), transparent 72%),
-      radial-gradient(24% 22% at 98% 96%, rgb(79 138 91 / 0.14), transparent 72%),
-      radial-gradient(14% 12% at 88% 70%, rgb(154 134 194 / 0.1), transparent 72%);
+      radial-gradient(30% 24% at 6% 10%, rgb(79 138 91 / 0.26), transparent 70%),
+      radial-gradient(22% 18% at 18% 3%, rgb(154 134 194 / 0.26), transparent 72%),
+      radial-gradient(26% 22% at 94% 8%, rgb(62 110 142 / 0.24), transparent 70%),
+      radial-gradient(18% 14% at 80% 2%, rgb(233 196 106 / 0.32), transparent 72%),
+      radial-gradient(16% 13% at 68% 16%, rgb(217 138 158 / 0.2), transparent 72%),
+      radial-gradient(22% 18% at 30% 52%, rgb(154 134 194 / 0.1), transparent 72%),
+      radial-gradient(24% 20% at 74% 48%, rgb(79 138 91 / 0.1), transparent 72%),
+      radial-gradient(28% 22% at 2% 92%, rgb(62 110 142 / 0.2), transparent 72%),
+      radial-gradient(18% 14% at 22% 98%, rgb(217 138 158 / 0.14), transparent 72%),
+      radial-gradient(26% 24% at 98% 96%, rgb(79 138 91 / 0.2), transparent 72%),
+      radial-gradient(16% 14% at 88% 70%, rgb(154 134 194 / 0.18), transparent 72%);
     animation: var(--animate-kit-drift);
     will-change: transform;
   }
   .dark .kit-backdrop-dabs {
     background:
-      radial-gradient(26% 20% at 88% 6%, rgb(240 138 75 / 0.2), transparent 70%),
-      radial-gradient(14% 10% at 84% 3%, rgb(245 178 107 / 0.18), transparent 70%),
-      radial-gradient(30% 24% at 8% 8%, rgb(63 127 140 / 0.22), transparent 72%),
-      radial-gradient(22% 18% at 40% 0%, rgb(125 111 158 / 0.2), transparent 72%),
-      radial-gradient(28% 22% at 4% 94%, rgb(63 127 140 / 0.16), transparent 72%),
-      radial-gradient(22% 18% at 96% 92%, rgb(125 111 158 / 0.16), transparent 72%),
-      radial-gradient(12% 10% at 92% 62%, rgb(240 138 75 / 0.07), transparent 72%);
+      radial-gradient(26% 20% at 88% 6%, rgb(240 138 75 / 0.26), transparent 70%),
+      radial-gradient(14% 10% at 84% 3%, rgb(245 178 107 / 0.24), transparent 70%),
+      radial-gradient(30% 24% at 8% 8%, rgb(63 127 140 / 0.3), transparent 72%),
+      radial-gradient(22% 18% at 40% 0%, rgb(125 111 158 / 0.28), transparent 72%),
+      radial-gradient(24% 20% at 70% 50%, rgb(63 127 140 / 0.1), transparent 72%),
+      radial-gradient(28% 22% at 4% 94%, rgb(63 127 140 / 0.22), transparent 72%),
+      radial-gradient(22% 18% at 96% 92%, rgb(125 111 158 / 0.22), transparent 72%),
+      radial-gradient(14% 12% at 92% 62%, rgb(240 138 75 / 0.12), transparent 72%);
   }
-  /* Painted scene band at the very top of the page (scrolls away), fading into the canvas. */
+  /* Painted scene band at the very top of the page (scrolls away), dissolving into the canvas in pixel blocks
+     (PaintedBackdrop adds .kit-dissolve-bottom). */
   .kit-backdrop-scene {
     position: absolute;
     z-index: 0;
@@ -52,13 +57,11 @@
     top: 0;
     left: 0;
     right: 0;
-    height: var(--kit-scene-height, 21rem);
+    height: var(--kit-scene-height, 15rem);
     background-image: var(--kit-paint-lilies);
     background-size: cover;
     background-position: center 35%;
-    opacity: var(--kit-scene-opacity, 0.3);
-    -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / 0.75) 30%, rgb(0 0 0 / 0.25) 62%, transparent 100%);
-    mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / 0.75) 30%, rgb(0 0 0 / 0.25) 62%, transparent 100%);
+    opacity: var(--kit-scene-opacity, 0.34);
   }
   .dark .kit-backdrop-scene {
     background-image: var(--kit-paint-sunrise);
@@ -74,10 +77,10 @@
     background-image: var(--kit-brush);
     background-size: 256px 256px;
     mix-blend-mode: soft-light;
-    opacity: 0.28;
+    opacity: 0.42;
   }
   .dark .kit-backdrop-brush {
-    opacity: 0.22;
+    opacity: 0.3;
   }
   .kit-backdrop-grain {
     inset: 0;
@@ -130,16 +133,25 @@
   }
 
   /* ------------------------------------------------------------------ painted hero */
+  /* The painting fills the right of the hero and dissolves into the page in 6px blocks along its left and bottom
+     edges (the kit's one painting-to-canvas transition, see .kit-dissolve-* in pixel.css): the copy sits on the
+     page's own canvas, so it needs no scrim. Below 961px the painting is a band at the top, dissolving downwards. */
   .kit-hero {
+    --kit-hero-paint-x: max(50% + 1rem, 41.5rem);
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    background: var(--color-canvas);
   }
-  .kit-hero-art {
+  .kit-hero-paint {
+    position: absolute;
+    inset: 0 0 0 var(--kit-hero-paint-x);
+    z-index: -1;
+    pointer-events: none;
+  }
+  .kit-hero-art,
+  .kit-hero-brush {
     position: absolute;
     inset: 0;
-    z-index: -2;
   }
   .kit-hero-art svg {
     position: absolute;
@@ -164,51 +176,26 @@
     animation: kit-glint 9s ease-in-out infinite alternate;
   }
   .kit-hero-brush {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
     background-image: var(--kit-brush);
     background-size: 256px 256px;
     mix-blend-mode: soft-light;
     opacity: 0.5;
-    pointer-events: none;
   }
-  /* Scrim that keeps hero text at AA contrast: canvas fades into the painting. */
-  .kit-hero-scrim {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: linear-gradient(
-      90deg,
-      var(--color-canvas) 0%,
-      color-mix(in srgb, var(--color-canvas) 94%, transparent) 30%,
-      color-mix(in srgb, var(--color-canvas) 55%, transparent) 50%,
-      transparent 68%
-    );
-    pointer-events: none;
-  }
+  /* (.kit-hero-strip: a one-line hero that keeps the painting on the right at every width, e.g. pkg.levimc.org) */
   @media (max-width: 960px) {
-    /* the painting becomes a band at the top; the copy sits on calm canvas below it */
-    .kit-hero-art,
-    .kit-hero-brush {
+    .kit-hero:not(.kit-hero-strip) .kit-hero-paint {
       inset: 0 0 auto 0;
       height: var(--kit-hero-band, clamp(15rem, 64vw, 24rem));
     }
-    .kit-hero-scrim {
-      inset: 0 0 auto 0;
-      height: var(--kit-hero-band, clamp(15rem, 64vw, 24rem));
-      background: linear-gradient(180deg, transparent 0%, transparent 55%, color-mix(in srgb, var(--color-canvas) 70%, transparent) 82%, var(--color-canvas) 100%);
+    .kit-hero:not(.kit-hero-strip) .kit-hero-paint > .kit-dissolve-left {
+      -webkit-mask-image: none;
+      mask-image: none;
     }
   }
-  .kit-hero-horizon {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1;
-  }
-  .dark .grass-divider {
-    filter: brightness(0.78) saturate(0.9);
+  /* kit 2.0's grass horizon and text scrim: no longer drawn */
+  .kit-hero-horizon,
+  .kit-hero-scrim {
+    display: none;
   }
 
   /* MC item frame: a wooden frame for the hero image / project logo. */

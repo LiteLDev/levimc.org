@@ -49,7 +49,7 @@ function FooterLink({ nav, url, className, children }: { nav: NavCtx; url: strin
 }
 
 /**
- * The footer of every LeviMC site, identical everywhere: grass horizon over "soil"; the LeviMC mark and tagline
+ * The footer of every LeviMC site, identical everywhere: the theme's painting (Nymphéas / Impression, soleil levant) rising out of the page through the pixel dissolve; the LeviMC mark and tagline
  * with each social channel once (as icons), then one legal row — © year · Support us, and the Minecraft trademark
  * notice. No link columns: the bar above already carries the navigation (Projects menu, Mods, Blog, Community, About).
  */
@@ -59,8 +59,8 @@ export function SiteFooter({ locale, strings, year = BUILD_YEAR, siteOrigin, lin
   const social = [...SOCIAL.filter((s) => s.id !== 'email'), { id: 'github' as const, label: 'GitHub', url: LINKS.github }, ...SOCIAL.filter((s) => s.id === 'email')];
   return (
     <footer className={className ? `kit-footer ${className}` : 'kit-footer'} data-kit-footer="" lang={locale}>
-      <div className="grass-divider" aria-hidden="true" />
       <div className="kit-footer-soil">
+        <div className="kit-footer-paint kit-dissolve-top" aria-hidden="true" />
         <div className="kit-footer-inner">
           <div className="kit-footer-brand">
             <FooterLink nav={nav} url={LINKS.home} className="kit-footer-logo">

@@ -11,7 +11,7 @@ export interface PaintedBackdropProps {
 
 /**
  * Fixed, decorative page background: impressionist colour dabs in the margins, an optional painted scene
- * band fading into the canvas, brush-dab texture and canvas grain. Purely CSS (textures are cached data URIs),
+ * band dissolving into the canvas in pixel blocks, brush-dab texture and canvas grain. Purely CSS (textures are cached data URIs),
  * aria-hidden, and the drift animation stops under prefers-reduced-motion. Place it first inside <body>'s
  * root and give page content `.kit-above-backdrop` (or any positioned z-index ≥ 1).
  */
@@ -28,7 +28,7 @@ export function PaintedBackdrop({ scene = true, sceneHeight, sceneOpacity, scene
         <div className="kit-backdrop-grain" />
       </div>
       {/* the scene band is positioned against the document, so it scrolls away with the page top */}
-      {scene ? <div className="kit-backdrop-scene" aria-hidden="true" style={style} /> : null}
+      {scene ? <div className="kit-backdrop-scene kit-dissolve-bottom" aria-hidden="true" style={style} /> : null}
     </>
   );
 }
