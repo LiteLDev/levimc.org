@@ -21,9 +21,10 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync, realpathSync } from
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 
-// <meta name="generator"> on every page, so a deployment's kit version is verifiable
+// <meta name="generator"> on every page, so a deployment's kit version (and published build) is verifiable
 const KIT_VERSION = readFileSync(new URL('../VERSION', import.meta.url), 'utf8').trim();
-const GENERATOR_META = `<meta name="generator" content="levimc-kit ${KIT_VERSION}">`;
+const KIT_BUILD = /export const KIT_BUILD: string = '([^']*)';/.exec(readFileSync(new URL('../components/version.ts', import.meta.url), 'utf8'))?.[1] ?? 'dev';
+const GENERATOR_META = `<meta name="generator" content="levimc-kit ${KIT_VERSION}${KIT_BUILD === 'dev' ? '' : `+${KIT_BUILD}`}">`;
 
 /**
  * @param {object} o
