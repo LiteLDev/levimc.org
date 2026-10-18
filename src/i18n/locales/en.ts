@@ -1,4 +1,6 @@
 // English translations
+const MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
 const en = {
   // Navigation
   nav: {
@@ -165,6 +167,38 @@ const en = {
     levianticheat: "Anti-cheating solution for LeviLamina servers..",
     moredimensions:
       "Expand your Minecraft Bedrock world with new dimensions and biomes.",
+  },
+  // Blog (levimc.org/blog/) — the chrome around the posts; the posts themselves are in Chinese
+  blog: {
+    name: "LeviMC's blog",
+    tagline: "Everything about development",
+    eyebrow: "Blog",
+    sections: "Blog sections",
+    posts: "Posts",
+    tags: "Tags",
+    categories: "Categories",
+    archives: "Archives",
+    about: "About",
+    friends: "Friends",
+    rss: "RSS",
+    latest: "Latest posts",
+    readMore: "Read more",
+    minutes: (n: number) => `${n} min read`,
+    postCount: (n: number) => (n === 1 ? "1 post" : `${n} posts`),
+    tagTitle: (name: string) => `Tag: ${name}`,
+    categoryTitle: (name: string) => `Category: ${name}`,
+    archiveTitle: (y: string, m?: string) => (m ? `Archives: ${MONTHS_EN[Number(m) - 1]} ${y}` : `Archives: ${y}`),
+    page: (n: number) => `Page ${n}`,
+    previousPost: "Previous post",
+    nextPost: "Next post",
+    writtenIn: "Written in Chinese",
+    by: "by",
+    comments: "Comments",
+    commentsLoading: "Loading comments…",
+    commentsFailed: "Comments could not be loaded.",
+    backToBlog: "All posts",
+    date: (iso: string) => `${MONTHS_EN[Number(iso.slice(5, 7)) - 1]} ${Number(iso.slice(8, 10))}, ${iso.slice(0, 4)}`,
+    monthName: (m: string) => MONTHS_EN[Number(m) - 1]!,
   },
 };
 

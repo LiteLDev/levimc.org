@@ -17,6 +17,6 @@
     "allowImportingTsExtensions": true,
     "types": ["node", "vite/client"]
   },
-  "include": ["kit/components", "src", "*.ts"],
+  "include": ["kit/components", "src", "blog", "*.ts"],
   "exclude": ["node_modules", "dist", ".kit"]
 }

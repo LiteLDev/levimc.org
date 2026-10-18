@@ -1,0 +1,11 @@
+# Post authors (front matter `author:`) → GitHub account: the post header shows the avatar and links the profile.
+# id = the numeric GitHub user id (https://api.github.com/users/<login>), used for the avatar URL.
+ShrBox:
+  github: ShrBox
+  id: 53301243
+PA733:
+  github: PA733
+  id: 67588574
+Dofes:
+  github: Dofes
+  id: 91889957
