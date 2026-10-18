@@ -9,15 +9,16 @@ interface CompactHeroProps {
 /**
  * The kit's painted hero as a compact strip (≤ 112 px), so results start
  * above the fold. The painting is a cached file per theme (`/hero-light.svg`,
- * `/hero-dark.svg`, see server/hero.ts) behind the kit's brush, scrim and
- * grass horizon.
+ * `/hero-dark.svg`, see server/hero.ts) on the right, dissolving into the
+ * page in the kit's pixel blocks (the same edge as every painted hero).
  */
 export function CompactHero({ name, tagline, children }: CompactHeroProps) {
   return (
-    <section className="kit-hero pkg-hero" data-kit-hero="">
-      <div className="kit-hero-art pkg-hero-art" aria-hidden="true" />
-      <div className="kit-hero-brush" aria-hidden="true" />
-      <div className="kit-hero-scrim" aria-hidden="true" />
+    <section className="kit-hero kit-hero-strip pkg-hero" data-kit-hero="">
+      <div className="kit-hero-paint kit-dissolve-bottom" aria-hidden="true">
+        <div className="kit-hero-art kit-dissolve-left pkg-hero-art" />
+        <div className="kit-hero-brush kit-dissolve-left" />
+      </div>
       <div className="kit-hero-inner">
         <div className="kit-hero-copy">
           <div className="kit-hero-badge">
@@ -32,7 +33,6 @@ export function CompactHero({ name, tagline, children }: CompactHeroProps) {
           {children}
         </div>
       </div>
-      <div className="grass-divider kit-hero-horizon" aria-hidden="true" />
     </section>
   );
 }

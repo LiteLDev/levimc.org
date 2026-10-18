@@ -97,29 +97,16 @@
   }
 
   /* ================================================================== compact painted hero (home) */
+  /* the painting keeps to the right of the strip at every width (the copy is one line) */
   .pkg-hero {
-    --kit-hero-band: 100%;
-  }
-  .pkg-hero .kit-hero-art,
-  .pkg-hero .kit-hero-brush,
-  .pkg-hero .kit-hero-scrim {
-    inset: 0;
-    height: auto;
+    --kit-hero-paint-x: max(58%, 100% - 34rem);
   }
   .pkg-hero-art {
     background: url("/hero-light.svg") 72% 55% / cover no-repeat;
   }
   .dark .pkg-hero-art {
     background-image: url("/hero-dark.svg");
-  }
-  .pkg-hero .kit-hero-scrim {
-    background: linear-gradient(
-      90deg,
-      var(--color-canvas) 0%,
-      color-mix(in srgb, var(--color-canvas) 92%, transparent) 38%,
-      color-mix(in srgb, var(--color-canvas) 55%, transparent) 62%,
-      transparent 85%
-    );
+    background-position: 80% 45%;
   }
   .pkg-hero .kit-hero-inner {
     display: block;
@@ -194,9 +181,6 @@
   }
   .pkg-hero-sep {
     color: var(--color-faint);
-  }
-  .pkg-hero .kit-hero-horizon {
-    height: 8px;
   }
   @media (max-width: 640px) {
     .pkg-hero .kit-hero-inner {
@@ -1205,7 +1189,7 @@
     margin: 0;
     font-family: var(--font-display);
     font-size: 1.375rem;
-    font-weight: 600;
+    font-weight: 700;
   }
   .pkg-drawer-body {
     flex: 1 1 auto;
@@ -1261,7 +1245,7 @@
     margin: 0;
     font-family: var(--font-display);
     font-size: 1.375rem;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.25;
     overflow-wrap: anywhere;
   }
@@ -1385,9 +1369,8 @@
     gap: 0.625rem;
     flex: none;
     font-family: var(--font-display);
-    font-optical-sizing: auto;
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: -0.015em;
     color: var(--color-ink);
     transition: color 0.12s;
@@ -1440,19 +1423,14 @@
     position: relative;
   }
   .pkg-project-head::after {
-    /* a thin pixel horizon: grass over dirt */
+    /* the kit's paint-dab rule, sitting on the line at its start */
     content: "";
     position: absolute;
     left: 0;
-    right: 0;
-    bottom: -3px;
-    height: 4px;
-    background:
-      linear-gradient(var(--color-mc-grass) 0 2px, transparent 2px),
-      linear-gradient(to bottom, transparent 2px, color-mix(in srgb, var(--color-mc-dirt) 55%, transparent) 2px 4px);
-    opacity: 0.5;
-    -webkit-mask-image: linear-gradient(90deg, #000, #000 40%, transparent);
-    mask-image: linear-gradient(90deg, #000, #000 40%, transparent);
+    bottom: -4.5px;
+    width: 64px;
+    height: 8px;
+    background: var(--kit-rule-dabs);
   }
   .pkg-project-icon {
     padding: 0.625rem;
@@ -1472,9 +1450,8 @@
   .pkg-project-name {
     margin: 0;
     font-family: var(--font-display);
-    font-optical-sizing: auto;
     font-size: 1.875rem;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.15;
     letter-spacing: -0.02em;
     overflow-wrap: anywhere;
@@ -2137,9 +2114,8 @@
   .pkg-error-title {
     margin: 0 0 0.75rem;
     font-family: var(--font-display);
-    font-optical-sizing: auto;
     font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.25rem);
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.15;
     letter-spacing: -0.02em;
     color: var(--color-ink);
