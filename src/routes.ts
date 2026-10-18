@@ -5,17 +5,24 @@ import { BLOG_ROUTES, blog, resolveBlogPath } from './blog/data';
 
 export const SITE_ORIGIN = 'https://levimc.org';
 
-export type RouteId = 'home' | 'projects' | 'features' | 'community' | 'about' | 'support' | 'blog';
+export type RouteId = 'home' | 'community' | 'about' | 'support' | 'blog';
 
 export const ROUTES: readonly { id: RouteId; path: string }[] = [
   { id: 'home', path: '/' },
-  { id: 'projects', path: '/projects/' },
-  { id: 'features', path: '/features/' },
   { id: 'community', path: '/community/' },
   { id: 'about', path: '/about/' },
   { id: 'support', path: '/support/' },
   { id: 'blog', path: '/blog/' },
 ];
+
+/**
+ * Pages that became sections of the home page (kit 2: the bar's Projects menu replaced the projects page). Each
+ * old URL is a redirect page to its section (prerender.mjs), so links and bookmarks keep working.
+ */
+export const MOVED: Record<string, string> = {
+  '/projects/': '/#projects',
+  '/features/': '/#features',
+};
 
 /** Every prerendered route (used by prerender.mjs): the pages above plus every blog page. */
 export const ROUTE_PATHS: string[] = [...new Set([...ROUTES.map((r) => r.path), ...BLOG_ROUTES])];
@@ -53,10 +60,6 @@ export function routeMeta(pathname: string, t: Messages): { title: string; descr
   switch (id) {
     case 'home':
       return { title: HOME_TITLE, description: hero.replace(/\s+([。，])/g, '$1') };
-    case 'projects':
-      return { title: `${t.projects.allProjectsTitle} - LeviMC`, description: t.projects.allProjectsDesc };
-    case 'features':
-      return { title: `${t.nav.features} - LeviMC`, description: t.features.description };
     case 'community':
       return { title: `${t.nav.community} - LeviMC`, description: t.community.description };
     case 'about':

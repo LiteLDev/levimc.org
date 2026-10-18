@@ -6,7 +6,6 @@ const en = {
   nav: {
     home: "Home",
     projects: "Projects",
-    features: "Features",
     about: "About",
     community: "Community",
     support: "Support Us",
@@ -49,10 +48,7 @@ const en = {
   // Projects section
   projects: {
     label: "ECOSYSTEM",
-    title: "Core projects.",
-    viewAll: "View all",
-    allProjectsTitle: "All Projects",
-    allProjectsDesc: "The complete toolkit for Bedrock server development.",
+    title: "Our projects.",
     moreOnGitHub: "More projects on GitHub",
     explore: "Explore",
     docs: "Docs",
@@ -142,16 +138,6 @@ const en = {
     donorLinkLabel: "Open link",
   },
 
-  // Footer
-  footer: {
-    tagline:
-      "Building the future of Minecraft Bedrock Server modding. Open source tools for the community, by the community.",
-    resources: "Resources",
-    ll_documentation: "LeviLamina Documentation",
-    lse_documentation: "LegacyScriptEngine Documentation",
-    connect: "Connect",
-    copyright: "LeviMC",
-  },
 
   // Project descriptions
   projects_desc: {
@@ -159,10 +145,11 @@ const en = {
       "A lightweight, modular and versatile mod loader for Minecraft Bedrock Edition.",
     legacyscriptengine:
       "Run JavaScript, Lua, and Python plugins on LeviLamina.",
+    lip: "A general-purpose package installer: install mods and their dependencies with one command.",
     levilaunchroid: "A launcher for Minecraft Bedrock Edition on Android.",
     levilauncher: "Minecraft Bedrock Edition GDK Launcher for Windows.",
     levioptimize: "Performance optimization mod for LeviLamina servers.",
-    levianticheat: "Anti-cheating solution for LeviLamina servers..",
+    levianticheat: "Anti-cheating solution for LeviLamina servers.",
     moredimensions:
       "Expand your Minecraft Bedrock world with new dimensions and biomes.",
   },

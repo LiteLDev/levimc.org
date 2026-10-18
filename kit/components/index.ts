@@ -1,5 +1,5 @@
 // levimc-kit — shared React components for every LeviMC site.
-export { GlobalBar, GlobalNavList, type GlobalBarProps, type GlobalBarLanguages, type GlobalNavListProps } from './GlobalBar';
+export { GlobalBar, GlobalNavList, BrandMark, type GlobalBarProps, type GlobalBarLanguages, type GlobalNavListProps } from './GlobalBar';
 export { SiteFooter, type SiteFooterProps } from './SiteFooter';
 export { ThemeSwitcher, ThemeToggle, type ThemeSwitcherProps, type ThemeToggleProps } from './ThemeToggle';
 export { LocaleSwitcher, type LocaleSwitcherProps, type LocaleOption, type LinkLikeProps } from './LocaleSwitcher';
@@ -49,21 +49,25 @@ export {
 } from './prefs';
 export {
   LINKS,
+  PROJECTS,
+  PROJECT_GROUPS,
   DOCS_PROJECTS,
   SOCIAL,
-  NOT_AFFILIATED,
   COPYRIGHT_HOLDER,
   MODS_SITE,
   globalNav,
   originOf,
   sameSitePath,
+  type Project,
+  type ProjectId,
+  type ProjectGroupId,
   type DocsProject,
   type DocsProjectId,
   type SiteId,
   type SocialLink,
   type GlobalNavEntry,
 } from './projects';
-export { UI_LOCALES, UI_STRINGS, UI_LOCALE_NAMES, resolveUiLocale, uiStrings, type UiLocale, type UiStrings } from './i18n';
+export { UI_LOCALES, UI_STRINGS, UI_LOCALE_NAMES, resolveUiLocale, uiLocaleName, uiStrings, type UiLocale, type UiStrings } from './i18n';
 export { GOOGLE_FONTS_HREF, FONT_HEAD_HTML } from './fonts';
 export { KIT_VERSION, KIT_GENERATOR, GENERATOR_META } from './version';
 export { useDismissableDetails } from './menu';

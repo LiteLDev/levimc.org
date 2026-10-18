@@ -18,6 +18,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      kit-changed: ${{ steps.kit.outputs.changed }}
     steps:
       - uses: actions/checkout@v7
 
@@ -28,6 +30,16 @@ jobs:
 
       - run: npm ci
 
+      # levimc-kit lives here (kit/) and is published with the site at https://levimc.org/kit/v2/, where every
+      # other LeviMC site fetches it when it builds. --stamp puts the kit's build hash into this site's pages too.
+      - id: kit
+        run: |
+          node kit/scripts/publish-kit.mjs .kit/publish --stamp
+          new=$(jq -r .build .kit/publish/v2/manifest.json)
+          old=$(curl -fsSL https://levimc.org/kit/v2/manifest.json | jq -r .build || echo none)
+          echo "kit build: $old → $new"
+          echo "changed=$([ "$new" != "$old" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
       - run: npm run typecheck
 
       # Blog content (Hexo permalinks, slugs, rendering) and the kit's preference tests.
@@ -36,6 +48,8 @@ jobs:
       # Client build, SSR build and prerender: one static HTML file per route
       # (projects/index.html, …) plus 404.html, sitemap.xml and robots.txt.
       - run: npm run build
+
+      - run: cp -r .kit/publish dist/kit
 
       # Internal links, redirect-needing links and #anchors (GitHub Pages semantics).
       - run: npm run linkcheck
@@ -55,3 +69,33 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
+
+  # A new kit is live: rebuild every other LeviMC site now, so the change reaches them within minutes. Needs the
+  # KIT_SYNC_TOKEN secret (a fine-grained token with "Actions: read and write" on the repositories below);
+  # without it, each site still picks the new kit up with its hourly check.
+  sync:
+    needs: [build, deploy]
+    if: needs.build.outputs.kit-changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.KIT_SYNC_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::notice::KIT_SYNC_TOKEN is not set: the sites rebuild with the new kit at their next hourly check"
+            exit 0
+          fi
+          status=0
+          while read -r repo workflow; do
+            echo "→ $repo ($workflow)"
+            gh workflow run "$workflow" -R "LiteLDev/$repo" || status=1
+          done <<'EOF'
+          liteldev.github.io deploy.yml
+          pkg.levimc.org build.yml
+          LeviLamina build-docs.yml
+          LegacyScriptEngine build_docs.yml
+          lip build-docs.yml
+          LeviLauncher docs.yml
+          LeviLaunchroid docs.yml
+          EOF
+          exit $status

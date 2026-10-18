@@ -1,7 +1,17 @@
 # LeviMC.org
 
 The website at [levimc.org](https://levimc.org/): Vite + React 19 + react-router 7 + TypeScript + Tailwind CSS v4,
-styled with the shared LeviMC design system in [`kit/`](kit/README.md) (levimc-kit, vendored — do not edit it here).
+styled with the shared LeviMC design system, levimc-kit, which lives here in [`kit/`](kit/README.md).
+
+**levimc-kit is the one source of the LeviMC chrome** — the bar on top (Home · Projects ▾ · Mods · Blog · Community ·
+About, language · theme · GitHub), the footer, the theme and the docs engine — for every LeviMC site: levimc.org,
+pkg.levimc.org, docs.levimc.org and the project docs (LeviLamina with its Doxygen API, LegacyScriptEngine, lip,
+LeviLauncher, LeviLaunchroid). Every deploy publishes it at <https://levimc.org/kit/v2/> (`kit/scripts/publish-kit.mjs`);
+the other sites fetch it when they build (`scripts/fetch-kit.mjs`, run by their package install) and never edit it.
+After a deploy that changed the kit, the `sync` job rebuilds every site (with the `KIT_SYNC_TOKEN` secret: a
+fine-grained token with *Actions: read and write* on those repositories); each site also checks hourly and rebuilds
+when its live pages run an older kit. `node kit/scripts/chrome-parity.mjs` checks that every live site shows the
+same bar and footer.
 Every route is prerendered to static HTML at build time and hydrated in the browser; GitHub Pages serves `dist/`.
 
 ## Development
@@ -41,12 +51,13 @@ npm run smoke:kit
 
 ## Layout
 
-- `src/App.tsx` — routes (`/`, `/projects/`, `/features/`, `/community/`, `/about/`, `/support/`, `/blog/…`, and the 404 page)
+- `src/App.tsx` — routes (`/`, `/community/`, `/about/`, `/support/`, `/blog/…`, and the 404 page); `/projects/` and
+  `/features/` are redirects to the home page's `#projects` and `#features` sections (`MOVED` in `src/routes.ts`)
 - `src/pages/`, `src/components/` — page content; `src/i18n/locales/{en,zh}.ts` — all site text
 - `src/routes.ts` — route list, titles and descriptions; `src/head.ts` — per-page `<head>` tags
-- `src/components/SiteHeader.tsx` — the kit GlobalBar (the same bar as on every LeviMC site: Home · Projects ·
-  Docs · Mods · Blog · Community · About, then language · theme · GitHub). Features and Support Us are linked from
-  the footer's "Resources" row.
+- `src/components/SiteHeader.tsx`, `src/components/Footer.tsx` — the kit GlobalBar and SiteFooter, the same on every
+  LeviMC site (the Projects menu lists every project with its docs and repository; the footer links Support Us).
+  The project list is `PROJECTS` in `kit/components/projects.ts`; the home page's project cards read it too.
 - `src/prepaint.ts` — the pre-paint script: theme and language come from the cross-site LeviMC preferences
   (cookies `levimc_theme` = auto | light | dark, Auto by default, and `levimc_lang`, shared by levimc.org and
   every *.levimc.org site; see `kit/README.md`, "Cross-site preferences")

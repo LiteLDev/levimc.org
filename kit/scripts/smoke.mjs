@@ -29,8 +29,7 @@ const { chromium } = require('playwright');
 
 const CANONICAL_TABS = [
   ['home', 'https://levimc.org/'],
-  ['projects', 'https://levimc.org/projects/'],
-  ['docs', null],
+  ['projects', null],
   ['packages', 'https://pkg.levimc.org/'],
   ['blog', 'https://levimc.org/blog/'],
   ['community', 'https://levimc.org/community/'],
@@ -124,7 +123,7 @@ await check('GlobalBar: canonical tabs in order, controls (language · theme · 
     const order = [...end.children].map((c) =>
       c.matches('.kit-locale') ? 'language' : c.matches('.kit-theme') ? 'theme' : c.matches('.kit-gbar-github') ? 'github' : c.matches('.kit-gbar-more') ? 'menu' : c.className,
     );
-    return { tabs, order, current: g.querySelector('.kit-gbar-nav [aria-current="page"]:not(.kit-gbar-docs-item) [data-kit-t], .kit-gbar-nav summary[aria-current="page"] [data-kit-t]')?.getAttribute('data-kit-t') ?? null };
+    return { tabs, order, current: g.querySelector('.kit-gbar-nav [aria-current="page"]:not(.kit-proj-main) [data-kit-t], .kit-gbar-nav summary[aria-current="page"] [data-kit-t]')?.getAttribute('data-kit-t') ?? null };
   });
   assert(bar, 'no [data-kit-globalbar]');
   const keys = bar.tabs.map((t) => t.key);
@@ -137,9 +136,33 @@ await check('GlobalBar: canonical tabs in order, controls (language · theme · 
   }
   const ctl = bar.order.filter((o) => o !== 'menu');
   assert(JSON.stringify(ctl) === JSON.stringify(['language', 'theme', 'github']), `controls ${bar.order.join(',')}`);
-  const want = opt('--current', APP ? null : 'docs');
+  const want = opt('--current', APP ? null : 'projects');
   if (want) assert(bar.current === want, `current tab ${bar.current}, expected ${want}`);
   return `${keys.join(' · ')} | ${bar.order.join(' · ')}${bar.current ? ` | current: ${bar.current}` : ''}`;
+});
+await check('GlobalBar + footer: the shared brand, GitHub → LiteLDev, the compact footer', async () => {
+  const r = await page.evaluate(() => {
+    const g = document.querySelector('[data-kit-globalbar]');
+    const f = document.querySelector('[data-kit-footer]');
+    return {
+      mark: !!g?.querySelector('.kit-gbar-brand .kit-brand-mark'),
+      github: g?.querySelector('.kit-gbar-github')?.getAttribute('href'),
+      projects: g ? [...g.querySelectorAll('.kit-gbar-projects .kit-proj-item')].length : 0,
+      footer: !!f,
+      footerMark: !!f?.querySelector('.kit-footer-logo .kit-brand-mark'),
+      columns: f ? f.querySelectorAll('.kit-footer-col').length : -1,
+      social: f ? [...f.querySelectorAll('.kit-footer-social a')].map((a) => a.getAttribute('href')) : [],
+      support: f?.querySelector('.kit-footer-support')?.href,
+    };
+  });
+  assert(r.mark, 'no LeviMC mark in the bar');
+  assert(r.github === 'https://github.com/LiteLDev', `GitHub button → ${r.github}`);
+  assert(r.projects >= 5, `Projects menu has ${r.projects} projects`);
+  assert(r.footer && r.footerMark, 'no footer / footer mark');
+  assert(r.columns === 0, `footer has ${r.columns} link columns`);
+  assert(new Set(r.social).size === r.social.length && r.social.length === 6, `social links ${r.social.join(' ')}`);
+  assert(r.support && new URL(r.support).pathname === '/support/', `Support us → ${r.support}`);
+  return `${r.projects} projects in the menu; footer: ${r.social.length} channels, no columns`;
 });
 await check('theme: Auto by default, follows the system live', async () => {
   const c = await newCtx({ colorScheme: 'dark' });

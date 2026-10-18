@@ -1,0 +1,37 @@
+# lip config
+
+管理配置项。
+
+配置保存在 `liprc.json`：Windows 为 `%APPDATA%/lip/liprc.json`，Linux/macOS 为 `$XDG_CONFIG_HOME/lip/liprc.json`。可用键请参见[配置参考](../configuration.md)。
+
+## lip config get
+
+```shell
+lip config get <KEY>
+```
+
+获取并显示指定配置键的值。
+
+## lip config set
+
+```shell
+lip config set <KEY> <VALUE>
+```
+
+将配置键设置为给定值。
+
+## lip config list
+
+```shell
+lip config list
+```
+
+列出所有配置键及其值。
+
+## lip config delete
+
+```shell
+lip config delete <KEY>
+```
+
+通过从配置文件中移除该键，将其重置为默认值。

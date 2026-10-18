@@ -1,0 +1,71 @@
+---
+layout: home
+
+hero:
+  name: LeviMC Kit
+  text: 印象派的色彩，像素的结构
+  tagline: 为所有 LeviMC 站点打造的统一设计系统与静态文档引擎——莫奈的光影在外，Minecraft 的手艺在每一个按钮里。
+  image:
+    src: /appicon.png
+    alt: LeviLauncher
+  actions:
+    - theme: brand
+      text: 阅读文档
+      link: /user_guides/install.md
+    - theme: alt
+      text: 组件展示
+      link: /showcase.md
+    - theme: alt
+      text: GitHub
+      link: https://github.com/LiteLDev
+
+features:
+  - title: 以版本为中心
+    details: 管理 Minecraft 正式版与预览版，支持安装、重命名、删除、快速启动与版本级别整理。
+    icon: map
+    link: /user_guides/install.md
+  - title: 干净隔离
+    details: 将版本数据与默认 AppData 环境分开，适合测试、分环境游玩与规避互相污染。
+    icon: chest
+  - title: 内容管理
+    details: 从一个入口管理世界、资源包、行为包、皮肤包、截图与服务器列表。
+    icon: emerald
+  - title: Mod 能力
+    details: 支持 .zip 与 .dll 导入，配合 CurseForge、LIP、LeviLamina 等高级工作流。
+    icon: pickaxe
+    link: /developer_guides/how_to_guides/hook_guide.md
+  - title: 世界工具
+    details: 备份为 .mcworld、查看世界信息，并对部分 level.dat 字段进行编辑。
+    icon: compass
+  - title: 用户设置
+    details: 调整语言、外观、路径、组件状态、隐私偏好和更新策略。
+    icon: diamond
+---
+
+::: warning 仅支持 Windows
+LeviLauncher 面向 **Windows 上的 Minecraft Bedrock Edition (GDK)**，需要你拥有**正版授权**。
+:::
+
+::: tip 新用户建议从这里开始
+先看[在 Windows 上安装服务器](/user_guides/install.md)，再继续阅读[查找函数指南](developer_guides/how_to_guides/find_function_guide.md)。
+:::
+
+## 这个站点包含什么
+
+这套文档面向**最终用户**，不面向维护者或开发者。
+
+- 如何安装 LeviLauncher 与准备 Windows 前置组件
+- 如何下载、安装并启动 Minecraft 正式版或预览版
+- 如何理解并使用版本隔离
+- 如何管理内容、世界与 Mods
+- 如何处理更新、缺失组件与常见启动问题
+
+## 下载渠道
+
+- **GitHub Releases（LeviLauncher 下载）：** [LiteLDev/LeviLauncher Releases](https://github.com/LiteLDev/LeviLauncher/releases)
+- **蓝奏云镜像：** [levimc.lanzoue.com/b016ke39hc](https://levimc.lanzoue.com/b016ke39hc) — 密码：`levi`
+
+## 社区与反馈
+
+- **官方 Discord：** [discord.gg/v5R5P4vRZk](https://discord.gg/v5R5P4vRZk)
+- **问题反馈：** [GitHub Issues](https://github.com/LiteLDev/LeviLauncher/issues)

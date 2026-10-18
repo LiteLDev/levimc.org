@@ -1,0 +1,61 @@
+{
+  "name": "levimc-kit-demo",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "vendor": "node ../scripts/vendor.mjs .",
+    "dev": "vite",
+    "build": "node kit/docs/build.mjs",
+    "build:lip": "node kit/docs/build.mjs --config vite.lip.config.ts",
+    "build:single": "node kit/docs/build.mjs --config vite.single.config.ts",
+    "preview": "node kit/scripts/serve-pages.mjs dist --base /Demo/ --port 4173",
+    "preview:lip": "node kit/scripts/serve-pages.mjs dist-lip --base /lip/ --port 4174",
+    "preview:single": "node kit/scripts/serve-pages.mjs dist-single --base /Single/ --port 4176",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.app.json",
+    "linkcheck": "node kit/scripts/linkcheck.mjs dist --base /Demo/ --site-origin https://docs.levimc.org",
+    "smoke": "node kit/scripts/smoke.mjs --url http://127.0.0.1:4173/Demo/",
+    "smoke:single": "node kit/scripts/smoke.mjs --url http://127.0.0.1:4176/Single/",
+    "build:app": "vite build app && vite build app --ssr src/entry-server.tsx --outDir .kit/ssr && node app/prerender.mjs",
+    "preview:app": "node kit/scripts/serve-pages.mjs app/dist --base / --port 4175",
+    "smoke:app": "node kit/scripts/smoke.mjs --app --url http://127.0.0.1:4175/ --pages projects/ --not-found missing/",
+    "test": "node --test \"kit/tests/*.test.mjs\""
+  },
+  "dependencies": {
+    "minisearch": "7.2.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-router": "7.18.4"
+  },
+  "devDependencies": {
+    "@shikijs/transformers": "4.5.0",
+    "@tailwindcss/vite": "4.3.3",
+    "@types/hast": "3.0.5",
+    "@types/mdast": "4.0.4",
+    "@types/node": "24.19.2",
+    "@types/picomatch": "4.0.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/unist": "3.0.3",
+    "@vitejs/plugin-react": "6.1.2",
+    "hast-util-to-html": "9.0.5",
+    "hast-util-to-string": "3.0.1",
+    "mdast-util-to-string": "4.0.0",
+    "picomatch": "4.0.7",
+    "rehype-raw": "7.0.0",
+    "remark-frontmatter": "5.0.0",
+    "remark-gfm": "4.0.1",
+    "remark-parse": "11.0.0",
+    "remark-rehype": "11.1.2",
+    "shiki": "4.5.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "7.0.2",
+    "unified": "11.0.5",
+    "unist-util-visit": "5.1.0",
+    "vite": "8.3.4",
+    "yaml": "2.9.1"
+  }
+}
