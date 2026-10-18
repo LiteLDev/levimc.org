@@ -25,22 +25,23 @@ export default function Hero() {
           <span className="lm-hero-lang">Python</span> {t.hero.descriptionLSE}
         </>
       }
-    >
-      {/* first in the column (CSS order): logo in an item frame + the live release badge */}
-      <div className="kit-hero-badge lm-hero-top">
-        <span className="kit-item-frame kit-hero-icon lm-hero-logo">
-          <img src={logoUrl} alt="LeviMC logo" width={44} height={44} />
-        </span>
-        <a href="https://github.com/LiteLDev/LeviLamina/releases/latest" target="_blank" rel="noopener" className="lm-release">
-          <span className="lm-release-dot" aria-hidden="true" />
-          <span>
-            LeviLamina{' '}
-            {version ? <span className="lm-release-version">{version}</span> : <span className="lm-skeleton lm-skeleton-sm lm-release-skeleton" />}{' '}
-            {t.hero.badge}
+      badge={
+        <>
+          <span className="kit-item-frame kit-hero-icon lm-hero-logo">
+            <img src={logoUrl} alt="LeviMC logo" width={44} height={44} />
           </span>
-        </a>
-      </div>
-
+          <a href="https://github.com/LiteLDev/LeviLamina/releases/latest" target="_blank" rel="noopener" className="lm-release">
+            <span className="lm-release-dot" aria-hidden="true" />
+            <span>
+              LeviLamina{' '}
+              {version ? <span className="lm-release-version">{version}</span> : <span className="lm-skeleton lm-skeleton-sm lm-release-skeleton" />}{' '}
+              {t.hero.badge}
+            </span>
+          </a>
+        </>
+      }
+      aside={<CodeCard label={t.hero.languages} />}
+    >
       <div className="kit-hero-actions">
         <PixelButton href="https://docs.levimc.org/LeviLamina/user_guides/install/" variant="primary" size="lg" iconRight="arrowRight">
           {t.hero.getStarted}
@@ -65,7 +66,6 @@ export default function Hero() {
         </div>
       </div>
 
-      <CodeCard label={t.hero.languages} />
     </PaintedHero>
   );
 }

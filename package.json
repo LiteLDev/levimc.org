@@ -11,10 +11,13 @@
     "build": "vite build && vite build --ssr src/entry-server.tsx --outDir .kit/ssr && node prerender.mjs",
     "preview": "node kit/scripts/serve-pages.mjs dist --base / --port 4173",
     "typecheck": "tsc --noEmit",
+    "test": "node --test \"blog/*.test.ts\" \"kit/tests/*.test.mjs\"",
     "linkcheck": "node kit/scripts/linkcheck.mjs dist --base / --site-origin https://levimc.org",
-    "smoke": "node scripts/smoke.mjs --url http://127.0.0.1:4173/"
+    "smoke": "node scripts/smoke.mjs --url http://127.0.0.1:4173/",
+    "smoke:kit": "node kit/scripts/smoke.mjs --app --url http://127.0.0.1:4173/ --pages projects/,about/,community/ --current projects && node kit/scripts/smoke.mjs --app --url http://127.0.0.1:4173/ --pages blog/,blog/2023/07/26/original-fix-BeeCrash/,blog/archives/ --current blog"
   },
   "dependencies": {
+    "@waline/client": "3.7.1",
     "lucide-react": "0.562.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
@@ -22,12 +25,24 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.3.3",
+    "@types/hast": "3.0.5",
+    "@types/mdast": "4.0.4",
     "@types/node": "24.19.2",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "@types/unist": "3.0.3",
     "@vitejs/plugin-react": "6.1.2",
+    "hast-util-to-html": "9.0.5",
+    "rehype-raw": "7.0.0",
+    "remark-gfm": "4.0.1",
+    "remark-parse": "11.0.0",
+    "remark-rehype": "11.1.2",
+    "shiki": "4.5.0",
     "tailwindcss": "4.3.3",
     "typescript": "7.0.2",
-    "vite": "8.3.4"
+    "unified": "11.0.5",
+    "unist-util-visit": "5.1.0",
+    "vite": "8.3.4",
+    "yaml": "2.9.1"
   }
 }
