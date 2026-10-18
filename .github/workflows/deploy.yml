@@ -19,31 +19,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
       - run: npm ci
 
+      - run: npm run typecheck
+
+      # Client build, SSR build and prerender: one static HTML file per route
+      # (projects/index.html, …) plus 404.html, sitemap.xml and robots.txt.
       - run: npm run build
 
-      # GitHub Pages has no rewrite rules, so give each client-side route its own
-      # index.html (served with 200) and fall back to the SPA for unknown paths.
-      # Keep this list in sync with the <Routes> in App.tsx.
-      - name: Add SPA route entries
-        run: |
-          for route in projects features community about support; do
-            mkdir -p "dist/$route"
-            cp dist/index.html "dist/$route/index.html"
-          done
-          cp dist/index.html dist/404.html
+      # Internal links, redirect-needing links and #anchors (GitHub Pages semantics).
+      - run: npm run linkcheck
 
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
@@ -55,4 +51,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

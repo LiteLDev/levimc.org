@@ -1,0 +1,969 @@
+/* levimc.org — Tailwind v4 + levimc-kit ("Impression, Craft"). The kit owns tokens, fonts and the pixel /
+   painterly vocabulary; this file only lays out the site's pages with those tokens. No new colours or fonts. */
+@import "../kit/theme/tailwind.css";
+/* the themed 404 card comes from the kit's docs layout */
+@import "../kit/docs/app/docs.css";
+@source "./";
+
+@layer components {
+  /* ================================================================== language: no flash of English */
+  .lm-locale-pending #root {
+    visibility: hidden;
+    /* safety net: show the page anyway if the script never runs */
+    animation: lm-reveal 0s linear 2.5s forwards;
+  }
+
+  /* ================================================================== header: the kit GlobalBar is the site's nav */
+  .lm-banner {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+  }
+  /* the language trigger carries a short label ("EN"), so it is wider than the bar's square icon buttons */
+  .lm-banner .lm-gbar-locale > .kit-menu-trigger {
+    width: auto;
+  }
+  /* nine entries instead of the kit's six: fold them into the bar's menu before they can crowd the controls */
+  @media (max-width: 1023px) {
+    .lm-banner .kit-gbar-nav {
+      display: none;
+    }
+    .lm-banner .kit-gbar-more {
+      display: block;
+    }
+  }
+  /* the language items are buttons (the language is not part of the URL) */
+  .lm-gbar-locale button.kit-menu-item {
+    width: 100%;
+    text-align: start;
+    cursor: pointer;
+  }
+  /* ================================================================== layout */
+  .lm-container {
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+  .lm-container-mid {
+    max-width: 74rem;
+  }
+  .lm-container-narrow {
+    max-width: 62rem;
+  }
+  @media (max-width: 640px) {
+    .lm-container {
+      padding-inline: 1rem;
+    }
+  }
+  .lm-section {
+    padding-block: clamp(3.5rem, 7vw, 6rem);
+  }
+  .lm-section + .lm-section {
+    padding-top: 0;
+  }
+  .lm-page {
+    padding-top: clamp(2.5rem, 6vw, 4.5rem);
+  }
+  .lm-grid-2,
+  .lm-grid-3,
+  .lm-grid-4 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .lm-grid-4 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 720px) {
+    .lm-grid-2,
+    .lm-grid-3 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1080px) {
+    .lm-grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .lm-grid-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  /* ================================================================== type */
+  .lm-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin: 0 0 1rem;
+    color: var(--color-primary-strong);
+  }
+  .dark .lm-eyebrow {
+    color: var(--color-primary);
+  }
+  .lm-eyebrow-cjk {
+    font-size: 0.875rem;
+    font-weight: 650;
+    letter-spacing: 0.14em;
+  }
+  .lm-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-size: clamp(2.125rem, 1.45rem + 2.5vw, 3.5rem);
+    font-weight: 560;
+    line-height: 1.08;
+    letter-spacing: -0.022em;
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+  .lm-title-sm {
+    font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.25rem);
+  }
+  .lm-lead {
+    max-width: 42rem;
+    margin: 1rem 0 0;
+    font-size: 1.125rem;
+    line-height: 1.65;
+    color: var(--color-muted);
+    text-wrap: pretty;
+  }
+  .lm-gradient-text {
+    background: linear-gradient(115deg, var(--color-primary-strong) 10%, var(--color-accent-1) 95%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  .dark .lm-gradient-text {
+    background-image: linear-gradient(115deg, var(--color-primary) 10%, var(--color-mc-diamond) 60%, var(--color-accent-4) 100%);
+  }
+
+  .lm-page-head {
+    max-width: 48rem;
+    margin-bottom: 2.75rem;
+  }
+  .lm-section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    margin-bottom: 2.5rem;
+  }
+  .lm-split-head {
+    display: grid;
+    gap: 1.25rem 4rem;
+    margin-bottom: 2.75rem;
+  }
+  @media (min-width: 1024px) {
+    .lm-split-head {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: end;
+    }
+  }
+  .lm-split-lead {
+    margin: 0;
+  }
+  .lm-view-all {
+    margin-bottom: 0.25rem;
+  }
+
+  /* pixel-art divider between sections */
+  .lm-divider {
+    max-width: 80rem;
+    margin-inline: auto;
+    opacity: 0.75;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  }
+
+  /* loading placeholders for live GitHub / Discord data */
+  .lm-skeleton {
+    display: inline-block;
+    vertical-align: middle;
+    background: color-mix(in srgb, var(--color-ink) 11%, transparent);
+    animation: lm-pulse 1.6s steps(4, end) infinite;
+  }
+  .lm-skeleton-xs {
+    width: 1.75rem;
+    height: 0.75rem;
+  }
+  .lm-skeleton-sm {
+    width: 3rem;
+    height: 0.875rem;
+  }
+
+  /* ================================================================== hero */
+  .lm-hero .kit-hero-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+  }
+  .lm-hero .kit-hero-tagline {
+    max-width: min(36rem, 100%);
+  }
+  @media (min-width: 961px) {
+    /* Keep the copy on calm canvas. The kit scrim fades at fixed viewport percentages (opaque to 30 %, gone
+       at 68 %), which leaves the end of the tagline over the painted bridge from ~960 to ~1440 px. Here the
+       scrim follows the copy column instead: opaque to just past its right edge, then fading into the
+       painting. The column sits in the kit's centred 80rem container with 1.5rem padding. */
+    .lm-hero {
+      --lm-copy-w: min(37rem, 52vw);
+      --lm-copy-end: calc(max(0px, (100% - 80rem) / 2) + 1.5rem + var(--lm-copy-w));
+    }
+    .lm-hero .kit-hero-copy {
+      max-width: var(--lm-copy-w);
+    }
+    .lm-hero .kit-hero-scrim {
+      background: linear-gradient(
+        90deg,
+        var(--color-canvas) 0,
+        color-mix(in srgb, var(--color-canvas) 94%, transparent) calc(var(--lm-copy-end) + 1.5rem),
+        color-mix(in srgb, var(--color-canvas) 55%, transparent) calc(var(--lm-copy-end) + 9rem),
+        transparent calc(var(--lm-copy-end) + 17rem)
+      );
+    }
+  }
+  .lm-hero .lm-hero-top {
+    order: -1;
+    flex-wrap: wrap;
+  }
+  /* the LeviMC leaf is drawn in pale greens: give it a parchment mat inside the frame at night too */
+  .dark .lm-hero-logo {
+    background: color-mix(in srgb, var(--color-linen) 86%, var(--color-mc-dirt));
+  }
+  .lm-hero-strong {
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .lm-hero-lang {
+    font-weight: 600;
+    color: var(--color-primary-strong);
+  }
+  .dark .lm-hero-lang {
+    color: var(--color-primary);
+  }
+  .lm-release {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin: var(--px);
+    padding: 0.4375rem 0.875rem;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+    box-shadow:
+      0 calc(var(--px) * -1) 0 0 var(--color-line-strong),
+      0 var(--px) 0 0 var(--color-line-strong),
+      calc(var(--px) * -1) 0 0 0 var(--color-line-strong),
+      var(--px) 0 0 0 var(--color-line-strong);
+    transition: color 0.12s;
+  }
+  .lm-release:hover {
+    color: var(--color-ink);
+  }
+  .lm-release-dot {
+    width: 6px;
+    height: 6px;
+    flex: none;
+    background: var(--color-mc-grass);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-mc-grass) 30%, transparent);
+    animation: lm-blink 2.4s steps(2, end) infinite;
+  }
+  .lm-release-version {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--color-primary-strong);
+  }
+  .dark .lm-release-version {
+    color: var(--color-primary);
+  }
+  .lm-release-skeleton {
+    width: 3.5rem;
+  }
+
+  .lm-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem 2.75rem;
+    width: 100%;
+    max-width: 32rem;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-line);
+  }
+  .lm-stat-value {
+    font-family: var(--font-display);
+    font-size: 1.875rem;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--color-ink);
+  }
+  .lm-stat-skeleton {
+    display: block;
+    width: 3.25rem;
+    height: 2.0625rem;
+  }
+  .lm-stat-label {
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+
+  /* code sample: hotbar tabs over a kit code block, with an item tooltip beside it */
+  .lm-code {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    max-width: 34rem;
+    margin-top: 3rem;
+  }
+  .lm-code-window {
+    --px-drop: var(--shadow-float);
+    padding: 0.625rem;
+  }
+  .lm-code-window .kit-tabs {
+    margin: 0;
+  }
+  .lm-code-window .kit-tabs-bar {
+    margin: var(--px) var(--px) 0;
+  }
+  .lm-code-window .kit-tab-panel:focus-visible {
+    outline-offset: 2px;
+  }
+  .lm-code-block.kit-code {
+    margin: 0.625rem var(--px) var(--px);
+  }
+  .lm-code-block pre {
+    min-height: calc(10 * 1.7 * 0.8125rem + 1.75rem);
+  }
+  /* token roles → the kit Shiki palette (set once on .lm-code-block by CodeCard) */
+  .lm-tok-comment {
+    --shiki-light: var(--lm-tok-comment-light);
+    --shiki-dark: var(--lm-tok-comment-dark);
+    font-style: italic;
+  }
+  .lm-tok-keyword {
+    --shiki-light: var(--lm-tok-keyword-light);
+    --shiki-dark: var(--lm-tok-keyword-dark);
+  }
+  .lm-tok-type {
+    --shiki-light: var(--lm-tok-type-light);
+    --shiki-dark: var(--lm-tok-type-dark);
+  }
+  .lm-tok-func {
+    --shiki-light: var(--lm-tok-func-light);
+    --shiki-dark: var(--lm-tok-func-dark);
+  }
+  .lm-tok-string {
+    --shiki-light: var(--lm-tok-string-light);
+    --shiki-dark: var(--lm-tok-string-dark);
+  }
+  .lm-tok-param {
+    --shiki-light: var(--lm-tok-param-light);
+    --shiki-dark: var(--lm-tok-param-dark);
+  }
+  .lm-tok-punct {
+    --shiki-light: var(--lm-tok-punct-light);
+    --shiki-dark: var(--lm-tok-punct-dark);
+  }
+  .lm-code-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+  }
+  .lm-code-item-slot {
+    width: 3.25rem;
+    height: 3.25rem;
+    flex: none;
+  }
+  .lm-code-item .mc-tooltip {
+    margin: 0;
+  }
+  @media (min-width: 1200px) {
+    /* beside the copy, low enough to leave the bridge / the sunrise visible */
+    .lm-code {
+      position: absolute;
+      right: 1.5rem;
+      bottom: clamp(5rem, 8vw, 7rem);
+      width: min(32rem, 38vw);
+      margin: 0;
+    }
+    .lm-code-item {
+      position: absolute;
+      left: -2rem;
+      bottom: -2.5rem;
+      margin: 0;
+    }
+  }
+
+  /* ================================================================== project cards */
+  .lm-project {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 1.375rem;
+  }
+  .lm-project-slot {
+    width: 3.25rem;
+    height: 3.25rem;
+    margin-bottom: 1.125rem;
+  }
+  .lm-project-name {
+    margin: 0 0 0.5rem;
+    font-size: 1.1875rem;
+    font-weight: 650;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+  .lm-project-desc {
+    flex-grow: 1;
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--color-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .lm-project-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+  }
+  .lm-project-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 1.125rem;
+    padding-top: 0.875rem;
+    border-top: 1px solid var(--color-line);
+  }
+  .lm-project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    min-width: 0;
+  }
+  .lm-project-stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+  .lm-star {
+    width: 14px;
+    height: 14px;
+    color: var(--color-mc-gold);
+    fill: currentColor;
+  }
+  .lm-more {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.875rem;
+    min-height: 15rem;
+    margin: var(--px);
+    padding: 1.5rem;
+    text-align: center;
+    background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+    border: var(--px) dashed var(--color-line-strong);
+  }
+  .lm-more-slot {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+  .lm-more-text {
+    margin: 0;
+    color: var(--color-muted);
+  }
+
+  /* ================================================================== features */
+  .lm-grid-4 > .lm-feature {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+  .lm-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-top: 3rem;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+  }
+  .lm-cta-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 1.1rem + 0.9vw, 1.75rem);
+    font-weight: 560;
+    line-height: 1.2;
+  }
+  .lm-cta-desc {
+    margin: 0.375rem 0 0;
+    color: var(--color-muted);
+  }
+
+  /* ================================================================== community */
+  .lm-join {
+    padding: clamp(2.25rem, 5vw, 4.25rem) clamp(1.25rem, 4vw, 4rem);
+    text-align: center;
+  }
+  .lm-join-head .lm-lead {
+    margin-inline: auto;
+  }
+  .lm-join-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    max-width: 56rem;
+    margin: 2.75rem auto 0;
+    text-align: left;
+  }
+  @media (min-width: 720px) {
+    .lm-join-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1080px) {
+    .lm-join-grid-3 {
+      max-width: 72rem;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .lm-join-foot {
+    margin-top: 2.25rem;
+  }
+
+  .lm-accent-discord {
+    --lm-accent: var(--color-mc-enchant);
+  }
+  .lm-accent-telegram {
+    --lm-accent: var(--color-accent-1);
+  }
+  .lm-accent-github {
+    --lm-accent: var(--color-ink);
+  }
+  .lm-accent-qq {
+    --lm-accent: var(--color-mc-redstone);
+  }
+  .lm-community-card {
+    --px-bevel: inset 4px 0 0 0 var(--lm-accent);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 1.5rem 1.5rem 1.375rem 1.75rem;
+    color: var(--color-ink);
+  }
+  .lm-community-head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .kit-slot.lm-brand-slot,
+  .dark .kit-slot.lm-brand-slot {
+    width: 3.25rem;
+    height: 3.25rem;
+    flex: none;
+    color: var(--color-linen);
+    background: var(--lm-accent);
+  }
+  .kit-slot.lm-brand-slot.lm-accent-github {
+    color: var(--color-canvas);
+  }
+  .lm-community-heading {
+    min-width: 0;
+  }
+  .lm-community-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 650;
+    line-height: 1.3;
+  }
+  .lm-community-sub {
+    margin-top: 0.125rem;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+  .lm-community-desc {
+    flex-grow: 1;
+    margin: 0 0 1.25rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+  .lm-community-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-link);
+  }
+  .lm-community-cta svg {
+    transition: transform 0.15s steps(2, end);
+  }
+  a:hover > .lm-community-cta svg {
+    transform: translateX(3px);
+  }
+  .lm-online {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .lm-online-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--color-mc-grass);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-mc-grass) 30%, transparent);
+    animation: lm-blink 2.4s steps(2, end) infinite;
+  }
+  .lm-qq-groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .lm-qq-group {
+    font-family: var(--font-mono);
+    font-weight: 500;
+  }
+
+  /* ================================================================== about */
+  .lm-story-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+  /* One story per row (title column + body): the three stories differ in length by up to 4×, so side-by-side
+     cards would leave a viewport-tall empty column next to the long one. */
+  @media (min-width: 1024px) {
+    .lm-story {
+      display: grid;
+      grid-template-columns: minmax(0, 19rem) minmax(0, 1fr);
+      gap: 0 3.5rem;
+    }
+    /* the title follows the reader down a long story */
+    .lm-story-lead {
+      position: sticky;
+      top: calc(var(--spacing-globalbar) + 1.5rem);
+      align-self: start;
+    }
+    .lm-story .lm-story-title {
+      margin-bottom: 0;
+    }
+    .lm-story .lm-story-body {
+      padding-top: 0.25rem;
+    }
+  }
+  .lm-story {
+    min-width: 0;
+    padding: clamp(1.5rem, 3.5vw, 2.5rem);
+  }
+  .lm-story-head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .lm-story-slot {
+    width: 3.25rem;
+    height: 3.25rem;
+    flex: none;
+  }
+  .lm-story-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.375rem;
+  }
+  .lm-story-number {
+    margin: 0 0 0 var(--px);
+    color: var(--color-primary-strong);
+  }
+  .dark .lm-story-number {
+    color: var(--color-primary);
+  }
+  .lm-story-title {
+    margin: 1.75rem 0 1rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.625rem, 1.25rem + 1.2vw, 2.25rem);
+    font-weight: 560;
+    line-height: 1.15;
+    letter-spacing: -0.018em;
+    text-wrap: balance;
+  }
+  .lm-story-body {
+    max-width: 74ch;
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: color-mix(in srgb, var(--color-ink) 80%, var(--color-muted));
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+  .lm-team {
+    margin-top: clamp(3.5rem, 7vw, 5rem);
+  }
+  .lm-team-head {
+    margin-bottom: 1.75rem;
+  }
+  .lm-team-head .lm-lead {
+    margin-top: 0.5rem;
+  }
+  .lm-member {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    min-width: 0;
+    padding: 1.25rem;
+  }
+  .lm-member-head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 0;
+  }
+  .lm-avatar {
+    --px-border: color-mix(in srgb, var(--color-ink) 22%, var(--color-surface-2));
+    flex: none;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin: var(--px);
+    overflow: hidden;
+    background: var(--color-surface-3);
+    box-shadow:
+      0 calc(var(--px) * -1) 0 0 var(--px-border),
+      0 var(--px) 0 0 var(--px-border),
+      calc(var(--px) * -1) 0 0 0 var(--px-border),
+      var(--px) 0 0 0 var(--px-border);
+  }
+  .lm-avatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .lm-member-id {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .lm-member-name {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 650;
+    line-height: 1.3;
+  }
+  .lm-member-role {
+    margin: 0.125rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--color-muted);
+  }
+  .lm-member-bio {
+    flex-grow: 1;
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+  .lm-member-link,
+  .lm-donor-link {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 0.4rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-link);
+  }
+  .lm-member-link:hover,
+  .lm-donor-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  /* ================================================================== support */
+  .lm-support-ways {
+    margin-bottom: clamp(3.5rem, 7vw, 5rem);
+  }
+  .lm-way {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    padding: clamp(1.5rem, 3vw, 2rem);
+  }
+  .lm-way-slot {
+    width: 3.25rem;
+    height: 3.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .lm-way-title {
+    margin: 0 0 0.5rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1.25rem + 0.8vw, 1.875rem);
+    font-weight: 560;
+    line-height: 1.2;
+  }
+  .lm-way-desc {
+    margin: 0 0 1.5rem;
+    line-height: 1.65;
+    color: var(--color-muted);
+  }
+  .lm-way-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: auto;
+  }
+  .lm-channels {
+    width: 100%;
+    margin-top: auto;
+  }
+  .lm-channels-label {
+    margin-bottom: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .lm-channels-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr));
+    gap: 0.75rem;
+  }
+  .lm-channel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .lm-donors-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem 2rem;
+    margin-bottom: 1.75rem;
+  }
+  .lm-donors-desc {
+    max-width: 36rem;
+    margin: 0;
+    font-size: 1rem;
+  }
+  .lm-donor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    gap: 1rem;
+  }
+  .lm-donor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 1.125rem 1.25rem;
+  }
+  /* a long name keeps its words whole: the amount badge drops below it instead */
+  .lm-donor-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem 0.75rem;
+  }
+  .lm-donor-id {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .lm-donor-name {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 650;
+    line-height: 1.35;
+    overflow-wrap: break-word;
+  }
+  .lm-donor-date {
+    margin: 0.25rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+  .lm-donor-amount {
+    flex: none;
+  }
+  .lm-donor-message {
+    margin: 0;
+    padding-left: 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--color-muted);
+    box-shadow: inset var(--px) 0 0 0 var(--color-line-strong);
+    overflow-wrap: anywhere;
+  }
+  .lm-donor-link {
+    margin-top: auto;
+  }
+  .lm-donors-empty {
+    padding: 2.5rem;
+    text-align: center;
+    color: var(--color-muted);
+  }
+  .lm-donors-empty-title {
+    margin: 0 0 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  /* ================================================================== footer: the site's own "Resources" row */
+  .lm-footer-resources {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.25rem;
+  }
+  .lm-footer-resources .kit-footer-heading {
+    margin: 0;
+  }
+  .lm-footer-resources ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+  }
+  .lm-footer-resources li {
+    margin: 0;
+  }
+}
+
+@keyframes lm-reveal {
+  to {
+    visibility: visible;
+  }
+}
+@keyframes lm-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes lm-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
