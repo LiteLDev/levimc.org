@@ -7,6 +7,8 @@
     "node": ">=22.18"
   },
   "scripts": {
+    "postinstall": "node scripts/fetch-kit.mjs",
+    "kit": "node scripts/fetch-kit.mjs",
     "dev": "vite",
     "build": "vite build && vite build --ssr src/entry-server.tsx --outDir .kit/ssr && node prerender.mjs",
     "preview": "node kit/scripts/serve-pages.mjs dist --base / --port 4173",

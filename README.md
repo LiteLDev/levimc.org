@@ -8,8 +8,8 @@ Bedrock — LeviLamina, LegacyScriptEngine and Endstone — served at
 It is a static site built from the [lipr](https://github.com/LiteLDev/lipr)
 index with the LeviMC web stack — [Vite](https://vite.dev), React 19,
 [React Router](https://reactrouter.com) 7, TypeScript and Tailwind CSS v4 — and
-the shared LeviMC design system, [levimc-kit](kit/README.md), vendored in
-`kit/`:
+the shared LeviMC design system, levimc-kit, which `pnpm install` fetches from
+levimc.org into `kit/` (git-ignored; see [Design system](#design-system)):
 
 - **The listing** (`/`) has the whole catalogue baked in: search as you type,
   filters (platform, category, environment, license), sort (relevance — by
@@ -90,12 +90,18 @@ src/
                     dependencies, sidebar, install dialog), README renderer
   lib/              catalogue query (parse/serialize/run), search, facets, lipr and GitHub URLs, markdown helpers
   server/           build-time data: catalogue, GitHub, icons, hero paintings
-kit/                vendored levimc-kit (do not edit; re-vendor from the kit)
+kit/                levimc-kit, fetched by `pnpm install` (git-ignored; never edit it)
 public/             icon.png, robots.txt
 ```
 
-Colours, fonts and components come from the kit's tokens and components; see
-[`kit/README.md`](kit/README.md).
+## Design system
+
+Colours, fonts, components and the whole LeviMC chrome (the bar on top, the footer) come from levimc-kit,
+which lives in [LiteLDev/levimc.org](https://github.com/LiteLDev/levimc.org) (`kit/`, documented in its
+`kit/README.md`) and is published at <https://levimc.org/kit/v2/>. `pnpm install` runs
+`scripts/fetch-kit.mjs`, which installs the published kit into `kit/`; `pnpm kit` refreshes it, and
+`LEVIMC_KIT_SOURCE=<path to a levimc.org checkout>/kit pnpm kit` tries kit changes before they are published.
+A change to the bar or the footer is made once in levimc.org and reaches this site with its next build.
 
 ## Deployment
 

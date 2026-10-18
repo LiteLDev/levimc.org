@@ -155,6 +155,9 @@ vite.config.ts.timestamp-*
 # levimc-kit build cache (SSR bundle)
 /.kit/
 
+# levimc-kit, fetched from levimc.org by `pnpm install` (scripts/fetch-kit.mjs)
+/kit/
+
 # misc
 .DS_Store
 *.pem

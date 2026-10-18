@@ -19,9 +19,6 @@ import { NotFoundPage } from "./pages/not-found-page";
 import { PackagePage } from "./pages/package-page";
 import { RenamesContext } from "./repository-renames";
 
-/** The site's repository: the LeviMC bar's GitHub button. */
-const REPOSITORY = "https://github.com/LiteLDev/pkg.levimc.org";
-
 /**
  * Sets a `<head>` element's attribute, adding the element first when the
  * prerendered page did not have it (the 404 page has no canonical URL), or
@@ -210,7 +207,6 @@ function Shell({ children }: { children: ReactNode }) {
           current="packages"
           locale={locale.lang}
           sticky
-          github={REPOSITORY}
           siteOrigin={SITE_ORIGIN}
           linkComponent={KitRouterLink}
           languages={{
