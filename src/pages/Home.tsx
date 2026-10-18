@@ -47,7 +47,7 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="grass-divider grass-divider-thin lm-divider" aria-hidden="true" />
+      <div className="kit-rule lm-divider" aria-hidden="true" />
 
       <Features />
 

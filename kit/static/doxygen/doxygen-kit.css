@@ -564,9 +564,9 @@ a.kit-dox-drawer-link.is-active {
 /* page title in the display face */
 div.header .title,
 div.headertitle .title {
-  font-family: "Fraunces", Georgia, "PingFang SC", "Microsoft YaHei", serif;
-  font-weight: 560;
-  letter-spacing: -0.015em;
+  font-family: "Manrope", "Manrope Fallback", ui-sans-serif, system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 /* side tree: active item like the docs sidebar */

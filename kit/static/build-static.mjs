@@ -101,7 +101,7 @@ const page = ({ title, first, extraHead, main }) => `<!doctype html>
 <body>
   <a class="kit-skip-link" href="#kit-main" data-kit-t="skipToContent">${esc(i18n.UI_STRINGS.en.skipToContent)}</a>
   <div class="kit-backdrop" aria-hidden="true"><div class="kit-backdrop-dabs"></div><div class="kit-backdrop-brush"></div><div class="kit-backdrop-grain"></div></div>
-  <div class="kit-backdrop-scene" aria-hidden="true"></div>
+  <div class="kit-backdrop-scene kit-dissolve-bottom" aria-hidden="true"></div>
   <div class="kit-shell kit-above-backdrop">
   ${snippets.globalBarHtml({ locale: 'en', current: 'projects' })}
   <main id="kit-main" class="kit-static-main">

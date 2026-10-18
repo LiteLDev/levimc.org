@@ -15,7 +15,7 @@ export interface HeroAction {
 export interface PaintedHeroProps {
   /** Small Latin label above the title (rendered in Silkscreen). */
   eyebrow?: string;
-  /** Big display title (Fraunces). */
+  /** Big display title (Manrope). */
   name: ReactNode;
   /** Second line of the title. */
   text?: ReactNode;
@@ -25,7 +25,7 @@ export interface PaintedHeroProps {
   image?: { src: string; alt?: string; width?: number; height?: number };
   /** Draw the pixel bridge (light) and pixel boats (dark). */
   pixelProps?: boolean;
-  /** Pixel grass strip along the bottom edge. */
+  /** @deprecated kit 2.1: the painting always dissolves into the page in pixel blocks; ignored. */
   horizon?: boolean;
   /** Scene seed — change for a different arrangement of strokes. */
   seed?: number;
@@ -79,7 +79,7 @@ const isExternal = (href: string) => /^https?:\/\//i.test(href);
 
 /**
  * Painted hero banner: Monet's Giverny pond with a block-built Japanese bridge (light) / Le Havre harbour
- * at sunrise with pixel rowboats (dark), a scrim that keeps text at AA contrast, and a pixel grass horizon.
+ * at sunrise with pixel rowboats (dark), on the right of the copy, its left and bottom edges dissolving into the page in pixel blocks.
  * Both scenes are rendered and CSS shows the one matching the theme (no hydration mismatch).
  */
 export function PaintedHero({
@@ -90,7 +90,6 @@ export function PaintedHero({
   actions = [],
   image,
   pixelProps = true,
-  horizon = true,
   seed,
   badge,
   aside,
@@ -108,12 +107,13 @@ export function PaintedHero({
 
   return (
     <section className={className ? `kit-hero ${className}` : 'kit-hero'} data-kit-hero="">
-      <div className="kit-hero-art" data-scene={cssScene ? 'default' : undefined} aria-hidden="true">
-        {light ? <SceneSvg scene={light} className="kit-scene-light" /> : null}
-        {dark ? <SceneSvg scene={dark} className="kit-scene-dark" /> : null}
+      <div className="kit-hero-paint kit-dissolve-bottom" aria-hidden="true">
+        <div className="kit-hero-art kit-dissolve-left" data-scene={cssScene ? 'default' : undefined}>
+          {light ? <SceneSvg scene={light} className="kit-scene-light" /> : null}
+          {dark ? <SceneSvg scene={dark} className="kit-scene-dark" /> : null}
+        </div>
+        <div className="kit-hero-brush kit-dissolve-left" />
       </div>
-      <div className="kit-hero-brush" aria-hidden="true" />
-      <div className="kit-hero-scrim" aria-hidden="true" />
       <div className={aside ? 'kit-hero-inner has-aside' : 'kit-hero-inner'}>
         <div className="kit-hero-copy">
           {image || eyebrow || badge ? (
@@ -155,7 +155,6 @@ export function PaintedHero({
         </div>
         {aside ? <div className="kit-hero-aside">{aside}</div> : null}
       </div>
-      {horizon ? <div className="grass-divider kit-hero-horizon" aria-hidden="true" /> : null}
     </section>
   );
 }

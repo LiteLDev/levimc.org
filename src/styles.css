@@ -79,9 +79,8 @@
   .lm-title {
     margin: 0;
     font-family: var(--font-display);
-    font-optical-sizing: auto;
     font-size: clamp(2.125rem, 1.45rem + 2.5vw, 3.5rem);
-    font-weight: 560;
+    font-weight: 700;
     line-height: 1.08;
     letter-spacing: -0.022em;
     color: var(--color-ink);
@@ -140,13 +139,10 @@
     margin-bottom: 0.25rem;
   }
 
-  /* pixel-art divider between sections */
+  /* paint-dab rule between sections */
   .lm-divider {
-    max-width: 80rem;
+    max-width: 36rem;
     margin-inline: auto;
-    opacity: 0.75;
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
-    mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
   }
 
   /* loading placeholders for live GitHub / Discord data */
@@ -176,25 +172,15 @@
     max-width: min(36rem, 100%);
   }
   @media (min-width: 961px) {
-    /* Keep the copy on calm canvas. The kit scrim fades at fixed viewport percentages (opaque to 30 %, gone
-       at 68 %), which leaves the end of the tagline over the painted bridge from ~960 to ~1440 px. Here the
-       scrim follows the copy column instead: opaque to just past its right edge, then fading into the
-       painting. The column sits in the kit's centred 80rem container with 1.5rem padding. */
+    /* Keep the copy on calm canvas: the painting starts just past the copy column's right edge (its pixel
+       dissolve then runs over the gap). The column sits in the kit's centred 80rem container with 1.5rem padding. */
     .lm-hero {
       --lm-copy-w: min(37rem, 52vw);
       --lm-copy-end: calc(max(0px, (100% - 80rem) / 2) + 1.5rem + var(--lm-copy-w));
+      --kit-hero-paint-x: calc(var(--lm-copy-end) + 1.5rem);
     }
     .lm-hero .kit-hero-copy {
       max-width: var(--lm-copy-w);
-    }
-    .lm-hero .kit-hero-scrim {
-      background: linear-gradient(
-        90deg,
-        var(--color-canvas) 0,
-        color-mix(in srgb, var(--color-canvas) 94%, transparent) calc(var(--lm-copy-end) + 1.5rem),
-        color-mix(in srgb, var(--color-canvas) 55%, transparent) calc(var(--lm-copy-end) + 9rem),
-        transparent calc(var(--lm-copy-end) + 17rem)
-      );
     }
   }
   /* the LeviMC leaf is drawn in pale greens: give it a parchment mat inside the frame at night too */
@@ -264,7 +250,7 @@
   .lm-stat-value {
     font-family: var(--font-display);
     font-size: 1.875rem;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.1;
     color: var(--color-ink);
   }
@@ -475,7 +461,7 @@
     margin: 0;
     font-family: var(--font-display);
     font-size: clamp(1.375rem, 1.1rem + 0.9vw, 1.75rem);
-    font-weight: 560;
+    font-weight: 700;
     line-height: 1.2;
   }
   .lm-cta-desc {
@@ -666,7 +652,7 @@
     margin: 1.75rem 0 1rem;
     font-family: var(--font-display);
     font-size: clamp(1.625rem, 1.25rem + 1.2vw, 2.25rem);
-    font-weight: 560;
+    font-weight: 700;
     line-height: 1.15;
     letter-spacing: -0.018em;
     text-wrap: balance;
@@ -781,7 +767,7 @@
     margin: 0 0 0.5rem;
     font-family: var(--font-display);
     font-size: clamp(1.5rem, 1.25rem + 0.8vw, 1.875rem);
-    font-weight: 560;
+    font-weight: 700;
     line-height: 1.2;
   }
   .lm-way-desc {
@@ -985,7 +971,7 @@
     margin: 0 0 1.25rem;
     font-family: var(--font-display);
     font-size: 1.5rem;
-    font-weight: 560;
+    font-weight: 700;
     line-height: 1.2;
   }
   .lm-blog-list {
@@ -1278,7 +1264,7 @@
     margin: 0 0 0.75rem;
     font-family: var(--font-display);
     font-size: 2rem;
-    font-weight: 560;
+    font-weight: 700;
     line-height: 1.1;
   }
   .lm-blog-year-title a {
@@ -1411,7 +1397,6 @@
   }
   .lm-blog-rule {
     margin: 1.75rem 0 2.25rem;
-    opacity: 0.8;
   }
   .lm-blog-prose img {
     display: block;

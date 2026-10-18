@@ -432,7 +432,7 @@ function PostView({ post }: { post: BlogPost }) {
               ) : null}
             </div>
           </header>
-          <div className="grass-divider grass-divider-thin lm-blog-rule" aria-hidden="true" />
+          <div className="kit-rule lm-blog-rule" aria-hidden="true" />
           <Prose id={post.slug} lang={post.lang} />
           <nav className="kit-pager lm-blog-pager" aria-label={`${b.previousPost} / ${b.nextPost}`}>
             {older ? (

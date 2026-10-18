@@ -16,8 +16,8 @@
   --font-sans: "Inter", "InterVariable", "Inter Fallback", ui-sans-serif, system-ui, -apple-system, "Segoe UI", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Noto Color Emoji";
-  --font-display: "Fraunces", "Fraunces Fallback", "Fraunces Fallback Times", ui-serif, Georgia, "Songti SC", "Noto Serif SC", "PingFang SC", "Microsoft YaHei",
-    serif;
+  --font-display: "Manrope", "Manrope Fallback", "Inter", "Inter Fallback", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", sans-serif;
   --font-pixel: "Silkscreen", "Silkscreen Fallback", ui-monospace, "JetBrains Mono", monospace;
   --font-mono: "JetBrains Mono", "JetBrains Mono Fallback", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", "PingFang SC",
     "Microsoft YaHei", monospace;

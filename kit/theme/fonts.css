@@ -1,9 +1,9 @@
 /*
  * levimc-kit — metric-matched fallback faces for the web fonts (Google Fonts, display=swap).
- * Until Inter / Fraunces / JetBrains Mono / Silkscreen arrive, text is set in a local font scaled to the web
+ * Until Inter / Manrope / JetBrains Mono / Silkscreen arrive, text is set in a local font scaled to the web
  * font's average width and vertical metrics, so the swap does not reflow the page (no layout shift).
  * Values: @capsizecss/metrics (xWidthAvg, ascent, descent, lineGap), computed like fontaine / next/font.
- * Each family lists metric-compatible locals (Liberation/Arimo/Tinos/Cousine share Arial/Times/Courier metrics).
+ * Each family lists metric-compatible locals (Liberation/Arimo/Tinos/Cousine share Arial/Courier metrics).
  */
 @font-face {
   font-family: "Inter Fallback";
@@ -14,19 +14,11 @@
   line-gap-override: 0%;
 }
 @font-face {
-  font-family: "Fraunces Fallback";
-  src: local("Georgia");
-  size-adjust: 105.2%;
-  ascent-override: 92.96%;
-  descent-override: 24.24%;
-  line-gap-override: 0%;
-}
-@font-face {
-  font-family: "Fraunces Fallback Times";
-  src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos");
-  size-adjust: 115.45%;
-  ascent-override: 84.71%;
-  descent-override: 22.09%;
+  font-family: "Manrope Fallback";
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"), local("Helvetica");
+  size-adjust: 103.19%;
+  ascent-override: 103.31%;
+  descent-override: 29.07%;
   line-gap-override: 0%;
 }
 @font-face {

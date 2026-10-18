@@ -8,6 +8,9 @@ LeviLaunchroid), plus the Doxygen API reference.
 *Painterly = atmosphere* (impressionist colour fields and brush-dab texture in heroes, backdrops and margins);
 *Pixel = structure* (crisp stepped geometry on every interactive affordance). Reading surfaces stay calm
 "canvas" at WCAG AA contrast and a ~76ch measure. Light theme = *Nymphéas*, dark theme = *Impression, soleil levant*.
+Where the two meet — a painting ending on the canvas — it **dissolves into 6px blocks while fading out** (the pixel
+dissolve, `.kit-dissolve-*`): the kit's one edge treatment, used by the hero, the docs scene band and the footer alike.
+Display type is **Manrope** (a modern geometric sans), body **Inter**.
 
 **Stack:** Vite 8 + React 19 + react-router 7 + TypeScript + Tailwind CSS v4 (`@tailwindcss/vite`).
 Docs sites are compiled at build time (unified/remark/rehype + Shiki) and statically prerendered — one real
@@ -46,13 +49,13 @@ levimc-kit/
 ├── theme/                 Tailwind v4 CSS-first theme
 │   ├── tailwind.css         one-line entry: @import "tailwindcss" + index.css + @source for the kit
 │   ├── index.css            imports everything below except hero.css (use after your own @import "tailwindcss")
-│   ├── fonts.css            metric-matched fallback faces (Inter/Fraunces/JetBrains Mono/Silkscreen): no CLS on swap
+│   ├── fonts.css            metric-matched fallback faces (Inter/Manrope/JetBrains Mono/Silkscreen): no CLS on swap
 │   ├── tokens.css           @theme tokens (light on :root, dark on .dark) + @custom-variant dark
 │   ├── generated.css        textures & sprites as data URIs (generated — do not edit)
 │   ├── hero.css             PaintedHero's default scenes as cached backgrounds (generated; imported by PaintedHero)
-│   ├── base.css             document defaults, focus ring, skip link, reduced motion, :lang(ko|ru) rules
+│   ├── base.css             document defaults, focus ring, skip link, reduced motion, :lang(ko) rules
 │   ├── pixel.css            .px-corners .mc-btn .mc-btn-primary .mc-icon-btn .mc-input .mc-kbd .px-card
-│   │                        .kit-slot .hotbar .mc-tooltip .grass-divider .px-dot
+│   │                        .kit-slot .hotbar .mc-tooltip .kit-dissolve-{bottom,top,left} .kit-rule .px-dot
 │   ├── painterly.css        .kit-backdrop* .kit-hero* .kit-painted .kit-item-frame
 │   ├── prose.css            .kit-prose doc typography (headings, lists, tables, quotes, footnotes, details…)
 │   ├── code.css             .kit-code Shiki blocks (title bar, CSS line numbers, copy button)
@@ -454,7 +457,7 @@ kit transforms → Shiki → HTML). No markdown is parsed in the browser.
 its pages are prerendered in; add `legacyTheme` / `legacyLang` to migrate a site's old localStorage keys once,
 e.g. levimc.org: `{ legacyTheme: ['theme'], legacyLang: [{ key: 'locale', map: { zh: 'zh-CN' } }] }`),
 then the fonts (`FONT_HEAD_HTML` from `kit/components/fonts.ts`): preconnect to fonts.googleapis.com /
-fonts.gstatic.com and the css2 URL for Inter, Fraunces, Silkscreen, JetBrains Mono (`display=swap`; `theme/fonts.css`
+fonts.gstatic.com and the css2 URL for Inter, Manrope, Silkscreen, JetBrains Mono (`display=swap`; `theme/fonts.css`
 adds metric-matched fallbacks, so the swap does not shift the layout). CJK uses the system stack — never ship a
 CJK webfont. `demo/app/` is a complete example (`npm run build:app && npm run preview:app && npm run smoke:app`).
 
@@ -543,9 +546,9 @@ All components are SSR-safe and render identical markup on server and client.
 | `GlobalNavList` | the bar's tabs + the Projects menu as a vertical list (the bar's phone menu; the "LeviMC" part of the docs drawer) |
 | `ThemeSwitcher` | the theme menu: **Auto** (default; follows `prefers-color-scheme` live) / Light / Dark. Trigger sprite + name and the checked item come from `html[data-theme-pref]` via CSS (right before hydration and on static pages); the choice is the cross-site `levimc_theme` cookie. `ThemeToggle` is a deprecated alias |
 | `LocaleSwitcher` | `options[{ code, label, short?, lang, href? }]` (`href` → links to the equivalent page; none → buttons), `current`, `onSelect(code, option)`, `persist` (default: store `lang` as the cross-site `levimc_lang`; a modified click on a link opens it elsewhere and stores nothing), `linkComponent`, `showLabel` |
-| `SiteFooter` | grass horizon over soil: docs projects, ecosystem (Home, Projects, Mods, Blog, About), Discord/Telegram/X/YouTube/email/GitHub, "Not affiliated with Mojang Studios."; `strings` (e.g. a site's own nav labels), `extra`, `copyright` (replaces "© <year> LeviMC"), `year`, `siteOrigin` + `linkComponent` + `isAppPath`, `locale` |
+| `SiteFooter` | the theme's painting (Nymphéas / Impression, soleil levant) rising out of the page through the pixel dissolve; LeviMC mark + tagline, Discord/Telegram/X/YouTube/GitHub/email, © year · Support us, Minecraft notice; `strings`, `year`, `siteOrigin` + `linkComponent` + `isAppPath`, `locale` |
 | `PaintedBackdrop` | fixed impressionist dabs + brush + grain; optional painted scene band at the page top |
-| `PaintedHero` | painted pond with block-built Japanese bridge (light) / harbour sunrise with pixel boats (dark), AA scrim, grass horizon; `eyebrow name text tagline actions image badge aside linkComponent`. The default scenes are cached CSS backgrounds (`theme/hero.css`, imported by the component — no per-page SVG, no flash); a custom `seed` or `pixelProps={false}` renders inline SVG |
+| `PaintedHero` | painted pond with block-built Japanese bridge (light) / harbour sunrise with pixel boats (dark) on the right of the copy (`--kit-hero-paint-x`), its left and bottom edges in the pixel dissolve (below 961px: a band on top; `.kit-hero-strip` keeps it on the right); `eyebrow name text tagline actions image badge aside linkComponent`. The default scenes are cached CSS backgrounds (`theme/hero.css`, imported by the component — no per-page SVG, no flash); a custom `seed` or `pixelProps={false}` renders inline SVG |
 | `PixelButton` | Minecraft bevel button: `variant` default/primary/ghost, `size`, `icon`, `iconRight`, `href` |
 | `Card` | stepped-corner card with sprite in an inventory slot; `title description icon eyebrow href footer` |
 | `Badge` | `tone` grass/diamond/gold/redstone/enchant/stone/pond, `pixel` (Silkscreen, Latin only) |
@@ -677,8 +680,8 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 * Keep painterly effects in heroes, backdrops, margins and cards' backgrounds; keep text on calm canvas.
 * Use the pixel vocabulary for interactive things: `mc-btn` for actions, `hotbar` for tab sets / pagination /
   segmented controls, `kit-slot` for icons, `px-corners` / `px-card` for frames, `mc-kbd` for keys.
-* Use sprites at 16 or 32 px (crisp multiples). Use Fraunces only for display headings (H1, hero, section
-  titles), Silkscreen only for short Latin labels (badges, eyebrows, versions — never CJK, never body copy).
+* Use sprites at 16 or 32 px (crisp multiples). Use Manrope (`--font-display`) only for display headings (H1/H2, hero,
+  section titles), Silkscreen only for short Latin labels (badges, eyebrows, versions — never CJK, never body copy).
 * Keep each project's own logo; the kit provides the shared chrome around it.
 * Link to the canonical, redirect-free URLs (trailing slash for directories); run `linkcheck --external`.
 * Respect `prefers-reduced-motion` (all kit animations stop) and keep focus visible (`--color-focus`).
@@ -695,6 +698,8 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 **Don't**
 * Don't round corners or add soft drop shadows to controls — pixel frames and the 2px "pixel drop" only.
 * Don't put painted scenes or brush texture behind body text, code or tables.
+* Don't end a painting with a soft fade alone, a hard line or a decorative strip: use `.kit-dissolve-*` (blocks +
+  fade, 96/160px) so every painted edge on every site is the same. Separate sections with space or `.kit-rule`.
 * Don't ship CJK webfonts, recolour sprites, or add new display typefaces.
 * Don't render dates/random values differently on server and client (hydration); format dates with
   `timeZone: 'UTC'` like the kit does.
@@ -797,6 +802,31 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.1.0 — 2026-10-18
+
+**Aesthetics: one edge, a modern face, more Monet.** Feedback: the grass-block strip between banner and page was
+ugly, the serif display face felt dated, and the Monet + Minecraft blend was neither natural nor Monet enough.
+* **Pixel dissolve** replaces the grass strip everywhere. A painting ends by breaking into 6px blocks over 96px while
+  fading over 160px (`.kit-dissolve-bottom|top|left`, masks `--kit-dissolve-*` generated by `build-assets.mjs`) —
+  the hero's left and bottom edges, the docs scene band (`PaintedBackdrop`, now 15rem) and the footer's top edge use
+  the same one. No scrims: the hero painting sits right of the copy (`--kit-hero-paint-x`) and the copy on canvas.
+* **Footer**: the theme's painting — Nymphéas under a linen wash (light), Impression, soleil levant under night ink
+  (dark) — rising out of the page; no dirt texture. Colours via `--kf-*`.
+* **Type**: Manrope replaces Fraunces as `--font-display` (700; hero 800), with a metric-matched `Manrope Fallback`.
+  It has Cyrillic, so the `:lang(ru)` display override is gone. `GOOGLE_FONTS_HREF` / Doxygen header updated.
+* **Monet**: stronger colour fields in the page backdrop (more dabs, also mid-page), brush texture 0.42/0.3; `px-card`
+  surfaces let 14% of the painted page through. Dark hero shows the sun (scene positioned at 78%).
+* `.kit-rule`: five paint dabs in pixels (lily, pond, wisteria, rose, sunlight); `--kit-rule-dabs` for pseudo-elements.
+  `.grass-divider` renders as `.kit-rule`.
+
+**Compatible.** `PaintedHero horizon` is ignored (deprecated); `.kit-hero-horizon` / `.kit-hero-scrim` render nothing;
+`--kit-grass-strip`, `--kit-dirt*` stay defined but unused.
+
+#### Migrating a site to 2.1.0
+Nothing is required (sites fetch the kit at build time). Sites that compose a hero by hand (pkg.levimc.org's
+compact hero) wrap art + brush in `<div class="kit-hero-paint kit-dissolve-bottom">` and give both
+`kit-dissolve-left`; drop grass dividers and hand-made scrims; replace `font-weight: 560` on display text with 700.
 
 ### 2.0.0 — 2026-10-18
 
