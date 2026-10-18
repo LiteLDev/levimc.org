@@ -10,8 +10,6 @@ interface FilterDrawerProps {
   resultCount: number;
   onClearAll: () => void;
   canClear: boolean;
-  /** Below the filters: the page size. */
-  footerExtra: ReactNode;
   children: ReactNode;
 }
 
@@ -20,7 +18,7 @@ interface FilterDrawerProps {
  * an inert page come with it). Filters apply as they are picked; "Show N
  * results" closes the drawer and moves to the results.
  */
-export function FilterDrawer({ open, onClose, returnFocus, resultCount, onClearAll, canClear, footerExtra, children }: FilterDrawerProps) {
+export function FilterDrawer({ open, onClose, returnFocus, resultCount, onClearAll, canClear, children }: FilterDrawerProps) {
   const { t } = useI18n();
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -54,7 +52,6 @@ export function FilterDrawer({ open, onClose, returnFocus, resultCount, onClearA
         </header>
         <div className="pkg-drawer-body">{children}</div>
         <footer className="pkg-drawer-foot">
-          {footerExtra}
           <div className="pkg-drawer-actions">
             <button type="button" className="mc-btn mc-btn-ghost" onClick={onClearAll} disabled={!canClear}>
               {t.clearAll}

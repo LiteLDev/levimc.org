@@ -1,7 +1,7 @@
 import { useRef, type MouseEvent } from "react";
 import { Pagination, PixelIcon, useDismissableDetails } from "../kit-ui";
 import { useI18n, type Strings } from "../i18n";
-import { PAGE_SIZES, serializeQuery, type PageSize, type QueryState, type SortKey } from "../lib/catalog-query";
+import { serializeQuery, type QueryState, type SortKey } from "../lib/catalog-query";
 import { HotbarRadio } from "./hotbar-radio";
 
 export type ViewMode = "list" | "grid";
@@ -49,19 +49,6 @@ function SortMenu({ value, options, onChange }: { value: SortKey; options: { val
   );
 }
 
-export function PageSizeControl({ value, onChange, className }: { value: PageSize; onChange: (n: PageSize) => void; className?: string }) {
-  const { t } = useI18n();
-  return (
-    <HotbarRadio
-      label={t.perPageLabel}
-      className={`hotbar-pixel pkg-per${className ? ` ${className}` : ""}`}
-      options={PAGE_SIZES.map((n) => ({ value: n, label: String(n) }))}
-      value={value}
-      onChange={onChange}
-    />
-  );
-}
-
 interface PagerProps {
   state: QueryState;
   page: number;
@@ -106,7 +93,7 @@ interface ResultsToolbarProps {
   go: (href: string) => void;
 }
 
-/** Filters (narrow screens), sort, page size, view and the top pager. */
+/** Filters (narrow screens), sort, view and the top pager. */
 export function ResultsToolbar({ state, newest, view, onView, filterCount, onOpenFilters, filtersButton, apply, page, pageCount, go }: ResultsToolbarProps) {
   const { t } = useI18n();
   const sorts = sortOptions(t, newest);
@@ -119,7 +106,6 @@ export function ResultsToolbar({ state, newest, view, onView, filterCount, onOpe
       </button>
       <HotbarRadio label={t.sortLabel} className="pkg-sort" options={sorts} value={state.sort} onChange={setSort} />
       <SortMenu value={state.sort} options={sorts} onChange={setSort} />
-      <PageSizeControl className="pkg-per-toolbar" value={state.per} onChange={(per) => apply({ ...state, per, page: 1 })} />
       <HotbarRadio
         label={t.viewLabel}
         className="pkg-view"

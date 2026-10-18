@@ -15,7 +15,7 @@ levimc.org into `kit/` (git-ignored; see [Design system](#design-system)):
   filters (platform, category, environment, license), sort (relevance — by
   GitHub stars when nothing is searched — stars, updated, newest), page size,
   list or grid view and pagination all run in the browser and read
-  `?q=&cat=&platform=&env=&license=&author=&tags=&sort=&per=&page=`. As on
+  `?q=&cat=&platform=&env=&license=&author=&tags=&sort=&page=`. As on
   Modrinth, a package must have every included category (AND) and any of the
   included platforms or environments (OR); excluded options are left out, and
   the groups combine with AND. Old links

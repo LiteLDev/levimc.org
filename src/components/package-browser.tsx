@@ -6,6 +6,7 @@ import {
   clearFilters,
   DEFAULT_STATE,
   filterCount,
+  PAGE_SIZE,
   parseQuery,
   runQuery,
   serializeQuery,
@@ -20,7 +21,7 @@ import { ActiveFilters } from "./active-filters";
 import { FilterDrawer } from "./filter-drawer";
 import { FilterGroups } from "./filter-groups";
 import { ProjectRow } from "./project-row";
-import { PageSizeControl, Pager, ResultsToolbar, type ViewMode } from "./results-toolbar";
+import { Pager, ResultsToolbar, type ViewMode } from "./results-toolbar";
 import { ListingSearch } from "./search";
 
 /** Rows whose icons load at once; the rest load when scrolled to. */
@@ -110,8 +111,8 @@ export function PackageBrowser({ catalog }: { catalog: Catalog }) {
   const apply = (next: QueryState) => go(serializeQuery(next));
   const filters = filterCount(state);
   const { items, matched, total, page, pageCount, counts } = result;
-  const from = matched.length ? (page - 1) * state.per + 1 : 0;
-  const to = (page - 1) * state.per + items.length;
+  const from = matched.length ? (page - 1) * PAGE_SIZE + 1 : 0;
+  const to = (page - 1) * PAGE_SIZE + items.length;
   const plain = !state.q.trim() && !filters;
   const status = plain ? t.statusShowing(from, to, total) : t.statusResults(matched.length, total);
   const groups = (flat: boolean) => (
@@ -195,14 +196,6 @@ export function PackageBrowser({ catalog }: { catalog: Catalog }) {
         resultCount={matched.length}
         canClear={filters > 0}
         onClearAll={() => apply(clearFilters(state))}
-        footerExtra={
-          <div className="pkg-drawer-per">
-            <span className="pkg-drawer-per-label" aria-hidden="true">
-              {t.perPageLabel}
-            </span>
-            <PageSizeControl value={state.per} onChange={(per) => apply({ ...state, per, page: 1 })} />
-          </div>
-        }
       >
         {drawer ? groups(true) : null}
       </FilterDrawer>

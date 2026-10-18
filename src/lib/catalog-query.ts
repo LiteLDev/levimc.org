@@ -1,12 +1,11 @@
 // The listing's state: what the URL says (`?q=&cat=&platform=&env=&license=
-// &author=&tags=&sort=&per=&page=`), how to write it back, and the results it
+// &author=&tags=&sort=&page=`), how to write it back, and the results it
 // selects. Pure functions, shared by the page and the unit tests.
 import { CATEGORY_BY_ID, ENV_BY_ID, PLATFORM_BY_ID } from "../data/categories.ts";
 import type { CatalogEntry, CatalogFeatures } from "../types.ts";
 
-export const PAGE_SIZES = [20, 50, 100] as const;
-export type PageSize = (typeof PAGE_SIZES)[number];
-export const DEFAULT_PAGE_SIZE: PageSize = 20;
+/** Results per page: fixed (old `?per=` links are ignored). */
+export const PAGE_SIZE = 20;
 
 export const SORTS = ["relevance", "stars", "updated", "newest"] as const;
 export type SortKey = (typeof SORTS)[number];
@@ -32,7 +31,6 @@ export interface QueryState {
   /** Raw lipr tags, every one of them (AND) — the filter of the old listing, kept for its links. */
   tags: string[];
   sort: SortKey;
-  per: PageSize;
   page: number;
 }
 
@@ -47,12 +45,11 @@ export const DEFAULT_STATE: QueryState = {
   author: [],
   tags: [],
   sort: "relevance",
-  per: DEFAULT_PAGE_SIZE,
   page: 1,
 };
 
 /** Query keys of the listing (a URL with one of them is not the prerendered default). */
-export const LISTING_KEYS = ["q", "cat", "platform", "env", "license", "author", "tags", "sort", "per", "page"] as const;
+export const LISTING_KEYS = ["q", "cat", "platform", "env", "license", "author", "tags", "sort", "page"] as const;
 
 const ALL_FEATURES: CatalogFeatures = { created: true, license: true };
 
@@ -90,7 +87,6 @@ export function parseQuery(params: URLSearchParams, features: CatalogFeatures = 
   // Download counts are not shown; links sorted by them get stars instead.
   if (sort === "downloads") sort = "stars";
   if (sort === "newest" && !features.created) sort = "relevance";
-  const per = Number(params.get("per"));
   const page = parseInt(params.get("page") ?? "1", 10);
   return {
     q: params.get("q") ?? "",
@@ -101,7 +97,6 @@ export function parseQuery(params: URLSearchParams, features: CatalogFeatures = 
     author: list(params, "author").filter((a, i, all) => all.findIndex((b) => b.toLowerCase() === a.toLowerCase()) === i),
     tags: unique(list(params, "tags")),
     sort: (SORTS as readonly string[]).includes(sort) ? (sort as SortKey) : "relevance",
-    per: (PAGE_SIZES as readonly number[]).includes(per) ? (per as PageSize) : DEFAULT_PAGE_SIZE,
     page: Number.isFinite(page) && page >= 1 ? page : 1,
   };
 }
@@ -126,7 +121,6 @@ export function serializeQuery(state: QueryState): string {
   add("author", state.author);
   add("tags", state.tags);
   if (state.sort !== "relevance") parts.push(["sort", state.sort]);
-  if (state.per !== DEFAULT_PAGE_SIZE) parts.push(["per", String(state.per)]);
   if (state.page > 1) parts.push(["page", String(state.page)]);
   return parts.length ? `/?${parts.map(([k, v]) => `${k}=${v}`).join("&")}` : "/";
 }
@@ -145,9 +139,9 @@ export function filterCount(state: QueryState): number {
   );
 }
 
-/** The state without any filter: search, sort and page size stay. */
+/** The state without any filter: search and sort stay. */
 export function clearFilters(state: QueryState): QueryState {
-  return { ...DEFAULT_STATE, q: state.q, sort: state.sort, per: state.per };
+  return { ...DEFAULT_STATE, q: state.q, sort: state.sort };
 }
 
 /** An SPDX id that names an open-source license (GitHub's NOASSERTION means "some other text"). */
@@ -255,10 +249,10 @@ export function runQuery(entries: readonly CatalogEntry[], state: QueryState, sc
   for (const id of ENV_BY_ID.keys()) counts.env[id] = count({ ...filters, env: [id] });
   counts.license = count({ ...filters, license: true });
 
-  const pageCount = Math.max(1, Math.ceil(matched.length / state.per));
+  const pageCount = Math.max(1, Math.ceil(matched.length / PAGE_SIZE));
   const page = Math.min(state.page, pageCount);
   return {
-    items: matched.slice((page - 1) * state.per, page * state.per),
+    items: matched.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
     matched,
     total: entries.length,
     page,

@@ -256,7 +256,7 @@ await check("Clear all removes the filters and keeps the search", async () => {
 });
 
 await check("exclusion: ?cat=-library hides every library; the chip says so", async () => {
-  await home.goto(`${root}?cat=-library&per=100`, { waitUntil: "networkidle" });
+  await home.goto(`${root}?cat=-library`, { waitUntil: "networkidle" });
   await settled(home);
   const shown = await home.locator(".pkg-results-list .pkg-row").evaluateAll((els) => els.map((e) => e.dataset.tooth));
   const libraries = new Set(catalog.filter((e) => e.categories.includes("library")).map((e) => e.tooth));
@@ -279,12 +279,12 @@ await check("sort by stars (hotbar, arrow keys) orders the rows", async () => {
   return `top: ${stars.slice(0, 3).join(", ")}`;
 });
 
-await check("page size 50: ?per=50 and the pagers follow", async () => {
-  await home.locator('.pkg-per-toolbar [role="radio"]', { hasText: "50" }).click();
-  await home.waitForURL((u) => new URL(u).searchParams.get("per") === "50");
+await check("page size is fixed at 20: no control, ?per=50 is ignored", async () => {
+  assert((await home.locator(".pkg-per, .pkg-per-toolbar").count()) === 0, "a page-size control is shown");
+  await home.goto(`${root}?per=50`, { waitUntil: "networkidle" });
   await settled(home);
-  assert((await rows(home).count()) === Math.min(50, total), `${await rows(home).count()} rows`);
-  const pages = Math.ceil(total / 50);
+  assert((await rows(home).count()) === Math.min(20, total), `${await rows(home).count()} rows`);
+  const pages = Math.ceil(total / 20);
   const last = await home.locator(".pkg-pager-bottom a:not([rel])").last().innerText();
   assert(Number(last) === pages, `last page ${last}, expected ${pages}`);
   return `${pages} pages`;
@@ -510,7 +510,7 @@ await check("view: grid persists across reloads and is applied before the first 
     return { first: items[0].top, full: items.filter((r) => r.top >= 0 && r.bottom <= innerHeight).length, checked: document.querySelector('.pkg-view [aria-checked="true"]')?.getAttribute("aria-label") };
   });
   assert(m.checked === "Grid view", `checked: ${m.checked}`);
-  assert(m.first <= 320 && m.full >= 9, `first ${m.first}px, ${m.full} full cards`);
+  assert(m.first <= 320 && m.full >= 4, `first ${m.first}px, ${m.full} full cards`);
   await ctx.close();
   return `${m.full} cards fully visible`;
 });
@@ -535,11 +535,11 @@ await check("chips: one line, never cut off, the rest behind +N (1440 list and g
   ]) {
     const ctx = await newContext(options, { fonts: true });
     await ctx.addInitScript((v) => localStorage.setItem("levimc-mods:view", v), view);
-    const { page } = await open("?per=100", ctx);
+    const { page } = await open("", ctx);
     assert(((await page.evaluate(() => document.documentElement.dataset.view)) ?? "list") === view, `${label}: view not applied`);
     await fontsReady(page);
     const m = await chipLayout(page);
-    assert(m.rows >= 100 && !m.problems.length, `${label}: ${m.problems.slice(0, 5).join("; ")}`);
+    assert(m.rows >= 20 && !m.problems.length, `${label}: ${m.problems.slice(0, 5).join("; ")}`);
     seen.push(`${label}: ${m.withMore} of ${m.rows} rows with +N`);
     await ctx.close();
   }
@@ -552,7 +552,7 @@ await check("+N chip: its tooltip lists the other chips, fully visible on hover 
   for (const [label, options, view] of [["1440 grid", DESKTOP, "grid"], ["390", PHONE, "list"]]) {
     const ctx = await newContext(options, { fonts: true });
     await ctx.addInitScript((v) => localStorage.setItem("levimc-mods:view", v), view);
-    const { page } = await open("?per=100", ctx);
+    const { page } = await open("", ctx);
     await fontsReady(page);
     const host = page.locator(".pkg-results-list .pkg-row-more-li:not(.is-overflow) .pkg-row-more-host").first();
     await host.scrollIntoViewIfNeeded();

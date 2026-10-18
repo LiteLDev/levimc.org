@@ -51,9 +51,9 @@ test("parse/serialize: defaults are omitted, so the default state is /", () => {
 });
 
 test("parse/serialize round-trip in a fixed parameter order", () => {
-  const url = "/?q=land claim&cat=economy,-library&platform=lse&env=client&license=oss&author=LiteLDev&tags=platform:levilamina&sort=stars&per=50&page=2";
+  const url = "/?q=land claim&cat=economy,-library&platform=lse&env=client&license=oss&author=LiteLDev&tags=platform:levilamina&sort=stars&page=2";
   const state = parseQuery(new URLSearchParams(url.slice(2)));
-  assert.equal(serializeQuery(state), "/?q=land%20claim&cat=economy,-library&platform=lse&env=client&license=oss&author=LiteLDev&tags=platform:levilamina&sort=stars&per=50&page=2");
+  assert.equal(serializeQuery(state), "/?q=land%20claim&cat=economy,-library&platform=lse&env=client&license=oss&author=LiteLDev&tags=platform:levilamina&sort=stars&page=2");
   assert.deepEqual(parseQuery(new URLSearchParams(serializeQuery(state).slice(2))), state);
 });
 
@@ -66,9 +66,8 @@ test("parse: comma lists and repeated keys, exclusions, unknown values dropped",
   assert.equal(serializeQuery(a), "/?cat=economy,utility,-library&platform=lse,-other&env=client&tags=a,b");
 });
 
-test("parse: page sizes, sorts and pages fall back", () => {
-  assert.equal(parseQuery(new URLSearchParams("per=60")).per, 20);
-  assert.equal(parseQuery(new URLSearchParams("per=100")).per, 100);
+test("parse: sorts and pages fall back; the page size is fixed", () => {
+  assert.equal(serializeQuery(parseQuery(new URLSearchParams("per=100"))), "/");
   assert.equal(parseQuery(new URLSearchParams("sort=bogus")).sort, "relevance");
   assert.equal(parseQuery(new URLSearchParams("sort=downloads")).sort, "stars");
   assert.equal(parseQuery(new URLSearchParams("sort=newest")).sort, "newest");
@@ -154,11 +153,11 @@ test("pages are clamped to the last one", () => {
   const past = runQuery(many, state("page=99"), null);
   assert.equal(past.page, 3);
   assert.equal(past.items[0]?.name, "p40");
-  assert.equal(runQuery(many, state("per=50"), null).pageCount, 1);
+  assert.equal(runQuery(many, state("per=50"), null).pageCount, 3);
 });
 
-test("filter count and clear all (search, sort and page size stay)", () => {
-  const s = parseQuery(new URLSearchParams("q=x&cat=economy,-library&platform=lse&env=client&license=oss&author=a&tags=t&sort=stars&per=50&page=2"));
+test("filter count and clear all (search and sort stay)", () => {
+  const s = parseQuery(new URLSearchParams("q=x&cat=economy,-library&platform=lse&env=client&license=oss&author=a&tags=t&sort=stars&page=2"));
   assert.equal(filterCount(s), 7);
-  assert.equal(serializeQuery(clearFilters(s)), "/?q=x&sort=stars&per=50");
+  assert.equal(serializeQuery(clearFilters(s)), "/?q=x&sort=stars");
 });
