@@ -30,6 +30,9 @@ jobs:
 
       - run: npm run typecheck
 
+      # Blog content (Hexo permalinks, slugs, rendering) and the kit's preference tests.
+      - run: npm test
+
       # Client build, SSR build and prerender: one static HTML file per route
       # (projects/index.html, …) plus 404.html, sitemap.xml and robots.txt.
       - run: npm run build

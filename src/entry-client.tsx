@@ -3,6 +3,7 @@ import { createRoot, hydrateRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { App } from './App';
 import { canonicalPath } from './routes';
+import { preloadBlogPath } from './blog/data';
 import './styles.css';
 
 // GitHub Pages serves the same file for /about/, /about/index.html and /about//: show the canonical URL
@@ -25,6 +26,9 @@ const app = (
   </StrictMode>
 );
 
-// Production pages are prerendered (hydrate them); the dev server serves an empty #root.
-if (rootElement.firstElementChild) hydrateRoot(rootElement, app);
-else createRoot(rootElement).render(app);
+// Production pages are prerendered (hydrate them); the dev server serves an empty #root. A blog post's
+// markdown is its own chunk: load it first, so the first render matches the prerendered HTML.
+void preloadBlogPath(canonical).finally(() => {
+  if (rootElement.firstElementChild) hydrateRoot(rootElement, app);
+  else createRoot(rootElement).render(app);
+});

@@ -1,4 +1,6 @@
 // English translations
+const MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
 const en = {
   // Navigation
   nav: {
@@ -8,7 +10,6 @@ const en = {
     about: "About",
     community: "Community",
     support: "Support Us",
-    mods: "Mods",
   },
 
   // Hero section
@@ -148,7 +149,6 @@ const en = {
     resources: "Resources",
     ll_documentation: "LeviLamina Documentation",
     lse_documentation: "LegacyScriptEngine Documentation",
-    blog: "Blog",
     connect: "Connect",
     copyright: "LeviMC",
   },
@@ -165,6 +165,40 @@ const en = {
     levianticheat: "Anti-cheating solution for LeviLamina servers..",
     moredimensions:
       "Expand your Minecraft Bedrock world with new dimensions and biomes.",
+  },
+  // Blog (levimc.org/blog/) — the chrome around the posts; the posts themselves are in Chinese
+  blog: {
+    name: "LeviMC's blog",
+    tagline: "Everything about development",
+    eyebrow: "Blog",
+    sections: "Blog sections",
+    posts: "Posts",
+    tags: "Tags",
+    categories: "Categories",
+    archives: "Archives",
+    about: "About",
+    friends: "Friends",
+    rss: "RSS",
+    latest: "Latest posts",
+    readMore: "Read more",
+    minutes: (n: number) => `${n} min read`,
+    postCount: (n: number) => (n === 1 ? "1 post" : `${n} posts`),
+    tagTitle: (name: string) => `Tag: ${name}`,
+    categoryTitle: (name: string) => `Category: ${name}`,
+    monthLabel: (y: string, m: string) => `${MONTHS_EN[Number(m) - 1]} ${y}`,
+    archiveTitle: (y: string, m?: string) => `Archives: ${m ? `${MONTHS_EN[Number(m) - 1]} ${y}` : y}`,
+    page: (n: number) => `Page ${n}`,
+    previousPost: "Previous post",
+    nextPost: "Next post",
+    writtenIn: "Written in Chinese",
+    by: "by",
+    comments: "Comments",
+    commentsLoading: "Loading comments…",
+    commentsFailed: "Comments could not be loaded.",
+    reload: "This post could not be loaded — reload the page",
+    backToBlog: "All posts",
+    date: (iso: string) => `${MONTHS_EN[Number(iso.slice(5, 7)) - 1]} ${Number(iso.slice(8, 10))}, ${iso.slice(0, 4)}`,
+    monthName: (m: string) => MONTHS_EN[Number(m) - 1]!,
   },
 };
 

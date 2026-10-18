@@ -5,10 +5,13 @@ import { StaticRouter } from 'react-router';
 import { App } from './App';
 import { buildHead } from './head';
 import { DEFAULT_LOCALE } from './i18n';
+import { preloadBlogPath } from './blog/data';
 
 export { ROUTE_PATHS, NOT_FOUND_PATH, SITE_ORIGIN } from './routes';
+export { BLOG_ROUTES } from './blog/data';
 
-export function render(url: string) {
+export async function render(url: string) {
+  await preloadBlogPath(url);
   const html = renderToString(
     <StrictMode>
       <StaticRouter location={url}>
