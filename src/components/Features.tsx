@@ -15,7 +15,7 @@ export default function Features({ headingLevel = 2 }: { headingLevel?: 1 | 2 })
   ];
 
   return (
-    <section className="lm-section lm-container">
+    <section className="lm-section lm-container" id="features">
       <div className="lm-split-head">
         <div>
           <Eyebrow>{t.features.label}</Eyebrow>

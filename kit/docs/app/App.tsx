@@ -200,20 +200,18 @@ export function App() {
       <PaintedBackdrop scene={route?.layout !== 'home'} />
       <div className="kit-shell kit-above-backdrop" data-layout={route?.layout ?? '404'}>
         <GlobalBar
-          current="docs"
-          currentDocs={site.project}
+          currentProject={site.project}
           locale={chromeLang}
           strings={chromeT}
           languages={languages}
           onLanguageChange={single ? () => undefined : undefined}
-          github={site.github}
           menu={false}
         />
         <SiteHeader route={route} locale={locale} t={t} onOpenSearch={openSearch} onOpenDrawer={() => setDrawerOpen(true)} drawerOpen={drawerOpen} />
         <Suspense fallback={<main id="kit-main" className="kit-loading" aria-busy="true" />}>
           <RoutePage route={route} t={t} onSearch={openSearch} locale={locale} />
         </Suspense>
-        <SiteFooter locale={chromeLang} strings={chromeT} extra={site.footer?.message} copyright={site.footer?.copyright} />
+        <SiteFooter locale={chromeLang} strings={chromeT} />
       </div>
       <MobileDrawer
         open={drawerOpen}

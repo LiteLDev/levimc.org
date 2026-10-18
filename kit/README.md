@@ -13,14 +13,14 @@ LeviLaunchroid), plus the Doxygen API reference.
 Docs sites are compiled at build time (unified/remark/rehype + Shiki) and statically prerendered — one real
 HTML file per URL for GitHub Pages — then hydrated into a SPA.
 
-Version: see `VERSION` (1.1.0) and the [Changelog](#changelog) (with migration notes for every site).
+Version: see `VERSION` (2.0.0) and the [Changelog](#changelog) (with migration notes for every site).
 
 ---
 
 ## Contents
 
 1. [Layout](#layout)
-2. [Vendoring](#vendoring)
+2. [Distribution: fetched from levimc.org](#distribution-fetched-from-levimcorg)
 3. [Dependencies](#dependencies)
 4. [Docs site: app structure & commands](#docs-site-app-structure--commands)
 5. [Site config API (`defineDocsConfig`)](#site-config-api-definedocsconfig)
@@ -92,32 +92,53 @@ levimc-kit/
 │   ├── pages/index.html  pages/404.html     docs.levimc.org root redirect + themed 404
 │   ├── doxygen/header.html footer.html doxygen-kit.css
 │   └── icons/  grass.svg  nojs-dark.mjs  snippets.tsx  build-static.mjs
-├── scripts/               serve-pages · linkcheck · url-parity · text-parity · smoke · shot · vendor · mkdocs-nav
+├── scripts/               publish-kit · fetch-kit · chrome-parity · serve-pages · linkcheck · url-parity · text-parity · smoke · shot · vendor · mkdocs-nav
 ├── tests/                 prefs.test.mjs (node --test: cookies, locale mapping, inline scripts) ·
 │                          static.test.mjs (no-JS dark CSS, kit.js: footer year, chrome-only translation) ·
 │                          cross-site.e2e.mjs (Playwright: preferences shared by levimc.org + docs.levimc.org)
-├── demo/                  demo sites (not vendored): docs (suffix/directory/pymdownx), lip (folder/html/vitepress),
+├── demo/                  demo sites (not published): docs (suffix/directory/pymdownx), lip (folder/html/vitepress),
 │                          single (the docs as a single-locale site), app/ (plain Vite + React app, the
 │                          levimc.org / pkg.levimc.org shape); pinned package-lock.json
-└── screens/               review screenshots (not vendored, not published)
+└── screens/               review screenshots (not published)
 ```
 
-## Vendoring
+## Distribution: fetched from levimc.org
 
-Copy the kit into each app as `<app>/kit/` (everything except `demo/`, `screens/`, `node_modules/`):
+The kit lives in **LiteLDev/levimc.org** (`kit/`, with its `demo/` and CI in `.github/workflows/kit.yml`); it is the
+one source of the LeviMC chrome — bar, footer, theme, docs engine, Doxygen header/footer — for every LeviMC site.
+Each levimc.org deploy publishes it next to the site (`scripts/publish-kit.mjs`):
 
-```sh
-node path/to/levimc-kit/scripts/vendor.mjs path/to/app        # → path/to/app/kit/  (replaces it)
-node path/to/levimc-kit/scripts/vendor.mjs path/to/app/kit    # the same: a path named "kit" without a package.json
+| URL | Content |
+|---|---|
+| `https://levimc.org/kit/v2/manifest.json` | `{ version, build, sha256, files, bytes }` — `build` is a content hash of the kit |
+| `https://levimc.org/kit/v2/kit.json` | every file of the kit (minus `demo/`, `screens/`, …) in one JSON document |
+
+Sites follow one major version (`v2/`); a breaking kit 3 is published next to it and adopted site by site.
+`publish-kit.mjs` stamps `build` into `components/version.ts` (`KIT_BUILD`) of the published copy and of levimc.org's
+own build, so every page carries `<meta name="generator" content="levimc-kit 2.0.0+<build>">` and
+`curl -s <url> | grep generator` shows which kit a deployment runs.
+
+**In a site** — copy `scripts/fetch-kit.mjs` into the app as `scripts/fetch-kit.mjs`, git-ignore `kit/`, and run it
+from the package install:
+
+```jsonc
+// package.json
+"scripts": { "postinstall": "node scripts/fetch-kit.mjs", "kit": "node scripts/fetch-kit.mjs", … }
 ```
 
-`vendor.mjs` produces a clean copy: it skips `demo/`, `screens/`, `node_modules/`, `dist/`, `.kit/` and every
-dotfile, replaces `<app>/kit/` completely (re-running is idempotent) and writes `kit/.vendored` with the version.
-Kit 1.1.0: 209 files / 2.7 MB, no demo, screenshots or dependencies; running the vendored copy's own
-`kit/scripts/vendor.mjs <dest>` reproduces it byte for byte. `--dest <name>` changes the folder name.
-Never edit files under `kit/` in an app; change the kit and re-vendor. The demo vendors itself the same way
-(`cd demo && npm run vendor`). Every page the kit renders carries `<meta name="generator" content="levimc-kit 1.1.0">`,
-so `curl -s <url> | grep generator` shows which kit a deployment runs.
+`fetch-kit.mjs` downloads `manifest.json`, leaves an up-to-date `kit/` alone, otherwise downloads `kit.json`, checks
+its sha256 and replaces `kit/` (writing `kit/.vendored`). `LEVIMC_KIT_SOURCE=<levimc.org checkout>/kit npm run kit`
+installs a local kit checkout instead — to try kit changes in a site before they are published. Offline, an installed
+kit is kept with a warning (in CI, `$CI`, it fails). Never edit `kit/` in a site.
+
+**Keeping sites current** — after a deploy that changed the kit, levimc.org's `sync` job runs every site's deploy
+workflow (needs the `KIT_SYNC_TOKEN` secret: a fine-grained token with *Actions: read and write* on the site
+repositories). Each site's workflow also runs hourly: its `kit` job compares the published `manifest.json` with the
+generator meta of the live site and builds only when they differ. `node kit/scripts/chrome-parity.mjs` fetches one
+page of every LeviMC site and checks that they show the same bar and footer (local previews:
+`http://127.0.0.1:4173/=https://levimc.org`).
+
+`scripts/vendor.mjs` still copies a kit checkout into a folder (the demo uses it: `cd demo && npm run vendor`).
 
 ## Dependencies
 
@@ -157,7 +178,7 @@ A docs site is the repository's existing markdown plus four small files:
 
 ```
 <repo>/
-├── kit/                     vendored levimc-kit
+├── kit/                     levimc-kit (fetched; git-ignored)
 ├── docs.config.ts           defineDocsConfig({...})            (replaces mkdocs.yml / .vitepress/config.mts)
 ├── vite.config.ts           plugins: [kitDocs(docs)]
 ├── tsconfig.json            from tsconfig.template.json
@@ -175,7 +196,7 @@ The app sits where the old generator config was; `kit/` sits next to `package.js
 
 ```
 docs/
-├── kit/                 vendored (excluded from content automatically)
+├── kit/                 levimc-kit, fetched (excluded from content automatically)
 ├── package.json         replaces the VitePress one
 ├── vite.config.ts  docs.config.ts  tsconfig.json  .gitignore (node_modules/ dist/ .kit/)
 ├── public/              unchanged (served at the site root)
@@ -188,7 +209,7 @@ docs/
 export default defineDocsConfig({ base: '/lip/', contentDir: '.', urlStyle: 'html', i18n: { mode: 'folder', … }, … });
 ```
 
-With `contentDir: '.'` the engine automatically excludes the vendored `kit/` folder, the output directory
+With `contentDir: '.'` the engine automatically excludes the `kit/` folder, the output directory
 (`dist/`) and `.kit/`; `node_modules/`, every dot-folder (`.vitepress/`) and `public/` are always excluded.
 Add `exclude: ['README.md']` only if `docs/` has a README that is not a page. CI: `working-directory: docs`,
 upload `docs/dist`.
@@ -270,7 +291,7 @@ export default defineDocsConfig({ … });
 | `logo` | `'logo.svg'` or `{ src, alt, dark? }` | path relative to base; each project keeps its own logo |
 | `favicon` | path | |
 | `project` | default = base segment | highlights the project in the GlobalBar "Docs" menu |
-| `repo` | URL | the LeviMC bar's GitHub button (unless `social` has a `github` entry) |
+| `repo` | URL | the project's repository (edit links, the docs header's GitHub icon) |
 | `editLink` | `'https://github.com/<org>/<repo>/edit/<branch>/<dir>/:path'` or `{ pattern: string \| (source) => url \| undefined, text?: { [locale]: label } }` | `:path` = path relative to `contentDir`; evaluated at build time |
 | `contentDir` | string (required) | `docs_dir` / `srcDir` |
 | `publicDir` | default `<contentDir>/public` if present, or `false` | VitePress `public/` (copied verbatim) |
@@ -300,9 +321,9 @@ export default defineDocsConfig({ … });
 | `sitemap` | `{ hostname }` \| `false` | |
 | `head` | `[[tag, attrs, content?], …]` | extra head tags (VitePress format) |
 | `outline` | `[2, 4]` (python-markdown) / `[2, 3]` (commonmark) | "On this page" levels (`outline: false` in frontmatter hides it) |
-| `social` | `[{ icon: 'github'\|'discord'\|'telegram'\|'x'\|'youtube'\|'email', link, label? }]` | `github` → the bar's GitHub button; others → icons in the docs header |
-| `footer` | `{ message?, copyright? }` | `message`: extra line above the legal row; `copyright`: replaces "© <year> LeviMC" |
-| `ui` | `{ [locale]: Partial<UiStrings> }` | override chrome strings (e.g. VitePress `docFooter`, `editLink.text`) |
+| `social` | `[{ icon: 'github'\|'discord'\|'telegram'\|'x'\|'youtube'\|'email', link, label? }]` | icons in the docs header (the bar's GitHub button is always the LiteLDev organisation) |
+| `footer` | — | deprecated in kit 2 and ignored: the footer is the same on every LeviMC site |
+| `ui` | `{ [locale]: Partial<UiStrings> }` | override the docs UI strings (e.g. VitePress `docFooter`, `editLink.text`); leave the bar's and footer's labels to the kit |
 | `titleTemplate` | `':title \| :site'` | use `':title - :site'` to match MkDocs; the root page of a directory-style site gets the template without `:title` (Material's home title) |
 | `header`, `sidebarExpand` | | see [Header](#header-the-docs-own-row) and the table under it |
 | `outDir` | `'dist'` | |
@@ -365,8 +386,8 @@ move into the drawer). `header.tabsRow: true` starts in the two-row layout, `fal
 | `header` | `{ tabsRow?: 'auto' \| true \| false }` | see [Header](#header-the-docs-own-row) |
 | `sidebarExpand` | `false` | MkDocs Material `navigation.expand` for the `'tabs'` sidebar. Default: only the group holding the current page starts open (plus groups with `collapsed: false`) |
 
-`social`: a `github` entry (or `repo`) becomes the target of the bar's GitHub button; other entries stay as
-icons at the end of the docs header.
+`social`: icons at the end of the docs header. The bar's GitHub button always opens the LiteLDev organisation; each
+project's repository is in the bar's Projects menu.
 
 ## Markdown support
 
@@ -418,7 +439,7 @@ kit transforms → Shiki → HTML). No markdown is parsed in the browser.
 
 ```
 <app>/
-├── kit/                       vendored
+├── kit/                       fetched
 ├── index.html                 pre-paint script + fonts, <!--app-head--> in <head>, <div id="root"><!--app-html--></div>
 ├── src/styles.css             @import "../kit/theme/tailwind.css"; @source "./";
 ├── src/App.tsx                routes; wrap in <ThemeProvider>; <PaintedBackdrop/> <GlobalBar sticky …/> … <SiteFooter/>
@@ -518,8 +539,8 @@ All components are SSR-safe and render identical markup on server and client.
 
 | Component | Purpose / key props |
 |---|---|
-| `GlobalBar` | the bar at the top of every LeviMC site — identical everywhere: tabs **Home · Projects · Docs ▾ · Mods · Blog · Community · About** (`globalNav()`), then **language menu · theme menu · GitHub**; below 960px the tabs fold into one menu (≤ 400px the triggers lose their chevrons). Props: `current` (`'home'\|'projects'\|'docs'\|'packages'\|'blog'\|'community'\|'about'`), `currentDocs`, `locale`, `strings`, `languages` (`{ options, current, onSelect?, linkComponent? }`; omitted → the 9 chrome languages, stored as the preference, then `onLanguageChange` or a reload), `github` (button target), `brandIcon`, `siteOrigin` + `linkComponent` + `isAppPath` (same-site links through the router), `menu` (false when the site's own drawer carries the links, see `GlobalNavList`), `sticky`. A labelled region; `<details>` menus work without JS. No props to hide, add or reorder tabs or controls |
-| `GlobalNavList` | the bar's tabs + docs projects as a vertical list (the bar's phone menu; the "LeviMC" part of the docs drawer) |
+| `GlobalBar` | the bar at the top of every LeviMC site — identical everywhere: the LeviMC mark (`BrandMark`), tabs **Home · Projects ▾ · Mods · Blog · Community · About** (`globalNav()`), then **language menu · theme menu · GitHub** (→ LiteLDev); below 960px the tabs fold into one menu (≤ 400px the triggers lose their chevrons). **Projects ▾** is a mega menu of `PROJECTS` (`projects.ts`) by group (Core · Launchers · Official mods): each row opens the project's docs (or repository), with explicit Docs and GitHub links, and the GitHub organisation at the bottom; on phones it is a collapsed section of the menu. Props: `current` (`'home'\|'projects'\|'packages'\|'blog'\|'community'\|'about'`), `currentProject` (docs: marks the project and the Projects tab), `locale`, `strings`, `languages` (`{ options, current, onSelect?, linkComponent? }`; the options are the site's locales, named the kit's way — `uiLocaleName`; omitted → the 9 chrome languages, stored as the preference, then `onLanguageChange` or a reload), `siteOrigin` + `linkComponent` + `isAppPath` (same-site links through the router), `menu` (false when the site's own drawer carries the links, see `GlobalNavList`), `sticky`. `github`, `brandIcon` and `currentDocs` are deprecated (ignored / alias). A labelled region; `<details>` menus work without JS. No props to hide, add or reorder tabs or controls |
+| `GlobalNavList` | the bar's tabs + the Projects menu as a vertical list (the bar's phone menu; the "LeviMC" part of the docs drawer) |
 | `ThemeSwitcher` | the theme menu: **Auto** (default; follows `prefers-color-scheme` live) / Light / Dark. Trigger sprite + name and the checked item come from `html[data-theme-pref]` via CSS (right before hydration and on static pages); the choice is the cross-site `levimc_theme` cookie. `ThemeToggle` is a deprecated alias |
 | `LocaleSwitcher` | `options[{ code, label, short?, lang, href? }]` (`href` → links to the equivalent page; none → buttons), `current`, `onSelect(code, option)`, `persist` (default: store `lang` as the cross-site `levimc_lang`; a modified click on a link opens it elsewhere and stores nothing), `linkComponent`, `showLabel` |
 | `SiteFooter` | grass horizon over soil: docs projects, ecosystem (Home, Projects, Mods, Blog, About), Discord/Telegram/X/YouTube/email/GitHub, "Not affiliated with Mojang Studios."; `strings` (e.g. a site's own nav labels), `extra`, `copyright` (replaces "© <year> LeviMC"), `year`, `siteOrigin` + `linkComponent` + `isAppPath`, `locale` |
@@ -677,7 +698,7 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 * Don't ship CJK webfonts, recolour sprites, or add new display typefaces.
 * Don't render dates/random values differently on server and client (hydration); format dates with
   `timeZone: 'UTC'` like the kit does.
-* Don't edit vendored `kit/` files.
+* Don't edit a site's `kit/` (it is fetched); change the kit in levimc.org.
 * Don't add theme, language or GitHub controls to a site's own header (they live in the GlobalBar), and don't
   store those preferences under site-specific keys.
 
@@ -766,14 +787,53 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   the single-locale docs: `npm run build:single && npm run preview:single && npm run smoke:single`; the plain app:
   `npm run build:app && npm run preview:app && npm run smoke:app`; cross-site:
   `node kit/tests/cross-site.e2e.mjs --app app/dist --docs dist`. `demo/package-lock.json` pins the dependency
-  set the kit is verified with; the demo's `kit/` is the vendored copy (`npm run vendor`, git-ignored).
-* Bump `VERSION` and `components/version.ts` together on every change that consumers must re-vendor (the tests
-  and build-static check they agree), and add a [Changelog](#changelog) entry with migration notes.
-* The kit is published in LiteLDev/liteldev.github.io under `kit/`, with its `demo/` (sources and lockfile;
-  `vendor.mjs` leaves `demo/` out of every site copy). Its CI (`.github/workflows/kit.yml`) runs the unit tests and
-  builds, type-checks and link-checks every demo; `screens/` is not published.
+  set the kit is verified with; the demo's `kit/` is a copy (`npm run vendor`, git-ignored).
+* Every merge to levimc.org's `main` publishes the kit (see [Distribution](#distribution-fetched-from-levimcorg));
+  sites rebuild with it on their own. Bump `VERSION` and `components/version.ts` together for a release (the tests
+  and build-static check they agree) and add a [Changelog](#changelog) entry with migration notes; a change that
+  breaks sites gets a new major, published at `kit/v<major>/`.
+* The kit's CI (`.github/workflows/kit.yml` in levimc.org) runs the unit tests and builds, type-checks and
+  link-checks every demo; `screens/` is not published. Before merging a chrome change, preview it in the sites with
+  `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.0.0 — 2026-10-18
+
+**One source, fetched at build time.** The kit moved from LiteLDev/liteldev.github.io to LiteLDev/levimc.org
+(`kit/`, with `demo/` and `kit.yml`) and is no longer vendored: levimc.org publishes it at
+`https://levimc.org/kit/v2/` with every deploy (`scripts/publish-kit.mjs`), every site fetches it from its package
+install (`scripts/fetch-kit.mjs`, `kit/` git-ignored), levimc.org triggers the sites' deploys after a kit change
+(`sync`, `KIT_SYNC_TOKEN`) and each site re-checks hourly. `KIT_BUILD` (a content hash) joins the generator meta.
+The local patches of LeviLamina (Doxygen row: the docs' own tabs, skip link) and LegacyScriptEngine (Python-Markdown
+list re-attachment, `tests/preprocess-hoist.test.mjs`) are upstream.
+
+**The same chrome everywhere** (verified with the new `scripts/chrome-parity.mjs`):
+* Bar: **Home · Projects ▾ · Mods · Blog · Community · About**. The Docs menu and levimc.org's projects page are
+  replaced by the **Projects** mega menu — every project (`PROJECTS`: LeviLamina, LegacyScriptEngine, lip,
+  LeviLauncher, LeviLaunchroid, LeviOptimize, LeviAntiCheat, MoreDimensions) by group, each row leading to its docs
+  (or repository) with explicit Docs and GitHub links, plus "All repositories on GitHub"; a collapsed section on phones.
+* The LeviMC leaf mark (`BrandMark`, formerly levimc.org's own) in the bar and the footer on every site; the GitHub
+  button always opens the LiteLDev organisation; language options carry the kit's names (`uiLocaleName`) and the
+  trigger shows the full name.
+* Footer (following small OSS orgs: each channel once, no copy of the bar's links): mark + tagline, the social icons
+  (Discord, Telegram, X, YouTube, GitHub, Email), and one legal row — © year · **Support us** · "Not an official
+  Minecraft product. Not approved by or associated with Mojang or Microsoft." No link columns.
+* Doxygen: the bar and footer match the docs pages (line heights, weights, social tiles, screen-reader text no longer
+  bent by doxygen.css / doxygen-awesome); `.kit-footer` has fixed metrics.
+
+**Breaking.** `SiteId` loses `'docs'` (docs pages pass `currentProject`); `LINKS.projects` is gone (`LINKS.support`
+is new); `UiStrings` drops `footerDocs` / `footerEcosystem` and adds `supportUs`, `projectGroups`, `allRepositories`;
+ignored now: `GlobalBar github` / `brandIcon`, `SiteFooter extra` / `copyright`, docs `footer`. `currentDocs` is an
+alias of `currentProject`.
+
+#### Migrating a site to 2.0.0
+
+1. `git rm -r --cached kit`, add `kit/` to `.gitignore`, copy `kit/scripts/fetch-kit.mjs` to `scripts/`, add the
+   `postinstall` / `kit` scripts; in CI the package install now fetches the kit (Doxygen: run `fetch-kit.mjs` first).
+2. Add the hourly `kit` job and let the deploy job run on `schedule` / `workflow_dispatch` (see any site's workflow).
+3. Drop `github`, `brandIcon`, `extra`, `copyright`, docs `footer` and chrome-label `ui` overrides (`theme` …).
+
 
 ### 1.1.0 — 2026-10-18
 

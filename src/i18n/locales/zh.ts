@@ -6,7 +6,6 @@ const zh: typeof en = {
   nav: {
     home: "首页",
     projects: "项目",
-    features: "特性",
     about: "关于我们",
     community: "社区",
     support: "支持我们",
@@ -49,10 +48,7 @@ const zh: typeof en = {
   // Projects section
   projects: {
     label: "生态系统",
-    title: "核心项目",
-    viewAll: "查看全部",
-    allProjectsTitle: "所有项目",
-    allProjectsDesc: "基岩版服务器开发的完整工具集。",
+    title: "我们的项目",
     moreOnGitHub: "更多项目请访问 GitHub",
     explore: "探索",
     docs: "文档",
@@ -135,20 +131,12 @@ const zh: typeof en = {
     donorLinkLabel: "打开链接",
   },
 
-  // Footer
-  footer: {
-    tagline: "构建 Minecraft 基岩版服务器模组的未来。社区驱动的开源工具。",
-    resources: "资源",
-    ll_documentation: "LeviLamina文档",
-    lse_documentation: "LegacyScriptEngine文档",
-    connect: "联系我们",
-    copyright: "LeviMC",
-  },
 
   // Project descriptions
   projects_desc: {
     levilamina: "轻量、模块化且功能丰富的 Minecraft 基岩版模组加载器。",
     legacyscriptengine: "在 LeviLamina 上运行 JavaScript、Lua 和 Python 插件。",
+    lip: "通用包安装器：一条命令安装模组及其依赖。",
     levilaunchroid: "适用于 Android 的 Minecraft 基岩版启动器。",
     levilauncher: "适用于 Windows 的 Minecraft 基岩版 GDK 启动器。",
     levioptimize: "为 LeviLamina 服务器提供性能优化的模组。",

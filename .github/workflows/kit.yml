@@ -1,0 +1,52 @@
+# levimc-kit: unit tests, and every demo site type-checked, built and link-checked with the pinned dependencies
+# (kit/demo/package-lock.json). Independent of the Pages deploy in deploy.yml.
+name: levimc-kit
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'kit/**'
+      - '.github/workflows/kit.yml'
+  pull_request:
+    paths:
+      - 'kit/**'
+      - '.github/workflows/kit.yml'
+  workflow_dispatch:
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kit/demo
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: kit/demo/package-lock.json
+
+      - run: npm ci
+
+      # the demo uses its own vendored copy of the kit, exactly like a site
+      - run: npm run vendor
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+      - name: docs demo (MkDocs-style)
+        run: npm run build && npm run linkcheck
+
+      - name: lip demo (VitePress-style, folder locales)
+        run: npm run build:lip && node kit/scripts/linkcheck.mjs dist-lip --base /lip/ --site-origin https://docs.levimc.org
+
+      - name: single-locale docs demo
+        run: npm run build:single && node kit/scripts/linkcheck.mjs dist-single --base /Single/ --site-origin https://docs.levimc.org
+
+      - name: plain app demo (levimc.org / pkg.levimc.org shape)
+        run: npm run build:app

@@ -23,6 +23,7 @@
 .kit-footer :where(div, p, span, ul, li, nav, a) {
   font-size: inherit;
   font-family: inherit;
+  line-height: inherit;
 }
 .kit-gbar :where(ul, ol, p, h1, h2, h3),
 .kit-footer :where(ul, ol, p, h1, h2, h3) {
@@ -55,4 +56,17 @@
 }
 .kit-gbar summary::before {
   content: none !important;
+}
+/* theme/base.css's screen-reader-only text (the Projects menu names each project in its Docs / GitHub links) */
+.kit-gbar .kit-sr-only,
+.kit-footer .kit-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

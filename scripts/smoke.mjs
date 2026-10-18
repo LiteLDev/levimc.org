@@ -15,11 +15,11 @@ const base = (opt('--url', 'http://127.0.0.1:4173/') || '').replace(/\/?$/, '/')
 const require = createRequire(process.env.LEVIMC_PW_DIR ? process.env.LEVIMC_PW_DIR + '/' : import.meta.url);
 const { chromium } = require('playwright');
 
-const ROUTES = ['', 'projects/', 'features/', 'community/', 'about/', 'support/'];
+const ROUTES = ['', 'community/', 'about/', 'support/'];
 const LANG = { en: 'en', zh: 'zh-CN' };
 const H1 = {
-  en: { '': 'Mod Bedrock', 'projects/': 'All Projects', 'features/': 'Build mods', 'community/': 'Get Involved', 'about/': 'The story of a small team.', 'support/': 'Support LeviMC' },
-  zh: { '': '随心所欲', 'projects/': '所有项目', 'features/': '按你的方式', 'community/': '参与进来', 'about/': '一个无名小团队的故事。', 'support/': '支持 LeviMC' },
+  en: { '': 'Mod Bedrock', 'community/': 'Get Involved', 'about/': 'The story of a small team.', 'support/': 'Support LeviMC' },
+  zh: { '': '随心所欲', 'community/': '参与进来', 'about/': '一个无名小团队的故事。', 'support/': '支持 LeviMC' },
 };
 
 const results = [];
@@ -129,7 +129,7 @@ await check('unknown path → 404 status, themed page, per-locale text', async (
 
 await check('/index.html and /<route>/index.html show their page at the canonical URL (no 404, no hydration error)', async () => {
   const ctx = await newContext();
-  for (const [path, r] of [['index.html', ''], ['about/index.html', 'about/'], ['projects/index.html?ref=x#top', 'projects/'], ['support//', 'support/']]) {
+  for (const [path, r] of [['index.html', ''], ['about/index.html', 'about/'], ['community/index.html?ref=x#top', 'community/'], ['support//', 'support/']]) {
     const page = await ctx.newPage();
     const errs = watch(page);
     const res = await page.goto(base + path, { waitUntil: 'networkidle' });
@@ -144,7 +144,21 @@ await check('/index.html and /<route>/index.html show their page at the canonica
     await page.close();
   }
   await ctx.close();
-  return '/index.html, /about/index.html, /projects/index.html?…#…, /support//';
+  return '/index.html, /about/index.html, /community/index.html?…#…, /support//';
+});
+
+await check('/projects/ and /features/ (now home-page sections) redirect to /#projects and /#features', async () => {
+  const ctx = await newContext();
+  for (const [from, hash] of [['projects/', '#projects'], ['features/', '#features']]) {
+    const page = await ctx.newPage();
+    await page.goto(base + from, { waitUntil: 'networkidle' });
+    const u = new URL(page.url());
+    assert(u.pathname === '/' && u.hash === hash, `${from} → ${u.pathname}${u.hash}`);
+    assert(await page.locator(hash).isVisible(), `${hash} section missing`);
+    await page.close();
+  }
+  await ctx.close();
+  return '/projects/ → /#projects, /features/ → /#features';
 });
 
 await check('client-side navigation from the header (no full reload, canonical URL)', async () => {
@@ -153,17 +167,16 @@ await check('client-side navigation from the header (no full reload, canonical U
   const errs = watch(page);
   await page.goto(base, { waitUntil: 'networkidle' });
   await page.evaluate(() => (window.__lmMarker = 1));
-  await page.click('.kit-gbar-nav a[href="/projects/"]');
-  await page.waitForURL((u) => u.pathname === '/projects/');
-  await page.waitForSelector('h1:has-text("All Projects")');
+  await page.click('.kit-gbar-nav a[href="/community/"]');
+  await page.waitForURL((u) => u.pathname === '/community/');
+  await page.waitForSelector('h1:has-text("Get Involved")');
   assert((await page.evaluate(() => window.__lmMarker)) === 1, 'page reloaded');
-  await page.waitForFunction(() => document.title.startsWith('All Projects'), null, { timeout: 5000 });
   await page.click('.kit-gbar-nav a[href="/about/"]');
   await page.waitForURL((u) => u.pathname === '/about/');
   assert((await page.evaluate(() => window.__lmMarker)) === 1, 'page reloaded');
   assert(!errs.length, errs.join(' | '));
   await ctx.close();
-  return '/ → /projects/ → /about/';
+  return '/ → /community/ → /about/';
 });
 
 await check('theme menu: Auto (default) / Light / Dark, stored in the cross-site cookie levimc_theme, survives reload', async () => {
@@ -228,11 +241,11 @@ await check('language switcher: en ⇄ zh, stored in the cross-site cookie levim
   const page = await ctx.newPage();
   const errs = watch(page);
   await page.goto(base + 'community/', { waitUntil: 'networkidle' });
-  assert((await page.locator('[data-kit-locale-switcher]').innerText()).trim() === 'EN', 'trigger label is not "EN"');
+  assert((await page.locator('[data-kit-locale-switcher]').innerText()).trim() === 'English', 'trigger label is not "English"');
   await page.click('[data-kit-locale-switcher]');
   await page.click('.kit-locale [role="menuitemradio"][data-locale="zh"]');
   await page.waitForFunction(() => document.documentElement.lang === 'zh-CN');
-  assert((await page.locator('[data-kit-locale-switcher]').innerText()).trim() === 'ZH', 'trigger label is not "ZH"');
+  assert((await page.locator('[data-kit-locale-switcher]').innerText()).trim() === '简体中文', 'trigger label is not "简体中文"');
   assert(!(await page.locator('.kit-locale').evaluate((d) => d.open)), 'language menu still open');
   assert(new URL(page.url()).pathname === '/community/', `moved to ${page.url()}`);
   assert((await page.locator('h1').innerText()).includes('参与进来'), 'h1 not translated');
@@ -331,19 +344,21 @@ await check('mobile (390px): the bar folds its entries into its menu; it closes 
   return 'ok';
 });
 
-await check('header: one bar, every destination once; docs menu opens; cross-site links are canonical', async () => {
+await check('header: one bar, every destination once; Projects menu opens; cross-site links are canonical', async () => {
   const ctx = await newContext();
   const page = await ctx.newPage();
-  await page.goto(base + 'projects/', { waitUntil: 'networkidle' });
+  await page.goto(base + 'about/', { waitUntil: 'networkidle' });
   assert((await page.locator('[data-kit-globalbar]').count()) === 1, 'expected one GlobalBar');
-  const hrefs = await page.locator('[data-kit-globalbar] .kit-gbar-nav a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
+  const hrefs = await page.locator('[data-kit-globalbar] .kit-gbar-nav > ul > li > a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
   assert(new Set(hrefs).size === hrefs.length, `duplicate destinations: ${hrefs.join(' ')}`);
   assert(hrefs.includes('/blog/'), `Blog is not an in-site link: ${hrefs.join(' ')}`);
   assert((await page.locator('[data-kit-globalbar] .kit-gbar-github[href="https://github.com/LiteLDev"]').count()) === 1, 'GitHub button missing or repeated');
-  assert((await page.locator('[data-kit-globalbar] .kit-gbar-brand img').count()) === 1, 'LeviMC logo missing from the bar');
-  assert((await page.locator('.kit-gbar-link[aria-current="page"]').innerText()) === 'Projects', 'Projects not current');
-  await page.click('.kit-gbar-docs > summary');
-  assert(await page.locator('.kit-gbar-docs-panel a[href="https://docs.levimc.org/LeviLamina/"]').isVisible(), 'docs menu');
+  assert((await page.locator('[data-kit-globalbar] .kit-gbar-brand .kit-brand-mark').count()) === 1, 'LeviMC mark missing from the bar');
+  assert((await page.locator('.kit-gbar-link[aria-current="page"]').innerText()) === 'About', 'About not current');
+  await page.click('.kit-gbar-projects > summary');
+  const panel = page.locator('.kit-gbar-projects-panel');
+  assert(await panel.locator('a.kit-proj-link[href="https://docs.levimc.org/LeviLamina/"]').isVisible(), 'LeviLamina docs link');
+  assert(await panel.locator('a.kit-proj-link[href="https://github.com/LiteLDev/LeviLamina"]').isVisible(), 'LeviLamina repository link');
   await page.keyboard.press('Escape');
   await ctx.close();
   return 'ok';
@@ -512,7 +527,7 @@ await check('case-variant URLs: the 404 page sends /About/ and wrongly-cased blo
   const ctx = await newContext();
   for (const [from, to] of [
     ['About/', '/about/'],
-    ['PROJECTS/', '/projects/'],
+    ['Community/', '/community/'],
     ['blog/2023/07/26/original-fix-beecrash/', '/blog/2023/07/26/original-fix-BeeCrash/'],
     ['Blog/Tags/leviLamina', '/blog/tags/LeviLamina/'],
   ]) {

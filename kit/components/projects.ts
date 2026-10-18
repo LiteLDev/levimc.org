@@ -7,9 +7,10 @@ import type { UiStrings } from './i18n';
 
 export const LINKS = {
   home: 'https://levimc.org/',
-  projects: 'https://levimc.org/projects/',
   community: 'https://levimc.org/community/',
   about: 'https://levimc.org/about/',
+  /** Donations (linked from the footer: it has no bar tab). */
+  support: 'https://levimc.org/support/',
   /** LeviMC Mods (pkg.levimc.org) — the id stays `packages`. */
   packages: 'https://pkg.levimc.org/',
   /** The blog moved into levimc.org (blog.levimc.org no longer resolves). */
@@ -17,8 +18,67 @@ export const LINKS = {
   github: 'https://github.com/LiteLDev',
 } as const;
 
-export type SiteId = 'home' | 'projects' | 'community' | 'about' | 'packages' | 'blog' | 'docs';
+/**
+ * Tabs of the GlobalBar. `projects` is the Projects menu (kit 2: it replaces the Docs menu and the former
+ * levimc.org/projects/ page); on docs.levimc.org it is the current tab, with the open project marked in it.
+ */
+export type SiteId = 'home' | 'projects' | 'community' | 'about' | 'packages' | 'blog';
 
+export type ProjectGroupId = 'core' | 'launchers' | 'mods';
+
+export type ProjectId =
+  | 'LeviLamina'
+  | 'LegacyScriptEngine'
+  | 'lip'
+  | 'LeviLauncher'
+  | 'LeviLaunchroid'
+  | 'LeviOptimize'
+  | 'LeviAntiCheat'
+  | 'MoreDimensions';
+
+export interface Project {
+  id: ProjectId;
+  name: string;
+  group: ProjectGroupId;
+  /** GitHub repository. */
+  repo: string;
+  /** Documentation site, when the project has one. */
+  docs?: string;
+  icon: PixelIconName;
+}
+
+/**
+ * Every LeviMC project, in the order of the Projects menu (grouped by `group`, see PROJECT_GROUPS). This is the one
+ * list of projects: the bar's Projects menu, the docs.levimc.org root and levimc.org's project cards all read it.
+ */
+export const PROJECTS: readonly Project[] = [
+  { id: 'LeviLamina', name: 'LeviLamina', group: 'core', repo: 'https://github.com/LiteLDev/LeviLamina', docs: 'https://docs.levimc.org/LeviLamina/', icon: 'grass' },
+  {
+    id: 'LegacyScriptEngine',
+    name: 'LegacyScriptEngine',
+    group: 'core',
+    repo: 'https://github.com/LiteLDev/LegacyScriptEngine',
+    docs: 'https://docs.levimc.org/LegacyScriptEngine/',
+    icon: 'bookQuill',
+  },
+  { id: 'lip', name: 'lip', group: 'core', repo: 'https://github.com/LiteLDev/lip', docs: 'https://docs.levimc.org/lip/', icon: 'chest' },
+  { id: 'LeviLauncher', name: 'LeviLauncher', group: 'launchers', repo: 'https://github.com/LiteLDev/LeviLauncher', docs: 'https://docs.levimc.org/LeviLauncher/', icon: 'map' },
+  {
+    id: 'LeviLaunchroid',
+    name: 'LeviLaunchroid',
+    group: 'launchers',
+    repo: 'https://github.com/LiteLDev/LeviLaunchroid',
+    docs: 'https://docs.levimc.org/LeviLaunchroid/',
+    icon: 'pickaxe',
+  },
+  { id: 'LeviOptimize', name: 'LeviOptimize', group: 'mods', repo: 'https://github.com/LiteLDev/LeviOptimize', icon: 'potion' },
+  { id: 'LeviAntiCheat', name: 'LeviAntiCheat', group: 'mods', repo: 'https://github.com/LiteLDev/LeviAntiCheat', icon: 'torch' },
+  { id: 'MoreDimensions', name: 'MoreDimensions', group: 'mods', repo: 'https://github.com/LiteLDev/MoreDimensions', icon: 'compass' },
+];
+
+export const PROJECT_GROUPS: readonly ProjectGroupId[] = ['core', 'launchers', 'mods'];
+
+/** The projects that have a documentation site (docs.levimc.org/<id>/). */
 export type DocsProjectId = 'LeviLamina' | 'LegacyScriptEngine' | 'lip' | 'LeviLauncher' | 'LeviLaunchroid';
 
 export interface DocsProject {
@@ -29,25 +89,14 @@ export interface DocsProject {
   icon: PixelIconName;
 }
 
-export const DOCS_PROJECTS: readonly DocsProject[] = [
-  { id: 'LeviLamina', name: 'LeviLamina', url: 'https://docs.levimc.org/LeviLamina/', repo: 'https://github.com/LiteLDev/LeviLamina', icon: 'grass' },
-  {
-    id: 'LegacyScriptEngine',
-    name: 'LegacyScriptEngine',
-    url: 'https://docs.levimc.org/LegacyScriptEngine/',
-    repo: 'https://github.com/LiteLDev/LegacyScriptEngine',
-    icon: 'bookQuill',
-  },
-  { id: 'lip', name: 'lip', url: 'https://docs.levimc.org/lip/', repo: 'https://github.com/LiteLDev/lip', icon: 'chest' },
-  { id: 'LeviLauncher', name: 'LeviLauncher', url: 'https://docs.levimc.org/LeviLauncher/', repo: 'https://github.com/LiteLDev/LeviLauncher', icon: 'map' },
-  {
-    id: 'LeviLaunchroid',
-    name: 'LeviLaunchroid',
-    url: 'https://docs.levimc.org/LeviLaunchroid/',
-    repo: 'https://github.com/LiteLDev/LeviLaunchroid',
-    icon: 'pickaxe',
-  },
-];
+/** The projects with docs, in menu order (the docs.levimc.org root's cards). */
+export const DOCS_PROJECTS: readonly DocsProject[] = PROJECTS.filter((p) => p.docs).map((p) => ({
+  id: p.id as DocsProjectId,
+  name: p.name,
+  url: p.docs!,
+  repo: p.repo,
+  icon: p.icon,
+}));
 
 export type SocialId = 'discord' | 'telegram' | 'x' | 'youtube' | 'email' | 'github';
 
@@ -65,7 +114,6 @@ export const SOCIAL: readonly SocialLink[] = [
   { id: 'email', label: 'contact@levimc.org', url: 'mailto:contact@levimc.org' },
 ];
 
-export const NOT_AFFILIATED = 'Not affiliated with Mojang Studios.';
 export const COPYRIGHT_HOLDER = 'LeviMC';
 
 /** pkg.levimc.org ("LeviMC Mods"): display name and one-line description come from i18n (`modsName`, `modsBlurb`). */
@@ -74,18 +122,18 @@ export const MODS_SITE: { id: 'packages'; url: string; icon: PixelIconName } = {
 export interface GlobalNavEntry {
   id: SiteId;
   label: string;
+  /** For `projects` (a menu, not a page): where the tab leads without the menu (the GitHub organisation). */
   url: string;
 }
 
 /**
- * The canonical tabs of the GlobalBar, identical on every LeviMC site (kit ≥ 1.1):
- * Home · Projects · Docs ▾ · Mods · Blog · Community · About.
+ * The canonical tabs of the GlobalBar, identical on every LeviMC site (kit ≥ 2.0):
+ * Home · Projects ▾ · Mods · Blog · Community · About.
  */
 export function globalNav(t: UiStrings): GlobalNavEntry[] {
   return [
     { id: 'home', label: t.home, url: LINKS.home },
-    { id: 'projects', label: t.projects, url: LINKS.projects },
-    { id: 'docs', label: t.docs, url: DOCS_PROJECTS[0]!.url },
+    { id: 'projects', label: t.projects, url: LINKS.github },
     { id: 'packages', label: t.packages, url: LINKS.packages },
     { id: 'blog', label: t.blog, url: LINKS.blog },
     { id: 'community', label: t.community, url: LINKS.community },
