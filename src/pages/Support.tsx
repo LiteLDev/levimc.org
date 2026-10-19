@@ -1,4 +1,4 @@
-import { Badge, PixelButton, PixelIcon } from '../../kit/components';
+import { PixelButton, PixelIcon } from '../../kit/components';
 import { PageHeader } from '../components/ui';
 import { DONORS } from '../data/donors';
 import { useI18n } from '../i18n';
@@ -66,27 +66,21 @@ export default function Support() {
         ) : (
           <div className="lm-donor-grid">
             {donors.map((donor, index) => (
-              <article key={`${donor.name}-${donor.date}-${index}`} className="px-card lm-donor">
+              <article key={`${donor.name}-${donor.date}-${index}`} className="lm-donor">
                 <div className="lm-donor-head">
-                  <div className="lm-donor-id">
-                    <h3 className="lm-donor-name">{donor.name}</h3>
-                    {donor.date && <p className="lm-donor-date">{donor.date}</p>}
-                  </div>
-                  {donor.amount && (
-                    <Badge tone="gold" className="lm-donor-amount">
-                      {donor.amount}
-                    </Badge>
-                  )}
+                  <h3 className="lm-donor-name">
+                    {donor.link ? (
+                      <a href={donor.link} target="_blank" rel="noopener" title={t.support.donorLinkLabel}>
+                        {donor.name}
+                      </a>
+                    ) : (
+                      donor.name
+                    )}
+                  </h3>
+                  {donor.amount && <span className="lm-donor-amount">{donor.amount}</span>}
                 </div>
-
+                {donor.date && <p className="lm-donor-date">{donor.date}</p>}
                 {donor.message && <p className="lm-donor-message">{donor.message}</p>}
-
-                {donor.link && (
-                  <a href={donor.link} target="_blank" rel="noopener" className="lm-donor-link">
-                    {t.support.donorLinkLabel}
-                    <PixelIcon name="arrowRight" />
-                  </a>
-                )}
               </article>
             ))}
           </div>

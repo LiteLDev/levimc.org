@@ -122,13 +122,14 @@
     border: 0;
   }
 
-  /* Short Latin micro-labels only (badges, eyebrows, version tags). Never CJK, never body copy. */
+  /* Micro-labels (eyebrows, badges, version tags): small spaced capitals in the UI face. (Named for kit 1.x, when
+     they were set in Silkscreen; the pixel face now only spells the LeviMC wordmark.) */
   .kit-pixel-label {
-    font-family: var(--font-pixel);
-    font-weight: 400;
-    font-size: 0.6875rem;
+    font-family: var(--font-sans);
+    font-weight: 650;
+    font-size: 0.75rem;
     line-height: 1;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
   }
 

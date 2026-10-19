@@ -1,13 +1,11 @@
 import { PaintedHero, PixelButton } from '../../kit/components';
-import { formatStarCount } from '../services/githubService';
 import { useLeviLaminaStats } from '../hooks/useExternalData';
 import { useI18n } from '../i18n';
 import CodeCard from './CodeCard';
-import logoUrl from '../icons/logo.svg';
 
 export default function Hero() {
   const { t } = useI18n();
-  const { version, stats } = useLeviLaminaStats();
+  const { version } = useLeviLaminaStats();
   // The trailing space keeps a word boundary between the two block-level title lines in textContent
   // ("Mod Bedrock your way."); at the end of a line it collapses, so nothing moves.
   const titleName = <>{t.hero.title1} </>;
@@ -27,9 +25,6 @@ export default function Hero() {
       }
       badge={
         <>
-          <span className="kit-item-frame kit-hero-icon lm-hero-logo">
-            <img src={logoUrl} alt="LeviMC logo" width={44} height={44} />
-          </span>
           <a href="https://github.com/LiteLDev/LeviLamina/releases/latest" target="_blank" rel="noopener" className="lm-release">
             <span className="lm-release-dot" aria-hidden="true" />
             <span>
@@ -46,22 +41,10 @@ export default function Hero() {
         <PixelButton href="https://docs.levimc.org/LeviLamina/user_guides/install/" variant="primary" size="lg" iconRight="arrowRight">
           {t.hero.getStarted}
         </PixelButton>{' '}
-        <PixelButton href="https://docs.levimc.org/LeviLamina/" size="lg" icon="bookQuill">
+        <PixelButton href="https://docs.levimc.org/LeviLamina/" size="lg">
           {t.hero.documentation}
         </PixelButton>
       </div>
-
-      <div className="lm-stats">
-        <div className="lm-stat">
-          {stats ? <div className="lm-stat-value">{formatStarCount(stats.stars)}</div> : <div className="lm-skeleton lm-stat-skeleton" />}
-          <div className="lm-stat-label">{t.hero.stars}</div>
-        </div>
-        <div className="lm-stat">
-          {stats ? <div className="lm-stat-value">{stats.forks}+</div> : <div className="lm-skeleton lm-stat-skeleton" />}
-          <div className="lm-stat-label">{t.hero.forks}</div>
-        </div>
-      </div>
-
     </PaintedHero>
   );
 }

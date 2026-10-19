@@ -1,4 +1,4 @@
-import { PixelButton, PixelIcon, type PixelIconName } from '../../kit/components';
+import { PixelIcon, type PixelIconName } from '../../kit/components';
 import { useI18n } from '../i18n';
 import { Eyebrow } from './ui';
 
@@ -29,28 +29,14 @@ export default function Features({ headingLevel = 2 }: { headingLevel?: 1 | 2 })
       </div>
 
       <div className="lm-grid-4">
-        {/* kit Card styling, with a real heading per feature (as before) */}
+        {/* the same frameless item as the project grid: sprite, heading, one paragraph under a hairline */}
         {features.map((feature) => (
-          <div key={feature.title} className="px-card kit-card lm-feature">
-            <span className="kit-card-icon kit-slot" aria-hidden="true">
-              <PixelIcon name={feature.icon} size={32} />
-            </span>
-            <div className="kit-card-body">
-              <Sub className="kit-card-title">{feature.title}</Sub>
-              <p className="kit-card-desc">{feature.description}</p>
-            </div>
+          <div key={feature.title} className="lm-feature">
+            <PixelIcon name={feature.icon} size={32} className="lm-project-icon" />
+            <Sub className="lm-project-name">{feature.title}</Sub>
+            <p className="lm-project-desc">{feature.description}</p>
           </div>
         ))}
-      </div>
-
-      <div className="px-card kit-painted lm-cta">
-        <div className="lm-cta-copy">
-          <Sub className="lm-cta-title">{t.features.cta}</Sub>
-          <p className="lm-cta-desc">{t.features.ctaDesc}</p>
-        </div>
-        <PixelButton href="https://docs.levimc.org/LeviLamina/" variant="primary" size="lg" iconRight="external">
-          {t.features.readDocs}
-        </PixelButton>
       </div>
     </section>
   );

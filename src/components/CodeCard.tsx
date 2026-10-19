@@ -1,5 +1,5 @@
 import { Fragment, useState, type CSSProperties, type ReactNode } from 'react';
-import { HotbarTabs, PixelIcon } from '../../kit/components';
+import { HotbarTabs } from '../../kit/components';
 import { SHIKI_PALETTES } from '../../kit/docs/node/markdown/shiki-themes.ts';
 
 // Token colours come from the kit's Shiki palettes (the same ones the docs use), so the snippet matches
@@ -106,15 +106,6 @@ export default function CodeCard({ label }: { label: string }) {
         </HotbarTabs>
       </div>
 
-      <div className="lm-code-item">
-        <span className="kit-slot lm-code-item-slot" aria-hidden="true">
-          <PixelIcon name="grass" size={32} />
-        </span>
-        <span className="mc-tooltip lm-code-item-tip">
-          <span className="mc-tooltip-title">Multi-Language</span>{' '}
-          <span className="mc-tooltip-lore">C++, JS, Lua, Python</span>
-        </span>
-      </div>
     </div>
   );
 }
