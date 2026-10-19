@@ -98,7 +98,7 @@ interface GroupProps {
 function Group({ title, collapsed, onToggle, flat, children, footer }: GroupProps) {
   const panel = useId();
   return (
-    <section className={flat ? "pkg-group pkg-group-flat" : "px-card pkg-group"}>
+    <section className="pkg-group pkg-group-flat">
       <h3 className="pkg-group-heading">
         <button type="button" className="pkg-group-toggle" aria-expanded={!collapsed} aria-controls={panel} onClick={onToggle}>
           <span>{title}</span>
@@ -147,7 +147,7 @@ export function FilterGroups({ state, counts, features, categoryOrder, apply, fl
   const hiddenCount = categories.length - shownCategories.length;
 
   return (
-    <div className={flat ? "pkg-groups pkg-groups-flat" : "pkg-groups"}>
+    <div className="pkg-groups pkg-groups-flat">
       <Group id="platform" title={t.groupPlatform} collapsed={collapsed.has("platform")} onToggle={() => toggle("platform")} flat={flat}>
         {PLATFORMS.map((p) => (
           <Option
