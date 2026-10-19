@@ -52,9 +52,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-family: var(--font-pixel);
+    font-family: var(--font-sans);
+    font-weight: 650;
     font-size: 0.6875rem;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-muted);
   }

@@ -53,18 +53,19 @@
 
   /* ------------------------------------------------------------------ buttons */
   .mc-btn {
-    --mc-btn-bg: #ebe5d6;
-    --mc-btn-bg-hover: #f3eee2;
+    /* flat: a hairline frame with stepped corners — the pixel hint stays in the geometry, not in bevels */
+    --mc-btn-bg: color-mix(in srgb, var(--color-surface) 80%, transparent);
+    --mc-btn-bg-hover: var(--color-surface);
     --mc-btn-ink: var(--color-ink);
-    --px-border: #2a343c;
-    --px-bevel: inset 0 var(--px) 0 0 rgb(255 255 255 / 0.75), inset 0 calc(var(--px) * -2) 0 0 rgb(60 48 30 / 0.16);
+    --px-border: var(--color-line-strong);
+    --px-bevel: 0 0 #0000;
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     min-height: 2.5rem;
-    padding: 0.5rem 1.125rem 0.625rem;
+    padding: 0.5rem 1.125rem;
     margin: var(--px);
     font-family: var(--font-sans);
     font-size: 0.9375rem;
@@ -81,12 +82,12 @@
       transform 0.06s linear;
   }
   .mc-btn:hover {
+    --px-border: color-mix(in srgb, var(--color-ink) 45%, var(--color-line-strong));
     background: var(--mc-btn-bg-hover);
   }
   .mc-btn:active,
   .mc-btn[aria-pressed="true"] {
-    transform: translateY(var(--px));
-    --px-bevel: inset 0 var(--px) 0 0 rgb(60 48 30 / 0.18);
+    transform: translateY(1px);
   }
   .mc-btn:disabled,
   .mc-btn[aria-disabled="true"] {
@@ -102,13 +103,10 @@
     --mc-btn-bg: var(--color-primary-strong);
     --mc-btn-bg-hover: #43804f;
     --mc-btn-ink: var(--color-on-primary);
-    --px-border: #183520;
-    --px-bevel: inset 0 var(--px) 0 0 rgb(255 255 255 / 0.28), inset 0 calc(var(--px) * -2) 0 0 rgb(0 0 0 / 0.24);
-    text-shadow: 0 1px 0 rgb(0 0 0 / 0.18);
+    --px-border: var(--mc-btn-bg);
   }
-  .mc-btn-primary:active,
-  .mc-btn-primary[aria-pressed="true"] {
-    --px-bevel: inset 0 var(--px) 0 0 rgb(0 0 0 / 0.25);
+  .mc-btn-primary:hover {
+    --px-border: var(--mc-btn-bg-hover);
   }
 
   .mc-btn-ghost {
@@ -118,49 +116,32 @@
     --px-bevel: none;
   }
   .mc-btn-ghost:hover {
-    --px-border: var(--color-line-strong);
-  }
-  .mc-btn-ghost:active {
-    --px-bevel: none;
+    --px-border: transparent;
   }
 
   .mc-btn-sm {
     min-height: 2rem;
-    padding: 0.3125rem 0.75rem 0.4375rem;
+    padding: 0.3125rem 0.75rem;
     font-size: 0.8125rem;
   }
   .mc-btn-lg {
-    min-height: 3rem;
-    padding: 0.75rem 1.5rem 0.875rem;
+    min-height: 3.25rem;
+    padding: 0.8125rem 1.75rem;
     font-size: 1rem;
   }
 
   .dark .mc-btn {
-    --mc-btn-bg: #22384c;
-    --mc-btn-bg-hover: #2a4560;
-    --px-border: #04090e;
-    --px-bevel: inset 0 var(--px) 0 0 rgb(255 255 255 / 0.12), inset 0 calc(var(--px) * -2) 0 0 rgb(0 0 0 / 0.38);
-  }
-  .dark .mc-btn:active,
-  .dark .mc-btn[aria-pressed="true"] {
-    --px-bevel: inset 0 var(--px) 0 0 rgb(0 0 0 / 0.4);
+    --mc-btn-bg: color-mix(in srgb, var(--color-surface) 70%, transparent);
+    --mc-btn-bg-hover: var(--color-surface-2);
   }
   .dark .mc-btn-primary {
     --mc-btn-bg: var(--color-primary);
     --mc-btn-bg-hover: #82cc85;
     --mc-btn-ink: #0b1a10;
-    --px-border: #06120a;
-    --px-bevel: inset 0 var(--px) 0 0 rgb(255 255 255 / 0.32), inset 0 calc(var(--px) * -2) 0 0 rgb(0 0 0 / 0.28);
-    text-shadow: none;
   }
   .dark .mc-btn-ghost {
     --mc-btn-bg: transparent;
     --mc-btn-bg-hover: rgb(255 255 255 / 0.07);
-    --px-border: transparent;
-    --px-bevel: none;
-  }
-  .dark .mc-btn-ghost:hover {
-    --px-border: var(--color-line-strong);
   }
 
   /* Square icon button (header actions, copy buttons, close buttons). */
@@ -195,7 +176,6 @@
   /* ------------------------------------------------------------------ inputs */
   .mc-input {
     --px-border: var(--color-line-strong);
-    --px-bevel: inset 0 var(--px) 0 0 color-mix(in srgb, var(--color-ink) 7%, transparent);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -241,7 +221,6 @@
   /* ------------------------------------------------------------------ cards & slots */
   .px-card {
     --px-border: var(--color-line);
-    --px-drop: 0 calc(var(--px) * 3) 0 0 color-mix(in srgb, var(--color-ink) 7%, transparent);
     position: relative;
     margin: var(--px);
     /* a little of the painted page shows through, so cards sit in the scene instead of on top of it */
@@ -252,40 +231,35 @@
   }
   a.px-card:hover,
   .px-card[data-interactive]:hover {
-    --px-border: color-mix(in srgb, var(--color-primary) 70%, var(--color-line-strong));
-    --px-drop: 0 calc(var(--px) * 4) 0 0 color-mix(in srgb, var(--color-primary) 22%, transparent);
-    transform: translateY(calc(var(--px) * -1));
+    --px-border: color-mix(in srgb, var(--color-primary) 55%, var(--color-line-strong));
+    --px-drop: 0 18px 36px -24px color-mix(in srgb, var(--color-ink) 30%, transparent);
+    transform: translateY(-2px);
   }
 
-  /* Inventory slot: sunken square for item icons (inset bevel: dark top-left, light bottom-right). */
+  /* Inventory slot: a quiet tinted square (stepped corners) that seats an item icon. */
   .kit-slot {
-    --px-border: color-mix(in srgb, var(--color-ink) 22%, var(--color-surface-2));
-    --px-bevel: inset var(--px) var(--px) 0 0 color-mix(in srgb, var(--color-ink) 12%, transparent),
-      inset calc(var(--px) * -1) calc(var(--px) * -1) 0 0 rgb(255 255 255 / 0.55);
+    --px-border: transparent;
     display: inline-grid;
     place-items: center;
     width: 2.75rem;
     height: 2.75rem;
     margin: var(--px);
-    background: color-mix(in srgb, var(--color-surface-3) 80%, var(--color-surface));
+    background: color-mix(in srgb, var(--color-ink) 5%, transparent);
   }
   .dark .kit-slot {
-    --px-border: #06101a;
-    --px-bevel: inset var(--px) var(--px) 0 0 rgb(0 0 0 / 0.4), inset calc(var(--px) * -1) calc(var(--px) * -1) 0 0 rgb(255 255 255 / 0.07);
-    background: #12212f;
+    background: rgb(255 255 255 / 0.05);
   }
 
   /* ------------------------------------------------------------------ hotbar (tabs, pagination, segmented) */
   .hotbar {
-    --px-border: color-mix(in srgb, var(--color-ink) 30%, var(--color-line-strong));
-    --px-bevel: inset 0 var(--px) 0 0 color-mix(in srgb, var(--color-ink) 6%, transparent);
+    --px-border: var(--color-line);
     display: inline-flex;
     flex-wrap: wrap;
     align-items: stretch;
     gap: var(--px);
     margin: var(--px);
     padding: var(--px);
-    background: color-mix(in srgb, var(--color-ink) 7%, var(--color-surface-2));
+    background: color-mix(in srgb, var(--color-ink) 4%, transparent);
     max-width: calc(100% - var(--px) * 2);
   }
   .hotbar > a,
@@ -329,31 +303,26 @@
   .hotbar > [aria-current="page"],
   .hotbar > [aria-pressed="true"],
   .hotbar > .is-active {
-    --px-border: var(--color-ink);
+    --px-border: var(--color-line-strong);
     z-index: 1;
     color: var(--color-ink);
     font-weight: 600;
     background: var(--color-surface);
-    outline: var(--px) solid var(--color-surface);
-    outline-offset: calc(var(--px) * -2);
   }
   .dark .hotbar {
-    --px-border: #05101a;
-    background: #0b1824;
+    background: rgb(255 255 255 / 0.04);
   }
   .dark .hotbar > [aria-selected="true"],
   .dark .hotbar > [aria-current="page"],
   .dark .hotbar > [aria-pressed="true"],
   .dark .hotbar > .is-active {
-    --px-border: #dfe7ee;
-    background: #1d3246;
-    outline-color: #0b1824;
+    background: var(--color-surface-2);
   }
   .hotbar-pixel > a,
   .hotbar-pixel > button,
   .hotbar-pixel > .hotbar-slot {
-    font-family: var(--font-pixel);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
     min-width: 2.25rem;
     padding-inline: 0.5rem;
   }

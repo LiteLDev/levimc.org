@@ -106,7 +106,7 @@ await check('prerendered HTML: every route is real static HTML with canonical, d
   const support = await (await fetch(base + 'support/')).text();
   const csv = await (await fetch(base + 'donors.csv')).text();
   const rows = csv.split(/\r?\n/).filter((l) => l.trim()).length - 1;
-  const cards = (support.match(/class="px-card lm-donor"/g) || []).length;
+  const cards = (support.match(/class="lm-donor"/g) || []).length;
   assert(cards === rows, `support/: ${cards} donor cards prerendered, donors.csv has ${rows} rows`);
   return `${ROUTES.length} routes; ${cards} supporters prerendered`;
 });
@@ -309,7 +309,7 @@ await check('live data: release badge and project stars fill in after hydration'
   await page.waitForSelector('.lm-release-version', { timeout: 15000 });
   await page.waitForFunction(() => !document.querySelector('.lm-project-stars .lm-skeleton'), null, { timeout: 15000 });
   const v = (await page.locator('.lm-release-version').innerText()).trim();
-  const stars = await page.locator('.lm-stat-value').first().innerText();
+  const stars = await page.locator('.lm-project-stars').first().innerText();
   await ctx.close();
   // shields.io answers 200 with its error text as the value under rate pressure: only a version may show here
   assert(/^\S*\d+\.\d+\S*$/.test(v), `release badge shows "${v}", not a version`);

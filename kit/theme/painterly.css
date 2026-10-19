@@ -77,10 +77,10 @@
     background-image: var(--kit-brush);
     background-size: 256px 256px;
     mix-blend-mode: soft-light;
-    opacity: 0.42;
+    opacity: 0.16;
   }
   .dark .kit-backdrop-brush {
-    opacity: 0.3;
+    opacity: 0.12;
   }
   .kit-backdrop-grain {
     inset: 0;

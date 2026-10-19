@@ -47,13 +47,11 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="kit-rule lm-divider" aria-hidden="true" />
-
       <Features />
 
       {/* Community call to action */}
       <section className="lm-section lm-container">
-        <div className="px-card kit-painted lm-join">
+        <div className="lm-join">
           <div className="lm-join-head">
             <h2 className="lm-title">
               {t.community.title1} <span className="lm-gradient-text">{t.community.title2}</span>

@@ -10,13 +10,15 @@ LeviLaunchroid), plus the Doxygen API reference.
 "canvas" at WCAG AA contrast and a ~76ch measure. Light theme = *Nymphéas*, dark theme = *Impression, soleil levant*.
 Where the two meet — a painting ending on the canvas — it **dissolves into 6px blocks while fading out** (the pixel
 dissolve, `.kit-dissolve-*`): the kit's one edge treatment, used by the hero, the docs scene band and the footer alike.
-Display type is **Manrope** (a modern geometric sans), body **Inter**.
+Display type is **Manrope** (a modern geometric sans), body **Inter**. Since 2.2 the whole system leans **quiet and
+spacious**: hairline frames instead of outlines and bevels, frameless grids under hairlines, large display type, and
+the painting concentrated in two big moments (hero, footer) rather than sprinkled over every surface.
 
 **Stack:** Vite 8 + React 19 + react-router 7 + TypeScript + Tailwind CSS v4 (`@tailwindcss/vite`).
 Docs sites are compiled at build time (unified/remark/rehype + Shiki) and statically prerendered — one real
 HTML file per URL for GitHub Pages — then hydrated into a SPA.
 
-Version: see `VERSION` (2.1.1) and the [Changelog](#changelog) (with migration notes for every site).
+Version: see `VERSION` (2.2.0) and the [Changelog](#changelog) (with migration notes for every site).
 
 ---
 
@@ -681,7 +683,8 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 * Use the pixel vocabulary for interactive things: `mc-btn` for actions, `hotbar` for tab sets / pagination /
   segmented controls, `kit-slot` for icons, `px-corners` / `px-card` for frames, `mc-kbd` for keys.
 * Use sprites at 16 or 32 px (crisp multiples). Use Manrope (`--font-display`) only for display headings (H1/H2, hero,
-  section titles), Silkscreen only for short Latin labels (badges, eyebrows, versions — never CJK, never body copy).
+  section titles); micro-labels (`.kit-pixel-label`: eyebrows, badges, versions) are small spaced capitals in Inter. The
+  pixel face (Silkscreen) only spells the LeviMC wordmark.
 * Keep each project's own logo; the kit provides the shared chrome around it.
 * Link to the canonical, redirect-free URLs (trailing slash for directories); run `linkcheck --external`.
 * Respect `prefers-reduced-motion` (all kit animations stop) and keep focus visible (`--color-focus`).
@@ -696,7 +699,10 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   identifiers and CJK/emoji runs).
 
 **Don't**
-* Don't round corners or add soft drop shadows to controls — pixel frames and the 2px "pixel drop" only.
+* Don't round corners. Controls are flat with a hairline stepped frame (no bevels, no dark outlines); a soft shadow
+  only appears on a hovered card.
+* Don't box everything: lists and grids of items (projects, features, people, results, facts) are frameless items
+  under a 1px hairline; keep frames for interactive or reading surfaces (buttons, inputs, the README, code).
 * Don't put painted scenes or brush texture behind body text, code or tables.
 * Don't end a painting with a soft fade alone, a hard line or a decorative strip: use `.kit-dissolve-*` (blocks +
   fade, 96/160px) so every painted edge on every site is the same. Separate sections with space or `.kit-rule`.
@@ -802,6 +808,24 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.2.0 — 2026-10-19
+
+**Quieter and grander.** Feedback: the design still wasn't minimal or grand enough — every element was boxed, framed
+and decorated. 2.2 subtracts:
+* **Controls**: `mc-btn` is flat — a hairline `line-strong` frame with stepped corners, no bevels, no dark outline;
+  primary is a solid fill; `mc-btn-lg` is roomier. `hotbar`, `mc-input`, `kit-slot` lose their bevels/outlines.
+* **Cards**: `px-card` has a hairline frame and no pixel drop; on hover a soft shadow. `kit-badge` is a tint without
+  an outline.
+* **Labels**: `.kit-pixel-label` (eyebrows, badges, code titles, `hotbar-pixel`) is Inter small caps (0.75rem,
+  0.14em); Silkscreen remains only in the LeviMC wordmark.
+* **Hero**: taller (74vh), display 6rem max, larger tagline and spacing. **Backdrop**: brush texture 0.16 / 0.12, so
+  reading areas are calm; the paintings carry the Monet.
+* Sites: levimc.org's home drops the logo frame, stats, floating tooltip, CTA banner and boxed grids (projects,
+  features, team, supporters, story chapters are frameless items under hairlines); pkg.levimc.org's results, filters
+  and package facts likewise.
+
+**Compatible.** Same classes and components; only their look changed.
 
 ### 2.1.1 — 2026-10-18
 

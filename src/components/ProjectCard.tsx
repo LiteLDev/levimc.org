@@ -1,5 +1,5 @@
 import { Star } from 'lucide-react';
-import { Badge, BrandIcon, PixelIcon } from '../../kit/components';
+import { PixelIcon } from '../../kit/components';
 import type { Project } from '../data/projects';
 import { useI18n } from '../i18n';
 
@@ -12,45 +12,22 @@ interface ProjectCardProps {
   headingLevel?: 2 | 3;
 }
 
+/** One project in the home grid: no frame, a hairline above it; sprite, name, one line of meta, two text links. */
 export default function ProjectCard({ project, stars, language, loading, headingLevel = 3 }: ProjectCardProps) {
   const Name = headingLevel === 2 ? 'h2' : 'h3';
   const displayStars = stars ?? project.stars;
-  const displayTags = language
-    ? [language, ...project.tags.filter((t) => t.toLowerCase() !== language.toLowerCase())].slice(0, 2)
-    : project.tags.slice(0, 2);
+  const kind = language ?? project.tags[0];
   const { t } = useI18n();
 
   return (
-    <article className="px-card lm-project">
-      <span className="kit-slot lm-project-slot" aria-hidden="true">
-        <PixelIcon name={project.icon} size={32} />
-      </span>
-
+    <article className="lm-project">
+      <PixelIcon name={project.icon} size={32} className="lm-project-icon" />
       <Name className="lm-project-name">{project.name}</Name>
       <p className="lm-project-desc">{project.description}</p>
 
-      <div className="lm-project-links">
-        {project.docs && (
-          <a href={project.docs} target="_blank" rel="noopener" className="mc-btn mc-btn-sm">
-            <PixelIcon name="bookQuill" />
-            {t.projects.docs}
-          </a>
-        )}
-        <a href={project.link} target="_blank" rel="noopener" className="mc-btn mc-btn-sm">
-          <BrandIcon name="github" size={14} />
-          {t.projects.github}
-        </a>
-      </div>
-
-      <div className="lm-project-foot">
-        <div className="lm-project-tags">
-          {displayTags.map((tag, i) => (
-            <Badge key={tag} tone={i === 0 && language ? 'pond' : 'grass'}>
-              {tag}
-            </Badge>
-          ))}
-        </div>
-        <div className="lm-project-stars">
+      <p className="lm-project-meta">
+        {kind ? <span>{kind}</span> : null}
+        <span className="lm-project-stars">
           <Star className="lm-star" aria-hidden="true" />
           {loading ? (
             <span className="lm-skeleton lm-skeleton-xs" />
@@ -59,7 +36,20 @@ export default function ProjectCard({ project, stars, language, loading, heading
           ) : (
             '—'
           )}
-        </div>
+        </span>
+      </p>
+
+      <div className="lm-project-links">
+        {project.docs && (
+          <a href={project.docs} target="_blank" rel="noopener" className="lm-text-link">
+            {t.projects.docs}
+            <PixelIcon name="arrowRight" />
+          </a>
+        )}
+        <a href={project.link} target="_blank" rel="noopener" className="lm-text-link">
+          {t.projects.github}
+          <PixelIcon name="arrowRight" />
+        </a>
       </div>
     </article>
   );

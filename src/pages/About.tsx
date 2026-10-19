@@ -1,4 +1,4 @@
-import { Badge, BrandIcon, PixelIcon, type PixelIconName } from "../../kit/components";
+import { BrandIcon, type PixelIconName } from "../../kit/components";
 import { isLatin } from "../components/ui";
 import { useI18n } from "../i18n";
 
@@ -193,19 +193,12 @@ export default function About() {
           // The first card introduces the page, so its title is the page heading.
           const Title = index === 0 ? "h1" : "h2";
           return (
-            <article key={card.number} className="px-card lm-story">
+            <article key={card.number} className="lm-story">
               <div className="lm-story-lead">
-                <div className="lm-story-head">
-                  <span className="kit-slot lm-story-slot" aria-hidden="true">
-                    <PixelIcon name={card.icon} size={32} />
-                  </span>
-                  <div className="lm-story-meta">
-                    <Badge tone="grass" pixel={isLatin(card.badge)}>
-                      {card.badge}
-                    </Badge>
-                    <p className="kit-pixel-label lm-story-number">{card.number}</p>
-                  </div>
-                </div>
+                <p className={isLatin(card.badge) ? 'kit-pixel-label lm-story-meta' : 'lm-story-meta lm-eyebrow-cjk'}>
+                  <span className="lm-story-number">{card.number}</span>
+                  {card.badge}
+                </p>
                 <Title className="lm-story-title">{card.title}</Title>
               </div>
               <p className="lm-story-body">{card.body}</p>
@@ -222,7 +215,7 @@ export default function About() {
 
         <div className="lm-grid-3">
           {teamMembers.map((member) => (
-            <div key={member.name} className="px-card lm-member">
+            <div key={member.name} className="lm-member">
               <div className="lm-member-head">
                 <span className="lm-avatar">
                   {/* s=112: a 2x avatar instead of the full-size original (~17 KB instead of ~240 KB) */}
