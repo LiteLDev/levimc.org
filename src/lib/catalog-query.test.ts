@@ -21,6 +21,8 @@ const entry = (tooth: string, over: Partial<CatalogEntry> = {}): CatalogEntry =>
   categories: [],
   platforms: ["levilamina"],
   env: ["server"],
+  gameVersions: [],
+  dependsOn: [],
   stars: 0,
   updated: "2026-01-01T00:00:00Z",
   ...over,
@@ -53,7 +55,7 @@ test("parse/serialize: defaults are omitted, so the default state is /", () => {
 test("parse/serialize round-trip in a fixed parameter order", () => {
   const url = "/?q=land claim&cat=economy,-library&platform=lse&env=client&license=oss&author=LiteLDev&tags=platform:levilamina&sort=stars&page=2";
   const state = parseQuery(new URLSearchParams(url.slice(2)));
-  assert.equal(serializeQuery(state), "/?q=land%20claim&cat=economy,-library&platform=lse&env=client&license=oss&author=LiteLDev&tags=platform:levilamina&sort=stars&page=2");
+  assert.equal(serializeQuery(state), "/?q=land%20claim&platform=lse&cat=economy,-library&env=client&license=oss&tags=platform:levilamina&author=LiteLDev&sort=stars&page=2");
   assert.deepEqual(parseQuery(new URLSearchParams(serializeQuery(state).slice(2))), state);
 });
 
@@ -63,7 +65,7 @@ test("parse: comma lists and repeated keys, exclusions, unknown values dropped",
   assert.deepEqual(a.platform, { inc: ["lse"], exc: ["other"] });
   assert.deepEqual(a.env, ["client"]);
   assert.deepEqual(a.tags, ["a", "b"]);
-  assert.equal(serializeQuery(a), "/?cat=economy,utility,-library&platform=lse,-other&env=client&tags=a,b");
+  assert.equal(serializeQuery(a), "/?platform=lse,-other&cat=economy,utility,-library&env=client&tags=a,b");
 });
 
 test("parse: sorts and pages fall back; the page size is fixed", () => {
@@ -160,4 +162,30 @@ test("filter count and clear all (search and sort stay)", () => {
   const s = parseQuery(new URLSearchParams("q=x&cat=economy,-library&platform=lse&env=client&license=oss&author=a&tags=t&sort=stars&page=2"));
   assert.equal(filterCount(s), 7);
   assert.equal(serializeQuery(clearFilters(s)), "/?q=x&sort=stars");
+});
+
+test("game version (OR), depends on (AND, any case) and plain tags (AND)", () => {
+  const entries = [
+    entry("github.com/x/A", { gameVersions: ["1.26.51", "1.26.40"], dependsOn: ["github.com/LiteLDev/LeviLamina"], tags: ["economy", "platform:levilamina"] }),
+    entry("github.com/x/B", { gameVersions: ["1.26.40"], dependsOn: ["github.com/LiteLDev/LeviLamina", "github.com/x/Lib"], tags: ["economy", "money"] }),
+    entry("github.com/x/C", { gameVersions: ["1.21.132"] }),
+  ];
+  const names = (state: Partial<QueryState>) => runQuery(entries, { ...DEFAULT_STATE, ...state }, null).matched.map((e) => e.name);
+  assert.deepEqual(names({ gv: ["1.26.51", "1.21.132"] }), ["A", "C"]);
+  assert.deepEqual(names({ dep: ["github.com/liteldev/levilamina", "github.com/x/lib"] }), ["B"]);
+  assert.deepEqual(names({ tags: ["economy"] }), ["A", "B"]);
+  const result = runQuery(entries, { ...DEFAULT_STATE, tags: ["economy"] }, null);
+  assert.equal(result.counts.gv["1.26.40"], 2);
+  assert.equal(result.counts.gv["1.21.132"], 0);
+  assert.equal(result.counts.tags["money"], 1);
+  assert.equal(result.counts.dep["github.com/LiteLDev/LeviLamina"], 2);
+  assert.equal(result.counts.tags["platform:levilamina"], undefined);
+});
+
+test("game version and depends on round-trip through the URL", () => {
+  const state = parseQuery(new URLSearchParams("gv=1.26.51,1.26.40&dep=github.com/LiteLDev/LeviLamina&tags=economy"));
+  assert.deepEqual(state.gv, ["1.26.51", "1.26.40"]);
+  assert.deepEqual(state.dep, ["github.com/LiteLDev/LeviLamina"]);
+  assert.equal(serializeQuery(state), "/?gv=1.26.51,1.26.40&dep=github.com/LiteLDev/LeviLamina&tags=economy");
+  assert.equal(filterCount(state), 4);
 });

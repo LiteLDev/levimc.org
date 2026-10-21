@@ -5,6 +5,7 @@ import { useI18n } from "../i18n";
 import {
   clearFilters,
   DEFAULT_STATE,
+  facetOptions,
   filterCount,
   PAGE_SIZE,
   parseQuery,
@@ -93,6 +94,9 @@ export function PackageBrowser({ catalog }: { catalog: Catalog }) {
     return Object.keys(totals).sort((a, b) => (totals[b] ?? 0) - (totals[a] ?? 0));
   }, [catalog.entries]);
 
+  const options = useMemo(() => facetOptions(catalog.entries), [catalog.entries]);
+  const names = useMemo(() => new Map(catalog.entries.map((e) => [e.tooth, e.name])), [catalog.entries]);
+
   const [view, setView] = useViewMode();
   const [drawer, setDrawer] = useState(false);
   const filtersButton = useRef<HTMLButtonElement>(null);
@@ -119,6 +123,8 @@ export function PackageBrowser({ catalog }: { catalog: Catalog }) {
     <FilterGroups
       state={state}
       counts={counts}
+      options={options}
+      names={names}
       features={catalog.features}
       categoryOrder={categoryOrder}
       apply={apply}
@@ -161,7 +167,7 @@ export function PackageBrowser({ catalog }: { catalog: Catalog }) {
               {status}
               <span className="pkg-status-page">{pageCount > 1 ? t.statusPage(page, pageCount) : ""}</span>
             </p>
-            <ActiveFilters state={state} />
+            <ActiveFilters state={state} names={names} />
           </div>
           <div className="pkg-results-body">
             {items.length ? (

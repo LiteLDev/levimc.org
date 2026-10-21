@@ -1,16 +1,17 @@
-import { useId, useMemo, type ReactNode } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import { CATEGORIES, ENVIRONMENTS, PLATFORMS, type SpriteName } from "../data/categories";
 import { formatNumber, useI18n } from "../i18n";
-import type { Facet, FacetCounts, QueryState } from "../lib/catalog-query";
+import type { Facet, FacetCounts, FacetOptions, QueryState } from "../lib/catalog-query";
+import { PixelIcon } from "../kit-ui";
 import { readStorage, STORAGE_KEYS, writeStorage } from "../lib/storage";
 import { notifyStored, useStored } from "../lib/use-stored";
 import type { CatalogFeatures } from "../types";
 import { MaskIcon, Sprite } from "./sprite";
 
-/** Categories shown before "Show more". */
+/** Categories (and the options of the long groups) shown before "Show more". */
 const CATEGORY_LIMIT = 8;
 
-type GroupId = "platform" | "category" | "environment" | "license";
+type GroupId = "gameVersion" | "platform" | "category" | "environment" | "license" | "dependsOn" | "tags";
 
 const readCollapsed = () => readStorage(STORAGE_KEYS.groups) ?? "[]";
 const readMoreCategories = () => readStorage(STORAGE_KEYS.moreCategories);
@@ -93,9 +94,11 @@ interface GroupProps {
   flat: boolean;
   children: ReactNode;
   footer?: ReactNode;
+  /** false: the children bring their own list (see {@link LongOptions}). */
+  list?: boolean;
 }
 
-function Group({ title, collapsed, onToggle, flat, children, footer }: GroupProps) {
+function Group({ title, collapsed, onToggle, children, footer, list = true }: GroupProps) {
   const panel = useId();
   return (
     <section className="pkg-group pkg-group-flat">
@@ -106,7 +109,7 @@ function Group({ title, collapsed, onToggle, flat, children, footer }: GroupProp
         </button>
       </h3>
       <div id={panel} className="pkg-group-body" hidden={collapsed}>
-        <ul className="pkg-opts">{children}</ul>
+        {list ? <ul className="pkg-opts">{children}</ul> : children}
         {footer}
       </div>
     </section>
@@ -117,9 +120,80 @@ const toggleIn = (list: string[], id: string) => (list.includes(id) ? list.filte
 const include = (f: Facet, id: string): Facet => ({ inc: toggleIn(f.inc, id), exc: f.exc.filter((x) => x !== id) });
 const exclude = (f: Facet, id: string): Facet => ({ inc: f.inc.filter((x) => x !== id), exc: toggleIn(f.exc, id) });
 
+interface LongOption {
+  id: string;
+  label: string;
+  selected: boolean;
+}
+
+/**
+ * The options of a group too long to show at once (game versions, packages,
+ * tags): a search field over them, the first few, and "Show more". Selected
+ * options always show.
+ */
+function LongOptions({
+  options,
+  counts,
+  placeholder,
+  onToggle,
+}: {
+  options: LongOption[];
+  counts: Record<string, number>;
+  placeholder: string;
+  onToggle: (id: string) => void;
+}) {
+  const { t } = useI18n();
+  const [query, setQuery] = useState("");
+  const [more, setMore] = useState(false);
+  const q = query.trim().toLowerCase();
+  const found = q ? options.filter((o) => o.label.toLowerCase().includes(q) || o.id.toLowerCase().includes(q)) : options;
+  const shown = q || more ? found : found.filter((o, i) => i < CATEGORY_LIMIT || o.selected);
+  const hidden = found.length - shown.length;
+  return (
+    <>
+      {options.length > CATEGORY_LIMIT ? (
+        <label className="mc-input pkg-group-search">
+          <PixelIcon name="search" className="pkg-search-icon" />
+          <input
+            type="search"
+            placeholder={placeholder}
+            aria-label={placeholder}
+            autoComplete="off"
+            spellCheck={false}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </label>
+      ) : null}
+      <ul className="pkg-opts">
+        {shown.map((o) => (
+          <Option
+            key={o.id}
+            id={o.id}
+            label={o.label}
+            count={counts[o.id] ?? 0}
+            included={o.selected}
+            onInclude={() => onToggle(o.id)}
+          />
+        ))}
+      </ul>
+      {!q && (hidden > 0 || more) ? (
+        <button type="button" className="mc-btn mc-btn-ghost mc-btn-sm pkg-group-more" aria-expanded={more} onClick={() => setMore(!more)}>
+          <MaskIcon name={more ? "arrowUp" : "chevronDown"} />
+          {more ? t.showFewer : t.showMore(hidden)}
+        </button>
+      ) : null}
+    </>
+  );
+}
+
 interface FilterGroupsProps {
   state: QueryState;
   counts: FacetCounts;
+  /** The values of the Game Version, Depends On and Tags groups. */
+  options: FacetOptions;
+  /** Package names by tooth, for Depends On. */
+  names: ReadonlyMap<string, string>;
   features: CatalogFeatures;
   /** Category ids by how many packages they hold in the whole catalogue. */
   categoryOrder: string[];
@@ -130,7 +204,7 @@ interface FilterGroupsProps {
 }
 
 /** The filter groups of the sidebar and the phone drawer. */
-export function FilterGroups({ state, counts, features, categoryOrder, apply, flat = false }: FilterGroupsProps) {
+export function FilterGroups({ state, counts, options, names, features, categoryOrder, apply, flat = false }: FilterGroupsProps) {
   const { t, locale } = useI18n();
   const [collapsed, toggle] = useCollapsed();
   const moreCats = useStored(readMoreCategories, null) === "1";
@@ -146,8 +220,21 @@ export function FilterGroups({ state, counts, features, categoryOrder, apply, fl
       );
   const hiddenCount = categories.length - shownCategories.length;
 
+  const lower = (list: string[]) => list.map((x) => x.toLowerCase());
+  const deps = lower(state.dep);
+
   return (
     <div className="pkg-groups pkg-groups-flat">
+      {options.gv.length ? (
+        <Group id="gameVersion" title={t.groupGameVersion} collapsed={collapsed.has("gameVersion")} onToggle={() => toggle("gameVersion")} flat={flat} list={false}>
+          <LongOptions
+            options={options.gv.map((v) => ({ id: v, label: v, selected: state.gv.includes(v) }))}
+            counts={counts.gv}
+            placeholder={t.searchGameVersions}
+            onToggle={(v) => set({ gv: toggleIn(state.gv, v) })}
+          />
+        </Group>
+      ) : null}
       <Group id="platform" title={t.groupPlatform} collapsed={collapsed.has("platform")} onToggle={() => toggle("platform")} flat={flat}>
         {PLATFORMS.map((p) => (
           <Option
@@ -222,6 +309,26 @@ export function FilterGroups({ state, counts, features, categoryOrder, apply, fl
             count={counts.license}
             included={state.license}
             onInclude={() => set({ license: !state.license })}
+          />
+        </Group>
+      ) : null}
+      {options.dep.length ? (
+        <Group id="dependsOn" title={t.groupDependsOn} collapsed={collapsed.has("dependsOn")} onToggle={() => toggle("dependsOn")} flat={flat} list={false}>
+          <LongOptions
+            options={options.dep.map((d) => ({ id: d, label: names.get(d) ?? d.split("/").at(-1)!, selected: deps.includes(d.toLowerCase()) }))}
+            counts={counts.dep}
+            placeholder={t.searchPackages}
+            onToggle={(d) => set({ dep: deps.includes(d.toLowerCase()) ? state.dep.filter((x) => x.toLowerCase() !== d.toLowerCase()) : [...state.dep, d] })}
+          />
+        </Group>
+      ) : null}
+      {options.tags.length ? (
+        <Group id="tags" title={t.tags} collapsed={collapsed.has("tags")} onToggle={() => toggle("tags")} flat={flat} list={false}>
+          <LongOptions
+            options={[...options.tags, ...state.tags.filter((tag) => !options.tags.includes(tag))].map((tag) => ({ id: tag, label: tag, selected: state.tags.includes(tag) }))}
+            counts={counts.tags}
+            placeholder={t.searchTags}
+            onToggle={(tag) => set({ tags: toggleIn(state.tags, tag) })}
           />
         </Group>
       ) : null}

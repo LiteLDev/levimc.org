@@ -55,6 +55,10 @@ export interface CatalogEntry {
   lang?: string;
   /** Empty when unknown. */
   env: EnvId[];
+  /** Minecraft versions any version runs on (through its LeviLamina ranges), newest first; empty when unknown. */
+  gameVersions: string[];
+  /** Listed packages the latest version depends on (as the index spells them). */
+  dependsOn: string[];
   /** Packages whose latest version depends on this one (absent: none). */
   requiredBy?: number;
   stars: number;

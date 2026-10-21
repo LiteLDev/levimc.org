@@ -42,14 +42,15 @@ At build time (`src/server/catalog.ts`) the lipr index is enriched with:
 
 | Source | Used for | Without it |
 | ------ | -------- | ---------- |
-| `src/data/curation.json` | categories, platforms and the LSE language of each package (lipr's tags say too little) | the tag map in `src/data/categories.ts`; the build prints `::warning::uncurated package <tooth>` |
+| lipr tags | categories (the tag map in `src/data/categories.ts`; a `category:<id>` tag wins), platforms and the LSE language | — |
 | latest `tooth.json` of each package | environment (files placed in `plugins/` → server, `mods/` → client), dependencies, OS | the variant labels |
-| `lipr.levimc.org/levilauncher.json` | "Required by", the LeviLamina range of each version | those are left out |
+| `lipr.levimc.org/levilauncher.json` | "Required by", Depends On, Game Version (every version's dependency ranges, followed to LeviLamina and its `bds` version), the LeviLamina range of each version | those are left out |
 | GitHub GraphQL (`GITHUB_TOKEN`) | where renamed repositories live, release dates, creation date, license | links keep the tooth path, dates come from the index, no "Newest" sort and no License filter |
 
-Add new packages to `src/data/curation.json` (`categories` from
-`src/data/categories.ts`, `platforms`: `levilamina`, `lse`, `endstone`,
-`other`). A lipr tag `category:<id>` overrides the curation.
+Nothing is curated by hand: a package's categories come from its lipr tags.
+To put packages in a category, add their tags to that category's `tags` in
+`src/data/categories.ts`, or tag the package `category:<id>` in its
+`tooth.json`.
 
 ## Development
 
@@ -84,7 +85,7 @@ src/
   App.tsx           shell: LeviMC bar, page, footer
   i18n.ts           interface strings (en, zh-CN, zh-HK); locales.ts lists the languages
   kit-ui.ts         the kit components the site uses
-  data/             categories, platforms, environments; curation.json
+  data/             categories (with their tag map), platforms, environments
   pages/            home, package and 404 pages
   components/       listing (search, toolbar, filters, rows), package page (header, tabs, versions,
                     dependencies, sidebar, install dialog), README renderer

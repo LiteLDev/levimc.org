@@ -1139,6 +1139,20 @@
   .pkg-group-more {
     margin: 0.25rem 0 0 0.25rem;
   }
+  .pkg-group-search {
+    min-height: 2.25rem;
+    margin: 0 0.25rem 0.5rem;
+    padding: 0 0.5rem;
+    font-size: 0.875rem;
+  }
+  .pkg-group-search input {
+    width: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .pkg-group-search input::-webkit-search-cancel-button {
+    display: none;
+  }
 
   /* filter groups (sidebar and drawer): frameless sections divided by hairlines */
   .pkg-groups-flat {

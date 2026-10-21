@@ -35,7 +35,7 @@ export interface CategoryDef {
   id: string;
   label: Labels;
   icon: SpriteName;
-  /** Raw lipr tags that put a package in this category (used for packages without curation). */
+  /** Raw lipr tags (lower case) that put a package in this category. */
   tags: string[];
 }
 
@@ -51,7 +51,7 @@ export const CATEGORIES: readonly CategoryDef[] = [
     id: "utility",
     label: { en: "Utility", "zh-CN": "实用工具", "zh-HK": "實用工具" },
     icon: "pickaxe",
-    tags: ["tools", "essential", "tp", "levitpsystem", "waila", "info-display", "collection", "custommap", "building", "nbs", "noteblock", "music"],
+    tags: ["tools", "inventory", "essential", "tp", "levitpsystem", "waila", "info-display", "collection", "custommap", "building", "nbs", "noteblock", "music"],
   },
   {
     id: "game-mechanics",
@@ -111,7 +111,7 @@ export const CATEGORIES: readonly CategoryDef[] = [
     id: "adventure",
     label: { en: "Content & adventure", "zh-CN": "内容与冒险", "zh-HK": "內容與冒險" },
     icon: "compass",
-    tags: [],
+    tags: ["worldgen", "terrain"],
   },
   {
     id: "protocol",

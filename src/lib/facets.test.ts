@@ -24,24 +24,14 @@ test("environment without a manifest: client… labels are the client, the rest 
   assert.deepEqual(deriveEnv(null, [""]), ["server"]);
 });
 
-test("curation wins over tags; category: tags win over curation", () => {
-  const curated = deriveFacets({
-    tags: ["platform:levilamina", "type:mod"],
-    curation: { categories: ["economy"], platforms: ["lse"], lang: "nodejs" },
-    manifestVariants: null,
-    labels: [""],
-  });
-  assert.deepEqual(curated, { categories: ["economy"], platforms: ["lse"], lang: "nodejs", env: ["server"] });
-  const upstream = deriveFacets({
-    tags: ["category:Utility", "category:unknown"],
-    curation: { categories: ["economy"] },
-    manifestVariants: null,
-    labels: [""],
-  });
+test("category: tags win over the tag map", () => {
+  const upstream = deriveFacets({ tags: ["category:Utility", "category:unknown", "economy"], manifestVariants: null, labels: [""] });
   assert.deepEqual(upstream.categories, ["utility"]);
+  const plain = deriveFacets({ tags: ["platform:levilamina", "type:mod"], manifestVariants: null, labels: [""] });
+  assert.deepEqual(plain, { categories: [], platforms: ["levilamina"], env: ["server"] });
 });
 
-test("uncurated packages: categories and platforms from the tag map", () => {
+test("categories and platforms from the tag map", () => {
   const f = deriveFacets({ tags: ["lse", "quickjs", "economy", "money", "welcome"], manifestVariants: null, labels: [""] });
   assert.deepEqual(f.categories, ["economy", "social"]);
   assert.deepEqual(f.platforms, ["lse"]);

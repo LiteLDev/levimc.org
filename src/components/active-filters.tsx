@@ -14,10 +14,13 @@ interface ActiveChip {
 }
 
 /** One chip per filter that is on, in the order of the sidebar. */
-export function useActiveChips(state: QueryState): ActiveChip[] {
+export function useActiveChips(state: QueryState, names?: ReadonlyMap<string, string>): ActiveChip[] {
   const { t, locale } = useI18n();
   const reset = { page: 1 };
   const chips: ActiveChip[] = [];
+  for (const v of state.gv) {
+    chips.push({ key: `g${v}`, label: v, without: { ...state, ...reset, gv: state.gv.filter((x) => x !== v) } });
+  }
   for (const id of state.platform.inc) {
     const p = PLATFORM_BY_ID.get(id as never);
     if (p) chips.push({ key: `p+${id}`, label: p.label[locale], icon: p.icon, without: { ...state, ...reset, platform: { ...state.platform, inc: state.platform.inc.filter((x) => x !== id) } } });
@@ -39,19 +42,23 @@ export function useActiveChips(state: QueryState): ActiveChip[] {
     if (e) chips.push({ key: `e${id}`, label: e.label[locale], icon: e.icon, without: { ...state, ...reset, env: state.env.filter((x) => x !== id) } });
   }
   if (state.license) chips.push({ key: "license", label: t.openSource, icon: "paper", without: { ...state, ...reset, license: false } });
-  for (const a of state.author) {
-    chips.push({ key: `a${a}`, label: t.byOwner(a), without: { ...state, ...reset, author: state.author.filter((x) => x !== a) } });
+  for (const d of state.dep) {
+    const name = [...(names ?? [])].find(([tooth]) => tooth.toLowerCase() === d.toLowerCase())?.[1] ?? d.split("/").at(-1)!;
+    chips.push({ key: `d${d}`, label: t.dependsOnLabel(name), without: { ...state, ...reset, dep: state.dep.filter((x) => x !== d) } });
   }
   for (const tag of state.tags) {
     chips.push({ key: `t${tag}`, label: `#${tag}`, without: { ...state, ...reset, tags: state.tags.filter((x) => x !== tag) } });
+  }
+  for (const a of state.author) {
+    chips.push({ key: `a${a}`, label: t.byOwner(a), without: { ...state, ...reset, author: state.author.filter((x) => x !== a) } });
   }
   return chips;
 }
 
 /** "Clear all" and one removable chip per filter. */
-export function ActiveFilters({ state, className }: { state: QueryState; className?: string }) {
+export function ActiveFilters({ state, names, className }: { state: QueryState; names?: ReadonlyMap<string, string>; className?: string }) {
   const { t } = useI18n();
-  const chips = useActiveChips(state);
+  const chips = useActiveChips(state, names);
   if (!chips.length) return null;
   return (
     <ul className={`pkg-active${className ? ` ${className}` : ""}`} aria-label={t.activeFilters}>

@@ -3,8 +3,8 @@
 // without GITHUB_TOKEN or without levilauncher.json still ships every page,
 // with the parts that need the missing data left out. Only the server bundle
 // (prerender, dev server) imports this; it is memoised per build.
-import curationJson from "../data/curation.json" with { type: "json" };
-import { deriveFacets, type Curation } from "../lib/facets";
+import { deriveFacets } from "../lib/facets";
+import { resolveGameVersions, type LauncherIndex } from "../lib/game-versions";
 import { updateUrl, type RepositoryRenames } from "../lib/markdown";
 import {
   fetchManifest,
@@ -23,13 +23,6 @@ const LEVILAUNCHER_URL = process.env.LIPR_LEVILAUNCHER_URL ?? "https://lipr.levi
 const DESCRIPTION_MAX = 200;
 const CONCURRENCY = 8;
 const LEVILAMINA = "github.com/liteldev/levilamina";
-
-const CURATION = curationJson as Record<string, Curation>;
-
-/** levilauncher.json: every version's dependencies. */
-interface LauncherIndex {
-  packages: Record<string, { variants: Record<string, { versions: Record<string, { dependencies?: Record<string, string> }> }> }>;
-}
 
 export interface BuildData {
   index: PackageIndex;
@@ -111,10 +104,13 @@ async function build(): Promise<BuildData> {
 
   // Who depends on whom, from every package's latest versions.
   const dependents = new Map<string, string[]>();
+  const dependsOn = new Map<string, string[]>();
   if (launcher) {
     for (const tooth of tooths) {
       for (const dep of latestDependencies(launcher, tooth, index.packages[tooth]!)) {
         if (dep === tooth.toLowerCase()) continue;
+        const listed = canonical.get(dep);
+        if (listed) dependsOn.set(tooth, [...(dependsOn.get(tooth) ?? []), listed]);
         const list = dependents.get(dep) ?? [];
         if (!list.includes(tooth)) list.push(tooth);
         dependents.set(dep, list);
@@ -130,16 +126,14 @@ async function build(): Promise<BuildData> {
     if (url) iconUrls.set(tooth, updateUrl(url, renames, "all"));
   }
   const loadable = await checkIcons(iconUrls.values());
+  const gameVersions = launcher ? resolveGameVersions(launcher) : new Map<string, string[]>();
 
-  const uncurated: string[] = [];
   const entries: CatalogEntry[] = tooths.map((tooth) => {
     const pkg = index.packages[tooth]!;
     const tags = Array.isArray(pkg.info.tags) ? pkg.info.tags : [];
-    const curation = CURATION[tooth];
-    if (!curation) uncurated.push(tooth);
     const manifest = manifests.get(tooth) ?? null;
     const variants = getSortedVariants(pkg);
-    const facets = deriveFacets({ tags, curation, manifestVariants: manifest?.variants ?? null, labels: variants });
+    const facets = deriveFacets({ tags, manifestVariants: manifest?.variants ?? null, labels: variants });
     const repo = meta.get(tooth);
     const owner = repo ? (repo.url.split("/")[3] ?? ownerOf(tooth)) : ownerOf(tooth);
     const icon = iconUrls.get(tooth);
@@ -151,6 +145,8 @@ async function build(): Promise<BuildData> {
       ...(icon && loadable.has(icon) ? { icon } : {}),
       tags,
       ...facets,
+      gameVersions: gameVersions.get(tooth.toLowerCase()) ?? [],
+      dependsOn: dependsOn.get(tooth) ?? [],
       ...(dependents.get(tooth.toLowerCase())?.length ? { requiredBy: dependents.get(tooth.toLowerCase())!.length } : {}),
       stars: pkg.stargazer_count ?? 0,
       ...(repo?.license ? { license: repo.license } : {}),
@@ -158,7 +154,6 @@ async function build(): Promise<BuildData> {
       ...(repo?.createdAt ? { created: repo.createdAt } : {}),
     };
   });
-  for (const tooth of uncurated) console.warn(`::warning::uncurated package ${tooth} (add it to src/data/curation.json)`);
 
   const versions = tooths.reduce((n, t) => n + getAllVersions(index.packages[t]!).length, 0);
   const catalog: Catalog = {

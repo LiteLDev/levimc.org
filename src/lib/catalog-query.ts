@@ -1,8 +1,9 @@
-// The listing's state: what the URL says (`?q=&cat=&platform=&env=&license=
-// &author=&tags=&sort=&page=`), how to write it back, and the results it
+// The listing's state: what the URL says (`?q=&gv=&platform=&cat=&env=
+// &license=&dep=&tags=&author=&sort=&page=`), how to write it back, and the results it
 // selects. Pure functions, shared by the page and the unit tests.
 import { CATEGORY_BY_ID, ENV_BY_ID, PLATFORM_BY_ID } from "../data/categories.ts";
 import type { CatalogEntry, CatalogFeatures } from "../types.ts";
+import { compareVersions as compareVersionStrings } from "./game-versions.ts";
 
 /** Results per page: fixed (old `?per=` links are ignored). */
 export const PAGE_SIZE = 20;
@@ -18,6 +19,8 @@ export interface Facet {
 
 export interface QueryState {
   q: string;
+  /** Game versions: any of them (OR). */
+  gv: string[];
   /** Categories: every included one (AND), none of the excluded. */
   cat: Facet;
   /** Platforms: any included one (OR), none of the excluded. */
@@ -26,9 +29,11 @@ export interface QueryState {
   env: string[];
   /** Only packages under an open-source license. */
   license: boolean;
+  /** Packages the latest version depends on (tooths, case-insensitive): every one of them (AND). */
+  dep: string[];
   /** Repository owners, as written in the URL; matched case-insensitively (OR). */
   author: string[];
-  /** Raw lipr tags, every one of them (AND) — the filter of the old listing, kept for its links. */
+  /** Raw lipr tags, every one of them (AND). */
   tags: string[];
   sort: SortKey;
   page: number;
@@ -38,10 +43,12 @@ export const EMPTY_FACET: Facet = { inc: [], exc: [] };
 
 export const DEFAULT_STATE: QueryState = {
   q: "",
+  gv: [],
   cat: EMPTY_FACET,
   platform: EMPTY_FACET,
   env: [],
   license: false,
+  dep: [],
   author: [],
   tags: [],
   sort: "relevance",
@@ -49,7 +56,7 @@ export const DEFAULT_STATE: QueryState = {
 };
 
 /** Query keys of the listing (a URL with one of them is not the prerendered default). */
-export const LISTING_KEYS = ["q", "cat", "platform", "env", "license", "author", "tags", "sort", "page"] as const;
+export const LISTING_KEYS = ["q", "gv", "dep", "cat", "platform", "env", "license", "author", "tags", "sort", "page"] as const;
 
 const ALL_FEATURES: CatalogFeatures = { created: true, license: true };
 
@@ -90,10 +97,12 @@ export function parseQuery(params: URLSearchParams, features: CatalogFeatures = 
   const page = parseInt(params.get("page") ?? "1", 10);
   return {
     q: params.get("q") ?? "",
+    gv: unique(list(params, "gv")),
     cat: facet(list(params, "cat"), (id) => CATEGORY_BY_ID.has(id)),
     platform: facet(list(params, "platform"), (id) => PLATFORM_BY_ID.has(id as never)),
     env: facet(list(params, "env"), (id) => ENV_BY_ID.has(id as never), false).inc,
     license: features.license && params.get("license") === "oss",
+    dep: list(params, "dep").filter((d, i, all) => all.findIndex((x) => x.toLowerCase() === d.toLowerCase()) === i),
     author: list(params, "author").filter((a, i, all) => all.findIndex((b) => b.toLowerCase() === a.toLowerCase()) === i),
     tags: unique(list(params, "tags")),
     sort: (SORTS as readonly string[]).includes(sort) ? (sort as SortKey) : "relevance",
@@ -114,12 +123,14 @@ export function serializeQuery(state: QueryState): string {
     if (values.length) parts.push([key, values.map(encode).join(",")]);
   };
   if (state.q.trim()) parts.push(["q", encode(state.q)]);
-  add("cat", facetValues(state.cat));
+  add("gv", state.gv);
   add("platform", facetValues(state.platform));
+  add("cat", facetValues(state.cat));
   add("env", state.env);
   if (state.license) parts.push(["license", "oss"]);
-  add("author", state.author);
+  add("dep", state.dep);
   add("tags", state.tags);
+  add("author", state.author);
   if (state.sort !== "relevance") parts.push(["sort", state.sort]);
   if (state.page > 1) parts.push(["page", String(state.page)]);
   return parts.length ? `/?${parts.map(([k, v]) => `${k}=${v}`).join("&")}` : "/";
@@ -128,6 +139,8 @@ export function serializeQuery(state: QueryState): string {
 /** How many filters are on (the Filters button's badge): search and sort do not count. */
 export function filterCount(state: QueryState): number {
   return (
+    state.gv.length +
+    state.dep.length +
     state.cat.inc.length +
     state.cat.exc.length +
     state.platform.inc.length +
@@ -157,14 +170,25 @@ const andFacet = (values: readonly string[], f: Facet) =>
   f.inc.every((id) => values.includes(id)) && !f.exc.some((id) => values.includes(id));
 
 interface Filters {
+  gv: string[];
   cat: Facet;
   platform: Facet;
   env: string[];
   license: boolean;
+  dep: string[];
+  tags: string[];
 }
+
+const hasTooth = (tooths: readonly string[], tooth: string) => tooths.some((t) => t.toLowerCase() === tooth.toLowerCase());
+
+/** A tag the Tags filter offers: `platform:…`, `type:…` and other namespaced tags are left out. */
+export const isPlainTag = (tag: string) => !tag.includes(":");
 
 function matches(e: CatalogEntry, f: Filters): boolean {
   return (
+    (!f.gv.length || f.gv.some((v) => e.gameVersions.includes(v))) &&
+    f.dep.every((d) => hasTooth(e.dependsOn, d)) &&
+    f.tags.every((tag) => e.tags.includes(tag)) &&
     andFacet(e.categories, f.cat) &&
     orFacet(e.platforms, f.platform) &&
     (!f.env.length || f.env.some((id) => (e.env as string[]).includes(id))) &&
@@ -201,10 +225,14 @@ export function compareEntries(sort: SortKey, scores: Map<string, number> | null
 // ------------------------------------------------------------------ running a query
 
 export interface FacetCounts {
+  gv: Record<string, number>;
   cat: Record<string, number>;
   platform: Record<string, number>;
   env: Record<string, number>;
   license: number;
+  /** Keyed by the tooth as the index spells it. */
+  dep: Record<string, number>;
+  tags: Record<string, number>;
 }
 
 export interface QueryResult {
@@ -225,20 +253,66 @@ export interface QueryResult {
   counts: FacetCounts;
 }
 
+export interface FacetOptions {
+  /** Newest first. */
+  gv: string[];
+  /** Tooths as the index spells them, by how many packages depend on them. */
+  dep: string[];
+  /** Plain tags (see {@link isPlainTag}), by how many packages carry them. */
+  tags: string[];
+}
+
+const byFrequency = (values: Iterable<string>) => {
+  const n = new Map<string, number>();
+  for (const v of values) n.set(v, (n.get(v) ?? 0) + 1);
+  return [...n.keys()].sort((a, b) => n.get(b)! - n.get(a)! || a.localeCompare(b));
+};
+
+const optionsCache = new WeakMap<readonly CatalogEntry[], FacetOptions>();
+
+/** The values the Game Version, Depends On and Tags groups offer, from the whole catalogue. */
+export function facetOptions(entries: readonly CatalogEntry[]): FacetOptions {
+  const cached = optionsCache.get(entries);
+  if (cached) return cached;
+  const gv = [...new Set(entries.flatMap((e) => e.gameVersions))].sort((a, b) => compareVersionStrings(b, a));
+  const options = {
+    gv,
+    dep: byFrequency(entries.flatMap((e) => e.dependsOn)),
+    tags: byFrequency(entries.flatMap((e) => [...new Set(e.tags)].filter(isPlainTag))),
+  };
+  optionsCache.set(entries, options);
+  return options;
+}
+
 /** Applies a state to the catalog. `scores` are the search's (see `searchCatalog`), `null` without a query. */
 export function runQuery(entries: readonly CatalogEntry[], state: QueryState, scores: Map<string, number> | null): QueryResult {
   const base = entries.filter(
     (e) =>
       (!scores || scores.has(e.tooth)) &&
-      state.tags.every((tag) => e.tags.includes(tag)) &&
       (!state.author.length || state.author.some((a) => a.toLowerCase() === e.owner.toLowerCase())),
   );
-  const filters: Filters = { cat: state.cat, platform: state.platform, env: state.env, license: state.license };
+  const filters: Filters = {
+    gv: state.gv,
+    cat: state.cat,
+    platform: state.platform,
+    env: state.env,
+    license: state.license,
+    dep: state.dep,
+    tags: state.tags,
+  };
   const matched = base.filter((e) => matches(e, filters)).sort(compareEntries(state.sort, scores));
 
   const count = (f: Filters) => base.reduce((n, e) => n + (matches(e, f) ? 1 : 0), 0);
   const without = (f: Facet, id: string) => f.exc.filter((x) => x !== id);
-  const counts: FacetCounts = { cat: {}, platform: {}, env: {}, license: 0 };
+  const counts: FacetCounts = { gv: {}, cat: {}, platform: {}, env: {}, license: 0, dep: {}, tags: {} };
+  const options = facetOptions(entries);
+  for (const v of options.gv) counts.gv[v] = count({ ...filters, gv: [v] });
+  for (const d of options.dep) {
+    counts.dep[d] = count({ ...filters, dep: hasTooth(state.dep, d) ? state.dep : [...state.dep, d] });
+  }
+  for (const tag of options.tags) {
+    counts.tags[tag] = count({ ...filters, tags: state.tags.includes(tag) ? state.tags : [...state.tags, tag] });
+  }
   for (const id of CATEGORY_BY_ID.keys()) {
     const inc = state.cat.inc.includes(id) ? state.cat.inc : [...state.cat.inc, id];
     counts.cat[id] = count({ ...filters, cat: { inc, exc: without(state.cat, id) } });
