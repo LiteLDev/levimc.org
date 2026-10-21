@@ -1707,10 +1707,107 @@
     color: var(--color-muted);
   }
   .pkg-readme-body {
-    padding: 1.75rem 2rem 2.25rem;
+    padding: 1.5rem 1.75rem 2rem;
   }
   .pkg-readme-body img {
+    max-width: 100%;
     margin: 0.125rem 0.125rem 0.125rem 0;
+    vertical-align: middle;
+  }
+
+  /*
+   * README typography: denser than the kit's long-form prose (docs, blog), closer
+   * to how READMEs are written — short sections, badge rows, many headings,
+   * tables and code. Headings carry a hairline below (h1, h2) instead of a big
+   * gap and a rule above, so an author's own `---` does not stack up with it.
+   */
+  .kit-prose.pkg-readme-body {
+    --prose-gap: 0.75rem;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+  }
+  .kit-prose.pkg-readme-body:lang(zh) {
+    line-height: 1.75;
+  }
+  .kit-prose.pkg-readme-body h1 {
+    margin: 0 0 1rem;
+    padding-bottom: 0.5rem;
+    font-size: 1.75rem;
+    line-height: 1.25;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .kit-prose.pkg-readme-body h2 {
+    margin: 2rem 0 0.75rem;
+    padding: 0 0 0.375rem;
+    font-size: 1.3125rem;
+    border-top: 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .kit-prose.pkg-readme-body h2 .kit-anchor {
+    top: calc(50% - 0.1875rem);
+  }
+  .kit-prose.pkg-readme-body h3 {
+    margin: 1.5rem 0 0.5rem;
+    font-size: 1.0625rem;
+  }
+  .kit-prose.pkg-readme-body h4 {
+    margin: 1.25rem 0 0.375rem;
+    font-size: 0.9375rem;
+  }
+  .kit-prose.pkg-readme-body :is(h5, h6) {
+    margin: 1rem 0 0.375rem;
+    font-size: 0.875rem;
+  }
+  /* centred title blocks (`<div align="center">`) keep their heading rules short */
+  .kit-prose.pkg-readme-body [align="center"] :is(h1, h2) {
+    border-bottom: 0;
+  }
+  .kit-prose.pkg-readme-body :is(h1, h2, h3, h4) + :is(h2, h3, h4) {
+    margin-top: 0.75rem;
+  }
+  .kit-prose.pkg-readme-body hr {
+    margin: 1.5rem 0;
+  }
+  .kit-prose.pkg-readme-body hr + :is(h1, h2, h3) {
+    margin-top: 0.5rem;
+  }
+  .kit-prose.pkg-readme-body :is(h1, h2) + hr {
+    display: none;
+  }
+  .kit-prose.pkg-readme-body li {
+    margin: 0.1875rem 0;
+  }
+  .kit-prose.pkg-readme-body li > p {
+    margin: 0.25rem 0;
+  }
+  .kit-prose.pkg-readme-body :is(.pkg-code, .kit-table-wrap, blockquote, .kit-adm, details) {
+    margin-top: 0.875rem;
+    margin-bottom: 0.875rem;
+  }
+  .kit-prose.pkg-readme-body blockquote {
+    font-size: 0.9375rem;
+  }
+  .kit-prose.pkg-readme-body blockquote > :is(p, ul, ol) {
+    margin: 0.375rem 0;
+  }
+  .kit-prose.pkg-readme-body table {
+    font-size: 0.875rem;
+  }
+  .kit-prose.pkg-readme-body :is(th, td) {
+    padding: 0.375rem 0.75rem;
+  }
+  .kit-prose.pkg-readme-body tbody tr:nth-child(even) td {
+    background: color-mix(in srgb, var(--color-ink) 2.5%, transparent);
+  }
+  /* badge rows: a paragraph of linked images sits tight, wrapping as a group */
+  .kit-prose.pkg-readme-body p:has(> a > img, > img):not(:has(> :not(a, img, br, picture))) {
+    line-height: 1.4;
+  }
+  .kit-prose.pkg-readme-body p:has(> a > img, > img) a {
+    text-decoration: none;
+  }
+  .kit-prose.pkg-readme-body p:has(> a > img, > img) a::after {
+    display: none;
   }
   /* GitHub's light/dark image pairs (`#gh-dark-mode-only`), by the site's theme */
   html:not(.dark) .pkg-readme-body img[src$="#gh-dark-mode-only"],
