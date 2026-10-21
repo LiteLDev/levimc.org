@@ -24,6 +24,7 @@ const entry = (tooth: string, over: Partial<CatalogEntry> = {}): CatalogEntry =>
   gameVersions: [],
   dependsOn: [],
   stars: 0,
+  rank: 0,
   updated: "2026-01-01T00:00:00Z",
   ...over,
 });
@@ -79,7 +80,7 @@ test("parse: sorts and pages fall back; the page size is fixed", () => {
   assert.equal(parseQuery(new URLSearchParams("page=x")).page, 1);
 });
 
-test("without a search, relevance is popularity: stars, then the latest update", () => {
+test("without a search and without ranks, relevance falls back to stars, then the latest update", () => {
   const { items } = run("");
   assert.deepEqual(names(items).slice(0, 3), ["LeviLamina", "Glacie", "LegacyScriptEngine"]);
   // equal stars: the more recently updated first
@@ -188,4 +189,16 @@ test("game version and depends on round-trip through the URL", () => {
   assert.deepEqual(state.dep, ["github.com/LiteLDev/LeviLamina"]);
   assert.equal(serializeQuery(state), "/?gv=1.26.51,1.26.40&dep=github.com/LiteLDev/LeviLamina&tags=economy");
   assert.equal(filterCount(state), 4);
+});
+
+test("without a search, relevance is the rank, at most three packages of one author per page", () => {
+  const entries = [
+    ...Array.from({ length: 5 }, (_, i) => entry(`github.com/big/P${i}`, { rank: 10 - i })),
+    entry("github.com/x/Other", { rank: 1, stars: 999 }),
+  ];
+  const order = runQuery(entries, DEFAULT_STATE, null).matched.map((e) => e.name);
+  assert.deepEqual(order.slice(0, 4), ["P0", "P1", "P2", "Other"]);
+  // a search orders by its score; the rank breaks ties
+  const searched = runQuery(entries, DEFAULT_STATE, new Map(entries.map((e) => [e.tooth, 1]))).matched.map((e) => e.name);
+  assert.deepEqual(searched, ["P0", "P1", "P2", "P3", "P4", "Other"]);
 });

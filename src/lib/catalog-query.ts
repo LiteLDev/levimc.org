@@ -4,6 +4,7 @@
 import { CATEGORY_BY_ID, ENV_BY_ID, PLATFORM_BY_ID } from "../data/categories.ts";
 import type { CatalogEntry, CatalogFeatures } from "../types.ts";
 import { compareVersions as compareVersionStrings } from "./game-versions.ts";
+import { spreadAuthors } from "./ranking.ts";
 
 /** Results per page: fixed (old `?per=` links are ignored). */
 export const PAGE_SIZE = 20;
@@ -204,9 +205,10 @@ const time = (iso: string | undefined) => {
 };
 
 /**
- * The order of the listing. Relevance is the search score (ties: the more
- * popular first) or, without a search, popularity: GitHub stars, then the
- * most recently updated.
+ * The order of the listing. Relevance is the search score or, without a
+ * search, the default-order score (`entry.rank`: stars, dependents,
+ * compatibility with the newest game version, upkeep; see `lib/ranking.ts`),
+ * which also breaks search ties.
  */
 export function compareEntries(sort: SortKey, scores: Map<string, number> | null) {
   const byStars = (a: CatalogEntry, b: CatalogEntry) => b.stars - a.stars || time(b.updated) - time(a.updated);
@@ -214,7 +216,7 @@ export function compareEntries(sort: SortKey, scores: Map<string, number> | null
     a.tooth.toLowerCase() < b.tooth.toLowerCase() ? -1 : a.tooth.toLowerCase() > b.tooth.toLowerCase() ? 1 : 0;
   return (a: CatalogEntry, b: CatalogEntry): number => {
     let d: number;
-    if (sort === "relevance") d = scores ? (scores.get(b.tooth) ?? 0) - (scores.get(a.tooth) ?? 0) || byStars(a, b) : byStars(a, b);
+    if (sort === "relevance") d = (scores ? (scores.get(b.tooth) ?? 0) - (scores.get(a.tooth) ?? 0) : 0) || b.rank - a.rank || byStars(a, b);
     else if (sort === "stars") d = byStars(a, b);
     else if (sort === "updated") d = time(b.updated) - time(a.updated) || b.stars - a.stars;
     else d = time(b.created) - time(a.created) || b.stars - a.stars;
@@ -300,7 +302,9 @@ export function runQuery(entries: readonly CatalogEntry[], state: QueryState, sc
     dep: state.dep,
     tags: state.tags,
   };
-  const matched = base.filter((e) => matches(e, filters)).sort(compareEntries(state.sort, scores));
+  const sorted = base.filter((e) => matches(e, filters)).sort(compareEntries(state.sort, scores));
+  // the default order spreads authors out: at most three of one per page
+  const matched = state.sort === "relevance" && !scores ? spreadAuthors(sorted, PAGE_SIZE) : sorted;
 
   const count = (f: Filters) => base.reduce((n, e) => n + (matches(e, f) ? 1 : 0), 0);
   const without = (f: Facet, id: string) => f.exc.filter((x) => x !== id);

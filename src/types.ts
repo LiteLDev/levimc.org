@@ -62,6 +62,8 @@ export interface CatalogEntry {
   /** Packages whose latest version depends on this one (absent: none). */
   requiredBy?: number;
   stars: number;
+  /** The default-order score (see `lib/ranking.ts`): higher first. */
+  rank: number;
   /** SPDX id; absent when GitHub reports none or was not asked. */
   license?: string;
   /** Latest release date, or the index's `updated_at`. */

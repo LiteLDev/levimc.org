@@ -4,7 +4,8 @@
 // with the parts that need the missing data left out. Only the server bundle
 // (prerender, dev server) imports this; it is memoised per build.
 import { deriveFacets } from "../lib/facets";
-import { resolveGameVersions, type LauncherIndex } from "../lib/game-versions";
+import { compareVersions, resolveGameVersions, type LauncherIndex } from "../lib/game-versions";
+import { rankScore } from "../lib/ranking";
 import { updateUrl, type RepositoryRenames } from "../lib/markdown";
 import {
   fetchManifest,
@@ -128,7 +129,7 @@ async function build(): Promise<BuildData> {
   const loadable = await checkIcons(iconUrls.values());
   const gameVersions = launcher ? resolveGameVersions(launcher) : new Map<string, string[]>();
 
-  const entries: CatalogEntry[] = tooths.map((tooth) => {
+  const unranked: Omit<CatalogEntry, "rank">[] = tooths.map((tooth) => {
     const pkg = index.packages[tooth]!;
     const tags = Array.isArray(pkg.info.tags) ? pkg.info.tags : [];
     const manifest = manifests.get(tooth) ?? null;
@@ -154,6 +155,10 @@ async function build(): Promise<BuildData> {
       ...(repo?.createdAt ? { created: repo.createdAt } : {}),
     };
   });
+
+  const allGameVersions = [...new Set(unranked.flatMap((e) => e.gameVersions))].sort((a, b) => compareVersions(b, a));
+  const now = Date.now();
+  const entries: CatalogEntry[] = unranked.map((e) => ({ ...e, rank: rankScore(e, allGameVersions, now) }));
 
   const versions = tooths.reduce((n, t) => n + getAllVersions(index.packages[t]!).length, 0);
   const catalog: Catalog = {
