@@ -31,11 +31,11 @@ test('the blog builds: Hexo permalinks, terms, archives, pages, rendered markdow
   assert.deepEqual(b.warnings, []);
   assert.deepEqual(
     b.data.posts.map((p) => p.url),
-    ['/blog/2024/08/11/fix-empty-packet-spam-by-patch/', '/blog/2023/07/31/machine-learning-killaura-detect/', '/blog/2023/07/26/original-fix-BeeCrash/'],
+    ['/blog/2026/10/23/fix-nested-bundle-weight/', '/blog/2026/10/22/fix-mounted-dimension-ghost-duplication/', '/blog/2026/10/22/fix-bundle-item-duplication-by-piston/', '/blog/2026/10/22/fix-bundle-infinite-extraction/', '/blog/2024/08/11/fix-empty-packet-spam-by-patch/', '/blog/2023/07/31/machine-learning-killaura-detect/', '/blog/2023/07/26/original-fix-BeeCrash/'],
   );
   assert.deepEqual(
     b.data.tags.map((t) => [t.url, t.count]),
-    [['/blog/tags/Bedrock-Dedicated-Server/', 3], ['/blog/tags/LiteLoaderBDS/', 2], ['/blog/tags/LeviLamina/', 1]],
+    [['/blog/tags/Bedrock-Dedicated-Server/', 7], ['/blog/tags/LeviLamina/', 5], ['/blog/tags/LiteLoaderBDS/', 2]],
   );
   assert.equal(b.data.categories[0]?.url, '/blog/categories/Bedrock-Dedicated-Server/');
   for (const r of ['/blog/', '/blog/tags/', '/blog/categories/', '/blog/archives/', '/blog/archives/2023/', '/blog/archives/2023/07/', '/blog/archives/2024/08/', '/blog/about/', '/blog/friends/'])

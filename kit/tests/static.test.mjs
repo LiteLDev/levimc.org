@@ -36,8 +36,9 @@ test('noJsDarkCss rejects unbalanced CSS', () => {
 });
 
 test('static/kit-nojs-dark.css holds every .dark rule of static/kit.css, with .dark → :root', () => {
-  const kit = read('../static/kit.css');
-  const css = read('../static/kit-nojs-dark.css');
+  // Git may check out generated stylesheets with CRLF on Windows.
+  const kit = read('../static/kit.css').replace(/\r\n/g, '\n');
+  const css = read('../static/kit-nojs-dark.css').replace(/\r\n/g, '\n');
   assert.equal(css, noJsDarkCss(kit), 'kit-nojs-dark.css is regenerated with kit.css');
   const body = css.replace(/^\/\*[^\n]*\*\/\n/, '');
   assert.ok(!/\.dark(?![\w-])/.test(body), 'no .dark selector left');

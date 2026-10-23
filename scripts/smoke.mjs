@@ -455,10 +455,12 @@ await check('blog: old Hexo permalinks, tag/category slugs and archives are kept
   return 'posts, tags, categories, archives, pages';
 });
 
-await check('blog: feeds (rss.xml, atom.xml, feed.json) list every post with absolute links; <link rel="alternate">', async () => {
+await check('blog: feeds (rss.xml, atom.xml, feed.json) list the latest posts with absolute links; <link rel="alternate">', async () => {
+  // Feeds publish at most the latest 20 posts (blog/feeds.ts).
+  const expectedItems = Math.min(BLOG.filter((path) => /^\/blog\/\d{4}\/\d{2}\/\d{2}\/[^/]+\/$/.test(path)).length, 20);
   const rss = await (await fetch(base + 'blog/rss.xml')).text();
   const items = (rss.match(/<item>/g) || []).length;
-  assert(items === 3, `rss.xml: ${items} items`);
+  assert(items === expectedItems, `rss.xml: ${items} items`);
   assert(rss.includes('<link>https://levimc.org/blog/2024/08/11/fix-empty-packet-spam-by-patch/</link>'), 'rss link');
   assert(!/(src|href)="[/#](?!\/)/.test(rss.replace(/<!\[CDATA\[|\]\]>/g, '')), 'relative URL or bare #anchor in rss.xml');
   for (const item of rss.split('<item>').slice(1)) {
@@ -466,13 +468,13 @@ await check('blog: feeds (rss.xml, atom.xml, feed.json) list every post with abs
     assert(new Set(cats).size === cats.length, `rss.xml: repeated <category> in ${cats.join(', ')}`);
   }
   const atom = await (await fetch(base + 'blog/atom.xml')).text();
-  assert((atom.match(/<entry>/g) || []).length === 3, 'atom.xml entries');
+  assert((atom.match(/<entry>/g) || []).length === expectedItems, 'atom.xml entries');
   for (const entry of atom.split('<entry>').slice(1)) {
     const terms = [...entry.matchAll(/<category term="([^"]*)"/g)].map((m) => m[1]);
     assert(new Set(terms).size === terms.length, `atom.xml: repeated category in ${terms.join(', ')}`);
   }
   const json = await (await fetch(base + 'blog/feed.json')).json();
-  assert(json.items.length === 3, 'feed.json items');
+  assert(json.items.length === expectedItems, 'feed.json items');
   for (const it of json.items) assert(new Set(it.tags).size === it.tags.length, `feed.json: repeated tag in ${it.tags}`);
   // a post hydrates after its markdown chunk: the prerendered page preloads it
   const post = await (await fetch(base + 'blog/2023/07/26/original-fix-BeeCrash/')).text();
