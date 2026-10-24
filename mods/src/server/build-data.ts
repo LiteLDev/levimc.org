@@ -14,15 +14,24 @@ import type { PageData } from "../page-data";
 import type { RelatedMod } from "../types";
 import { allDependencies, leviLaminaRanges, loadBuildData, related } from "./catalog";
 
-/** `/mods/` and every mod that has a version to show. */
+/** `/mods/` and every listed or unlisted mod that has a version to show (see `lib/listing.ts`). */
 export async function listRoutes(): Promise<string[]> {
-  const { index } = await loadBuildData();
+  const { index, byTooth } = await loadBuildData();
   return [
     BASE,
-    ...Object.entries(index.packages)
-      .filter(([, mod]) => getDefaultSelection(mod))
-      .map(([tooth]) => modPath(tooth)),
+    ...[...byTooth.keys()]
+      .filter((tooth) => getDefaultSelection(index.packages[tooth]!))
+      .map((tooth) => modPath(tooth)),
   ];
+}
+
+/** The pages for the sitemap: every page but those of old names of a repository. */
+export async function listSitemapRoutes(): Promise<string[]> {
+  const { listings } = await loadBuildData();
+  const old = new Set(
+    [...listings].filter(([, l]) => l.status === "unlisted" && l.reason === "duplicate").map(([tooth]) => modPath(tooth)),
+  );
+  return (await listRoutes()).filter((route) => !old.has(route));
 }
 
 export async function loadPageData(pathname: string): Promise<PageData> {
@@ -37,6 +46,7 @@ export async function loadPageData(pathname: string): Promise<PageData> {
   const mod = tooth !== null ? index.packages[tooth] : undefined;
   const entry = tooth !== null ? data.byTooth.get(tooth) : undefined;
   const selection = mod && getDefaultSelection(mod);
+  const listing = tooth !== null ? data.listings.get(tooth) : undefined;
   if (tooth !== null && mod && entry && selection) {
     const repository = getRepositoryUrl(tooth, data.meta.get(tooth)?.url);
     const manifest = data.manifests.get(tooth) ?? null;
@@ -65,6 +75,7 @@ export async function loadPageData(pathname: string): Promise<PageData> {
       related: relatedMap,
       hasIssues: data.meta.get(tooth)?.hasIssues ?? false,
       dependentsKnown: data.launcher !== null,
+      ...(listing?.status === "unlisted" && listing.reason === "duplicate" ? { canonicalTooth: listing.canonical } : {}),
       renames,
     };
   }

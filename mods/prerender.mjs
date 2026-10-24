@@ -33,15 +33,17 @@ for (const file of files) {
 for (const file of ssr.HERO_FILES) writeFileSync(`dist/${file}`, ssr.heroSvg(file));
 
 // Crawlers see only the first page of the listing (the query string never
-// reaches the host), so the sitemap lists every mod page.
+// reaches the host), so the sitemap lists every mod page (but the old names of
+// a repository, whose pages point to the current one as canonical).
+const sitemap = await ssr.listSitemapRoutes();
 const escapeXml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 writeFileSync(
   "dist/sitemap.xml",
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
-    routes.map((route) => `  <url><loc>${escapeXml(ORIGIN + encodeURI(route))}</loc></url>\n`).join("") +
+    sitemap.map((route) => `  <url><loc>${escapeXml(ORIGIN + encodeURI(route))}</loc></url>\n`).join("") +
     `</urlset>\n`,
 );
 
 console.log(
-  `prerendered ${files.length} pages and a sitemap of ${routes.length} URLs in ${((Date.now() - started) / 1000).toFixed(1)}s`,
+  `prerendered ${files.length} pages and a sitemap of ${sitemap.length} URLs in ${((Date.now() - started) / 1000).toFixed(1)}s`,
 );
