@@ -1,0 +1,2312 @@
+/*
+ * LeviMC Mods (levimc.org/mods/) — Tailwind v4 + the levimc-kit theme ("Impression, Craft"), plus the
+ * site-specific pieces below. Colours, fonts and pixel geometry all come from the kit's tokens; nothing
+ * here introduces a colour of its own.
+ */
+@import "tailwindcss" source(none);
+@import "../kit/theme/index.css";
+@source "../kit/components";
+@source "./";
+/* README footnote headings use GitHub's `sr-only` class. */
+@source inline("sr-only");
+
+@layer components {
+  /* ================================================================== layout */
+  :root {
+    /* the content column of every page; the mod page's header row lines up with it */
+    --mods-width: 80rem;
+    --mods-gutter: 1.5rem;
+  }
+  @media (max-width: 640px) {
+    :root {
+      --mods-gutter: 1rem;
+    }
+  }
+  .mods-main {
+    padding-bottom: 2rem;
+  }
+  .mods-browse,
+  .mods-detail {
+    width: 100%;
+    max-width: var(--mods-width);
+    margin: 0 auto;
+    padding: 0 var(--mods-gutter);
+  }
+
+  /* ================================================================== sprites as CSS backgrounds */
+  .mods-sprite {
+    display: inline-block;
+    flex: none;
+    width: 16px;
+    height: 16px;
+    background: center / contain no-repeat;
+    image-rendering: pixelated;
+  }
+  .mods-sprite-pickaxe { background-image: var(--kit-icon-pickaxe); }
+  .mods-sprite-diamond { background-image: var(--kit-icon-diamond); }
+  .mods-sprite-map { background-image: var(--kit-icon-map); }
+  .mods-sprite-bookQuill { background-image: var(--kit-icon-book-quill); }
+  .mods-sprite-torch { background-image: var(--kit-icon-torch); }
+  .mods-sprite-bug { background-image: var(--kit-icon-bug); }
+  .mods-sprite-potion { background-image: var(--kit-icon-potion); }
+  .mods-sprite-tnt { background-image: var(--kit-icon-tnt); }
+  .mods-sprite-compass { background-image: var(--kit-icon-compass); }
+  .mods-sprite-emerald { background-image: var(--kit-icon-emerald); }
+  .mods-sprite-grass { background-image: var(--kit-icon-grass); }
+  .mods-sprite-paper { background-image: var(--kit-icon-paper); }
+  .mods-sprite-chest { background-image: var(--kit-icon-chest); }
+  .mods-sprite-monitor { background-image: var(--kit-icon-monitor); }
+  .mods-sprite-clock { background-image: var(--kit-icon-clock); }
+  .mods-sprite-heart { background-image: var(--kit-icon-heart); }
+  .mods-sprite-moon { background-image: var(--kit-icon-moon); }
+
+  .mods-mask {
+    display: inline-block;
+    flex: none;
+    width: 16px;
+    height: 16px;
+    background: currentColor;
+    -webkit-mask: var(--mods-mask) center / contain no-repeat;
+    mask: var(--mods-mask) center / contain no-repeat;
+  }
+  .mods-mask-close { --mods-mask: var(--kit-icon-close); }
+  .mods-mask-check { --mods-mask: var(--kit-icon-check); }
+  .mods-mask-chevronDown { --mods-mask: var(--kit-icon-chevron-down); }
+  .mods-mask-arrowUp { --mods-mask: var(--kit-icon-arrow-up); }
+  .mods-mask-external { --mods-mask: var(--kit-icon-external); }
+  .mods-mask-apps { --mods-mask: var(--kit-icon-apps); }
+  .mods-mask-hash { --mods-mask: var(--kit-icon-hash); }
+  .mods-mask-quote { --mods-mask: var(--kit-icon-quote); }
+  .mods-mask-globe { --mods-mask: var(--kit-icon-globe); }
+  .mods-mask-menu { --mods-mask: var(--kit-icon-menu); }
+  .mods-mask-history { --mods-mask: var(--kit-icon-history); }
+
+  /* ================================================================== icons (mod logo, owner avatar, chest) */
+  .mods-icon {
+    display: block;
+    flex: none;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .mods-icon-fallback {
+    width: 50%;
+    height: 50%;
+    margin: auto;
+    image-rendering: pixelated;
+  }
+
+  /* ================================================================== compact painted hero (home) */
+  /* the painting keeps to the right of the strip at every width (the copy is one line) */
+  .mods-hero {
+    --kit-hero-paint-x: max(58%, 100% - 34rem);
+  }
+  .mods-hero-art {
+    background: url("/mods/hero-light.svg") 72% 55% / cover no-repeat;
+  }
+  .dark .mods-hero-art {
+    background-image: url("/mods/hero-dark.svg");
+    background-position: 80% 45%;
+  }
+  .mods-hero .kit-hero-inner {
+    display: block;
+    min-height: 0;
+    max-width: var(--mods-width);
+    padding: 0.875rem var(--mods-gutter) 1.375rem;
+  }
+  .mods-hero .kit-hero-copy {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "icon title tagline"
+      "icon stats stats";
+    align-items: center;
+    column-gap: 1rem;
+    row-gap: 0.25rem;
+    max-width: none;
+  }
+  .mods-hero .kit-hero-copy > * {
+    max-width: none;
+  }
+  .mods-hero .kit-hero-badge {
+    grid-area: icon;
+    margin: 0;
+  }
+  .mods-hero .kit-hero-icon {
+    padding: 0.375rem;
+  }
+  .mods-hero .kit-hero-icon img {
+    width: 3rem;
+    height: 3rem;
+    image-rendering: pixelated;
+  }
+  .mods-hero .kit-hero-title {
+    grid-area: title;
+    align-self: end;
+  }
+  .mods-hero .kit-hero-name {
+    font-size: 2.25rem;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  .mods-hero .kit-hero-tagline {
+    grid-area: tagline;
+    align-self: end;
+    margin: 0 0 0.3rem;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mods-hero-stats {
+    grid-area: stats;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--color-primary-strong);
+    font-variant-numeric: tabular-nums;
+  }
+  .mods-hero-stats.kit-pixel-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+  }
+  .dark .mods-hero-stats {
+    color: var(--color-primary);
+  }
+  .mods-hero-sep {
+    color: var(--color-faint);
+  }
+  @media (max-width: 640px) {
+    .mods-hero .kit-hero-inner {
+      padding: 0.75rem var(--mods-gutter) 1.125rem;
+    }
+    .mods-hero .kit-hero-copy {
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-areas:
+        "icon title"
+        "icon stats";
+      column-gap: 0.75rem;
+    }
+    .mods-hero .kit-hero-tagline,
+    .mods-hero-extra {
+      display: none;
+    }
+    .mods-hero .kit-hero-icon {
+      padding: 0.25rem;
+    }
+    .mods-hero .kit-hero-icon img {
+      width: 2rem;
+      height: 2rem;
+    }
+    .mods-hero .kit-hero-name {
+      font-size: 1.625rem;
+    }
+  }
+
+  /* ================================================================== search */
+  .mods-search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  .mods-search-field {
+    flex: 1 1 auto;
+    min-width: 0;
+    cursor: text;
+  }
+  .mods-search-field input {
+    /* no intrinsic width: the field shrinks with the column instead of widening it */
+    width: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .mods-search-field input::-webkit-search-cancel-button {
+    display: none;
+  }
+  .mods-search-icon {
+    flex: none;
+    color: var(--color-muted);
+  }
+  .mods-search-listing .mc-input {
+    min-height: 3rem;
+    padding: 0 0.25rem 0 1rem;
+    font-size: 1rem;
+    --px-drop: 0 calc(var(--px) * 3) 0 0 color-mix(in srgb, var(--color-ink) 7%, transparent);
+  }
+  .mods-search-clear {
+    flex: none;
+  }
+  .mods-search-kbd {
+    flex: none;
+    margin-right: 0.625rem;
+    color: var(--color-muted);
+  }
+  .mods-search-field:focus-within .mods-search-kbd {
+    visibility: hidden;
+  }
+  @media (hover: none) {
+    .mods-search-kbd {
+      display: none;
+    }
+  }
+  @media (max-width: 640px) {
+    .mods-search-listing .mc-input {
+      min-height: 2.75rem;
+    }
+  }
+  .mods-search-header .mc-input,
+  .mods-search-header .mc-btn {
+    min-height: 2.25rem;
+  }
+  .mods-search-header .mc-input {
+    font-size: 0.875rem;
+  }
+  .mods-search-submit {
+    flex: none;
+  }
+  @media (max-width: 640px) {
+    /* phones: the button keeps its place as an icon */
+    .mods-search-submit {
+      padding-inline: 0.625rem;
+    }
+    .mods-search-submit-text {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+
+  /* ================================================================== listing grid */
+  .mods-browse {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    margin-top: 1.25rem;
+  }
+  .mods-results {
+    min-width: 0;
+    container: results / inline-size;
+    scroll-margin-top: calc(var(--kit-sticky-offset, 0px) + 0.75rem);
+  }
+  .mods-sidebar {
+    display: none;
+    min-width: 0;
+  }
+  @media (min-width: 1024px) {
+    .mods-browse {
+      /* narrower sidebar below 1280px, so the results keep their wide rows */
+      grid-template-columns: 16rem minmax(0, 1fr);
+      align-items: start;
+    }
+    .mods-results {
+      order: 2;
+    }
+    .mods-sidebar {
+      order: 1;
+      display: block;
+      position: sticky;
+      top: calc(var(--kit-sticky-offset, 0px) + 1rem);
+      max-height: calc(100dvh - var(--kit-sticky-offset, 0px) - 2rem);
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      /* room for the pixel frames and drops of the cards inside */
+      padding: 0.25rem 0.375rem 0.5rem 0.125rem;
+      margin: -0.25rem -0.375rem 0 -0.125rem;
+    }
+  }
+  @media (min-width: 1280px) {
+    .mods-browse {
+      grid-template-columns: 18.75rem minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 640px) {
+    .mods-browse {
+      margin-top: 0.75rem;
+    }
+  }
+
+  /* ================================================================== toolbar */
+  .mods-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .mods-toolbar .hotbar {
+    margin: var(--px);
+  }
+  .mods-radio > button {
+    min-height: 2rem;
+  }
+  .mods-radio > button > svg {
+    flex: none;
+  }
+  .mods-filters-btn {
+    min-height: 2.25rem;
+  }
+  .mods-sort-menu {
+    display: none;
+  }
+  .mods-sort-menu > summary {
+    min-height: 2.25rem;
+    gap: 0.375rem;
+  }
+  .mods-sort-menu .kit-menu-panel {
+    left: 0;
+    right: auto;
+    min-width: 12rem;
+  }
+  .kit-pagination.mods-pager {
+    margin: 0;
+  }
+  .kit-pagination.mods-pager-top {
+    margin-left: auto;
+  }
+  .mods-pager .hotbar {
+    margin: var(--px);
+  }
+  @media (min-width: 1024px) {
+    .mods-filters-btn {
+      display: none;
+    }
+  }
+  @media (max-width: 640px) {
+    .mods-sort,
+    .mods-pager-top {
+      display: none;
+    }
+    .mods-sort-menu {
+      display: block;
+    }
+    .mods-view {
+      margin-left: auto !important;
+    }
+  }
+
+  /* ================================================================== status line & active filters */
+  .mods-statusbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem 0.75rem;
+    min-height: 1.5rem;
+    margin: 0.5rem 0 0.75rem;
+  }
+  .mods-status {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .mods-status:focus {
+    outline: none;
+  }
+  .mods-status:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+  .mods-status-page {
+    display: none;
+  }
+  @media (max-width: 640px) {
+    .mods-status-page {
+      display: inline;
+    }
+  }
+  .mods-active {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mods-active > li {
+    display: flex;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .mods-chip-active,
+  .mods-chip-clear {
+    gap: 0.375rem;
+  }
+  .mods-chip-x {
+    font-size: 0.875rem;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--color-muted);
+  }
+  .mods-chip-active.is-excluded {
+    --chip: color-mix(in srgb, var(--color-mc-redstone) 55%, var(--color-line));
+    background: color-mix(in srgb, var(--color-mc-redstone) 10%, var(--color-surface));
+  }
+
+  /* ================================================================== chips */
+  /* A pixel chip: tags, variants, filters. Links lift to the primary colour; the current one is filled. */
+  .mods-chip {
+    --chip: color-mix(in srgb, var(--color-ink) 16%, var(--color-line));
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3125rem;
+    max-width: calc(100% - var(--px) * 2);
+    margin: var(--px);
+    padding: 0.0625rem 0.4375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: color-mix(in srgb, var(--color-ink) 78%, var(--color-muted));
+    background: color-mix(in srgb, var(--color-ink) 6%, transparent);
+  }
+  .mods-chip-mono {
+    font-family: var(--font-mono);
+    font-weight: 500;
+  }
+  .mods-chip-link {
+    cursor: pointer;
+    transition:
+      color 0.12s,
+      background-color 0.12s;
+  }
+  .mods-chip-link:hover {
+    --chip: color-mix(in srgb, var(--color-primary) 75%, var(--color-line-strong));
+    color: var(--color-ink);
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  }
+  .mods-chip-link:active {
+    transform: translateY(1px);
+  }
+  .mods-chip-link:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+  .mods-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mods-chips > li {
+    display: flex;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* ================================================================== results: rows (list) and cards (grid) */
+  .mods-results-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mods-results-list > li {
+    display: flex;
+    min-width: 0;
+  }
+  .mods-row {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "icon head stats"
+      "icon desc stats"
+      "icon tags stats";
+    grid-template-rows: auto auto auto;
+    align-content: start;
+    column-gap: 1rem;
+    row-gap: 0.25rem;
+    min-height: 6.5rem;
+    padding: 1.125rem 0.75rem;
+  }
+  /* list view: rows under hairlines, no frames (the grid view keeps the kit's light card frame) */
+  html:not([data-view="grid"]) .mods-row.px-card {
+    --px-border: transparent;
+    background: transparent;
+    border-top: 1px solid var(--color-line);
+    transition: background-color 0.15s;
+  }
+  html:not([data-view="grid"]) .mods-results-list > li:last-child .mods-row {
+    border-bottom: 1px solid var(--color-line);
+  }
+  html:not([data-view="grid"]) .mods-row.px-card:hover {
+    --px-drop: 0 0 #0000;
+    transform: none;
+    background: color-mix(in srgb, var(--color-ink) 3%, transparent);
+  }
+  .mods-row:has(.mods-card-link:focus-visible) {
+    --px-ring-color: var(--color-focus);
+  }
+  .mods-row-icon {
+    grid-area: icon;
+    align-self: start;
+    width: 4.5rem;
+    height: 4.5rem;
+    overflow: hidden;
+  }
+  .mods-row-head {
+    grid-area: head;
+    display: flex;
+    align-items: baseline;
+    gap: 0.375rem;
+    min-width: 0;
+    white-space: nowrap;
+  }
+  .mods-row-name {
+    flex: 0 1 auto;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 1.125rem;
+    font-weight: 650;
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+  }
+  .mods-card-link {
+    color: var(--color-ink);
+  }
+  .mods-card-link::after {
+    /* the whole row is the link's click target */
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+  .mods-card-link:focus-visible {
+    outline: none;
+  }
+  .mods-row:hover .mods-card-link {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    color: var(--color-primary-strong);
+  }
+  .dark .mods-row:hover .mods-card-link {
+    color: var(--color-primary);
+  }
+  .mods-row-by {
+    flex: 0 1000 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+  .mods-row-owner {
+    position: relative;
+    z-index: 2;
+    color: var(--color-muted);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-muted) 40%, transparent);
+    text-underline-offset: 2px;
+  }
+  .mods-row-owner:hover {
+    color: var(--color-link);
+    text-decoration-color: currentColor;
+  }
+  .mods-row-desc {
+    grid-area: desc;
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: color-mix(in srgb, var(--color-ink) 78%, var(--color-muted));
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+  .mods-row-desc-empty {
+    font-style: italic;
+    color: var(--color-faint);
+  }
+  /*
+   * One line of chips. The row measures how many fit (project-row.tsx) and
+   * marks the rest .is-overflow: out of the flow and invisible, listed by the
+   * "+N" chip. Until then (prerendered, no script) the line wraps and the
+   * second line is hidden.
+   */
+  .mods-row-tags {
+    grid-area: tags;
+    align-self: end;
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.125rem 0.25rem;
+    min-width: 0;
+    max-height: 1.75rem;
+    margin: 0.125rem 0 0;
+    padding: 0;
+    overflow: hidden;
+    list-style: none;
+  }
+  .mods-row-tags[data-fit],
+  .mods-row-tags.is-measuring {
+    flex-wrap: nowrap;
+    max-height: none;
+    overflow: visible;
+  }
+  .mods-row-tags > li {
+    display: flex;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .mods-row-tags > li.is-overflow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .mods-row-tags.is-measuring > li {
+    flex-shrink: 0;
+  }
+  .mods-row-tags.is-measuring > li.is-overflow {
+    position: static;
+  }
+  .mods-row-tags > .mods-row-more-li {
+    flex: none;
+  }
+  .mods-row-tags .kit-badge {
+    margin: var(--px);
+  }
+  .mods-row-platform {
+    font-size: 0.75rem;
+  }
+  /* the tooltip is placed against the whole tag line (inside it, over the chip as far as it can) */
+  .mods-row-tags .mods-row-more-host {
+    position: static;
+  }
+  .mods-row-tags .mods-row-more-tip {
+    left: 0;
+    bottom: calc(100% + 0.5rem);
+    max-width: min(22rem, 100%);
+    transform: translateY(4px);
+  }
+  .mods-row-tags .kit-tooltip-host:hover > .mods-row-more-tip,
+  .mods-row-tags .kit-tooltip-host:focus-within > .mods-row-more-tip {
+    transform: none;
+  }
+  .mods-row-more {
+    position: relative;
+    z-index: 2;
+    cursor: default;
+    font-variant-numeric: tabular-nums;
+  }
+  .mods-row-more:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+  .mods-row-stats {
+    grid-area: stats;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: 0.375rem;
+    min-width: 7.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .mods-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+  .mods-stat-stars {
+    font-weight: 650;
+    color: var(--color-ink);
+  }
+  .mods-row-stats-tip {
+    left: auto;
+    right: 0;
+    text-align: left;
+    white-space: normal;
+  }
+  .mods-row-stats.kit-tooltip-host:hover > .mods-row-stats-tip {
+    transform: none;
+  }
+  .mods-row-stats-tip .mc-tooltip-lore {
+    display: block;
+  }
+  @media (hover: none) {
+    .mods-row-stats-tip {
+      display: none;
+    }
+  }
+
+  /* medium rows (results column 480–699px): stats on a line of their own */
+  @container results (width < 700px) {
+    .mods-row {
+      grid-template-columns: 3.5rem minmax(0, 1fr);
+      grid-template-areas:
+        "icon head"
+        "icon desc"
+        "tags tags"
+        "stats stats";
+      grid-template-rows: auto auto auto auto;
+    }
+    .mods-row-icon {
+      width: 3.5rem;
+      height: 3.5rem;
+    }
+    .mods-row-stats {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.25rem 1rem;
+      min-width: 0;
+      font-size: 0.8125rem;
+    }
+  }
+  /* narrow rows (phones): icon, name, stats line, then description and chips under both */
+  @container results (width < 480px) {
+    .mods-row {
+      grid-template-columns: 3rem minmax(0, 1fr);
+      grid-template-areas:
+        "icon head"
+        "icon stats"
+        "desc desc"
+        "tags tags";
+      column-gap: 0.75rem;
+      row-gap: 0.25rem;
+      min-height: 0;
+      padding: 0.75rem;
+    }
+    .mods-row-icon {
+      width: 3rem;
+      height: 3rem;
+    }
+    .mods-row-name {
+      font-size: 1rem;
+    }
+    .mods-row-head {
+      flex-wrap: nowrap;
+    }
+    .mods-row-by {
+      font-size: 0.8125rem;
+    }
+    .mods-row-stats {
+      flex-wrap: nowrap;
+      overflow: hidden;
+      gap: 0.75rem;
+      align-self: center;
+    }
+    .mods-stat-required {
+      display: none;
+    }
+    .mods-row-desc {
+      margin-top: 0.125rem;
+    }
+  }
+
+  /* grid view: large cards, two to a row (one on phones) */
+  html[data-view="grid"] .mods-results-list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+  @media (min-width: 640px) {
+    html[data-view="grid"] .mods-results-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  html[data-view="grid"] .mods-row {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    grid-template-areas:
+      "icon head"
+      "icon by"
+      "desc desc"
+      "tags tags"
+      "stats stats";
+    grid-template-rows: auto auto 1fr auto auto;
+    column-gap: 1rem;
+    row-gap: 0.375rem;
+    min-height: 0;
+    padding: 1.125rem 1.25rem 0.875rem;
+  }
+  html[data-view="grid"] .mods-row-icon {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+  html[data-view="grid"] .mods-row-head {
+    display: contents;
+  }
+  html[data-view="grid"] .mods-row-name {
+    grid-area: head;
+    align-self: end;
+    white-space: nowrap;
+    font-size: 1.25rem;
+    line-height: 1.35;
+  }
+  html[data-view="grid"] .mods-row-by {
+    grid-area: by;
+    align-self: start;
+    white-space: nowrap;
+    line-height: 1.25rem;
+  }
+  html[data-view="grid"] .mods-row-desc {
+    margin-top: 0.375rem;
+    min-height: 4.125rem;
+    font-size: 0.9375rem;
+    line-height: 1.375rem;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+  html[data-view="grid"] .mods-row-stats {
+    flex-direction: row;
+    align-items: center;
+    gap: 1.25rem;
+    min-width: 0;
+    padding-top: 0.625rem;
+    border-top: 1px solid var(--color-line);
+    font-size: 0.875rem;
+  }
+  html[data-view="grid"] .mods-stat-required {
+    display: none;
+  }
+
+  /* While a query in the URL is being applied (see vite.config.ts), placeholders stand in for the rows. */
+  .mods-skeleton-list {
+    display: none;
+  }
+  html[data-mods-pending] .mods-results-list,
+  html[data-mods-pending] .mods-empty,
+  html[data-mods-pending] .mods-pager,
+  html[data-mods-pending] .mods-statusbar {
+    visibility: hidden;
+  }
+  html[data-mods-pending] .mods-results-list {
+    height: 0;
+    overflow: hidden;
+  }
+  html[data-mods-pending] .mods-skeleton-list {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .mods-skeleton-row {
+    display: block;
+    height: 6.5rem;
+    background: color-mix(in srgb, var(--color-ink) 4%, var(--color-surface));
+    animation: mods-pulse 1.6s steps(4, end) infinite alternate;
+  }
+
+  .kit-pagination.mods-pager-bottom {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+  }
+  @media (max-width: 640px) {
+    .mods-pager-bottom {
+      justify-content: center;
+    }
+  }
+
+  /* ================================================================== empty states */
+  .mods-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 3rem 1rem;
+    text-align: center;
+    color: var(--color-muted);
+  }
+  .mods-empty p {
+    margin: 0;
+  }
+  .mods-empty-title {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    overflow-wrap: anywhere;
+  }
+  .mods-empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .mods-empty-hint {
+    font-size: 0.875rem;
+  }
+  .mods-empty-note {
+    margin: 0.5rem 0;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+  .mods-empty-slot {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  /* ================================================================== filter groups (sidebar & drawer) */
+  .mods-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .mods-group {
+    padding: 0 0.5rem 0.5rem;
+  }
+  .mods-group-heading {
+    margin: 0;
+    font-size: 1rem;
+  }
+  .mods-group-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0 0.375rem 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 650;
+    color: var(--color-ink);
+    background: none;
+    cursor: pointer;
+  }
+  .mods-group-toggle:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: -2px;
+  }
+  .mods-group-chevron {
+    color: var(--color-muted);
+    transition: transform 0.15s steps(3, end);
+  }
+  .mods-group-toggle[aria-expanded="false"] .mods-group-chevron {
+    transform: rotate(-90deg);
+  }
+  .mods-opts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mods-opt {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+  }
+  .mods-opt-btn {
+    --px-border: transparent;
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2rem;
+    margin: var(--px);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    text-align: left;
+    color: color-mix(in srgb, var(--color-ink) 86%, var(--color-muted));
+    background: transparent;
+    cursor: pointer;
+    box-shadow:
+      0 calc(var(--px) * -1) 0 0 var(--px-border),
+      0 var(--px) 0 0 var(--px-border),
+      calc(var(--px) * -1) 0 0 0 var(--px-border),
+      var(--px) 0 0 0 var(--px-border);
+    transition: background-color 0.12s;
+  }
+  .mods-opt-btn:hover {
+    background: color-mix(in srgb, var(--color-ink) 5%, transparent);
+  }
+  .mods-opt-btn:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 1px;
+  }
+  .mods-opt-btn[aria-pressed="true"] {
+    --px-border: color-mix(in srgb, var(--color-primary-strong) 70%, var(--color-line-strong));
+    color: var(--color-ink);
+    background: var(--color-primary-soft);
+  }
+  .mods-opt-mark {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 16px;
+    height: 16px;
+  }
+  .mods-opt-btn[aria-pressed="true"] .mods-opt-mark {
+    color: var(--color-primary-strong);
+  }
+  .dark .mods-opt-btn[aria-pressed="true"] .mods-opt-mark {
+    color: var(--color-primary);
+  }
+  .mods-opt-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .mods-opt-count {
+    flex: none;
+    margin-left: auto;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .mods-opt-exclude {
+    flex: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+  .mods-opt:hover .mods-opt-exclude,
+  .mods-opt:focus-within .mods-opt-exclude,
+  .mods-opt-exclude[aria-pressed="true"] {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    .mods-opt-exclude {
+      opacity: 1;
+    }
+  }
+  .mods-opt-exclude[aria-pressed="true"] {
+    color: var(--color-mc-redstone);
+  }
+  .mods-opt.is-excluded .mods-opt-btn {
+    --px-border: color-mix(in srgb, var(--color-mc-redstone) 55%, var(--color-line));
+    background: color-mix(in srgb, var(--color-mc-redstone) 10%, var(--color-surface));
+  }
+  .mods-opt.is-excluded .mods-opt-label {
+    text-decoration: line-through;
+  }
+  .mods-opt.is-dimmed .mods-opt-btn {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .mods-opt.is-dimmed .mods-opt-btn:hover {
+    background: transparent;
+  }
+  /* a zero-count option's exclude button is as dim (and inert) as the option */
+  .mods-opt.is-dimmed .mods-opt-exclude {
+    opacity: 0;
+    cursor: default;
+  }
+  .mods-opt.is-dimmed:hover .mods-opt-exclude,
+  .mods-opt.is-dimmed:focus-within .mods-opt-exclude {
+    opacity: 0.45;
+  }
+  @media (hover: none) {
+    .mods-opt.is-dimmed .mods-opt-exclude {
+      opacity: 0.45;
+    }
+  }
+  .mods-opt-exclude-spacer {
+    flex: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: var(--px);
+  }
+  .mods-group-more {
+    margin: 0.25rem 0 0 0.25rem;
+  }
+  .mods-group-search {
+    min-height: 2.25rem;
+    margin: 0 0.25rem 0.5rem;
+    padding: 0 0.5rem;
+    font-size: 0.875rem;
+  }
+  .mods-group-search input {
+    width: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .mods-group-search input::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  /* filter groups (sidebar and drawer): frameless sections divided by hairlines */
+  .mods-groups-flat {
+    gap: 0;
+  }
+  .mods-group-flat {
+    padding: 0.25rem 0 0.75rem;
+  }
+  .mods-group-flat + .mods-group-flat {
+    border-top: 1px solid var(--color-line);
+  }
+
+  /* ================================================================== dialogs: filter drawer and install */
+  .mods-filter-drawer,
+  .mods-dialog {
+    padding: 0;
+    border: 0;
+    color: var(--color-ink);
+    background: transparent;
+    max-width: none;
+    max-height: none;
+  }
+  .mods-filter-drawer::backdrop,
+  .mods-dialog::backdrop {
+    background: color-mix(in srgb, #000 45%, transparent);
+  }
+  .mods-filter-drawer {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(24rem, 100vw);
+    height: 100dvh;
+    margin: 0;
+  }
+  @media (max-width: 640px) {
+    .mods-filter-drawer {
+      width: 100vw;
+    }
+  }
+  .mods-filter-drawer[open] {
+    animation: mods-drawer-in 0.18s steps(4, end);
+  }
+  .mods-drawer-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--color-canvas);
+    box-shadow: 4px 0 0 0 var(--color-line-strong);
+  }
+  .mods-drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: none;
+    height: 3.5rem;
+    padding: 0 0.5rem 0 1rem;
+    border-bottom: 2px solid var(--color-line);
+  }
+  .mods-drawer-head h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 700;
+  }
+  .mods-drawer-body {
+    flex: 1 1 auto;
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: 0.25rem 1rem 1rem;
+  }
+  .mods-drawer-foot {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+    border-top: 2px solid var(--color-line);
+    background: var(--color-surface);
+  }
+  .mods-drawer-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .mods-drawer-actions .mc-btn {
+    flex: 1 1 0;
+  }
+
+  .mods-dialog {
+    width: min(36rem, calc(100vw - 2rem));
+    margin: auto;
+  }
+  .mods-dialog[open] {
+    animation: mods-dialog-in 0.14s steps(3, end);
+  }
+  .mods-dialog-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    padding: 1.25rem 1.25rem 1.5rem;
+  }
+  .mods-dialog-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .mods-dialog-head h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .mods-dialog-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+  .mods-dialog-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-muted);
+  }
+  .mods-dialog-field > .hotbar {
+    align-self: flex-start;
+  }
+  .mods-dialog-select {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--color-ink);
+    cursor: pointer;
+  }
+  .mods-dialog-hint {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+  .mods-dialog-download {
+    align-self: flex-start;
+  }
+
+  /* ================================================================== install command */
+  .mods-install-box.kit-code {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin: var(--px);
+    padding: 0.125rem 0.125rem 0.125rem 0.875rem;
+  }
+  .mods-install-box .mods-install-command {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.5rem 0;
+    /* the kit's `.kit-code code` inherits the frame's font; this is code */
+    font-family: var(--font-mono);
+    font-feature-settings: "calt" 0, "liga" 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-code-ink);
+    user-select: all;
+  }
+  .mods-install-text {
+    min-width: 0;
+    /* only a part wider than the whole box breaks inside (see commandParts) */
+    overflow-wrap: anywhere;
+  }
+  .mods-install-part {
+    /* a part breaks inside only when it is wider than the whole box on its own */
+    display: inline-block;
+    max-width: 100%;
+  }
+  .mods-install-prompt {
+    flex: none;
+    margin-top: calc((1lh - 12px) / 2);
+    width: 12px;
+    height: 12px;
+    background: var(--color-primary);
+    -webkit-mask: var(--kit-icon-chevron-right) center / contain no-repeat;
+    mask: var(--kit-icon-chevron-right) center / contain no-repeat;
+    user-select: none;
+  }
+  .mods-copy {
+    /* .kit-tooltip-host makes it a flex box: keep the sprite centred */
+    justify-content: center;
+    align-items: center;
+    flex: none;
+  }
+  .mods-copy .kit-tooltip {
+    font-family: var(--font-sans);
+    text-align: left;
+    cursor: default;
+  }
+  /* copy buttons sit at the right edge: open the tooltip leftwards */
+  .mods-copy > .kit-tooltip {
+    left: auto;
+    right: 0;
+    transform: translateY(4px);
+  }
+  .mods-copy.kit-tooltip-host:hover > .kit-tooltip,
+  .mods-copy.kit-tooltip-host:focus-within > .kit-tooltip {
+    transform: none;
+  }
+  .mods-copy[data-copied] {
+    color: var(--color-primary-strong);
+  }
+  .dark .mods-copy[data-copied] {
+    color: var(--color-primary);
+  }
+
+  /* ================================================================== site header row (mod & 404 pages) */
+  .mods-header {
+    position: relative;
+    z-index: 2;
+  }
+  .mods-header-inner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: var(--mods-width);
+    min-height: 3.25rem;
+    margin: 0 auto;
+    padding: 0.5rem var(--mods-gutter);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .mods-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    flex: none;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--color-ink);
+    transition: color 0.12s;
+  }
+  .mods-brand:hover {
+    color: var(--color-primary-strong);
+  }
+  .dark .mods-brand:hover {
+    color: var(--color-primary);
+  }
+  .mods-brand-icon {
+    width: 24px;
+    height: 24px;
+    image-rendering: pixelated;
+  }
+  .mods-header-search {
+    flex: 0 1 26rem;
+    min-width: 0;
+    margin-left: auto;
+  }
+  @media (max-width: 640px) {
+    .mods-header-inner {
+      gap: 0.75rem;
+    }
+    .mods-brand {
+      font-size: 1.0625rem;
+    }
+  }
+  @media (max-width: 360px) {
+    .mods-brand-name {
+      display: none;
+    }
+  }
+
+  /* ================================================================== mod page */
+  .mods-detail {
+    padding-top: 1rem;
+  }
+  .mods-back {
+    margin: 0 0 0.75rem -0.5rem;
+  }
+  .mods-project-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 1.25rem 1.5rem;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--color-line);
+    position: relative;
+  }
+  .mods-project-head::after {
+    /* the kit's paint-dab rule, sitting on the line at its start */
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -4.5px;
+    width: 64px;
+    height: 8px;
+    background: var(--kit-rule-dabs);
+  }
+  .mods-project-icon {
+    padding: 0.625rem;
+  }
+  .mods-project-icon .mods-icon {
+    width: 6rem;
+    height: 6rem;
+  }
+  .mods-project-icon .mods-icon-fallback {
+    width: 4rem;
+    height: 4rem;
+    margin: 1rem;
+  }
+  .mods-project-heading {
+    min-width: 0;
+  }
+  .mods-project-name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.875rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+  }
+  .mods-project-by {
+    margin: 0.25rem 0 0;
+    font-size: 0.9375rem;
+    color: var(--color-muted);
+  }
+  .mods-project-by a {
+    color: var(--color-link);
+  }
+  .mods-project-by a:hover {
+    text-decoration: underline;
+  }
+  .mods-project-summary {
+    max-width: 44rem;
+    margin: 0.625rem 0 0;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--color-ink) 82%, var(--color-muted));
+    overflow-wrap: anywhere;
+  }
+  .mods-project-stats {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem 1rem;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .mods-project-stats > li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+  .mods-project-stats > .mods-project-cat {
+    gap: 0;
+  }
+  .mods-project-stats > .mods-project-cat + .mods-project-cat {
+    margin-left: -0.75rem;
+  }
+  .mods-project-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+  .mods-project-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .mods-github-btn.mc-btn {
+    width: 3rem;
+    padding: 0;
+  }
+  .mods-project-version {
+    /* a data value: mono, like the README header's version (Silkscreen is for micro-labels only) */
+    font-family: var(--font-mono);
+    font-weight: 500;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  @media (max-width: 760px) {
+    .mods-project-head {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 1rem;
+    }
+    .mods-project-actions {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+  @media (max-width: 640px) {
+    /* phones: icon and name on one row; summary, stats and the buttons under both */
+    .mods-project-head {
+      row-gap: 0.25rem;
+    }
+    .mods-project-heading {
+      display: contents;
+    }
+    .mods-project-icon {
+      grid-row: 1 / span 2;
+      align-self: center;
+      padding: 0.375rem;
+    }
+    .mods-project-name {
+      align-self: end;
+    }
+    .mods-project-by {
+      grid-column: 2;
+      align-self: start;
+      margin: 0;
+    }
+    .mods-project-summary {
+      margin-top: 0.5rem;
+    }
+    .mods-project-actions {
+      margin-top: 0.75rem;
+    }
+    .mods-tabs-nav .mods-tabs > a {
+      padding-inline: 0.75rem;
+      font-size: 0.8125rem;
+    }
+    .mods-versions-pager .hotbar-pixel > a,
+    .mods-versions-pager .hotbar-pixel > .hotbar-slot {
+      min-width: 1.75rem;
+      padding-inline: 0.25rem;
+    }
+    .mods-project-icon .mods-icon {
+      width: 4rem;
+      height: 4rem;
+    }
+    .mods-project-icon .mods-icon-fallback {
+      width: 2.5rem;
+      height: 2.5rem;
+      margin: 0.75rem;
+    }
+    .mods-project-name {
+      font-size: 1.5rem;
+    }
+    .mods-project-summary,
+    .mods-project-stats {
+      grid-column: 1 / -1;
+    }
+    .mods-project-buttons,
+    .mods-install-btn {
+      flex: 1 1 auto;
+    }
+  }
+
+  .mods-tabs-nav {
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0.125rem;
+  }
+  .mods-tabs-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .mods-tabs {
+    flex-wrap: nowrap;
+    max-width: none;
+    white-space: nowrap;
+  }
+  .mods-tabs > a {
+    flex: none;
+    min-height: 2.25rem;
+    padding-inline: 1rem;
+    font-size: 0.875rem;
+  }
+
+  .mods-detail-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+  .mods-detail-grid > * {
+    min-width: 0;
+  }
+  @media (min-width: 1024px) {
+    .mods-detail-grid {
+      grid-template-columns: minmax(0, 1fr) 18.75rem;
+      align-items: start;
+    }
+  }
+  .mods-detail-main,
+  .mods-detail-side {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .mods-panel {
+    padding: 1.25rem;
+    min-width: 0;
+  }
+  .mods-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 650;
+    line-height: 1.4;
+    color: var(--color-ink);
+  }
+  .mods-panel-title > svg {
+    flex: none;
+  }
+  /* the sidebar's facts: frameless sections under hairlines (the README keeps its reading card) */
+  .mods-side-panel.px-card {
+    --px-border: transparent;
+    padding: 1.25rem 0 1.375rem;
+    background: transparent;
+    border-top: 1px solid var(--color-line);
+  }
+  .mods-section-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 650;
+  }
+  .mods-section-note {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-muted);
+  }
+
+  /* README */
+  .mods-readme {
+    padding: 0;
+  }
+  .mods-readme-title {
+    margin: 0;
+    padding: 0.875rem 1.5rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .mods-readme-version {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-muted);
+  }
+  .mods-readme-body {
+    padding: 1.5rem 1.75rem 2rem;
+  }
+  .mods-readme-body img {
+    max-width: 100%;
+    margin: 0.125rem 0.125rem 0.125rem 0;
+    vertical-align: middle;
+  }
+
+  /*
+   * README typography: denser than the kit's long-form prose (docs, blog), closer
+   * to how READMEs are written — short sections, badge rows, many headings,
+   * tables and code. Headings carry a hairline below (h1, h2) instead of a big
+   * gap and a rule above, so an author's own `---` does not stack up with it.
+   */
+  .kit-prose.mods-readme-body {
+    --prose-gap: 0.75rem;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+  }
+  .kit-prose.mods-readme-body:lang(zh) {
+    line-height: 1.75;
+  }
+  .kit-prose.mods-readme-body h1 {
+    margin: 0 0 1rem;
+    padding-bottom: 0.5rem;
+    font-size: 1.75rem;
+    line-height: 1.25;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .kit-prose.mods-readme-body h2 {
+    margin: 2rem 0 0.75rem;
+    padding: 0 0 0.375rem;
+    font-size: 1.3125rem;
+    border-top: 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .kit-prose.mods-readme-body h2 .kit-anchor {
+    top: calc(50% - 0.1875rem);
+  }
+  .kit-prose.mods-readme-body h3 {
+    margin: 1.5rem 0 0.5rem;
+    font-size: 1.0625rem;
+  }
+  .kit-prose.mods-readme-body h4 {
+    margin: 1.25rem 0 0.375rem;
+    font-size: 0.9375rem;
+  }
+  .kit-prose.mods-readme-body :is(h5, h6) {
+    margin: 1rem 0 0.375rem;
+    font-size: 0.875rem;
+  }
+  /* centred title blocks (`<div align="center">`) keep their heading rules short */
+  .kit-prose.mods-readme-body [align="center"] :is(h1, h2) {
+    border-bottom: 0;
+  }
+  .kit-prose.mods-readme-body :is(h1, h2, h3, h4) + :is(h2, h3, h4) {
+    margin-top: 0.75rem;
+  }
+  .kit-prose.mods-readme-body hr {
+    margin: 1.5rem 0;
+  }
+  .kit-prose.mods-readme-body hr + :is(h1, h2, h3) {
+    margin-top: 0.5rem;
+  }
+  .kit-prose.mods-readme-body :is(h1, h2) + hr {
+    display: none;
+  }
+  .kit-prose.mods-readme-body li {
+    margin: 0.1875rem 0;
+  }
+  .kit-prose.mods-readme-body li > p {
+    margin: 0.25rem 0;
+  }
+  .kit-prose.mods-readme-body :is(.mods-code, .kit-table-wrap, blockquote, .kit-adm, details) {
+    margin-top: 0.875rem;
+    margin-bottom: 0.875rem;
+  }
+  .kit-prose.mods-readme-body blockquote {
+    font-size: 0.9375rem;
+  }
+  .kit-prose.mods-readme-body blockquote > :is(p, ul, ol) {
+    margin: 0.375rem 0;
+  }
+  .kit-prose.mods-readme-body table {
+    font-size: 0.875rem;
+  }
+  .kit-prose.mods-readme-body :is(th, td) {
+    padding: 0.375rem 0.75rem;
+  }
+  .kit-prose.mods-readme-body tbody tr:nth-child(even) td {
+    background: color-mix(in srgb, var(--color-ink) 2.5%, transparent);
+  }
+  /* badge rows: a paragraph of linked images sits tight, wrapping as a group */
+  .kit-prose.mods-readme-body p:has(> a > img, > img):not(:has(> :not(a, img, br, picture))) {
+    line-height: 1.4;
+  }
+  .kit-prose.mods-readme-body p:has(> a > img, > img) a {
+    text-decoration: none;
+  }
+  .kit-prose.mods-readme-body p:has(> a > img, > img) a::after {
+    display: none;
+  }
+  /* GitHub's light/dark image pairs (`#gh-dark-mode-only`), by the site's theme */
+  html:not(.dark) .mods-readme-body img[src$="#gh-dark-mode-only"],
+  html.dark .mods-readme-body img[src$="#gh-light-mode-only"] {
+    display: none;
+  }
+  .mods-readme-body .kit-adm {
+    margin-left: var(--px);
+    margin-right: var(--px);
+  }
+  .mods-readme-empty {
+    padding: 3rem 1rem;
+  }
+  @media (max-width: 640px) {
+    .mods-readme-title {
+      padding: 0.75rem 1rem;
+    }
+    .mods-readme-body {
+      padding: 1.25rem 1rem 1.75rem;
+    }
+  }
+  /* README code blocks: the kit code frame without a title bar, copy button in the corner */
+  .mods-code {
+    position: relative;
+  }
+  .mods-code-copy {
+    position: absolute;
+    top: 0.375rem;
+    right: 0.375rem;
+    z-index: 1;
+  }
+  .kit-prose .mods-code pre {
+    padding-right: 3rem;
+    overflow-x: auto;
+  }
+  .mods-code pre code {
+    display: block;
+    min-width: max-content;
+    font: inherit;
+    color: inherit;
+    background: none;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  /* versions */
+  .mods-versions-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .kit-pagination.mods-versions-pager {
+    margin: 0 0 0 auto;
+  }
+  .mods-toggle[aria-pressed="false"] {
+    color: var(--color-muted);
+  }
+  .mods-versions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .mods-versions-table th {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: left;
+    color: var(--color-muted);
+    border-bottom: 2px solid var(--color-line);
+  }
+  .mods-versions-table td {
+    padding: 0.375rem 0.5rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .mods-versions-table tr[aria-current] td {
+    background: var(--color-primary-soft);
+  }
+  .mods-vt-channel {
+    width: 1.5rem;
+  }
+  .mods-channel {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+  }
+  .mods-channel.is-release {
+    background: var(--color-mc-grass);
+  }
+  .mods-channel.is-pre {
+    background: var(--color-mc-gold);
+  }
+  .mods-vt-version a {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--color-link);
+    overflow-wrap: anywhere;
+  }
+  .mods-vt-version a:hover {
+    text-decoration: underline;
+  }
+  .mods-vt-version a[aria-current] {
+    color: var(--color-ink);
+  }
+  .mods-vt-variants {
+    max-width: 14rem;
+  }
+  .mods-vt-range code {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+  .mods-vt-date {
+    white-space: nowrap;
+    color: var(--color-muted);
+  }
+  .mods-vt-actions {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .mods-vt-actions .mc-icon-btn {
+    width: 2rem;
+    height: 2rem;
+  }
+  @media (max-width: 767px) {
+    /* phones: each version is a stacked row */
+    .mods-versions-table thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    .mods-versions-table,
+    .mods-versions-table tbody {
+      display: block;
+    }
+    .mods-versions-table tr {
+      display: grid;
+      grid-template-columns: 1rem minmax(0, 1fr) auto;
+      grid-template-areas:
+        "dot version actions"
+        ". meta meta";
+      align-items: center;
+      column-gap: 0.5rem;
+      padding: 0.5rem 0.25rem;
+      border-bottom: 1px solid var(--color-line);
+    }
+    .mods-versions-table tr[aria-current] {
+      background: var(--color-primary-soft);
+    }
+    .mods-versions-table td {
+      display: block;
+      padding: 0;
+      border: 0;
+      background: none !important;
+    }
+    .mods-vt-channel {
+      grid-area: dot;
+    }
+    .mods-vt-version {
+      grid-area: version;
+    }
+    .mods-vt-actions {
+      grid-area: actions;
+      width: auto;
+    }
+    .mods-vt-variants,
+    .mods-vt-range,
+    .mods-vt-date {
+      grid-column: 2 / -1;
+      max-width: none;
+      font-size: 0.8125rem;
+    }
+  }
+
+  /* dependencies */
+  .mods-deps-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .mods-deps {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mods-dep {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 0.625rem 0.75rem;
+  }
+  .mods-dep-icon {
+    flex: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    overflow: hidden;
+  }
+  .mods-dep-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .mods-dep-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 0.375rem;
+    min-width: 0;
+  }
+  .mods-dep-name {
+    min-width: 0;
+    font-weight: 650;
+    color: var(--color-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  a.mods-dep-name:hover {
+    color: var(--color-link);
+    text-decoration: underline;
+  }
+  .mods-dep-unlisted {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+  .mods-dep-unlisted .kit-badge {
+    flex: none;
+    margin: 0;
+    font-size: 0.6875rem;
+    line-height: 1rem;
+  }
+  .mods-dep-meta {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+  .mods-dep-tooth {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+  .mods-dep-range {
+    flex: none;
+    max-width: 40%;
+  }
+
+  /* sidebar */
+  .mods-facts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 0;
+  }
+  .mods-facts dt {
+    margin-bottom: 0.25rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-muted);
+  }
+  .mods-facts dd {
+    margin: 0;
+  }
+  .mods-fact-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  .mods-fact-chips .kit-badge {
+    margin: var(--px);
+  }
+  .mods-fact-chips a.kit-badge:hover {
+    text-decoration: underline;
+  }
+  .mods-side-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mods-side-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3125rem 0;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-link);
+  }
+  .mods-side-link:hover {
+    text-decoration: underline;
+  }
+  .mods-side-all {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+  }
+  .mods-side-link-ext {
+    color: var(--color-muted);
+  }
+  .mods-creator {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--color-ink);
+  }
+  .mods-creator-avatar {
+    width: 2rem;
+    height: 2rem;
+    flex: none;
+    box-shadow: 0 0 0 var(--px) var(--color-line-strong);
+  }
+  .mods-creator-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .mods-creator-name {
+    font-weight: 650;
+    overflow-wrap: anywhere;
+  }
+  .mods-creator:hover .mods-creator-name {
+    color: var(--color-link);
+    text-decoration: underline;
+  }
+  .mods-creator-role {
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+  .mods-meta {
+    margin: 0;
+  }
+  .mods-meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .mods-meta-row:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  .mods-meta dt {
+    flex: none;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+  .mods-meta dd {
+    margin: 0;
+    min-width: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+  .mods-meta-mono {
+    font-family: var(--font-mono);
+  }
+  .mods-meta-stack {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.375rem;
+  }
+  .mods-meta-stack dd {
+    text-align: left;
+    font-weight: 500;
+  }
+  .mods-meta-id {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .mods-meta-id code {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    overflow-wrap: anywhere;
+  }
+
+  /* ================================================================== 404 and error */
+  .mods-notfound {
+    display: grid;
+    place-items: center;
+    padding: 3rem 1rem 2rem;
+  }
+  .mods-notfound-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: min(36rem, calc(100% - var(--px) * 2));
+    padding: 2.5rem 2rem 2.25rem;
+    text-align: center;
+  }
+  .mods-notfound-compass {
+    width: 6rem;
+    height: 6rem;
+    margin-bottom: 1.5rem;
+  }
+  .mods-notfound-code {
+    margin: 0 0 0.75rem;
+  }
+  .mods-error-title {
+    margin: 0 0 0.75rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+  }
+  .mods-notfound-code .kit-hero-name {
+    margin: 0 auto;
+    font-size: clamp(3.25rem, 2.4rem + 3.5vw, 4.75rem);
+  }
+  .mods-notfound-text {
+    max-width: 28rem;
+    margin: 0 0 1.75rem;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+
+  /* ================================================================== loading */
+  .mods-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    padding: 1.75rem 2rem 2.25rem;
+  }
+  .mods-page-skeleton {
+    max-width: var(--mods-width);
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+  }
+  .mods-skeleton-bar {
+    display: block;
+    width: 100%;
+    height: 0.875rem;
+    background: color-mix(in srgb, var(--color-ink) 8%, transparent);
+    animation: mods-pulse 1.6s steps(4, end) infinite alternate;
+  }
+  .mods-skeleton-title {
+    width: 40%;
+    height: 1.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .mods-skeleton-90 {
+    width: 90%;
+  }
+  .mods-skeleton-70 {
+    width: 70%;
+  }
+}
+
+@keyframes mods-pulse {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.45;
+  }
+}
+@keyframes mods-drawer-in {
+  from {
+    transform: translateX(-1.5rem);
+    opacity: 0;
+  }
+}
+@keyframes mods-dialog-in {
+  from {
+    transform: translateY(0.5rem);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mods-filter-drawer[open],
+  .mods-dialog[open],
+  .mods-skeleton-bar,
+  .mods-skeleton-row {
+    animation: none;
+  }
+}

@@ -15,7 +15,7 @@ export interface LocaleOption {
   lang: string;
   /**
    * Destination for this locale (the equivalent page, or that locale's home). Without `href` the option is a
-   * button: the language is app state (e.g. pkg.levimc.org, static pages), not part of the URL.
+   * button: the language is app state (e.g. levimc.org/mods/, static pages), not part of the URL.
    */
   href?: string;
 }

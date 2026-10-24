@@ -1,0 +1,7 @@
+# LeviMC Mods (mods/) keeps the weekly dependency updates it had as pkg.levimc.org.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/mods"
+    schedule:
+      interval: "weekly"

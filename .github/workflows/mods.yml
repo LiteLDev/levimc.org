@@ -1,0 +1,51 @@
+# LeviMC Mods (mods/): lint, type-check, unit tests and a full build with this checkout's kit. Independent of the
+# Pages deploy in deploy.yml, which builds and publishes it at /mods/.
+name: LeviMC Mods
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'mods/**'
+      - 'kit/**'
+      - '.github/workflows/mods.yml'
+  pull_request:
+    paths:
+      - 'mods/**'
+      - 'kit/**'
+      - '.github/workflows/mods.yml'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mods
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v5
+        with:
+          package_json_file: mods/package.json
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: mods/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm lint
+
+      - run: pnpm typecheck
+
+      - run: pnpm test
+
+      - run: pnpm build
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - run: pnpm linkcheck

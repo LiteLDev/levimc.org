@@ -1,4 +1,4 @@
-// Demo plain Vite app (levimc.org / pkg.levimc.org shape): the GlobalBar is the site's only header and carries
+// Demo plain Vite app (levimc.org / levimc.org/mods shape): the GlobalBar is the site's only header and carries
 // the app's own languages (state, not part of the URL); same-site bar links navigate inside the app.
 import { Link, Route, Routes, useLocation } from 'react-router';
 import { GlobalBar } from '../../kit/components/GlobalBar';

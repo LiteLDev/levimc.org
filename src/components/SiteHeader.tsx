@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { GlobalBar, type LinkLikeProps, type SiteId } from '../../kit/components';
 import { useI18n, kitLocale, LOCALES } from '../i18n';
-import { SITE_ORIGIN, type RouteId } from '../routes';
+import { MODS_PATH, SITE_ORIGIN, type RouteId } from '../routes';
 
 /** Same-site links of the bar and footer navigate inside the app (no full reload). */
 export function RouterLink({ href, children, ...rest }: LinkLikeProps) {
@@ -11,6 +11,9 @@ export function RouterLink({ href, children, ...rest }: LinkLikeProps) {
     </Link>
   );
 }
+
+/** LeviMC Mods (/mods/) is a separate app on this origin: its links load in full. */
+export const isAppPath = (path: string) => !path.startsWith(MODS_PATH);
 
 /** The bar tab of each page (Support Us has none: it is linked from the footer). */
 const BAR_TAB: Partial<Record<RouteId, SiteId>> = {
@@ -37,6 +40,7 @@ export default function SiteHeader({ current }: { current: RouteId | null }) {
       sticky
       siteOrigin={SITE_ORIGIN}
       linkComponent={RouterLink}
+      isAppPath={isAppPath}
       languages={{ options: LANGUAGE_OPTIONS, current: locale, onSelect: (code) => setLocale(code as typeof locale) }}
     />
   );

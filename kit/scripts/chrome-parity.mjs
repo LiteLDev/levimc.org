@@ -13,7 +13,7 @@
 const DEFAULT_URLS = [
   'https://levimc.org/',
   'https://levimc.org/blog/',
-  'https://pkg.levimc.org/',
+  'https://levimc.org/mods/',
   'https://docs.levimc.org/',
   'https://docs.levimc.org/LeviLamina/',
   'https://docs.levimc.org/LeviLamina/api/index.html',
