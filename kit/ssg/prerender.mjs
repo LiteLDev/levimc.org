@@ -1,4 +1,4 @@
-// Generic static prerendering for plain Vite + React apps (levimc.org, pkg.levimc.org).
+// Generic static prerendering for plain Vite + React apps (levimc.org, levimc.org/mods/).
 //
 //   // prerender.mjs (in the app)
 //   import { prerenderRoutes } from './kit/ssg/prerender.mjs';

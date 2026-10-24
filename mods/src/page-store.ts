@@ -1,5 +1,6 @@
 import { createContext, useContext, useSyncExternalStore } from "react";
 import { loadMarkdown } from "./components/lazy-markdown";
+import { toothFromPath } from "./lib/packages";
 import { parsePageData, type PageData } from "./page-data";
 
 /** A promise React's `use()` can read synchronously once it has settled. */
@@ -26,7 +27,7 @@ function track<T>(promise: Promise<T>): Promise<T> {
   return thenable;
 }
 
-/** `/index.html` and `/packages/x/index.html` are the same pages as `/` and `/packages/x/`. */
+/** `/mods/index.html` and `/mods/<tooth>/index.html` are the same pages as `/mods/` and `/mods/<tooth>/`. */
 function pageKey(pathname: string): string {
   return pathname.replace(/\/index\.html$/, "/");
 }
@@ -76,7 +77,7 @@ export class PageStore {
   preload(pathname: string): void {
     if (typeof window === "undefined") return;
     this.get(pathname);
-    if (pathname.startsWith("/packages/")) loadMarkdown().catch(() => {});
+    if (toothFromPath(pathname) !== null) loadMarkdown().catch(() => {});
   }
 }
 

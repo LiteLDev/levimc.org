@@ -1,3 +1,4 @@
+import { BASE } from "../base-path";
 import { useState, type MouseEvent } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { BrandIcon, PixelIcon } from "../kit-ui";
@@ -28,7 +29,7 @@ function BackLink() {
   const hydrated = useHydrated();
   const location = useLocation();
   const navigate = useNavigate();
-  const href = (hydrated && readStorage(STORAGE_KEYS.lastSearch, true)) || "/";
+  const href = (hydrated && readStorage(STORAGE_KEYS.lastSearch, true)) || BASE;
   const fromListing = (location.state as { fromListing?: boolean } | null)?.fromListing === true;
   return (
     <RouterLink

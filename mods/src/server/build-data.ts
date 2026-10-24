@@ -1,7 +1,8 @@
-// Build-time page data: the catalogue for `/`, and for each package page its
+// Build-time page data: the catalogue for `/mods/`, and for each package page its
 // default README and manifest, releases, LeviLamina ranges and the packages it
 // depends on or is required by. Only the server bundle (prerender, dev server)
 // imports this.
+import { BASE } from "../base-path";
 import {
   fetchReadme,
   getDefaultSelection,
@@ -13,11 +14,11 @@ import type { PageData } from "../page-data";
 import type { RelatedPackage } from "../types";
 import { allDependencies, leviLaminaRanges, loadBuildData, related } from "./catalog";
 
-/** `/` and every package that has a version to show. */
+/** `/mods/` and every package that has a version to show. */
 export async function listRoutes(): Promise<string[]> {
   const { index } = await loadBuildData();
   return [
-    "/",
+    BASE,
     ...Object.entries(index.packages)
       .filter(([, pkg]) => getDefaultSelection(pkg))
       .map(([tooth]) => packagePath(tooth)),
@@ -28,7 +29,7 @@ export async function loadPageData(pathname: string): Promise<PageData> {
   const data = await loadBuildData();
   const { index, catalog, renames } = data;
 
-  if (pathname === "/") {
+  if (pathname === BASE) {
     return { kind: "home", catalog, renames };
   }
 

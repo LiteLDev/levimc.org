@@ -1,4 +1,4 @@
-// Locale state for apps whose language is not part of the URL (pkg.levimc.org, levimc.org): follows the
+// Locale state for apps whose language is not part of the URL (levimc.org and its /mods/): follows the
 // visitor's cross-site language preference (cookie levimc_lang, see prefs.ts), else the browser languages.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { pickLocale, preferredLanguages, readLanguagePreference, writePref } from './prefs.ts';

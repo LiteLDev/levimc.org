@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { createThemeInitScript } from "./kit/components/theme.ts";
 import { FONT_HEAD_HTML } from "./kit/components/fonts.ts";
+import { BASE } from "./src/base-path.ts";
 import { LISTING_KEYS } from "./src/lib/catalog-query.ts";
 import { STORAGE_KEYS } from "./src/lib/storage.ts";
 import { LOCALES } from "./src/locales.ts";
@@ -17,13 +18,13 @@ const prefsScript = createThemeInitScript({ appLocales: { locales: LOCALES, prer
 
 /**
  * The listing's own pre-paint state: the viewer's list/grid choice, and
- * `data-pkg-pending` while a query in the URL (`/?cat=…`) is not applied yet —
+ * `data-pkg-pending` while a query in the URL (`/mods/?cat=…`) is not applied yet —
  * the page is prerendered unfiltered, so its results stay hidden until the
  * app has applied the query (at most 4 s).
  */
 const listingScript =
   `(function(){var d=document.documentElement;try{if(localStorage.getItem(${JSON.stringify(STORAGE_KEYS.view)})==="grid")d.setAttribute("data-view","grid")}catch(e){}` +
-  `var p=location.pathname;if((p==="/"||p==="/index.html")&&/[?&](${LISTING_KEYS.join("|")})=/.test(location.search)){` +
+  `var p=location.pathname;if((p===${JSON.stringify(BASE)}||p===${JSON.stringify(`${BASE}index.html`)})&&/[?&](${LISTING_KEYS.join("|")})=/.test(location.search)){` +
   `d.setAttribute("data-pkg-pending","");setTimeout(function(){d.removeAttribute("data-pkg-pending")},4000)}})()`;
 
 /**
@@ -55,7 +56,7 @@ function devServerRender(): Plugin {
         server.middlewares.use(async (req, res, next) => {
           const url = req.originalUrl ?? "/";
           // The hero paintings are written by prerender.mjs; drawn on request here.
-          const hero = /^\/(hero-(?:light|dark)\.svg)$/.exec(url.split("?")[0] ?? "");
+          const hero = /^\/mods\/(hero-(?:light|dark)\.svg)$/.exec(url.split("?")[0] ?? "");
           if (hero) {
             const entry = await server.ssrLoadModule("/src/entry-server.tsx");
             res.setHeader("Content-Type", "image/svg+xml");
@@ -92,6 +93,8 @@ function devServerRender(): Plugin {
 }
 
 export default defineConfig({
+  // The site is levimc.org/mods/: the levimc.org build copies dist/ there.
+  base: BASE,
   // HTML is rendered by `devServerRender` in dev and by prerender.mjs at build.
   appType: "custom",
   plugins: [react(), tailwindcss(), kitHead(), devServerRender()],

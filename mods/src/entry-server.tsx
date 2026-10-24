@@ -13,8 +13,8 @@ export { listRoutes, parsePageData };
 export { HERO_FILES, heroSvg } from "./server/hero";
 
 /**
- * Renders one page for prerender.mjs (and the dev server): `/`,
- * `/packages/<tooth>/`, or anything else as the 404 page.
+ * Renders one page for prerender.mjs (and the dev server): `/mods/`,
+ * `/mods/<tooth>/`, or anything else as the 404 page.
  */
 export async function render(url: string) {
   const pathname = new URL(url, "http://localhost").pathname;

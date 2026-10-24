@@ -2,16 +2,17 @@
 
 LeviMC Mods (LeviMC 模组) is the catalogue of mods and plugins for Minecraft
 Bedrock — LeviLamina, LegacyScriptEngine and Endstone — served at
-<https://pkg.levimc.org/>. Every package in it can be installed with
-[lip](https://github.com/LiteLDev/lip).
+<https://levimc.org/mods/> (it was pkg.levimc.org, which redirects there). Every
+package in it can be installed with [lip](https://github.com/LiteLDev/lip).
 
 It is a static site built from the [lipr](https://github.com/LiteLDev/lipr)
 index with the LeviMC web stack — [Vite](https://vite.dev), React 19,
 [React Router](https://reactrouter.com) 7, TypeScript and Tailwind CSS v4 — and
-the shared LeviMC design system, levimc-kit, which `pnpm install` fetches from
-levimc.org into `kit/` (git-ignored; see [Design system](#design-system)):
+the shared LeviMC design system, levimc-kit, which `pnpm install` copies from
+`../kit` into `kit/` (git-ignored; see [Design system](#design-system)). It is
+built with Vite `base: '/mods/'`: every page and file is under `/mods/`.
 
-- **The listing** (`/`) has the whole catalogue baked in: search as you type,
+- **The listing** (`/mods/`) has the whole catalogue baked in: search as you type,
   filters (platform, category, environment, license), sort (relevance — by
   GitHub stars when nothing is searched — stars, updated, newest), page size,
   list or grid view and pagination all run in the browser and read
@@ -21,7 +22,7 @@ levimc.org into `kit/` (git-ignored; see [Design system](#design-system)):
   the groups combine with AND. Old links
   keep working: `?tags=` still filters by raw lipr tags, `?sort=downloads`
   sorts by stars.
-- **Package pages** (`/packages/<tooth>/`) are prerendered with the README and
+- **Package pages** (`/mods/<tooth>/`, e.g. `/mods/github.com/LiteLDev/LeviLamina/`) are prerendered with the README and
   manifest of the default variant's latest version; other variants and
   versions (`?variant=&version=`) are fetched in the browser from lipr and
   GitHub. Tabs: Description, Versions (`?tab=versions`), Dependencies
@@ -34,7 +35,9 @@ levimc.org into `kit/` (git-ignored; see [Design system](#design-system)):
   menu); the theme (Auto, Light, Dark) is shared the same way. Package data is
   shown as published.
 - The 404 page sends case-mismatched package paths
-  (`/packages/github.com/liteldev/levilamina/`) on to the real package.
+  (`/mods/github.com/liteldev/levilamina/`) and pkg.levimc.org's old form
+  (`/mods/packages/<tooth>/`) on to the real package. GitHub Pages serves only
+  levimc.org's `404.html`, which hands every `/mods/…` path to this one.
 
 ## Data
 
@@ -60,13 +63,13 @@ data, as CI does.
 
 ```bash
 pnpm install
-pnpm dev        # http://localhost:5173, every page rendered on request
+pnpm dev        # http://localhost:5173/mods/, every page rendered on request
 ```
 
 | Command          | What it does                                                              |
 | ---------------- | ------------------------------------------------------------------------- |
 | `pnpm build`     | client build, SSR build, then `prerender.mjs` writes every page, the hero paintings and `sitemap.xml` to `dist/` |
-| `pnpm preview`   | serves `dist/` the way GitHub Pages does, on <http://127.0.0.1:4173/>      |
+| `pnpm preview`   | serves `dist/` at `/mods/` the way GitHub Pages does, on <http://127.0.0.1:4173/mods/> |
 | `pnpm lint`      | ESLint (typescript-eslint, React hooks)                                    |
 | `pnpm typecheck` | `tsc --noEmit`                                                             |
 | `pnpm test`      | unit tests (`node:test`): query parsing and filters, search, facets, URLs, README rendering, prerendering |
@@ -78,11 +81,12 @@ pnpm dev        # http://localhost:5173, every page rendered on request
 
 ```
 index.html          page template (the kit's pre-paint script and fonts, the listing's view/pending script)
-prerender.mjs       renders /, /packages/<tooth>/ and 404.html into dist/, plus the hero paintings and sitemap.xml
+prerender.mjs       renders /mods/, /mods/<tooth>/ and 404.html into dist/, plus the hero paintings and sitemap.xml
 src/
   entry-client.tsx  hydrates a prerendered page
   entry-server.tsx  renders one page (prerender and dev server)
   App.tsx           shell: LeviMC bar, page, footer
+  base-path.ts      BASE, the site's path on levimc.org (`/mods/`)
   i18n.ts           interface strings (en, zh-CN, zh-HK); locales.ts lists the languages
   kit-ui.ts         the kit components the site uses
   data/             categories (with their tag map), platforms, environments
@@ -91,22 +95,22 @@ src/
                     dependencies, sidebar, install dialog), README renderer
   lib/              catalogue query (parse/serialize/run), search, facets, lipr and GitHub URLs, markdown helpers
   server/           build-time data: catalogue, GitHub, icons, hero paintings
-kit/                levimc-kit, fetched by `pnpm install` (git-ignored; never edit it)
-public/             icon.png, robots.txt
+kit/                levimc-kit, copied from ../kit by `pnpm install` (git-ignored; never edit it)
+public/             icon.png
 ```
 
 ## Design system
 
 Colours, fonts, components and the whole LeviMC chrome (the bar on top, the footer) come from levimc-kit,
-which lives in [LiteLDev/levimc.org](https://github.com/LiteLDev/levimc.org) (`kit/`, documented in its
-`kit/README.md`) and is published at <https://levimc.org/kit/v2/>. `pnpm install` runs
-`scripts/fetch-kit.mjs`, which installs the published kit into `kit/`; `pnpm kit` refreshes it, and
-`LEVIMC_KIT_SOURCE=<path to a levimc.org checkout>/kit pnpm kit` tries kit changes before they are published.
-A change to the bar or the footer is made once in levimc.org and reaches this site with its next build.
+which lives next to this app in [`../kit`](../kit/README.md). `pnpm install` runs `scripts/fetch-kit.mjs --source
+../kit`, which copies it into `kit/`; `pnpm kit` refreshes the copy after a kit change. The bar and footer links
+into the rest of levimc.org (Home, Blog, …) are ordinary links (`isAppPath`): only `/mods/` is this app.
 
 ## Deployment
 
-`.github/workflows/build.yml` builds the site and deploys `dist/` to GitHub
-Pages on every push to `main`. It also rebuilds every hour, and on a
-`lipr-updated` [repository dispatch](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event),
-so the site picks up new packages and versions.
+levimc.org's `.github/workflows/deploy.yml` builds this app after the site and
+deploys `dist/` as levimc.org's `/mods/` on every push to `main`. It also
+rebuilds every hour, and on a `lipr-updated`
+[repository dispatch](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event)
+to LiteLDev/levimc.org, so the site picks up new packages and versions.
+`.github/workflows/mods.yml` lints, tests and builds it on pull requests.

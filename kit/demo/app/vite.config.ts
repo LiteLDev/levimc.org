@@ -1,4 +1,4 @@
-// Plain Vite + React app (the shape of levimc.org / pkg.levimc.org) built with the vendored kit:
+// Plain Vite + React app (the shape of levimc.org / levimc.org/mods) built with the vendored kit:
 //   vite build app && vite build app --ssr src/entry-server.tsx --outDir .kit/ssr && node app/prerender.mjs
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';

@@ -4,8 +4,8 @@ The website at [levimc.org](https://levimc.org/): Vite + React 19 + react-router
 styled with the shared LeviMC design system, levimc-kit, which lives here in [`kit/`](kit/README.md).
 
 **levimc-kit is the one source of the LeviMC chrome** — the bar on top (Home · Projects ▾ · Mods · Blog · Community ·
-About, language · theme · GitHub), the footer, the theme and the docs engine — for every LeviMC site: levimc.org,
-pkg.levimc.org, docs.levimc.org and the project docs (LeviLamina with its Doxygen API, LegacyScriptEngine, lip,
+About, language · theme · GitHub), the footer, the theme and the docs engine — for every LeviMC site: levimc.org
+(and LeviMC Mods at levimc.org/mods/, see below), docs.levimc.org and the project docs (LeviLamina with its Doxygen API, LegacyScriptEngine, lip,
 LeviLauncher, LeviLaunchroid). Every deploy publishes it at <https://levimc.org/kit/v2/> (`kit/scripts/publish-kit.mjs`);
 the other sites fetch it when they build (`scripts/fetch-kit.mjs`, run by their package install) and never edit it.
 After a deploy that changed the kit, the `sync` job rebuilds every site (with the `KIT_SYNC_TOKEN` secret: a
@@ -103,6 +103,25 @@ First paragraph (it is also the excerpt on the index and in the feeds) …
 
 `npm run build` writes the index (10 posts per page), the posts, tag / category / archive pages, `/blog/about/`,
 `/blog/friends/` (from `content/blog/pages/`) and the feeds `/blog/rss.xml`, `/blog/atom.xml`, `/blog/feed.json`.
+
+## LeviMC Mods
+
+The catalogue of mods at [levimc.org/mods/](https://levimc.org/mods/) (formerly pkg.levimc.org, the
+LiteLDev/pkg.levimc.org repository, merged here with its history) is its own app in [`mods/`](mods/README.md): pnpm,
+built from the lipr index with this checkout's kit (`pnpm install` copies `../kit`) and Vite `base: '/mods/'`.
+The deploy builds it after the site and copies `mods/dist/` into `dist/mods/`; it also runs every hour and on a
+`lipr-updated` repository dispatch, so the catalogue picks up new mods and versions. `.github/workflows/mods.yml`
+lints, tests and builds it on pull requests.
+
+```bash
+cd mods
+pnpm install
+pnpm dev        # http://localhost:5173/mods/
+```
+
+The two apps share the origin: their bar and footer links into the other one are ordinary links (`isAppPath`).
+GitHub Pages serves only the site's `404.html`, which hands a `/mods/…` path to `mods/404.html` (it sends
+mistyped and old `/mods/packages/<tooth>/` paths on to the mod), and `robots.txt` lists the mods sitemap.
 
 ## License
 

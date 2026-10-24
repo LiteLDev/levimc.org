@@ -3,13 +3,16 @@ import { useNavigate } from "react-router";
 import { PixelIcon } from "../kit-ui";
 import { RouterLink } from "../components/router-link";
 import { useI18n } from "../i18n";
+import { BASE } from "../base-path";
 import { packagePath } from "../lib/packages";
 
-const PACKAGE_PATH = /^\/packages\/(.+?)\/?$/;
+// `/mods/packages/<tooth>/` is the form pkg.levimc.org used.
+const PACKAGE_PATH = new RegExp(`^${BASE}(?:packages/)?(.+?)/?$`);
 
 /**
  * Package pages exist only under each tooth's exact spelling, so the 404 page
- * sends `/packages/github.com/liteldev/levilamina` on to the package it means.
+ * sends `/mods/github.com/liteldev/levilamina` (or the old
+ * `/mods/packages/github.com/LiteLDev/LeviLamina/`) on to the package it means.
  */
 function usePackageRedirect(tooths: string[]) {
   const navigate = useNavigate();
@@ -48,7 +51,7 @@ export function NotFoundPage({ tooths }: { tooths: string[] }) {
           <span className="kit-hero-name">404</span>
         </h1>
         <p className="pkg-notfound-text">{t.notFoundText}</p>
-        <RouterLink href="/" className="mc-btn mc-btn-primary">
+        <RouterLink href={BASE} className="mc-btn mc-btn-primary">
           <PixelIcon name="grass" />
           {t.backToSearch}
         </RouterLink>

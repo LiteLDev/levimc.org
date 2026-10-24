@@ -10,7 +10,7 @@ export interface UiStrings {
   home: string;
   projects: string;
   docs: string;
-  /** Top-bar / footer label of pkg.levimc.org ("Mods"; the id stays `packages`). */
+  /** Top-bar / footer label of LeviMC Mods, levimc.org/mods/ ("Mods"; the id stays `packages`). */
   packages: string;
   community: string;
   blog: string;
@@ -58,9 +58,9 @@ export interface UiStrings {
   copyCode: string;
   copied: string;
   external: string;
-  /** Display name of pkg.levimc.org ("LeviMC Mods"). */
+  /** Display name of levimc.org/mods/ ("LeviMC Mods"). */
   modsName: string;
-  /** One-line description of pkg.levimc.org. */
+  /** One-line description of levimc.org/mods/. */
   modsBlurb: string;
   /** Short description of each project, keyed by project id. */
   projectBlurbs: Record<string, string>;

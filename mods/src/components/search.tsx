@@ -1,3 +1,4 @@
+import { BASE } from "../base-path";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
 import { PixelIcon } from "../kit-ui";
@@ -72,7 +73,7 @@ export function ListingSearch({ query, total, onSearch }: ListingSearchProps) {
     <form
       className="pkg-search pkg-search-listing"
       role="search"
-      action="/"
+      action={BASE}
       onSubmit={(e) => {
         e.preventDefault();
         commit(value);
@@ -146,11 +147,11 @@ export function HeaderSearch() {
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const q = value.trim();
-    navigate(q ? `/?q=${encodeURIComponent(q)}` : "/");
+    navigate(q ? `${BASE}?q=${encodeURIComponent(q)}` : BASE);
   }
 
   return (
-    <form className="pkg-search pkg-search-header" role="search" action="/" onSubmit={handleSubmit}>
+    <form className="pkg-search pkg-search-header" role="search" action={BASE} onSubmit={handleSubmit}>
       <label className="mc-input pkg-search-field">
         <PixelIcon name="search" className="pkg-search-icon" />
         <input

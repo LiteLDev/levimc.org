@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
+import { BASE } from "../base-path";
 
 interface ManifestChunk {
   file: string;
@@ -36,6 +37,6 @@ export function modulePreloadTags(source: string): string {
   };
   visit(source);
   return [...files]
-    .map((file) => `<link rel="modulepreload" crossorigin href="/${file}" />`)
+    .map((file) => `<link rel="modulepreload" crossorigin href="${BASE}${file}" />`)
     .join("\n    ");
 }

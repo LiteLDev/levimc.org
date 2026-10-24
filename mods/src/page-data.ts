@@ -1,3 +1,4 @@
+import { BASE } from "./base-path";
 import type { RepositoryRenames } from "./lib/markdown";
 import type { PackageSelection } from "./lib/packages";
 import type {
@@ -58,7 +59,8 @@ export type PageData = (
 
 export const SITE_NAME = "LeviMC Mods";
 export const SITE_TAGLINE = "Mods & plugins for Minecraft Bedrock";
-export const SITE_ORIGIN = "https://pkg.levimc.org";
+/** LeviMC Mods is part of levimc.org (at `BASE`); it was pkg.levimc.org. */
+export const SITE_ORIGIN = "https://levimc.org";
 
 /** The home page's description, with the live counts. */
 export function siteDescription(projects: number): string {
@@ -102,13 +104,13 @@ export function pageMeta(data: PageData): PageMeta {
       return {
         title: `${SITE_NAME} — ${SITE_TAGLINE}`,
         description: siteDescription(data.catalog.stats.projects),
-        canonical: `${SITE_ORIGIN}/`,
+        canonical: `${SITE_ORIGIN}${BASE}`,
       };
     case "package":
       return {
         title: `${data.entry.name} | ${SITE_NAME}`,
         description: data.pkg.info.description || `${data.entry.name} on ${SITE_NAME}`,
-        canonical: `${SITE_ORIGIN}/packages/${data.tooth}/`,
+        canonical: `${SITE_ORIGIN}${BASE}${data.tooth}/`,
       };
     case "not-found":
       return { title: `Not Found | ${SITE_NAME}`, description: `${SITE_NAME} — ${SITE_TAGLINE}` };
@@ -137,7 +139,7 @@ export function pageHead(data: PageData): string {
     `<meta property="og:site_name" content="${SITE_NAME}" />`,
     `<meta property="og:title" content="${escapeHtml(meta.title)}" />`,
     `<meta property="og:description" content="${escapeHtml(meta.description)}" />`,
-    `<meta property="og:image" content="${SITE_ORIGIN}/icon.png" />`,
+    `<meta property="og:image" content="${SITE_ORIGIN}${BASE}icon.png" />`,
   );
   if (meta.canonical) {
     tags.push(`<meta property="og:url" content="${escapeHtml(meta.canonical)}" />`);

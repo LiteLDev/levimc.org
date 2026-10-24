@@ -11,8 +11,8 @@ export const LINKS = {
   about: 'https://levimc.org/about/',
   /** Donations (linked from the footer: it has no bar tab). */
   support: 'https://levimc.org/support/',
-  /** LeviMC Mods (pkg.levimc.org) — the id stays `packages`. */
-  packages: 'https://pkg.levimc.org/',
+  /** LeviMC Mods moved into levimc.org (pkg.levimc.org redirects here) — the id stays `packages`. */
+  packages: 'https://levimc.org/mods/',
   /** The blog moved into levimc.org (blog.levimc.org no longer resolves). */
   blog: 'https://levimc.org/blog/',
   github: 'https://github.com/LiteLDev',
@@ -116,7 +116,7 @@ export const SOCIAL: readonly SocialLink[] = [
 
 export const COPYRIGHT_HOLDER = 'LeviMC';
 
-/** pkg.levimc.org ("LeviMC Mods"): display name and one-line description come from i18n (`modsName`, `modsBlurb`). */
+/** levimc.org/mods/ ("LeviMC Mods"): display name and one-line description come from i18n (`modsName`, `modsBlurb`). */
 export const MODS_SITE: { id: 'packages'; url: string; icon: PixelIconName } = { id: 'packages', url: LINKS.packages, icon: 'chest' };
 
 export interface GlobalNavEntry {
@@ -150,6 +150,7 @@ export function originOf(url: string): string {
 /**
  * For links rendered by a router: the root-relative path of `url` when it belongs to `siteOrigin`
  * (e.g. 'https://levimc.org/about/' on levimc.org → '/about/'), else undefined (an ordinary cross-site link).
+ * Two apps share levimc.org (the site, and LeviMC Mods at /mods/): each passes `isAppPath` for its own part.
  */
 export function sameSitePath(url: string, siteOrigin: string | undefined): string | undefined {
   if (!siteOrigin) return undefined;

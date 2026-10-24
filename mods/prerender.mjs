@@ -1,16 +1,19 @@
 // Prerenders every page into dist/ after `vite build` and the SSR build:
-// `/`, one page per package, and 404.html; then writes sitemap.xml. See README.md.
+// `/mods/`, one page per package, and 404.html; then writes sitemap.xml. See README.md.
+// dist/ is the site's /mods/ folder: the levimc.org build copies it there.
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { prerenderRoutes } from "./kit/ssg/prerender.mjs";
 
-const ORIGIN = "https://pkg.levimc.org";
+const ORIGIN = "https://levimc.org";
+const BASE = "/mods/";
 
 const ssr = await import("./.kit/ssr/entry-server.js");
 const started = Date.now();
 const routes = await ssr.listRoutes();
 const { files } = await prerenderRoutes({
   routes,
-  notFound: "/404",
+  base: BASE,
+  notFound: `${BASE}404`,
 });
 // Vite's manifest was only needed while rendering; it is not part of the site.
 rmSync("dist/.vite", { recursive: true, force: true });

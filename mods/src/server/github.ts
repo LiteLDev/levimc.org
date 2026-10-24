@@ -58,7 +58,7 @@ async function graphql<T>(token: string, query: string): Promise<T> {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
-      "User-Agent": "pkg.levimc.org-build",
+      "User-Agent": "levimc.org-mods-build",
     },
     body: JSON.stringify({ query }),
   });

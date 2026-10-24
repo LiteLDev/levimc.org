@@ -181,7 +181,7 @@
     mix-blend-mode: soft-light;
     opacity: 0.5;
   }
-  /* (.kit-hero-strip: a one-line hero that keeps the painting on the right at every width, e.g. pkg.levimc.org) */
+  /* (.kit-hero-strip: a one-line hero that keeps the painting on the right at every width, e.g. levimc.org/mods/) */
   @media (max-width: 960px) {
     .kit-hero:not(.kit-hero-strip) .kit-hero-paint {
       inset: 0 0 auto 0;

@@ -22,7 +22,9 @@ const { chromium } = require("playwright");
 
 const SITE = "LeviMC Mods";
 const HOME_TITLE = `${SITE} — Mods & plugins for Minecraft Bedrock`;
-const LEVILAMINA = "packages/github.com/LiteLDev/LeviLamina/";
+// the site's path (/mods/ on levimc.org)
+const base = new URL(root).pathname;
+const LEVILAMINA = "github.com/LiteLDev/LeviLamina/";
 const results = [];
 async function check(name, fn) {
   try {
@@ -362,7 +364,7 @@ await check("backward-compatible listing URLs", async () => {
   assert(JSON.stringify(await rowNames(page)) === JSON.stringify(defaults), "?sort=relevance differs from /");
   await page.close();
   const { response } = await open("index.html", ctx);
-  assert(response.status() === 200, `/index.html ${response.status()}`);
+  assert(response.status() === 200, `index.html ${response.status()}`);
   await ctx.close();
   return `${cases.length + 2} URLs`;
 });
@@ -372,18 +374,18 @@ await check("a row opens its package without a page load; Back to search returns
   await settled(home);
   await markLoad(home);
   await home.locator(".pkg-card-link", { hasText: /^LeviLamina$/ }).click();
-  await home.waitForURL((u) => u.pathname === `/${LEVILAMINA}`);
+  await home.waitForURL((u) => u.pathname === `${base}${LEVILAMINA}`);
   await home.waitForSelector("[data-pkg-detail] [data-doc-content]");
   assert(await sameDocument(home), "page reloaded");
   assert((await home.title()) === `LeviLamina | ${SITE}`, `title ${await home.title()}`);
   assert((await home.evaluate(() => window.scrollY)) === 0, "not scrolled to the top");
   await home.locator(".pkg-back").click();
-  await home.waitForURL((u) => u.pathname === "/" && u.search === "?cat=library&sort=stars");
+  await home.waitForURL((u) => u.pathname === base && u.search === "?cat=library&sort=stars");
   assert(await sameDocument(home), "back reloaded the page");
   // opened directly: the link goes to the last listing of this tab
   await home.goto(root + LEVILAMINA, { waitUntil: "networkidle" });
   const href = await home.locator(".pkg-back").getAttribute("href");
-  assert(href === "/?cat=library&sort=stars", `back link ${href}`);
+  assert(href === `${base}?cat=library&sort=stars`, `back link ${href}`);
   return "and back";
 });
 
@@ -466,15 +468,15 @@ await check("old package URLs: ?variant=&version=, an invalid version, /index.ht
 });
 
 await check("case-mismatched package paths reach the package", async () => {
-  const { page, response } = await open("packages/github.com/liteldev/levilamina/?version=x");
+  const { page, response } = await open("github.com/liteldev/levilamina/?version=x");
   assert(response.status() === 404, `status ${response.status()}`);
-  await page.waitForURL((u) => u.pathname === `/${LEVILAMINA}`, { timeout: 15000 });
+  await page.waitForURL((u) => u.pathname === `${base}${LEVILAMINA}`, { timeout: 15000 });
   await page.waitForSelector("[data-pkg-detail]");
   assert(new URL(page.url()).search === "?version=x", `query lost: ${page.url()}`);
   await page.close();
   // a #heading survives and is scrolled to
-  const { page: deep } = await open("packages/github.com/liteldev/levilamina/#acknowledgements");
-  await deep.waitForURL((u) => u.pathname === `/${LEVILAMINA}` && u.hash === "#acknowledgements", { timeout: 15000 });
+  const { page: deep } = await open("github.com/liteldev/levilamina/#acknowledgements");
+  await deep.waitForURL((u) => u.pathname === `${base}${LEVILAMINA}` && u.hash === "#acknowledgements", { timeout: 15000 });
   await deep.waitForSelector("[data-pkg-detail]");
   await deep.waitForTimeout(300);
   const top = await deep.evaluate(() => document.getElementById("acknowledgements")?.getBoundingClientRect().top);
@@ -646,7 +648,7 @@ await check("phones (390/360/320px): no sideways scroll on the listing and 3 pac
   const seen = [];
   for (const width of [390, 360, 320]) {
     const phone = await newContext({ ...PHONE, viewport: { width, height: 844 } }, { fonts: true });
-    for (const path of ["", "?cat=economy", "?q=zzzzqqq", LEVILAMINA, "packages/github.com/IceBlcokMC/PLand/", "packages/github.com/qing85566/ChiyanMap/", `${LEVILAMINA}?tab=versions`, "no/such/page/"]) {
+    for (const path of ["", "?cat=economy", "?q=zzzzqqq", LEVILAMINA, "github.com/IceBlcokMC/PLand/", "github.com/qing85566/ChiyanMap/", `${LEVILAMINA}?tab=versions`, "no/such/page/"]) {
       const { page, errors, response } = await open(path, phone);
       assert(response.status() === (path.startsWith("no/") ? 404 : 200), `/${path}: status ${response.status()}`);
       await fontsReady(page);
@@ -707,7 +709,7 @@ await check("phones: a search from a package page lands on the results", async (
   assert(await page.locator(".pkg-header .pkg-search-submit").isVisible(), "no search button");
   await page.fill(".pkg-header input[type=search]", "economy");
   await page.click(".pkg-header .pkg-search-submit");
-  await page.waitForURL((u) => u.pathname === "/" && new URL(u).searchParams.get("q") === "economy");
+  await page.waitForURL((u) => u.pathname === base && new URL(u).searchParams.get("q") === "economy");
   await settled(page);
   const top = await page.evaluate(() => document.querySelector(".pkg-results-list > li")?.getBoundingClientRect().top ?? -1);
   assert(top >= 0 && top < 844, `first result at ${top}px`);
@@ -753,7 +755,7 @@ if (!args.includes("--skip-all-pages")) {
           page.on("console", (m) => {
             if (m.type() === "error" && !/Failed to load resource|ERR_FAILED/.test(m.text())) errors.push(m.text());
           });
-          const response = await page.goto(`${root}packages/${tooth}/`, { waitUntil: "networkidle" });
+          const response = await page.goto(`${root}${tooth}/`, { waitUntil: "networkidle" });
           await page.waitForSelector("[data-pkg-detail]");
           if (response?.status() !== 200) errors.push(`status ${response?.status()}`);
           if (errors.length) failures.push(`${tooth}: ${errors[0].split("\n")[0]}`);

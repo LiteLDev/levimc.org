@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: /*?*
-
-Sitemap: https://pkg.levimc.org/sitemap.xml

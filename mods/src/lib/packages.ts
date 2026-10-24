@@ -1,3 +1,4 @@
+import { BASE } from "../base-path.ts";
 import type { Manifest, PackageIndex, RawPackageEntry } from "../types";
 
 const PACKAGE_INDEX_URL = "https://lipr.levimc.org/index.json";
@@ -47,14 +48,16 @@ export function ownerAvatar(owner: string, size = 144): string {
   return `https://avatars.githubusercontent.com/${encodeURIComponent(owner)}?s=${size}`;
 }
 
-/** The page of a package: `/packages/github.com/LiteLDev/LeviLamina/`. */
+/** The page of a package: `/mods/github.com/LiteLDev/LeviLamina/`. */
 export function packagePath(tooth: string): string {
-  return `/packages/${tooth}/`;
+  return `${BASE}${tooth}/`;
 }
+
+const PACKAGE_PAGE = new RegExp(`^${BASE}(.+)/$`);
 
 /** The tooth a package page path names, or `null` for any other path. */
 export function toothFromPath(pathname: string): string | null {
-  const match = /^\/packages\/(.+)\/$/.exec(pathname);
+  const match = PACKAGE_PAGE.exec(pathname);
   if (!match?.[1]) return null;
   try {
     return decodeURIComponent(match[1]);

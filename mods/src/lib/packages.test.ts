@@ -30,10 +30,12 @@ const entry: RawPackageEntry = {
 };
 
 test("package paths round-trip", () => {
-  assert.equal(packagePath(TOOTH), "/packages/github.com/LiteLDev/LeviLamina/");
+  assert.equal(packagePath(TOOTH), "/mods/github.com/LiteLDev/LeviLamina/");
   assert.equal(toothFromPath(packagePath(TOOTH)), TOOTH);
-  assert.equal(toothFromPath("/packages/github.com/x"), null);
-  assert.equal(toothFromPath("/"), null);
+  assert.equal(toothFromPath("/mods/github.com/x"), null);
+  assert.equal(toothFromPath("/mods/"), null);
+  assert.equal(toothFromPath("/mods/index.html"), null);
+  assert.equal(toothFromPath("/github.com/LiteLDev/LeviLamina/"), null);
 });
 
 test("owners and their avatars", () => {

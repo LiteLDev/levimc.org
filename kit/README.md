@@ -1,6 +1,6 @@
 # levimc-kit
 
-The shared design system and static docs engine for every LeviMC website — levimc.org, pkg.levimc.org and
+The shared design system and static docs engine for every LeviMC website — levimc.org (with LeviMC Mods at /mods/) and
 the project docs at `docs.levimc.org/<Project>/` (LeviLamina, LegacyScriptEngine, lip, LeviLauncher,
 LeviLaunchroid), plus the Doxygen API reference.
 
@@ -30,7 +30,7 @@ Version: see `VERSION` (2.2.0) and the [Changelog](#changelog) (with migration n
 4. [Docs site: app structure & commands](#docs-site-app-structure--commands)
 5. [Site config API (`defineDocsConfig`)](#site-config-api-definedocsconfig)
 6. [Markdown support](#markdown-support)
-7. [Plain Vite apps (levimc.org, pkg.levimc.org)](#plain-vite-apps-levimcorg-pkglevimcorg) · [Cross-site preferences](#cross-site-preferences)
+7. [Plain Vite apps (levimc.org, levimc.org/mods)](#plain-vite-apps-levimcorg-levimcorgmods) · [Cross-site preferences](#cross-site-preferences)
 8. [Components](#components)
 9. [Static chrome & Doxygen](#static-chrome--doxygen)
 10. [Verification scripts](#verification-scripts)
@@ -103,7 +103,7 @@ levimc-kit/
 │                          cross-site.e2e.mjs (Playwright: preferences shared by levimc.org + docs.levimc.org)
 ├── demo/                  demo sites (not published): docs (suffix/directory/pymdownx), lip (folder/html/vitepress),
 │                          single (the docs as a single-locale site), app/ (plain Vite + React app, the
-│                          levimc.org / pkg.levimc.org shape); pinned package-lock.json
+│                          levimc.org / levimc.org/mods shape); pinned package-lock.json
 └── screens/               review screenshots (not published)
 ```
 
@@ -168,12 +168,12 @@ needs Node ≥ 22.18 for native TypeScript stripping). Copy the fields of `packa
 | @types/mdast | 4.0.4 | | picomatch | 4.0.7 |
 | @types/unist | 3.0.3 | | @types/picomatch | 4.0.3 |
 
-The kit type-checks clean with TypeScript 7.0.2 and 6.0.3 (typescript-eslint needs < 6.1; pkg.levimc.org pins 6.0.3).
+The kit type-checks clean with TypeScript 7.0.2 and 6.0.3 (typescript-eslint needs < 6.1; levimc.org/mods pins 6.0.3).
 
 Playwright is only needed for `smoke.mjs`, `text-parity.mjs`, `shot.mjs` and `tests/cross-site.e2e.mjs`; they resolve it from
 `$LEVIMC_PW_DIR` (a directory containing `node_modules/playwright`) or from the app (`npm i -D playwright@1.56.1`).
 
-Plain Vite apps (levimc.org, pkg.levimc.org) only need react, react-dom, react-router, vite,
+Plain Vite apps (levimc.org, levimc.org/mods) only need react, react-dom, react-router, vite,
 @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript and the @types packages; their tsconfig then
 includes `kit/components` (and `kit/ssg`), not `kit/**` (the docs engine needs the markdown packages' types).
 
@@ -440,7 +440,7 @@ kit transforms → Shiki → HTML). No markdown is parsed in the browser.
   (static-i18n semantics); `x.zh.md` / `/zh-CN/…` pin a locale. External links get
   `target="_blank" rel="noopener"`. Unresolvable links and missing anchors are build warnings.
 
-## Plain Vite apps (levimc.org, pkg.levimc.org)
+## Plain Vite apps (levimc.org, levimc.org/mods)
 
 ```
 <app>/
@@ -471,10 +471,18 @@ const [locale, setLocale] = usePreferredLocale(LOCALES, LOCALES[0]);   // the cr
 <GlobalBar
   current="packages" locale={locale.lang} sticky
   languages={{ options: LOCALES.map(({ code, label, lang }) => ({ code, label, lang })), current: locale.code, onSelect: setLocale }}
-  siteOrigin="https://pkg.levimc.org" linkComponent={RouterLink}           // same-site bar links stay in the app
-  isAppPath={(p) => !p.startsWith('/blog/')}                               // …except static pages (levimc.org/blog/)
+  siteOrigin="https://levimc.org" linkComponent={RouterLink}               // same-site bar links stay in the app
+  isAppPath={(p) => p.startsWith('/mods/')}                                // …but only this app's part of the origin
 />
-<SiteFooter locale={locale.lang} siteOrigin="https://pkg.levimc.org" linkComponent={RouterLink} />
+<SiteFooter locale={locale.lang} siteOrigin="https://levimc.org" linkComponent={RouterLink} isAppPath={(p) => p.startsWith('/mods/')} />
+```
+
+Two apps share the levimc.org origin: the site itself and LeviMC Mods (`mods/` in LiteLDev/levimc.org, built with
+Vite `base: '/mods/'` and deployed into `dist/mods/`). Each passes `isAppPath` for its own part — levimc.org
+`(p) => !p.startsWith('/mods/')`, LeviMC Mods `(p) => p.startsWith('/mods/')` — so a bar link into the other app is
+an ordinary link that loads it.
+
+```tsx
 ```
 
 `usePreferredLocale` renders the fallback locale on the server and the first client render (no hydration
@@ -504,7 +512,7 @@ export function render(url: string) {
 import { prerenderRoutes } from './kit/ssg/prerender.mjs';
 await prerenderRoutes({
   routes: ['/', '/projects/', '/features/', '/community/', '/about/', '/support/'],   // levimc.org
-  // pkg.levimc.org: routes: async () => ['/', ...(await listTeeth()).map((t) => `/packages/${t}/`)],
+  // levimc.org/mods: base: '/mods/', routes: async () => ['/mods/', ...(await listTeeth()).map((t) => `/mods/${t}/`)],
   notFound: '/404',
 });
 ```
@@ -572,8 +580,8 @@ Stable test hooks: `data-kit-theme-toggle` (theme menu trigger), `data-kit-theme
 
 Canonical cross-site URLs (exact, no redirect): Home `https://levimc.org/`, Projects
 `https://levimc.org/projects/`, Community `https://levimc.org/community/`, About `https://levimc.org/about/`,
-Mods (LeviMC Mods, id `packages`) `https://pkg.levimc.org/`, Blog `https://levimc.org/blog/` (blog.levimc.org
-no longer resolves), GitHub `https://github.com/LiteLDev`,
+Mods (LeviMC Mods, id `packages`) `https://levimc.org/mods/` (pkg.levimc.org redirects there), Blog
+`https://levimc.org/blog/` (blog.levimc.org redirects there), GitHub `https://github.com/LiteLDev`,
 Docs `https://docs.levimc.org/{LeviLamina,LegacyScriptEngine,lip,LeviLauncher,LeviLaunchroid}/`,
 Discord `https://discord.gg/v5R5P4vRZk`, Telegram `https://t.me/LiteLoader`, X `https://x.com/levimc_org`,
 YouTube `https://www.youtube.com/@LeviLamina`, `mailto:contact@levimc.org`. lip's repository is

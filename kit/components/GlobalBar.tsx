@@ -205,7 +205,7 @@ function chromeLanguageOptions(): LocaleOption[] {
 }
 
 /**
- * The bar at the very top of every LeviMC site (levimc.org, pkg.levimc.org, docs.levimc.org/*, the Doxygen API
+ * The bar at the very top of every LeviMC site (levimc.org, levimc.org/mods/, docs.levimc.org/*, the Doxygen API
  * pages and the static pages): the same brand, the same tabs (Home · Projects ▾ · Mods · Blog · Community · About)
  * and, on the right, the same controls (language, theme, GitHub → LiteLDev) everywhere. Only the current tab (and
  * on docs pages the current project in the Projects menu) and the language menu's options differ per site. Menus are <details>, so the bar works

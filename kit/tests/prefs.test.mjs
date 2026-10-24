@@ -92,7 +92,7 @@ function run(code, env) {
 test('cookie domain: the parent domain on levimc.org and every subdomain, host-only elsewhere', () => {
   assert.equal(prefCookieDomain('levimc.org'), 'levimc.org');
   assert.equal(prefCookieDomain('docs.levimc.org'), 'levimc.org');
-  assert.equal(prefCookieDomain('pkg.levimc.org'), 'levimc.org');
+  assert.equal(prefCookieDomain('lipr.levimc.org'), 'levimc.org');
   assert.equal(prefCookieDomain('LEVIMC.ORG.'), 'levimc.org');
   assert.equal(prefCookieDomain('notlevimc.org'), undefined);
   assert.equal(prefCookieDomain('levimc.org.evil.com'), undefined);
@@ -102,7 +102,7 @@ test('cookie domain: the parent domain on levimc.org and every subdomain, host-o
 
 test('cookie string: Domain + Secure on https levimc.org, neither on http localhost', () => {
   assert.equal(
-    serializePrefCookie('theme', 'dark', { hostname: 'pkg.levimc.org', protocol: 'https:' }),
+    serializePrefCookie('theme', 'dark', { hostname: 'levimc.org', protocol: 'https:' }),
     'levimc_theme=dark; Path=/; Max-Age=31536000; SameSite=Lax; Domain=levimc.org; Secure',
   );
   assert.equal(serializePrefCookie('lang', 'zh-CN', { hostname: 'localhost', protocol: 'http:' }), 'levimc_lang=zh-CN; Path=/; Max-Age=31536000; SameSite=Lax');
@@ -184,7 +184,7 @@ test('pre-paint: a localStorage-only choice (kit 1.0) moves into the parent-doma
   assert.equal(env.jar.find((c) => c.name === 'levimc_lang')?.value, 'zh-CN');
   assert.equal(env.attrs['data-kit-lang-pref'], 'zh-CN');
   // another LeviMC site now sees both preferences
-  const other = run(init, browserEnv({ url: 'https://pkg.levimc.org/', cookies: env.jar }));
+  const other = run(init, browserEnv({ url: 'https://levimc.org/mods/', cookies: env.jar }));
   assert.equal(other.attrs['data-theme-pref'], 'dark');
   assert.equal(other.attrs['data-kit-lang-pref'], 'zh-CN');
 });
@@ -217,7 +217,7 @@ test('pre-paint (plain apps): the page waits for usePreferredLocale exactly when
   ];
   const script = createPrefsInitScript({ appLocales: { locales, prerendered: 'en' } });
   const pending = (opts) => {
-    const c = run(script, browserEnv({ url: 'https://pkg.levimc.org/', ...opts })).classes;
+    const c = run(script, browserEnv({ url: 'https://levimc.org/mods/', ...opts })).classes;
     assert.equal(c.has('kit-chrome-pending'), c.has('kit-content-pending'));
     return c.has('kit-content-pending');
   };

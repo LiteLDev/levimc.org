@@ -5,6 +5,9 @@ import { BLOG_ROUTES, blog, resolveBlogPath } from './blog/data';
 
 export const SITE_ORIGIN = 'https://levimc.org';
 
+/** LeviMC Mods: its own app in mods/, built separately and deployed into dist/mods/ (see .github/workflows/deploy.yml). */
+export const MODS_PATH = '/mods/';
+
 export type RouteId = 'home' | 'community' | 'about' | 'support' | 'blog';
 
 export const ROUTES: readonly { id: RouteId; path: string }[] = [

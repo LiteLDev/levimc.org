@@ -11,7 +11,7 @@ async function loads(url: string): Promise<boolean> {
   try {
     const res = await fetch(url, {
       signal: AbortSignal.timeout(TIMEOUT),
-      headers: { "User-Agent": "pkg.levimc.org-build" },
+      headers: { "User-Agent": "levimc.org-mods-build" },
     });
     const type = res.headers.get("content-type") ?? "";
     if (!res.ok || !type.startsWith("image/")) {

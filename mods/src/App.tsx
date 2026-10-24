@@ -1,3 +1,4 @@
+import { BASE } from "./base-path";
 import { Suspense, use, useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
 import { useLocation, useNavigationType } from "react-router";
 import {
@@ -183,6 +184,9 @@ function PageFallback() {
   );
 }
 
+/** levimc.org links outside `/mods/` (Home, Blog, …) belong to the main site: they load in full. */
+const isAppPath = (path: string) => path.startsWith(BASE);
+
 /**
  * The LeviMC bar (the site's languages, the shared theme menu, GitHub), the
  * page and the LeviMC footer. The interface follows the visitor's cross-site
@@ -199,7 +203,7 @@ function Shell({ children }: { children: ReactNode }) {
   return (
     <LocaleContext value={i18n}>
       <div className="kit-shell" lang={locale.lang}>
-        <PaintedBackdrop scene={pathname !== "/" && pathname !== "/index.html"} />
+        <PaintedBackdrop scene={pathname !== BASE && pathname !== `${BASE}index.html`} />
         <a className="kit-skip-link" href="#main">
           {i18n.t.skipToContent}
         </a>
@@ -209,6 +213,7 @@ function Shell({ children }: { children: ReactNode }) {
           sticky
           siteOrigin={SITE_ORIGIN}
           linkComponent={KitRouterLink}
+          isAppPath={isAppPath}
           languages={{
             options: LOCALES.map(({ code, label, lang }) => ({ code, label, lang })),
             current: locale.code,
@@ -216,7 +221,7 @@ function Shell({ children }: { children: ReactNode }) {
           }}
         />
         {children}
-        <SiteFooter locale={locale.lang} siteOrigin={SITE_ORIGIN} linkComponent={KitRouterLink} />
+        <SiteFooter locale={locale.lang} siteOrigin={SITE_ORIGIN} linkComponent={KitRouterLink} isAppPath={isAppPath} />
       </div>
     </LocaleContext>
   );

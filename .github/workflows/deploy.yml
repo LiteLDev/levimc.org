@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+  # LeviMC Mods (/mods/) is a snapshot of the lipr index, so rebuild to pick up new packages and versions. lipr can
+  # also send a `lipr-updated` dispatch.
+  schedule:
+    - cron: "17 * * * *"
+  repository_dispatch:
+    types:
+      - lipr-updated
   workflow_dispatch:
 
 permissions:
@@ -51,6 +58,21 @@ jobs:
 
       - run: cp -r .kit/publish dist/kit
 
+      # LeviMC Mods: its own app in mods/ (pnpm), built with this kit and deployed at /mods/. The token lets its build
+      # read each package repository from GitHub's GraphQL API (renamed repositories, release dates, license).
+      - uses: pnpm/action-setup@v5
+        with:
+          package_json_file: mods/package.json
+
+      - working-directory: mods
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - run: cp -r mods/dist dist/mods
+
       # Internal links, redirect-needing links and #anchors (GitHub Pages semantics).
       - run: npm run linkcheck
 
@@ -91,7 +113,6 @@ jobs:
             gh workflow run "$workflow" -R "LiteLDev/$repo" || status=1
           done <<'EOF'
           liteldev.github.io deploy.yml
-          pkg.levimc.org build.yml
           LeviLamina build-docs.yml
           LegacyScriptEngine build_docs.yml
           lip build-docs.yml

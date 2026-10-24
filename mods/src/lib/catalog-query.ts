@@ -1,6 +1,7 @@
 // The listing's state: what the URL says (`?q=&gv=&platform=&cat=&env=
 // &license=&dep=&tags=&author=&sort=&page=`), how to write it back, and the results it
 // selects. Pure functions, shared by the page and the unit tests.
+import { BASE } from "../base-path.ts";
 import { CATEGORY_BY_ID, ENV_BY_ID, PLATFORM_BY_ID } from "../data/categories.ts";
 import type { CatalogEntry, CatalogFeatures } from "../types.ts";
 import { compareVersions as compareVersionStrings } from "./game-versions.ts";
@@ -117,7 +118,7 @@ const encode = (value: string) =>
 
 const facetValues = ({ inc, exc }: Facet) => [...inc, ...exc.map((id) => `-${id}`)];
 
-/** The listing URL for a state: `/`, or `/?…` with the non-default values in a fixed order. */
+/** The listing URL for a state: `/mods/`, or `/mods/?…` with the non-default values in a fixed order. */
 export function serializeQuery(state: QueryState): string {
   const parts: [string, string][] = [];
   const add = (key: string, values: string[]) => {
@@ -134,7 +135,7 @@ export function serializeQuery(state: QueryState): string {
   add("author", state.author);
   if (state.sort !== "relevance") parts.push(["sort", state.sort]);
   if (state.page > 1) parts.push(["page", String(state.page)]);
-  return parts.length ? `/?${parts.map(([k, v]) => `${k}=${v}`).join("&")}` : "/";
+  return parts.length ? `${BASE}?${parts.map(([k, v]) => `${k}=${v}`).join("&")}` : BASE;
 }
 
 /** How many filters are on (the Filters button's badge): search and sort do not count. */

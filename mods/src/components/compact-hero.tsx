@@ -1,3 +1,4 @@
+import { BASE } from "../base-path";
 import type { ReactNode } from "react";
 
 interface CompactHeroProps {
@@ -8,8 +9,8 @@ interface CompactHeroProps {
 
 /**
  * The kit's painted hero as a compact strip (≤ 112 px), so results start
- * above the fold. The painting is a cached file per theme (`/hero-light.svg`,
- * `/hero-dark.svg`, see server/hero.ts) on the right, dissolving into the
+ * above the fold. The painting is a cached file per theme (`/mods/hero-light.svg`,
+ * `/mods/hero-dark.svg`, see server/hero.ts) on the right, dissolving into the
  * page in the kit's pixel blocks (the same edge as every painted hero).
  */
 export function CompactHero({ name, tagline, children }: CompactHeroProps) {
@@ -23,7 +24,7 @@ export function CompactHero({ name, tagline, children }: CompactHeroProps) {
         <div className="kit-hero-copy">
           <div className="kit-hero-badge">
             <span className="kit-item-frame kit-hero-icon">
-              <img src="/icon.png" alt="" width={48} height={48} />
+              <img src={`${BASE}icon.png`} alt="" width={48} height={48} />
             </span>
           </div>
           <h1 className="kit-hero-title">

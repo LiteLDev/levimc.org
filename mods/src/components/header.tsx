@@ -1,3 +1,4 @@
+import { BASE } from "../base-path";
 import { useI18n } from "../i18n";
 import { RouterLink } from "./router-link";
 import { HeaderSearch } from "./search";
@@ -13,8 +14,8 @@ export function Header() {
   return (
     <header className="pkg-header">
       <div className="pkg-header-inner">
-        <RouterLink href="/" className="pkg-brand" aria-label={t.homeLink}>
-          <img src="/icon.png" alt="" width={24} height={24} className="pkg-brand-icon" />
+        <RouterLink href={BASE} className="pkg-brand" aria-label={t.homeLink}>
+          <img src={`${BASE}icon.png`} alt="" width={24} height={24} className="pkg-brand-icon" />
           <span className="pkg-brand-name">{t.siteName}</span>
         </RouterLink>
         <div className="pkg-header-search">

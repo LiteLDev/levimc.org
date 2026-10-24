@@ -1,5 +1,5 @@
 /*
- * LeviMC Mods (pkg.levimc.org) — Tailwind v4 + the levimc-kit theme ("Impression, Craft"), plus the
+ * LeviMC Mods (levimc.org/mods/) — Tailwind v4 + the levimc-kit theme ("Impression, Craft"), plus the
  * site-specific pieces below. Colours, fonts and pixel geometry all come from the kit's tokens; nothing
  * here introduces a colour of its own.
  */
@@ -102,10 +102,10 @@
     --kit-hero-paint-x: max(58%, 100% - 34rem);
   }
   .pkg-hero-art {
-    background: url("/hero-light.svg") 72% 55% / cover no-repeat;
+    background: url("/mods/hero-light.svg") 72% 55% / cover no-repeat;
   }
   .dark .pkg-hero-art {
-    background-image: url("/hero-dark.svg");
+    background-image: url("/mods/hero-dark.svg");
     background-position: 80% 45%;
   }
   .pkg-hero .kit-hero-inner {
