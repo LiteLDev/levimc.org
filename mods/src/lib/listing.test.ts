@@ -23,33 +23,46 @@ const repo = (path: string, extra: { isTemplate?: boolean; latestRelease?: strin
 
 const statuses = (inputs: ListingInput[]) => Object.fromEntries(classifyListings(inputs));
 
-test("a mod puts a file under plugins/ or mods/", () => {
+test("mod content: a loader's folder, or where the game loads add-ons from", () => {
   assert.equal(installsMod(manifest(["plugins/X/"])), true);
   assert.equal(installsMod(manifest(["mods/X/"])), true);
   assert.equal(installsMod(manifest(["./mods/X/"])), true);
   assert.equal(installsMod(manifest(["mods\\X\\"])), true);
-  // one placement in a mod folder is enough (Glacie also ships libraries/)
+  // add-ons: pack folders at any depth, worlds, and add-on files
+  assert.equal(installsMod(manifest(["behavior_packs/X/"])), true);
+  assert.equal(installsMod(manifest(["development_resource_packs/X/"])), true);
+  assert.equal(installsMod(manifest(["worlds/Bedrock level/behavior_packs/X/"])), true);
+  assert.equal(installsMod(manifest(["games/com.mojang/skin_packs/X/"])), true);
+  assert.equal(installsMod(manifest(["games/com.mojang/minecraftWorlds/X/"])), true);
+  assert.equal(installsMod(manifest(["X.mcaddon"])), true);
+  // one placement of mod content is enough (Glacie also ships libraries/)
   assert.equal(installsMod(manifest(["libraries/x.dll", "plugins/X/"])), true);
-  // images (Lip-Sese), a launcher script (LeviBox), a program (lualoader), nothing at all
+  // images (Lip-Sese), a launcher script (LeviBox), a program (lualoader)
   assert.equal(installsMod(manifest(["photo/"])), false);
   assert.equal(installsMod(manifest(["levibox"])), false);
   assert.equal(installsMod(manifest(["lualoader.exe"])), false);
   assert.equal(installsMod(manifest(["pluginsX/"])), false);
-  assert.equal(installsMod({ info: { name: "", description: "", tags: [] }, variants: [{ label: "" }] }), false);
+  assert.equal(installsMod(manifest(["my_behavior_packs_backup/"])), false);
+  // nothing placed (older manifests often list no files): nothing to tell by
+  assert.equal(installsMod({ info: { name: "", description: "", tags: [] }, variants: [{ label: "" }] }), null);
+  assert.equal(installsMod(manifest([])), null);
+  assert.equal(installsMod(manifest([""])), null);
 });
 
-test("what installs nothing into a mod folder is excluded; without a manifest nothing is judged", () => {
+test("what places files but no mod content is excluded; a manifest that places nothing, or none, is not judged", () => {
   assert.deepEqual(
     statuses([
       mod("github.com/a/Images", { manifest: manifest(["photo/"]) }),
       mod("github.com/a/Empty", { manifest: { info: { name: "", description: "", tags: [] }, variants: [{ label: "" }] } }),
       mod("github.com/a/Unknown", { manifest: null }),
+      mod("github.com/a/Addon", { manifest: manifest(["behavior_packs/Addon/", "resource_packs/Addon/"]) }),
       mod("github.com/a/Mod"),
     ]),
     {
       "github.com/a/Images": { status: "excluded", reason: "not-a-mod" },
-      "github.com/a/Empty": { status: "excluded", reason: "not-a-mod" },
+      "github.com/a/Empty": { status: "listed" },
       "github.com/a/Unknown": { status: "listed" },
+      "github.com/a/Addon": { status: "listed" },
       "github.com/a/Mod": { status: "listed" },
     },
   );
@@ -185,6 +198,9 @@ test("a repository's tooth.json is read in the current and the older formats", (
     platforms: [{ goos: "windows", files: { place: [{ src: "lualoader.exe", dest: "lualoader.exe" }] } }],
   });
   assert.equal(program && installsMod(program), false);
+  // format 2 without files (HitokotoWelcome): places nothing
+  const bare = manifestOf({ format_version: 2, info: { name: "H", tags: ["lse"] }, files: {} });
+  assert.equal(bare && installsMod(bare), null);
   assert.equal(manifestOf("404: Not Found"), null);
   assert.equal(manifestOf({ variants: [] }), null);
 });

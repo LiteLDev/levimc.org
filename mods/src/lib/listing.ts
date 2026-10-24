@@ -1,7 +1,7 @@
 // Which packages of the lipr index the catalogue lists. lipr is lip's
 // registry, so it also holds what is not a mod: the loader and its runtime,
-// templates, scripts and files that install outside the mod folders, and old
-// addresses of renamed repositories. Each package is
+// templates, programs and files that go nowhere the game or a loader loads
+// from, and old addresses of renamed repositories. Each package is
 //
 // - listed: in the listing, search, filters, counts and sitemap;
 // - unlisted: its page stays (dependency cards and old links lead there), but
@@ -11,17 +11,24 @@
 //
 // The rules read only the package's latest manifest and its repository, so a
 // new package is judged the moment it is in the index. Exclusions win over
-// duplicates: a template never stands in for its repository. A package whose
-// manifest cannot be found is not judged by it (lipr files some manifests
-// under another path than their tooth).
+// duplicates: a template never stands in for its repository. Only what a
+// manifest places is evidence: a package whose manifest cannot be found, or
+// places nothing (older manifests often list no files), is not judged by it.
 import type { Manifest, ManifestVariant } from "../types.ts";
 import { compareVersions } from "./game-versions.ts";
 
 /** The mod loader: it and everything it depends on are the platform, not mods. */
 export const LOADERS: readonly string[] = ["github.com/liteldev/levilamina"];
 
-/** Where a loader looks for mods: a mod puts at least one file under one of these. */
-const MOD_DIRS = ["plugins/", "mods/"];
+/** Where a loader looks for mods, from the game's folder. */
+const LOADER_DIRS = ["plugins/", "mods/"];
+
+/**
+ * Where the game loads add-ons from, at any depth (the server's folder, a
+ * world's, the client's `com.mojang`), and add-on files themselves.
+ */
+const ADDON_DIR = /(?:^|\/)(?:(?:development_)?(?:behavior|resource|skin)_packs|worlds|world_templates|minecraftWorlds)\//i;
+const ADDON_FILE = /\.(?:mcpack|mcaddon|mcworld|mctemplate)$/i;
 
 /** Repository names of templates, examples and tests. */
 const TEMPLATE_NAME = /(?:^|[-_.])(?:templates?|examples?|demos?|samples?|tests?)$/i;
@@ -33,7 +40,7 @@ export type ListingReason =
   | "duplicate"
   /** A template repository, or one named as a template, example, demo or test. */
   | "template"
-  /** Installs nothing into a mod folder (images, scripts, programs, or nothing at all). */
+  /** Places files, but none where the game or a loader loads mods and add-ons from (images, scripts, programs). */
   | "not-a-mod";
 
 export type Listing =
@@ -92,13 +99,20 @@ export function manifestOf(json: unknown): Manifest | null {
 
 const normalizeDest = (dest: string) => dest.replace(/\\/g, "/").replace(/^(?:\.\/)+/, "");
 
-/** The manifest puts at least one file into a mod folder. */
-export function installsMod(manifest: Manifest): boolean {
-  return manifest.variants.some((variant) =>
-    (variant.assets ?? []).some((asset) =>
-      (asset.placements ?? []).some((p) => MOD_DIRS.some((dir) => normalizeDest(p.dest ?? "").startsWith(dir))),
-    ),
-  );
+/** A placement puts mod content where the game or a loader loads it from. */
+export function isModContent(dest: string): boolean {
+  const path = normalizeDest(dest);
+  return LOADER_DIRS.some((dir) => path.startsWith(dir)) || ADDON_DIR.test(path) || ADDON_FILE.test(path);
+}
+
+/**
+ * Whether the manifest installs a mod: some placement is mod content (true),
+ * it places files but none is (false), or it places nothing to tell by (null).
+ */
+export function installsMod(manifest: Manifest): boolean | null {
+  const dests = manifest.variants.flatMap((v) => (v.assets ?? []).flatMap((a) => (a.placements ?? []).map((p) => p.dest ?? "")));
+  const placed = dests.filter((dest) => normalizeDest(dest) !== "");
+  return placed.length ? placed.some(isModContent) : null;
 }
 
 /** The repository's name today (else the tooth's last segment). */
@@ -149,7 +163,7 @@ export function classifyListings(inputs: readonly ListingInput[]): Map<string, L
       out.set(input.tooth, { status: "excluded", reason: "template" });
     } else if (platform.has(input.tooth.toLowerCase())) {
       out.set(input.tooth, { status: "unlisted", reason: "platform" });
-    } else if (input.manifest && !installsMod(input.manifest)) {
+    } else if (input.manifest && installsMod(input.manifest) === false) {
       out.set(input.tooth, { status: "excluded", reason: "not-a-mod" });
     } else {
       candidates.push(input);
