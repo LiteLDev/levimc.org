@@ -1,23 +1,23 @@
 import type { EnvId, PlatformId } from "./data/categories";
 
-export interface PackageInfo {
+export interface ModInfo {
   name: string;
   description: string;
   tags: string[];
   avatar_url?: string;
 }
 
-export interface RawPackageEntry {
-  info: PackageInfo;
+export interface RawModEntry {
+  info: ModInfo;
   updated_at: string;
   stargazer_count: number;
   variants: Record<string, { versions: string[] }>;
 }
 
-export interface PackageIndex {
+export interface ModIndex {
   format_version: number;
   format_uuid: string;
-  packages: Record<string, RawPackageEntry>;
+  packages: Record<string, RawModEntry>;
 }
 
 /** One variant of a version's manifest (`tooth.json`), as far as the site uses it. */
@@ -30,12 +30,12 @@ export interface ManifestVariant {
 
 /** A version's manifest, as far as the site uses it. */
 export interface Manifest {
-  info: PackageInfo;
+  info: ModInfo;
   variants: ManifestVariant[];
 }
 
 /**
- * A package as the listing shows, searches and filters it. Built at build
+ * A mod as the listing shows, searches and filters it. Built at build
  * time (see `server/catalog.ts`) and embedded in the home page.
  */
 export interface CatalogEntry {
@@ -45,7 +45,7 @@ export interface CatalogEntry {
   description: string;
   /** The repository owner, where the repository lives today. */
   owner: string;
-  /** The package's own icon, when the build could load it; else the owner's avatar is shown. */
+  /** The mod's own icon, when the build could load it; else the owner's avatar is shown. */
   icon?: string;
   /** Raw lipr tags. */
   tags: string[];
@@ -57,9 +57,9 @@ export interface CatalogEntry {
   env: EnvId[];
   /** Minecraft versions any version runs on (through its LeviLamina ranges), newest first; empty when unknown. */
   gameVersions: string[];
-  /** Listed packages the latest version depends on (as the index spells them). */
+  /** Listed mods the latest version depends on (as the index spells them). */
   dependsOn: string[];
-  /** Packages whose latest version depends on this one (absent: none). */
+  /** Mods whose latest version depends on this one (absent: none). */
   requiredBy?: number;
   stars: number;
   /** The default-order score (see `lib/ranking.ts`): higher first. */
@@ -93,7 +93,7 @@ export interface Catalog {
   features: CatalogFeatures;
 }
 
-/** A release of a package's repository (see `server/github.ts`). */
+/** A release of a mod's repository (see `server/github.ts`). */
 export interface ReleaseInfo {
   /** The release's tag (`v1.2.0`). */
   tag: string;
@@ -101,12 +101,12 @@ export interface ReleaseInfo {
   prerelease: boolean;
 }
 
-/** A package another one refers to (dependencies, dependents). */
-export interface RelatedPackage {
+/** A mod another one refers to (dependencies, dependents). */
+export interface RelatedMod {
   tooth: string;
   name: string;
   owner: string;
   icon?: string;
-  /** The package is in the index (it has a page here). */
+  /** The mod is in the index (it has a page here). */
   listed?: boolean;
 }

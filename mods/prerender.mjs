@@ -1,5 +1,5 @@
 // Prerenders every page into dist/ after `vite build` and the SSR build:
-// `/mods/`, one page per package, and 404.html; then writes sitemap.xml. See README.md.
+// `/mods/`, one page per mod, and 404.html; then writes sitemap.xml. See README.md.
 // dist/ is the site's /mods/ folder: the levimc.org build copies it there.
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { prerenderRoutes } from "./kit/ssg/prerender.mjs";
@@ -33,7 +33,7 @@ for (const file of files) {
 for (const file of ssr.HERO_FILES) writeFileSync(`dist/${file}`, ssr.heroSvg(file));
 
 // Crawlers see only the first page of the listing (the query string never
-// reaches the host), so the sitemap lists every package page.
+// reaches the host), so the sitemap lists every mod page.
 const escapeXml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 writeFileSync(
   "dist/sitemap.xml",

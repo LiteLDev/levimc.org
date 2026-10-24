@@ -53,13 +53,13 @@ interface ErrorMessageProps {
 export function ErrorMessage({ message, reset }: ErrorMessageProps) {
   const { t } = useI18n();
   return (
-    <main id="main" className="pkg-main pkg-notfound kit-above-backdrop" tabIndex={-1}>
-      <div className="px-card kit-painted pkg-notfound-card" role="alert">
-        <div className="kit-slot pkg-notfound-compass" aria-hidden="true">
+    <main id="main" className="mods-main mods-notfound kit-above-backdrop" tabIndex={-1}>
+      <div className="px-card kit-painted mods-notfound-card" role="alert">
+        <div className="kit-slot mods-notfound-compass" aria-hidden="true">
           <PixelIcon name="tnt" size={64} />
         </div>
-        <h2 className="pkg-error-title">{t.errorTitle}</h2>
-        <p className="pkg-notfound-text">{message}</p>
+        <h2 className="mods-error-title">{t.errorTitle}</h2>
+        <p className="mods-notfound-text">{message}</p>
         <button type="button" className="mc-btn mc-btn-primary" onClick={reset}>
           {t.tryAgain}
         </button>

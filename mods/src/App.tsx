@@ -17,7 +17,7 @@ import { pageMeta, SITE_ORIGIN, type PageData } from "./page-data";
 import { PageStoreContext, usePageStore, type PageStore } from "./page-store";
 import { HomePage } from "./pages/home-page";
 import { NotFoundPage } from "./pages/not-found-page";
-import { PackagePage } from "./pages/package-page";
+import { ModPage } from "./pages/mod-page";
 import { RenamesContext } from "./repository-renames";
 
 /**
@@ -88,7 +88,7 @@ function localizedTitle(data: PageData, t: Strings): string {
   switch (data.kind) {
     case "home":
       return `${t.siteName} — ${t.tagline}`;
-    case "package":
+    case "mod":
       return `${data.entry.name} | ${t.siteName}`;
     case "not-found":
       return `${t.notFoundTitle} | ${t.siteName}`;
@@ -154,11 +154,11 @@ function renderPage(data: PageData) {
   switch (data.kind) {
     case "home":
       return <HomePage catalog={data.catalog} />;
-    case "package":
+    case "mod":
       return (
         <>
           <Header />
-          <PackagePage key={data.tooth} data={data} />
+          <ModPage key={data.tooth} data={data} />
         </>
       );
     case "not-found":
@@ -174,11 +174,11 @@ function renderPage(data: PageData) {
 /** Shown only if a page is still loading outside a navigation transition. */
 function PageFallback() {
   return (
-    <main id="main" className="pkg-main kit-above-backdrop" aria-busy="true">
-      <div className="pkg-skeleton pkg-page-skeleton">
-        <span className="pkg-skeleton-bar pkg-skeleton-title" />
-        <span className="pkg-skeleton-bar" />
-        <span className="pkg-skeleton-bar pkg-skeleton-70" />
+    <main id="main" className="mods-main kit-above-backdrop" aria-busy="true">
+      <div className="mods-skeleton mods-page-skeleton">
+        <span className="mods-skeleton-bar mods-skeleton-title" />
+        <span className="mods-skeleton-bar" />
+        <span className="mods-skeleton-bar mods-skeleton-70" />
       </div>
     </main>
   );
@@ -208,7 +208,7 @@ function Shell({ children }: { children: ReactNode }) {
           {i18n.t.skipToContent}
         </a>
         <GlobalBar
-          current="packages"
+          current="mods"
           locale={locale.lang}
           sticky
           siteOrigin={SITE_ORIGIN}

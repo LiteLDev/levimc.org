@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { ownerAvatar } from "../lib/packages";
+import { ownerAvatar } from "../lib/mods";
 
 interface ProjectIconProps {
-  /** The package's own icon (checked at build time), if any. */
+  /** The mod's own icon (checked at build time), if any. */
   icon?: string;
   owner: string;
   /** Intrinsic size in CSS px; the stylesheet sizes the box per context. */
@@ -13,7 +13,7 @@ interface ProjectIconProps {
 }
 
 /**
- * A package's icon: its own, else its owner's GitHub avatar, else the pixel
+ * A mod's icon: its own, else its owner's GitHub avatar, else the pixel
  * chest. The box keeps its size whatever loads, so nothing shifts.
  */
 export function ProjectIcon({ icon, owner, size, eager, className }: ProjectIconProps) {
@@ -31,7 +31,7 @@ export function ProjectIcon({ icon, owner, size, eager, className }: ProjectIcon
     img.decode().catch(() => setFailed((f) => (f.includes(src) ? f : [...f, src])));
   }, [src]);
 
-  const classes = ["pkg-icon", className].filter(Boolean).join(" ");
+  const classes = ["mods-icon", className].filter(Boolean).join(" ");
   if (src) {
     return (
       <img
@@ -49,5 +49,5 @@ export function ProjectIcon({ icon, owner, size, eager, className }: ProjectIcon
       />
     );
   }
-  return <span className={`${classes} pkg-sprite pkg-sprite-chest pkg-icon-fallback`} aria-hidden="true" />;
+  return <span className={`${classes} mods-sprite mods-sprite-chest mods-icon-fallback`} aria-hidden="true" />;
 }

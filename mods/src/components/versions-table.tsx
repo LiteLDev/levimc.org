@@ -2,15 +2,15 @@ import { useState } from "react";
 import { PixelIcon, Pagination } from "../kit-ui";
 import { useI18n } from "../i18n";
 import {
-  buildPackageUrl,
+  buildModUrl,
   getReleaseUrl,
   getSortedVariants,
   getVersionsForVariant,
   installCommand,
   isPrerelease,
-  type PackageSelection,
-} from "../lib/packages";
-import type { RawPackageEntry, ReleaseInfo } from "../types";
+  type ModSelection,
+} from "../lib/mods";
+import type { RawModEntry, ReleaseInfo } from "../types";
 import { CopyButton } from "./copy-button";
 import { HotbarRadio } from "./hotbar-radio";
 import { RelativeDate } from "./local-date";
@@ -20,9 +20,9 @@ const PER_PAGE = 20;
 
 interface VersionsTableProps {
   tooth: string;
-  pkg: RawPackageEntry;
+  mod: RawModEntry;
   repository: string;
-  selection: PackageSelection;
+  selection: ModSelection;
   releases: Record<string, ReleaseInfo>;
   llRanges: Record<string, Record<string, string>>;
 }
@@ -32,11 +32,11 @@ interface VersionsTableProps {
  * README), the variants that have it, the LeviLamina range it needs, when it
  * was published, and its install command and release.
  */
-export function VersionsTable({ tooth, pkg, repository, selection, releases, llRanges }: VersionsTableProps) {
+export function VersionsTable({ tooth, mod, repository, selection, releases, llRanges }: VersionsTableProps) {
   const { t } = useI18n();
-  const variants = getSortedVariants(pkg);
+  const variants = getSortedVariants(mod);
   const [variant, setVariant] = useState(selection.variant);
-  const all = getVersionsForVariant(pkg, variant).slice().reverse();
+  const all = getVersionsForVariant(mod, variant).slice().reverse();
   const onlyPre = all.length > 0 && all.every(isPrerelease);
   const [showPre, setShowPre] = useState(true);
   const [page, setPage] = useState(1);
@@ -45,13 +45,13 @@ export function VersionsTable({ tooth, pkg, repository, selection, releases, llR
   const current = Math.min(page, pageCount);
   const shown = versions.slice((current - 1) * PER_PAGE, current * PER_PAGE);
   const label = (v: string) => (v === "" ? t.defaultVariant : v);
-  const variantsOf = (version: string) => variants.filter((v) => pkg.variants[v]?.versions.includes(version));
+  const variantsOf = (version: string) => variants.filter((v) => mod.variants[v]?.versions.includes(version));
   const hasRanges = Object.keys(llRanges).length > 0;
   const hasDates = Object.keys(releases).length > 0;
 
   return (
-    <div className="pkg-versions-tab">
-      <div className="pkg-versions-bar">
+    <div className="mods-versions-tab">
+      <div className="mods-versions-bar">
         {variants.length > 1 ? (
           <HotbarRadio
             label={t.variant}
@@ -66,7 +66,7 @@ export function VersionsTable({ tooth, pkg, repository, selection, releases, llR
         {!onlyPre && all.some(isPrerelease) ? (
           <button
             type="button"
-            className="mc-btn mc-btn-sm pkg-toggle"
+            className="mc-btn mc-btn-sm mods-toggle"
             aria-pressed={showPre}
             onClick={() => {
               setShowPre(!showPre);
@@ -88,11 +88,11 @@ export function VersionsTable({ tooth, pkg, repository, selection, releases, llR
           label={t.pagination}
           previousLabel={t.previousPage}
           nextLabel={t.nextPage}
-          className="pkg-versions-pager"
+          className="mods-versions-pager"
         />
       </div>
       {shown.length ? (
-        <table className="pkg-versions-table">
+        <table className="mods-versions-table">
           <thead>
             <tr>
               <th scope="col">
@@ -114,28 +114,28 @@ export function VersionsTable({ tooth, pkg, repository, selection, releases, llR
               const range = llRanges[variant]?.[version];
               return (
                 <tr key={version} aria-current={isCurrent ? "true" : undefined}>
-                  <td className="pkg-vt-channel">
-                    <span className={`px-dot pkg-channel ${pre ? "is-pre" : "is-release"}`} title={pre ? t.prerelease : t.release} />
+                  <td className="mods-vt-channel">
+                    <span className={`px-dot mods-channel ${pre ? "is-pre" : "is-release"}`} title={pre ? t.prerelease : t.release} />
                     <span className="kit-sr-only">{pre ? t.prerelease : t.release}</span>
                   </td>
-                  <td className="pkg-vt-version">
-                    <RouterLink href={buildPackageUrl(tooth, pkg, { variant, version })} aria-current={isCurrent ? "page" : undefined}>
+                  <td className="mods-vt-version">
+                    <RouterLink href={buildModUrl(tooth, mod, { variant, version })} aria-current={isCurrent ? "page" : undefined}>
                       {version}
                     </RouterLink>
                     {isCurrent ? <span className="kit-sr-only"> ({t.current})</span> : null}
                   </td>
-                  <td className="pkg-vt-variants">
+                  <td className="mods-vt-variants">
                     {variantsOf(version).map((v) => (
-                      <span key={v} className="pkg-chip pkg-chip-mono">
+                      <span key={v} className="mods-chip mods-chip-mono">
                         {label(v)}
                       </span>
                     ))}
                   </td>
-                  {hasRanges ? <td className="pkg-vt-range">{range ? <code>{range}</code> : null}</td> : null}
+                  {hasRanges ? <td className="mods-vt-range">{range ? <code>{range}</code> : null}</td> : null}
                   {hasDates ? (
-                    <td className="pkg-vt-date">{releases[version] ? <RelativeDate value={releases[version]!.date} /> : null}</td>
+                    <td className="mods-vt-date">{releases[version] ? <RelativeDate value={releases[version]!.date} /> : null}</td>
                   ) : null}
-                  <td className="pkg-vt-actions">
+                  <td className="mods-vt-actions">
                     <CopyButton text={installCommand(tooth, variant, version)} label={t.copyInstall(version)} />
                     <a
                       className="mc-icon-btn"
@@ -153,7 +153,7 @@ export function VersionsTable({ tooth, pkg, repository, selection, releases, llR
           </tbody>
         </table>
       ) : (
-        <p className="pkg-empty-note">{t.noVersions(label(variant))}</p>
+        <p className="mods-empty-note">{t.noVersions(label(variant))}</p>
       )}
     </div>
   );

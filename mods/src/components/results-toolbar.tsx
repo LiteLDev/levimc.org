@@ -22,7 +22,7 @@ function SortMenu({ value, options, onChange }: { value: SortKey; options: { val
   useDismissableDetails(ref);
   const current = options.find((o) => o.value === value) ?? options[0]!;
   return (
-    <details ref={ref} className="kit-menu pkg-sort-menu">
+    <details ref={ref} className="kit-menu mods-sort-menu">
       <summary className="mc-btn mc-btn-sm kit-menu-trigger" aria-label={`${t.sortLabel}: ${current.label}`}>
         <span>{t.sortShort(current.label)}</span>
         <PixelIcon name="chevronDown" className="kit-menu-chevron" />
@@ -74,7 +74,7 @@ export function Pager({ state, page, pageCount, go, className }: PagerProps) {
       label={t.pagination}
       previousLabel={t.previousPage}
       nextLabel={t.nextPage}
-      className={`pkg-pager${className ? ` ${className}` : ""}`}
+      className={`mods-pager${className ? ` ${className}` : ""}`}
     />
   );
 }
@@ -99,16 +99,16 @@ export function ResultsToolbar({ state, newest, view, onView, filterCount, onOpe
   const sorts = sortOptions(t, newest);
   const setSort = (sort: SortKey) => apply({ ...state, sort, page: 1 });
   return (
-    <div className="pkg-toolbar">
-      <button ref={filtersButton} type="button" className="mc-btn mc-btn-sm pkg-filters-btn" onClick={onOpenFilters} aria-haspopup="dialog">
+    <div className="mods-toolbar">
+      <button ref={filtersButton} type="button" className="mc-btn mc-btn-sm mods-filters-btn" onClick={onOpenFilters} aria-haspopup="dialog">
         <PixelIcon name="menu" />
         {filterCount ? t.filtersCount(filterCount) : t.filters}
       </button>
-      <HotbarRadio label={t.sortLabel} className="pkg-sort" options={sorts} value={state.sort} onChange={setSort} />
+      <HotbarRadio label={t.sortLabel} className="mods-sort" options={sorts} value={state.sort} onChange={setSort} />
       <SortMenu value={state.sort} options={sorts} onChange={setSort} />
       <HotbarRadio
         label={t.viewLabel}
-        className="pkg-view"
+        className="mods-view"
         options={[
           { value: "list", label: <PixelIcon name="menu" />, ariaLabel: t.viewList, tooltip: t.viewList },
           { value: "grid", label: <PixelIcon name="apps" />, ariaLabel: t.viewGrid, tooltip: t.viewGrid },
@@ -116,7 +116,7 @@ export function ResultsToolbar({ state, newest, view, onView, filterCount, onOpe
         value={view}
         onChange={onView}
       />
-      <Pager state={state} page={page} pageCount={pageCount} go={go} className="pkg-pager-top" />
+      <Pager state={state} page={page} pageCount={pageCount} go={go} className="mods-pager-top" />
     </div>
   );
 }

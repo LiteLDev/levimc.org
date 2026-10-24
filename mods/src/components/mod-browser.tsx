@@ -46,14 +46,14 @@ function EmptyState({ state, apply }: { state: QueryState; apply: (s: QueryState
   const filters = filterCount(state);
   const q = state.q.trim();
   return (
-    <div className="pkg-empty">
-      <span className="kit-slot pkg-empty-slot" aria-hidden="true">
+    <div className="mods-empty">
+      <span className="kit-slot mods-empty-slot" aria-hidden="true">
         <PixelIcon name="compass" size={32} />
       </span>
-      <p className="pkg-empty-title">
+      <p className="mods-empty-title">
         {q ? t.emptyQuery(q) + (filters ? t.emptyWithFilters(filters) : "") : t.emptyFilters}
       </p>
-      <div className="pkg-empty-actions">
+      <div className="mods-empty-actions">
         {q ? (
           <button type="button" className="mc-btn mc-btn-sm" onClick={() => apply({ ...state, q: "", page: 1 })}>
             {t.clearSearch}
@@ -65,7 +65,7 @@ function EmptyState({ state, apply }: { state: QueryState; apply: (s: QueryState
           </button>
         ) : null}
       </div>
-      {q ? <p className="pkg-empty-hint">{t.emptyHint}</p> : null}
+      {q ? <p className="mods-empty-hint">{t.emptyHint}</p> : null}
     </div>
   );
 }
@@ -76,7 +76,7 @@ function EmptyState({ state, apply }: { state: QueryState; apply: (s: QueryState
  * static host: the page is prerendered in its default state and applies the
  * URL right after hydrating.
  */
-export function PackageBrowser({ catalog }: { catalog: Catalog }) {
+export function ModBrowser({ catalog }: { catalog: Catalog }) {
   const { t } = useI18n();
   const [params] = useSearchParams();
   const location = useLocation();
@@ -103,10 +103,10 @@ export function PackageBrowser({ catalog }: { catalog: Catalog }) {
 
   // The URL is applied: show the results (index.html hid them while a query was pending).
   useEffect(() => {
-    if (hydrated) document.documentElement.removeAttribute("data-pkg-pending");
+    if (hydrated) document.documentElement.removeAttribute("data-mods-pending");
   }, [hydrated]);
 
-  // "Back to search" on a package page returns to this exact listing.
+  // "Back to search" on a mod page returns to this exact listing.
   useEffect(() => {
     if (hydrated) writeStorage(STORAGE_KEYS.lastSearch, location.pathname + location.search, true);
   }, [hydrated, location.pathname, location.search]);
@@ -135,9 +135,9 @@ export function PackageBrowser({ catalog }: { catalog: Catalog }) {
 
   return (
     <>
-      <div className="pkg-browse">
-        <section className="pkg-results" aria-labelledby="pkg-results-title" data-pkg-results="" data-scroll-anchor="">
-          <h2 id="pkg-results-title" className="kit-sr-only">
+      <div className="mods-browse">
+        <section className="mods-results" aria-labelledby="mods-results-title" data-mods-results="" data-scroll-anchor="">
+          <h2 id="mods-results-title" className="kit-sr-only">
             {t.resultsHeading}
           </h2>
           <ListingSearch
@@ -162,16 +162,16 @@ export function PackageBrowser({ catalog }: { catalog: Catalog }) {
             pageCount={matched.length ? pageCount : 1}
             go={(href) => go(href)}
           />
-          <div className="pkg-statusbar">
-            <p id="pkg-status" className="pkg-status" aria-live="polite" tabIndex={-1}>
+          <div className="mods-statusbar">
+            <p id="mods-status" className="mods-status" aria-live="polite" tabIndex={-1}>
               {status}
-              <span className="pkg-status-page">{pageCount > 1 ? t.statusPage(page, pageCount) : ""}</span>
+              <span className="mods-status-page">{pageCount > 1 ? t.statusPage(page, pageCount) : ""}</span>
             </p>
             <ActiveFilters state={state} names={names} />
           </div>
-          <div className="pkg-results-body">
+          <div className="mods-results-body">
             {items.length ? (
-              <ol className="pkg-results-list">
+              <ol className="mods-results-list">
                 {items.map((entry, i) => (
                   <li key={entry.tooth}>
                     <ProjectRow entry={entry} eager={i < EAGER_ROWS} ownerHref={ownerHref(entry.owner)} />
@@ -181,17 +181,17 @@ export function PackageBrowser({ catalog }: { catalog: Catalog }) {
             ) : (
               <EmptyState state={state} apply={apply} />
             )}
-            <div className="pkg-skeleton-list" aria-hidden="true">
+            <div className="mods-skeleton-list" aria-hidden="true">
               {Array.from({ length: 5 }, (_, i) => (
-                <span key={i} className="px-card pkg-skeleton-row" />
+                <span key={i} className="px-card mods-skeleton-row" />
               ))}
             </div>
           </div>
           {matched.length ? (
-            <Pager state={state} page={page} pageCount={pageCount} go={(href) => go(href)} className="pkg-pager-bottom" />
+            <Pager state={state} page={page} pageCount={pageCount} go={(href) => go(href)} className="mods-pager-bottom" />
           ) : null}
         </section>
-        <aside className="pkg-sidebar" aria-label={t.filters}>
+        <aside className="mods-sidebar" aria-label={t.filters}>
           {groups(false)}
         </aside>
       </div>

@@ -18,19 +18,19 @@ test("an alert is marked up as a kit admonition with a title and a body", () => 
   const tree = run(quote(paragraph("[!WARNING]\nMind the creepers.")));
   const node = tree.children[0] as Blockquote;
   assert.equal(node.data?.hName, "div");
-  assert.deepEqual(node.data?.hProperties, { dataPkgAlert: `${TOKEN} warning` });
+  assert.deepEqual(node.data?.hProperties, { dataModsAlert: `${TOKEN} warning` });
   const [title, body] = node.children as [Paragraph, Blockquote];
-  assert.deepEqual(title.data?.hProperties, { dataPkgAlert: `${TOKEN} title` });
+  assert.deepEqual(title.data?.hProperties, { dataModsAlert: `${TOKEN} title` });
   assert.deepEqual(title.children, [{ type: "text", value: "Warning" }]);
   assert.equal(body.data?.hName, "div");
-  assert.deepEqual(body.data?.hProperties, { dataPkgAlert: `${TOKEN} body` });
+  assert.deepEqual(body.data?.hProperties, { dataModsAlert: `${TOKEN} body` });
   assert.deepEqual(body.children, [paragraph("Mind the creepers.")]);
 });
 
 test("GitHub's alert types map to the kit's styles", () => {
   const kinds = ["NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION"].map((type) => {
     const node = run(quote(paragraph(`[!${type}]`), paragraph("x"))).children[0] as Blockquote;
-    return (node.data?.hProperties as { dataPkgAlert: string }).dataPkgAlert.split(" ")[1];
+    return (node.data?.hProperties as { dataModsAlert: string }).dataModsAlert.split(" ")[1];
   });
   assert.deepEqual(kinds, ["note", "tip", "example", "warning", "danger"]);
 });
@@ -46,10 +46,10 @@ test("ordinary quotes are left alone", () => {
   assert.equal(node.data, undefined);
 });
 
-const div = (dataPkgAlert: string): Element => ({
+const div = (dataModsAlert: string): Element => ({
   type: "element",
   tagName: "div",
-  properties: { dataPkgAlert },
+  properties: { dataModsAlert },
   children: [],
 });
 

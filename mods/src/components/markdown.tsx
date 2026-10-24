@@ -17,7 +17,7 @@ import {
   themedMedia,
   type RepositoryRenames,
 } from "../lib/markdown";
-import type { RepoBaseUrls } from "../lib/packages";
+import type { RepoBaseUrls } from "../lib/mods";
 import { README_PLUGINS } from "../lib/readme-pipeline";
 
 export interface MarkdownProps {
@@ -59,10 +59,10 @@ function CodeBlock({ children }: { children?: ReactNode }) {
   }, [copies]);
 
   return (
-    <div className="kit-code pkg-code">
+    <div className="kit-code mods-code">
       <button
         type="button"
-        className="kit-code-copy pkg-code-copy"
+        className="kit-code-copy mods-code-copy"
         data-kit-copy=""
         data-copied={copied ? t.copied : undefined}
         aria-label={copied ? t.copiedShort : t.copyCode}

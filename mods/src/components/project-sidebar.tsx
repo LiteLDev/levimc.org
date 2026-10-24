@@ -3,18 +3,18 @@ import { ENV_BY_ID, LSE_LANGUAGES, PLATFORM_BY_ID } from "../data/categories";
 import { formatNumber, useI18n } from "../i18n";
 import { serializeQuery, DEFAULT_STATE } from "../lib/catalog-query";
 import {
-  buildPackageUrl,
+  buildModUrl,
   getAllVersions,
-  getPackageManifestUrl,
+  getModManifestUrl,
   getSortedVariants,
   getVersionsForVariant,
   ownerAvatar,
-  type PackageSelection,
-} from "../lib/packages";
+  type ModSelection,
+} from "../lib/mods";
 
 /** Versions listed in the sidebar; the Versions tab has them all. */
 const RECENT = 6;
-import type { CatalogEntry, ManifestVariant, RawPackageEntry, ReleaseInfo } from "../types";
+import type { CatalogEntry, ManifestVariant, RawModEntry, ReleaseInfo } from "../types";
 import { CopyButton } from "./copy-button";
 import { LocalDate } from "./local-date";
 import { RouterLink } from "./router-link";
@@ -22,8 +22,8 @@ import { MaskIcon } from "./sprite";
 
 function Panel({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
-    <section className="px-card pkg-panel pkg-side-panel" aria-labelledby={id}>
-      <h2 id={id} className="pkg-panel-title">
+    <section className="px-card mods-panel mods-side-panel" aria-labelledby={id}>
+      <h2 id={id} className="mods-panel-title">
         {title}
       </h2>
       {children}
@@ -33,9 +33,9 @@ function Panel({ id, title, children }: { id: string; title: string; children: R
 
 function ExternalLink({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="pkg-side-link">
+    <a href={href} target="_blank" rel="noopener noreferrer" className="mods-side-link">
       {children}
-      <MaskIcon name="external" className="pkg-side-link-ext" />
+      <MaskIcon name="external" className="mods-side-link-ext" />
     </a>
   );
 }
@@ -43,9 +43,9 @@ function ExternalLink({ href, children }: { href: string; children: ReactNode })
 interface ProjectSidebarProps {
   tooth: string;
   entry: CatalogEntry;
-  pkg: RawPackageEntry;
+  mod: RawModEntry;
   repository: string;
-  selection: PackageSelection;
+  selection: ModSelection;
   /** The selected version's manifest variants (`undefined` while loading, `null` without a manifest). */
   variants: ManifestVariant[] | null | undefined;
   releases: Record<string, ReleaseInfo>;
@@ -53,20 +53,20 @@ interface ProjectSidebarProps {
 }
 
 /** Compatibility, links, creators, details and tags, like Modrinth's right column. */
-export function ProjectSidebar({ tooth, entry, pkg, repository, selection, variants, releases, hasIssues }: ProjectSidebarProps) {
+export function ProjectSidebar({ tooth, entry, mod, repository, selection, variants, releases, hasIssues }: ProjectSidebarProps) {
   const { t, locale } = useI18n();
   const os = [...new Set((variants ?? []).filter((v) => v.label === selection.variant).map((v) => v.platform ?? ""))];
   const firstRelease = Object.values(releases).reduce<string | undefined>((min, r) => (!min || r.date < min ? r.date : min), undefined);
-  const labels = getSortedVariants(pkg);
+  const labels = getSortedVariants(mod);
   /** The latest versions of the selected variant. */
-  const recent = getVersionsForVariant(pkg, selection.variant).slice(-RECENT).reverse();
+  const recent = getVersionsForVariant(mod, selection.variant).slice(-RECENT).reverse();
   return (
     <>
-      <Panel id="pkg-side-compat" title={t.compatibility}>
-        <dl className="pkg-facts">
+      <Panel id="mods-side-compat" title={t.compatibility}>
+        <dl className="mods-facts">
           <div>
             <dt>{t.platforms}</dt>
-            <dd className="pkg-fact-chips">
+            <dd className="mods-fact-chips">
               {entry.platforms.map((id) => {
                 const p = PLATFORM_BY_ID.get(id);
                 if (!p) return null;
@@ -82,9 +82,9 @@ export function ProjectSidebar({ tooth, entry, pkg, repository, selection, varia
           {entry.env.length ? (
             <div>
               <dt>{t.environment}</dt>
-              <dd className="pkg-fact-chips">
+              <dd className="mods-fact-chips">
                 {entry.env.map((id) => (
-                  <span key={id} className="pkg-chip">
+                  <span key={id} className="mods-chip">
                     {ENV_BY_ID.get(id)?.label[locale]}
                   </span>
                 ))}
@@ -94,9 +94,9 @@ export function ProjectSidebar({ tooth, entry, pkg, repository, selection, varia
           {os.length ? (
             <div>
               <dt>{t.os}</dt>
-              <dd className="pkg-fact-chips">
+              <dd className="mods-fact-chips">
                 {os.map((p) => (
-                  <span key={p} className="pkg-chip pkg-chip-mono">
+                  <span key={p} className="mods-chip mods-chip-mono">
                     {p || t.osAny}
                   </span>
                 ))}
@@ -106,8 +106,8 @@ export function ProjectSidebar({ tooth, entry, pkg, repository, selection, varia
         </dl>
       </Panel>
 
-      <Panel id="pkg-side-links" title={t.links}>
-        <ul className="pkg-side-links">
+      <Panel id="mods-side-links" title={t.links}>
+        <ul className="mods-side-links">
           <li>
             <ExternalLink href={repository}>{t.sourceCode}</ExternalLink>
           </li>
@@ -122,34 +122,34 @@ export function ProjectSidebar({ tooth, entry, pkg, repository, selection, varia
           {variants ? (
             // only when lipr has the manifest (it lacks some versions it lists)
             <li>
-              <ExternalLink href={getPackageManifestUrl(tooth, selection.version)}>{t.manifest}</ExternalLink>
+              <ExternalLink href={getModManifestUrl(tooth, selection.version)}>{t.manifest}</ExternalLink>
             </li>
           ) : null}
         </ul>
       </Panel>
 
-      <Panel id="pkg-side-creators" title={t.creators}>
-        <a className="pkg-creator" href={`https://github.com/${entry.owner}`} target="_blank" rel="noopener noreferrer">
-          <img className="pkg-creator-avatar" src={ownerAvatar(entry.owner, 64)} alt="" width={32} height={32} loading="lazy" referrerPolicy="no-referrer" />
-          <span className="pkg-creator-text">
-            <span className="pkg-creator-name">{entry.owner}</span>
-            <span className="pkg-creator-role">{t.owner}</span>
+      <Panel id="mods-side-creators" title={t.creators}>
+        <a className="mods-creator" href={`https://github.com/${entry.owner}`} target="_blank" rel="noopener noreferrer">
+          <img className="mods-creator-avatar" src={ownerAvatar(entry.owner, 64)} alt="" width={32} height={32} loading="lazy" referrerPolicy="no-referrer" />
+          <span className="mods-creator-text">
+            <span className="mods-creator-name">{entry.owner}</span>
+            <span className="mods-creator-role">{t.owner}</span>
           </span>
         </a>
       </Panel>
 
-      {/* the panels keep the ids of the old page's (#pkg-variants-title, #pkg-versions-title, #pkg-meta-title) */}
-      <Panel id="pkg-variants-title" title={t.variants}>
-        <ul className="pkg-chips">
+      {/* the panels keep the ids of the old page's (#mods-variants-title, #mods-versions-title, #mods-meta-title) */}
+      <Panel id="mods-variants-title" title={t.variants}>
+        <ul className="mods-chips">
           {labels.map((v) => {
-            const versions = getVersionsForVariant(pkg, v);
+            const versions = getVersionsForVariant(mod, v);
             const version = versions.includes(selection.version) ? selection.version : versions.at(-1);
             if (!version) return null;
             return (
               <li key={v}>
                 <RouterLink
-                  href={buildPackageUrl(tooth, pkg, { variant: v, version })}
-                  className="pkg-chip pkg-chip-link pkg-chip-mono"
+                  href={buildModUrl(tooth, mod, { variant: v, version })}
+                  className="mods-chip mods-chip-link mods-chip-mono"
                   aria-current={v === selection.variant ? "true" : undefined}
                 >
                   {v === "" ? t.defaultVariant : v}
@@ -160,13 +160,13 @@ export function ProjectSidebar({ tooth, entry, pkg, repository, selection, varia
         </ul>
       </Panel>
 
-      <Panel id="pkg-versions-title" title={t.versions}>
-        <ul className="pkg-chips">
+      <Panel id="mods-versions-title" title={t.versions}>
+        <ul className="mods-chips">
           {recent.map((version) => (
             <li key={version}>
               <RouterLink
-                href={buildPackageUrl(tooth, pkg, { variant: selection.variant, version })}
-                className="pkg-chip pkg-chip-link pkg-chip-mono"
+                href={buildModUrl(tooth, mod, { variant: selection.variant, version })}
+                className="mods-chip mods-chip-link mods-chip-mono"
                 aria-current={version === selection.version ? "true" : undefined}
               >
                 {version}
@@ -174,36 +174,36 @@ export function ProjectSidebar({ tooth, entry, pkg, repository, selection, varia
             </li>
           ))}
         </ul>
-        <RouterLink href={buildPackageUrl(tooth, pkg, selection, "versions")} className="pkg-side-link pkg-side-all">
-          {t.allVersions(formatNumber(getAllVersions(pkg).length, locale))}
+        <RouterLink href={buildModUrl(tooth, mod, selection, "versions")} className="mods-side-link mods-side-all">
+          {t.allVersions(formatNumber(getAllVersions(mod).length, locale))}
         </RouterLink>
       </Panel>
 
-      <Panel id="pkg-meta-title" title={t.details}>
-        <dl className="pkg-meta">
+      <Panel id="mods-meta-title" title={t.details}>
+        <dl className="mods-meta">
           {entry.license ? (
-            <div className="pkg-meta-row">
+            <div className="mods-meta-row">
               <dt>{t.license}</dt>
-              <dd className="pkg-meta-mono">{entry.license === "NOASSERTION" ? "Other" : entry.license}</dd>
+              <dd className="mods-meta-mono">{entry.license === "NOASSERTION" ? "Other" : entry.license}</dd>
             </div>
           ) : null}
           {firstRelease ? (
-            <div className="pkg-meta-row">
+            <div className="mods-meta-row">
               <dt>{t.published}</dt>
               <dd>
                 <LocalDate value={firstRelease} />
               </dd>
             </div>
           ) : null}
-          <div className="pkg-meta-row">
+          <div className="mods-meta-row">
             <dt>{t.updated}</dt>
             <dd>
               <LocalDate value={entry.updated} />
             </dd>
           </div>
-          <div className="pkg-meta-row pkg-meta-stack">
-            <dt>{t.packageId}</dt>
-            <dd className="pkg-meta-id">
+          <div className="mods-meta-row mods-meta-stack">
+            <dt>{t.modId}</dt>
+            <dd className="mods-meta-id">
               <code>{tooth}</code>
               <CopyButton text={tooth} />
             </dd>
@@ -211,12 +211,12 @@ export function ProjectSidebar({ tooth, entry, pkg, repository, selection, varia
         </dl>
       </Panel>
 
-      {pkg.info.tags?.length ? (
-        <Panel id="pkg-side-tags" title={t.tags}>
-          <ul className="pkg-chips">
-            {pkg.info.tags.map((tag) => (
+      {mod.info.tags?.length ? (
+        <Panel id="mods-side-tags" title={t.tags}>
+          <ul className="mods-chips">
+            {mod.info.tags.map((tag) => (
               <li key={tag}>
-                <RouterLink href={serializeQuery({ ...DEFAULT_STATE, tags: [tag] })} className="pkg-chip pkg-chip-link">
+                <RouterLink href={serializeQuery({ ...DEFAULT_STATE, tags: [tag] })} className="mods-chip mods-chip-link">
                   #{tag}
                 </RouterLink>
               </li>

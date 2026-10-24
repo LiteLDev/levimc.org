@@ -132,18 +132,18 @@ test("counts: an OR group's option ignores the group's own includes; zero counts
 test("search: name hits first, Chinese text found, popularity breaks ties", () => {
   assert.equal(run("q=levilamina").matched[0]?.name, "LeviLamina");
   assert.deepEqual(names(run("q=领地").matched), ["PLand"]);
-  // the category label in Chinese finds the economy packages
+  // the category label in Chinese finds the economy mods
   assert.deepEqual(names(run("q=经济").matched).sort(), ["Bank", "Money", "YEssential"]);
   assert.equal(run("q=zzzzqqq").matched.length, 0);
 });
 
-test("search: the rarer platforms are found by name (LeviLamina, on nearly every package, is not)", () => {
+test("search: the rarer platforms are found by name (LeviLamina, on nearly every mod, is not)", () => {
   assert.deepEqual([...(searchCatalog(CATALOG, "endstone")?.keys() ?? [])], ["github.com/GlacieTeam/Glacie"]);
   assert.deepEqual(names(run("q=Endstone").matched), ["Glacie"]);
   assert.deepEqual(names(run("q=lse").matched).sort(), ["LegacyScriptEngine", "YEssential"]);
   // "other" is too common a word to find the other loaders
   assert.ok(!names(run("q=other").matched).includes("lualoader"));
-  // a LeviLamina-only package is not found by the platform name
+  // a LeviLamina-only mod is not found by the platform name
   assert.ok(!names(run("q=levilamina").matched).includes("PLand"));
 });
 
@@ -191,7 +191,7 @@ test("game version and depends on round-trip through the URL", () => {
   assert.equal(filterCount(state), 4);
 });
 
-test("without a search, relevance is the rank, at most three packages of one author per page", () => {
+test("without a search, relevance is the rank, at most three mods of one author per page", () => {
   const entries = [
     ...Array.from({ length: 5 }, (_, i) => entry(`github.com/big/P${i}`, { rank: 10 - i })),
     entry("github.com/x/Other", { rank: 1, stars: 999 }),

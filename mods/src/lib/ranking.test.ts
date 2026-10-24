@@ -12,7 +12,7 @@ test("compatibility: the newest game version is 1, less per version behind, unkn
   assert.equal(compatibility([], ALL), 0.3);
 });
 
-test("rank: a maintained, compatible package outranks a stale one with more stars", () => {
+test("rank: a maintained, compatible mod outranks a stale one with more stars", () => {
   const fresh = rankScore({ stars: 10, gameVersions: ["1.26.51"], updated: "2026-10-15T00:00:00Z" }, ALL, NOW);
   const stale = rankScore({ stars: 40, gameVersions: ["1.21.132"], updated: "2025-01-01T00:00:00Z" }, ALL, NOW);
   assert.ok(fresh > stale);
@@ -22,7 +22,7 @@ test("rank: a maintained, compatible package outranks a stale one with more star
   assert.ok(brandNew > fresh);
 });
 
-test("spreadAuthors keeps the order and moves an author's fourth package to the next block", () => {
+test("spreadAuthors keeps the order and moves an author's fourth mod to the next block", () => {
   const items = ["a", "a", "a", "a", "b", "c"].map((owner, i) => ({ owner, i }));
   assert.deepEqual(spreadAuthors(items, 5).map((x) => x.i), [0, 1, 2, 4, 5, 3]);
   assert.deepEqual(spreadAuthors(items, 4).map((x) => x.i), [0, 1, 2, 4, 3, 5]);

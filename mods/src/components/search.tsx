@@ -13,7 +13,7 @@ const isEditable = (el: Element | null) =>
 interface ListingSearchProps {
   /** The query in the URL. */
   query: string;
-  /** Packages in the catalogue (the placeholder's scale cue). */
+  /** Mods in the catalogue (the placeholder's scale cue). */
   total: number;
   /** Applies a query (replacing the history entry: typing adds none). */
   onSearch: (q: string) => void;
@@ -71,7 +71,7 @@ export function ListingSearch({ query, total, onSearch }: ListingSearchProps) {
 
   return (
     <form
-      className="pkg-search pkg-search-listing"
+      className="mods-search mods-search-listing"
       role="search"
       action={BASE}
       onSubmit={(e) => {
@@ -79,8 +79,8 @@ export function ListingSearch({ query, total, onSearch }: ListingSearchProps) {
         commit(value);
       }}
     >
-      <label className="mc-input pkg-search-field">
-        <PixelIcon name="search" className="pkg-search-icon" />
+      <label className="mc-input mods-search-field">
+        <PixelIcon name="search" className="mods-search-icon" />
         <input
           ref={input}
           type="search"
@@ -118,7 +118,7 @@ export function ListingSearch({ query, total, onSearch }: ListingSearchProps) {
         {value ? (
           <button
             type="button"
-            className="mc-icon-btn pkg-search-clear"
+            className="mc-icon-btn mods-search-clear"
             aria-label={t.clearSearch}
             onClick={() => {
               setValue("");
@@ -129,7 +129,7 @@ export function ListingSearch({ query, total, onSearch }: ListingSearchProps) {
             <PixelIcon name="close" />
           </button>
         ) : (
-          <kbd className="mc-kbd pkg-search-kbd" aria-hidden="true">
+          <kbd className="mc-kbd mods-search-kbd" aria-hidden="true">
             /
           </kbd>
         )}
@@ -138,7 +138,7 @@ export function ListingSearch({ query, total, onSearch }: ListingSearchProps) {
   );
 }
 
-/** The search form of the package and 404 pages' header: Enter opens the listing with the query. */
+/** The search form of the mod and 404 pages' header: Enter opens the listing with the query. */
 export function HeaderSearch() {
   const { t } = useI18n();
   const navigate = useNavigate();
@@ -151,9 +151,9 @@ export function HeaderSearch() {
   }
 
   return (
-    <form className="pkg-search pkg-search-header" role="search" action={BASE} onSubmit={handleSubmit}>
-      <label className="mc-input pkg-search-field">
-        <PixelIcon name="search" className="pkg-search-icon" />
+    <form className="mods-search mods-search-header" role="search" action={BASE} onSubmit={handleSubmit}>
+      <label className="mc-input mods-search-field">
+        <PixelIcon name="search" className="mods-search-icon" />
         <input
           type="search"
           name="q"
@@ -166,9 +166,9 @@ export function HeaderSearch() {
           onChange={(e) => setValue(e.target.value)}
         />
       </label>
-      <button type="submit" className="mc-btn mc-btn-primary mc-btn-sm pkg-search-submit" aria-label={t.searchSubmit}>
+      <button type="submit" className="mc-btn mc-btn-primary mc-btn-sm mods-search-submit" aria-label={t.searchSubmit}>
         <PixelIcon name="search" />
-        <span className="pkg-search-submit-text">{t.searchSubmit}</span>
+        <span className="mods-search-submit-text">{t.searchSubmit}</span>
       </button>
     </form>
   );

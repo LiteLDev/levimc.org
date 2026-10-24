@@ -20,7 +20,7 @@ export function CopyButton({ text, label, className }: CopyButtonProps) {
   // Counts copies, so each click restarts the "Copied!" timer.
   const [copies, setCopies] = useState(0);
   const copied = copies > 0;
-  const tipId = `pkg-copy-tip-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
+  const tipId = `mods-copy-tip-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
 
   useEffect(() => {
     if (!copies) return;
@@ -37,7 +37,7 @@ export function CopyButton({ text, label, className }: CopyButtonProps) {
     <button
       type="button"
       onClick={handleCopy}
-      className={`mc-icon-btn kit-tooltip-host pkg-copy${className ? ` ${className}` : ""}`}
+      className={`mc-icon-btn kit-tooltip-host mods-copy${className ? ` ${className}` : ""}`}
       data-placement="top"
       data-copied={copied ? "" : undefined}
       aria-label={copied ? t.copiedShort : (label ?? t.copyText(text))}

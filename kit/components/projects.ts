@@ -11,8 +11,8 @@ export const LINKS = {
   about: 'https://levimc.org/about/',
   /** Donations (linked from the footer: it has no bar tab). */
   support: 'https://levimc.org/support/',
-  /** LeviMC Mods moved into levimc.org (pkg.levimc.org redirects here) — the id stays `packages`. */
-  packages: 'https://levimc.org/mods/',
+  /** LeviMC Mods moved into levimc.org (pkg.levimc.org redirects here). */
+  mods: 'https://levimc.org/mods/',
   /** The blog moved into levimc.org (blog.levimc.org no longer resolves). */
   blog: 'https://levimc.org/blog/',
   github: 'https://github.com/LiteLDev',
@@ -22,7 +22,7 @@ export const LINKS = {
  * Tabs of the GlobalBar. `projects` is the Projects menu (kit 2: it replaces the Docs menu and the former
  * levimc.org/projects/ page); on docs.levimc.org it is the current tab, with the open project marked in it.
  */
-export type SiteId = 'home' | 'projects' | 'community' | 'about' | 'packages' | 'blog';
+export type SiteId = 'home' | 'projects' | 'community' | 'about' | 'mods' | 'blog';
 
 export type ProjectGroupId = 'core' | 'launchers' | 'mods';
 
@@ -117,7 +117,7 @@ export const SOCIAL: readonly SocialLink[] = [
 export const COPYRIGHT_HOLDER = 'LeviMC';
 
 /** levimc.org/mods/ ("LeviMC Mods"): display name and one-line description come from i18n (`modsName`, `modsBlurb`). */
-export const MODS_SITE: { id: 'packages'; url: string; icon: PixelIconName } = { id: 'packages', url: LINKS.packages, icon: 'chest' };
+export const MODS_SITE: { id: 'mods'; url: string; icon: PixelIconName } = { id: 'mods', url: LINKS.mods, icon: 'chest' };
 
 export interface GlobalNavEntry {
   id: SiteId;
@@ -134,7 +134,7 @@ export function globalNav(t: UiStrings): GlobalNavEntry[] {
   return [
     { id: 'home', label: t.home, url: LINKS.home },
     { id: 'projects', label: t.projects, url: LINKS.github },
-    { id: 'packages', label: t.packages, url: LINKS.packages },
+    { id: 'mods', label: t.mods, url: LINKS.mods },
     { id: 'blog', label: t.blog, url: LINKS.blog },
     { id: 'community', label: t.community, url: LINKS.community },
     { id: 'about', label: t.about, url: LINKS.about },

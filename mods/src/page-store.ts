@@ -1,6 +1,6 @@
 import { createContext, useContext, useSyncExternalStore } from "react";
 import { loadMarkdown } from "./components/lazy-markdown";
-import { toothFromPath } from "./lib/packages";
+import { toothFromPath } from "./lib/mods";
 import { parsePageData, type PageData } from "./page-data";
 
 /** A promise React's `use()` can read synchronously once it has settled. */

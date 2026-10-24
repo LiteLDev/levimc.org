@@ -1,5 +1,5 @@
-// Full-text search over the catalogue. A hundred-odd packages need no search
-// engine: every query word must appear in one of a package's fields, and the
+// Full-text search over the catalogue. A hundred-odd mods need no search
+// engine: every query word must appear in one of a mod's fields, and the
 // fields weigh in by importance — a hit in the name counts three times as much
 // as one in the description. Substring matching finds Chinese text (领地) as
 // well as parts of names (lamina → LeviLamina).
@@ -13,13 +13,13 @@ interface SearchDoc {
 }
 
 /**
- * Tags nearly every package carries (`platform:levilamina`, `type:mod`, …):
+ * Tags nearly every mod carries (`platform:levilamina`, `type:mod`, …):
  * matching them would make "levilamina" find the whole catalogue.
  */
 const BOILERPLATE = /^(?:platform:|type:)|^(?:levilamina|ll|mod|plugin|native)$/i;
 
 /**
- * The text a package is found by: name, repository path and owner, category
+ * The text a mod is found by: name, repository path and owner, category
  * labels in every language, the rarer named platforms (Endstone, LSE; LeviLamina
  * is the boilerplate one, "Other loaders" too generic a word) and raw tags, description.
  */
@@ -62,7 +62,7 @@ function docsFor(entries: readonly CatalogEntry[]): SearchDoc[] {
 }
 
 /**
- * Relevance scores of the packages matching `query` (higher is better), or
+ * Relevance scores of the mods matching `query` (higher is better), or
  * `null` for an empty query. Every word of the query has to match; each adds
  * the weight of the fields it matches times how well it matches, and an
  * exact name scores highest.

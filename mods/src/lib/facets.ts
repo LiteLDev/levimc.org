@@ -1,4 +1,4 @@
-// What a package is, for the listing's filters: its categories, platforms and
+// What a mod is, for the listing's filters: its categories, platforms and
 // environments. Categories and platforms come from lipr's tags alone (through
 // the tag map in src/data/categories.ts), environments from the latest
 // manifest. Nothing is curated by hand.
@@ -26,7 +26,7 @@ function upstreamCategories(tags: readonly string[]): string[] {
 }
 
 /**
- * Where a package runs, from its manifest: files placed under `plugins/` are
+ * Where a mod runs, from its manifest: files placed under `plugins/` are
  * for the dedicated server, under `mods/` for the LeviLamina client; a
  * `#client` dependency or a `client…` variant also means the client. Without a
  * manifest, the variant labels decide: `client…` → client, anything else →
@@ -72,7 +72,7 @@ function tagPlatforms(tags: readonly string[]): { platforms: PlatformId[]; lang?
 }
 
 /**
- * The facets of one package. `category:` tags win over the tag map;
+ * The facets of one mod. `category:` tags win over the tag map;
  * platforms come from the tags; environments from the manifest (see
  * {@link deriveEnv}).
  */

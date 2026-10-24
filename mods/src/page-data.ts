@@ -1,19 +1,19 @@
 import { BASE } from "./base-path";
 import type { RepositoryRenames } from "./lib/markdown";
-import type { PackageSelection } from "./lib/packages";
+import type { ModSelection } from "./lib/mods";
 import type {
   Catalog,
   CatalogEntry,
   ManifestVariant,
-  PackageInfo,
-  RawPackageEntry,
-  RelatedPackage,
+  ModInfo,
+  RawModEntry,
+  RelatedMod,
   ReleaseInfo,
 } from "./types";
 
 /** A version's manifest info and variants (`null`: lipr has no manifest for it) and README. */
-export interface PackageDetails {
-  info: PackageInfo | null;
+export interface ModDetails {
+  info: ModInfo | null;
   variants: ManifestVariant[] | null;
   /** `null` when the version has no README. */
   readme: string | null;
@@ -27,22 +27,22 @@ export interface PackageDetails {
 export type PageData = (
   | { kind: "home"; catalog: Catalog }
   | {
-      kind: "package";
+      kind: "mod";
       tooth: string;
-      pkg: RawPackageEntry;
+      mod: RawModEntry;
       entry: CatalogEntry;
-      /** The package's repository, where it lives today (see `getRepositoryUrl`). */
+      /** The mod's repository, where it lives today (see `getRepositoryUrl`). */
       repository: string;
       /** The selection the page is prerendered for, and its details. */
-      prerendered: PackageSelection & PackageDetails;
+      prerendered: ModSelection & ModDetails;
       /** GitHub releases by version (empty without GitHub data). */
       releases: Record<string, ReleaseInfo>;
       /** The LeviLamina range of each version, per variant (empty without levilauncher.json). */
       llRanges: Record<string, Record<string, string>>;
-      /** Packages whose latest version depends on this one. */
-      dependents: RelatedPackage[];
-      /** Packages any version depends on, by lower-case tooth (dependency cards). */
-      related: Record<string, RelatedPackage>;
+      /** Mods whose latest version depends on this one. */
+      dependents: RelatedMod[];
+      /** Mods any version depends on, by lower-case tooth (dependency cards). */
+      related: Record<string, RelatedMod>;
       /** The repository takes issues (an Issues link); false when unknown. */
       hasIssues: boolean;
       /** levilauncher.json was available ("Required by" is known). */
@@ -51,7 +51,7 @@ export type PageData = (
   | { kind: "not-found"; tooths: string[] }
 ) & {
   /**
-   * Package repositories GitHub now serves under another name, so avatars
+   * Mod repositories GitHub now serves under another name, so avatars
    * and README links can skip the redirect (see `server/github.ts`).
    */
   renames: RepositoryRenames;
@@ -67,7 +67,7 @@ export function siteDescription(projects: number): string {
   return `Browse ${projects} mods and plugins for Minecraft Bedrock — LeviLamina, LegacyScriptEngine and Endstone. Install any of them with lip.`;
 }
 
-const PAGE_DATA_ID = "pkg-page-data";
+const PAGE_DATA_ID = "mods-page-data";
 const PAGE_DATA_SCRIPT = new RegExp(
   `<script type="application/json" id="${PAGE_DATA_ID}">([\\s\\S]*?)</script>`,
 );
@@ -106,10 +106,10 @@ export function pageMeta(data: PageData): PageMeta {
         description: siteDescription(data.catalog.stats.projects),
         canonical: `${SITE_ORIGIN}${BASE}`,
       };
-    case "package":
+    case "mod":
       return {
         title: `${data.entry.name} | ${SITE_NAME}`,
-        description: data.pkg.info.description || `${data.entry.name} on ${SITE_NAME}`,
+        description: data.mod.info.description || `${data.entry.name} on ${SITE_NAME}`,
         canonical: `${SITE_ORIGIN}${BASE}${data.tooth}/`,
       };
     case "not-found":

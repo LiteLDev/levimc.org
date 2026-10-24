@@ -12,10 +12,10 @@ async function hydrate() {
   const root = document.getElementById("root");
   if (!data || !root) return;
 
-  // A package page renders its README while hydrating, like the server did.
+  // A mod page renders its README while hydrating, like the server did.
   // Should the chunk fail to load, hydrate anyway: the README keeps its
   // server HTML while React retries the chunk.
-  if (data.kind === "package") await loadMarkdown().catch(() => {});
+  if (data.kind === "mod") await loadMarkdown().catch(() => {});
 
   const store = new PageStore(window.location.pathname, data);
   hydrateRoot(

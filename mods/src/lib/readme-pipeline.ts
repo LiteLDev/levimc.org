@@ -15,7 +15,7 @@ import { rehypeRepairAnchors } from "./rehype-repair-anchors.ts";
  * (see `remark-github-alerts.ts`). It never reaches the HTML, so the server
  * and the browser render the same markup with different tokens.
  */
-const ALERT_TOKEN = `pkg${Math.random().toString(36).slice(2)}`;
+const ALERT_TOKEN = `mod${Math.random().toString(36).slice(2)}`;
 
 /**
  * GitHub's own sanitizer, plus the attribute that carries GitHub alerts

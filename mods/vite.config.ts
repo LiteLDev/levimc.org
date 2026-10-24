@@ -18,14 +18,14 @@ const prefsScript = createThemeInitScript({ appLocales: { locales: LOCALES, prer
 
 /**
  * The listing's own pre-paint state: the viewer's list/grid choice, and
- * `data-pkg-pending` while a query in the URL (`/mods/?cat=…`) is not applied yet —
+ * `data-mods-pending` while a query in the URL (`/mods/?cat=…`) is not applied yet —
  * the page is prerendered unfiltered, so its results stay hidden until the
  * app has applied the query (at most 4 s).
  */
 const listingScript =
   `(function(){var d=document.documentElement;try{if(localStorage.getItem(${JSON.stringify(STORAGE_KEYS.view)})==="grid")d.setAttribute("data-view","grid")}catch(e){}` +
   `var p=location.pathname;if((p===${JSON.stringify(BASE)}||p===${JSON.stringify(`${BASE}index.html`)})&&/[?&](${LISTING_KEYS.join("|")})=/.test(location.search)){` +
-  `d.setAttribute("data-pkg-pending","");setTimeout(function(){d.removeAttribute("data-pkg-pending")},4000)}})()`;
+  `d.setAttribute("data-mods-pending","");setTimeout(function(){d.removeAttribute("data-mods-pending")},4000)}})()`;
 
 /**
  * The kit's pre-paint script and web fonts go into `<head>` from the kit
@@ -33,7 +33,7 @@ const listingScript =
  */
 function kitHead(): Plugin {
   return {
-    name: "pkg:kit-head",
+    name: "mods:kit-head",
     transformIndexHtml(html) {
       return html.replace(
         "<!--kit-head-->",
@@ -49,7 +49,7 @@ function kitHead(): Plugin {
  */
 function devServerRender(): Plugin {
   return {
-    name: "pkg:dev-render",
+    name: "mods:dev-render",
     apply: "serve",
     configureServer(server: ViteDevServer) {
       return () => {
@@ -99,7 +99,7 @@ export default defineConfig({
   appType: "custom",
   plugins: [react(), tailwindcss(), kitHead(), devServerRender()],
   build: {
-    // Read by the prerender to preload the README renderer on package pages;
+    // Read by the prerender to preload the README renderer on mod pages;
     // prerender.mjs deletes it afterwards.
     manifest: true,
   },

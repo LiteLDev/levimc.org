@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { RawPackageEntry } from "../types.ts";
+import type { RawModEntry } from "../types.ts";
 import {
-  buildPackageUrl,
+  buildModUrl,
   commandParts,
   getDefaultSelection,
   getReleaseUrl,
@@ -12,14 +12,14 @@ import {
   isPrerelease,
   ownerAvatar,
   ownerOf,
-  packagePath,
+  modPath,
   parseTab,
   resolveSelection,
   toothFromPath,
-} from "./packages.ts";
+} from "./mods.ts";
 
 const TOOTH = "github.com/LiteLDev/LeviLamina";
-const entry: RawPackageEntry = {
+const entry: RawModEntry = {
   info: { name: "LeviLamina", description: "Mod loader", tags: [] },
   updated_at: "2026-10-17T00:00:00Z",
   stargazer_count: 1,
@@ -29,9 +29,9 @@ const entry: RawPackageEntry = {
   },
 };
 
-test("package paths round-trip", () => {
-  assert.equal(packagePath(TOOTH), "/mods/github.com/LiteLDev/LeviLamina/");
-  assert.equal(toothFromPath(packagePath(TOOTH)), TOOTH);
+test("mod paths round-trip", () => {
+  assert.equal(modPath(TOOTH), "/mods/github.com/LiteLDev/LeviLamina/");
+  assert.equal(toothFromPath(modPath(TOOTH)), TOOTH);
   assert.equal(toothFromPath("/mods/github.com/x"), null);
   assert.equal(toothFromPath("/mods/"), null);
   assert.equal(toothFromPath("/mods/index.html"), null);
@@ -47,7 +47,7 @@ test("the default selection is the default variant's latest version", () => {
   assert.deepEqual(getDefaultSelection(entry), { variant: "", version: "1.1.0" });
 });
 
-test("selections fall back to what the package has", () => {
+test("selections fall back to what the mod has", () => {
   assert.deepEqual(resolveSelection(entry, "client", "1.0.0"), { variant: "client", version: "1.0.0" });
   assert.deepEqual(resolveSelection(entry, "client", "9.9.9"), { variant: "client", version: "1.0.0" });
   assert.deepEqual(resolveSelection(entry, "nope", "1.0.0"), { variant: "", version: "1.0.0" });
@@ -55,15 +55,15 @@ test("selections fall back to what the package has", () => {
 });
 
 test("the default selection has the bare URL; tabs add tab=", () => {
-  assert.equal(buildPackageUrl(TOOTH, entry, { variant: "", version: "1.1.0" }), packagePath(TOOTH));
+  assert.equal(buildModUrl(TOOTH, entry, { variant: "", version: "1.1.0" }), modPath(TOOTH));
   assert.equal(
-    buildPackageUrl(TOOTH, entry, { variant: "client", version: "1.0.0" }),
-    `${packagePath(TOOTH)}?variant=client&version=1.0.0`,
+    buildModUrl(TOOTH, entry, { variant: "client", version: "1.0.0" }),
+    `${modPath(TOOTH)}?variant=client&version=1.0.0`,
   );
-  assert.equal(buildPackageUrl(TOOTH, entry, { variant: "", version: "1.1.0" }, "versions"), `${packagePath(TOOTH)}?tab=versions`);
+  assert.equal(buildModUrl(TOOTH, entry, { variant: "", version: "1.1.0" }, "versions"), `${modPath(TOOTH)}?tab=versions`);
   assert.equal(
-    buildPackageUrl(TOOTH, entry, { variant: "client", version: "1.0.0" }, "dependencies"),
-    `${packagePath(TOOTH)}?variant=client&version=1.0.0&tab=dependencies`,
+    buildModUrl(TOOTH, entry, { variant: "client", version: "1.0.0" }, "dependencies"),
+    `${modPath(TOOTH)}?variant=client&version=1.0.0&tab=dependencies`,
   );
 });
 

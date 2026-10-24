@@ -15,9 +15,9 @@ interface CompactHeroProps {
  */
 export function CompactHero({ name, tagline, children }: CompactHeroProps) {
   return (
-    <section className="kit-hero kit-hero-strip pkg-hero" data-kit-hero="">
+    <section className="kit-hero kit-hero-strip mods-hero" data-kit-hero="">
       <div className="kit-hero-paint kit-dissolve-bottom" aria-hidden="true">
-        <div className="kit-hero-art kit-dissolve-left pkg-hero-art" />
+        <div className="kit-hero-art kit-dissolve-left mods-hero-art" />
         <div className="kit-hero-brush kit-dissolve-left" />
       </div>
       <div className="kit-hero-inner">

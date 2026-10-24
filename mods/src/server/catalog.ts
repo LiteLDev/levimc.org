@@ -9,14 +9,14 @@ import { rankScore } from "../lib/ranking";
 import { updateUrl, type RepositoryRenames } from "../lib/markdown";
 import {
   fetchManifest,
-  fetchPackageIndex,
+  fetchModIndex,
   fetchWithRetry,
   getAllVersions,
   getDefaultSelection,
   getSortedVariants,
   ownerOf,
-} from "../lib/packages";
-import type { Catalog, CatalogEntry, Manifest, PackageIndex, RawPackageEntry, RelatedPackage } from "../types";
+} from "../lib/mods";
+import type { Catalog, CatalogEntry, Manifest, ModIndex, RawModEntry, RelatedMod } from "../types";
 import { fetchRepoMeta, repositoryRenames, type RepoMeta } from "./github";
 import { checkIcons } from "./icons";
 
@@ -26,15 +26,15 @@ const CONCURRENCY = 8;
 const LEVILAMINA = "github.com/liteldev/levilamina";
 
 export interface BuildData {
-  index: PackageIndex;
+  index: ModIndex;
   catalog: Catalog;
   byTooth: Map<string, CatalogEntry>;
   meta: Map<string, RepoMeta>;
   renames: RepositoryRenames;
-  /** The latest manifest of each package's default selection (`null`: lipr has none). */
+  /** The latest manifest of each mod's default selection (`null`: lipr has none). */
   manifests: Map<string, Manifest | null>;
   launcher: LauncherIndex | null;
-  /** Lower-case tooth → the packages whose latest version depends on it. */
+  /** Lower-case tooth → the mods whose latest version depends on it. */
   dependents: Map<string, string[]>;
   /** Lower-case tooth → the tooth as the index spells it. */
   canonical: Map<string, string>;
@@ -69,12 +69,12 @@ async function fetchLauncherIndex(): Promise<LauncherIndex | null> {
 /** A dependency key (`github.com/o/r#client`) as a lower-case tooth. */
 export const dependencyTooth = (key: string) => key.split("#")[0]!.toLowerCase();
 
-/** The dependencies of a package's latest version in each variant. */
-function latestDependencies(launcher: LauncherIndex, tooth: string, pkg: RawPackageEntry): string[] {
+/** The dependencies of a mod's latest version in each variant. */
+function latestDependencies(launcher: LauncherIndex, tooth: string, mod: RawModEntry): string[] {
   const entry = launcher.packages[tooth];
   if (!entry) return [];
   const deps = new Set<string>();
-  for (const [label, variant] of Object.entries(pkg.variants)) {
+  for (const [label, variant] of Object.entries(mod.variants)) {
     const latest = variant.versions.at(-1);
     const versionDeps = latest ? entry.variants[label]?.versions[latest]?.dependencies : undefined;
     for (const key of Object.keys(versionDeps ?? {})) deps.add(dependencyTooth(key));
@@ -88,7 +88,7 @@ const truncate = (text: string) => {
 };
 
 async function build(): Promise<BuildData> {
-  const index = await fetchPackageIndex();
+  const index = await fetchModIndex();
   const tooths = Object.keys(index.packages);
   const canonical = new Map(tooths.map((t) => [t.toLowerCase(), t]));
 
@@ -103,7 +103,7 @@ async function build(): Promise<BuildData> {
   const manifests = new Map(tooths.map((t, i) => [t, manifestList[i] ?? null]));
   const renames = repositoryRenames(meta);
 
-  // Who depends on whom, from every package's latest versions.
+  // Who depends on whom, from every mod's latest versions.
   const dependents = new Map<string, string[]>();
   const dependsOn = new Map<string, string[]>();
   if (launcher) {
@@ -130,18 +130,18 @@ async function build(): Promise<BuildData> {
   const gameVersions = launcher ? resolveGameVersions(launcher) : new Map<string, string[]>();
 
   const unranked: Omit<CatalogEntry, "rank">[] = tooths.map((tooth) => {
-    const pkg = index.packages[tooth]!;
-    const tags = Array.isArray(pkg.info.tags) ? pkg.info.tags : [];
+    const mod = index.packages[tooth]!;
+    const tags = Array.isArray(mod.info.tags) ? mod.info.tags : [];
     const manifest = manifests.get(tooth) ?? null;
-    const variants = getSortedVariants(pkg);
+    const variants = getSortedVariants(mod);
     const facets = deriveFacets({ tags, manifestVariants: manifest?.variants ?? null, labels: variants });
     const repo = meta.get(tooth);
     const owner = repo ? (repo.url.split("/")[3] ?? ownerOf(tooth)) : ownerOf(tooth);
     const icon = iconUrls.get(tooth);
     return {
       tooth,
-      name: pkg.info.name || tooth.split("/").at(-1)!,
-      description: truncate(pkg.info.description ?? ""),
+      name: mod.info.name || tooth.split("/").at(-1)!,
+      description: truncate(mod.info.description ?? ""),
       owner,
       ...(icon && loadable.has(icon) ? { icon } : {}),
       tags,
@@ -149,9 +149,9 @@ async function build(): Promise<BuildData> {
       gameVersions: gameVersions.get(tooth.toLowerCase()) ?? [],
       dependsOn: dependsOn.get(tooth) ?? [],
       ...(dependents.get(tooth.toLowerCase())?.length ? { requiredBy: dependents.get(tooth.toLowerCase())!.length } : {}),
-      stars: pkg.stargazer_count ?? 0,
+      stars: mod.stargazer_count ?? 0,
       ...(repo?.license ? { license: repo.license } : {}),
-      updated: repo?.latestRelease ?? pkg.updated_at,
+      updated: repo?.latestRelease ?? mod.updated_at,
       ...(repo?.createdAt ? { created: repo.createdAt } : {}),
     };
   });
@@ -171,7 +171,7 @@ async function build(): Promise<BuildData> {
     features: { created: metaComplete, license: metaComplete },
   };
   console.log(
-    `catalog: ${entries.length} packages, ${catalog.stats.authors} authors, ${versions} versions; ` +
+    `catalog: ${entries.length} mods, ${catalog.stats.authors} authors, ${versions} versions; ` +
       `${loadable.size} of ${new Set(iconUrls.values()).size} icons load; ` +
       `${[...manifests.values()].filter(Boolean).length} latest manifests`,
   );
@@ -196,15 +196,15 @@ export function loadBuildData(): Promise<BuildData> {
   return data;
 }
 
-/** A package as dependency and dependent lists show it. */
-export function related(data: BuildData, tooth: string): RelatedPackage {
+/** A mod as dependency and dependent lists show it. */
+export function related(data: BuildData, tooth: string): RelatedMod {
   const entry = data.byTooth.get(data.canonical.get(tooth.toLowerCase()) ?? "");
   if (entry) return { tooth: entry.tooth, name: entry.name, owner: entry.owner, ...(entry.icon ? { icon: entry.icon } : {}), listed: true };
   return { tooth, name: tooth.split("/").at(-1) ?? tooth, owner: ownerOf(tooth) };
 }
 
 /**
- * The LeviLamina range each version of a package requires, per variant (from
+ * The LeviLamina range each version of a mod requires, per variant (from
  * levilauncher.json), for the versions table.
  */
 export function leviLaminaRanges(data: BuildData, tooth: string): Record<string, Record<string, string>> {
@@ -220,7 +220,7 @@ export function leviLaminaRanges(data: BuildData, tooth: string): Record<string,
   return out;
 }
 
-/** Every package any version of `tooth` depends on (lower-case tooths). */
+/** Every mod any version of `tooth` depends on (lower-case tooths). */
 export function allDependencies(data: BuildData, tooth: string): string[] {
   const entry = data.launcher?.packages[tooth];
   const deps = new Set<string>();

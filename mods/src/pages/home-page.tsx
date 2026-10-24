@@ -1,5 +1,5 @@
 import { CompactHero } from "../components/compact-hero";
-import { PackageBrowser } from "../components/package-browser";
+import { ModBrowser } from "../components/mod-browser";
 import { formatNumber, useI18n } from "../i18n";
 import type { Catalog } from "../types";
 
@@ -12,21 +12,21 @@ export function HomePage({ catalog }: { catalog: Catalog }) {
   const { projects, authors, versions } = catalog.stats;
   const n = (v: number) => formatNumber(v, locale);
   return (
-    <main id="main" className="pkg-main pkg-home kit-above-backdrop" tabIndex={-1}>
+    <main id="main" className="mods-main mods-home kit-above-backdrop" tabIndex={-1}>
       <CompactHero name={t.siteName} tagline={t.tagline}>
-        <p className={`pkg-hero-stats${locale === "en" ? " kit-pixel-label" : ""}`}>
+        <p className={`mods-hero-stats${locale === "en" ? " kit-pixel-label" : ""}`}>
           <span>{t.statProjects(n(projects))}</span>
-          <span className="pkg-hero-sep" aria-hidden="true">
+          <span className="mods-hero-sep" aria-hidden="true">
             ·
           </span>
           <span>{t.statAuthors(n(authors))}</span>
-          <span className="pkg-hero-sep pkg-hero-extra" aria-hidden="true">
+          <span className="mods-hero-sep mods-hero-extra" aria-hidden="true">
             ·
           </span>
-          <span className="pkg-hero-extra">{t.statVersions(n(versions))}</span>
+          <span className="mods-hero-extra">{t.statVersions(n(versions))}</span>
         </p>
       </CompactHero>
-      <PackageBrowser catalog={catalog} />
+      <ModBrowser catalog={catalog} />
     </main>
   );
 }

@@ -37,12 +37,12 @@ export const ALERT_KINDS = {
 const ALERT_MARKER = /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\][ \t]*$/i;
 
 /**
- * The attribute (`data-pkg-alert`) that carries an alert's parts through the
+ * The attribute (`data-mods-alert`) that carries an alert's parts through the
  * HTML sanitizer. Its value starts with a token only this page knows, so raw
  * HTML in a README cannot pass for an alert; {@link rehypeGithubAlerts} turns
  * genuine ones into kit classes and drops the attribute everywhere.
  */
-export const ALERT_ATTRIBUTE = "dataPkgAlert";
+export const ALERT_ATTRIBUTE = "dataModsAlert";
 
 export interface GithubAlertsOptions {
   /** A token READMEs cannot know (see {@link ALERT_ATTRIBUTE}). */

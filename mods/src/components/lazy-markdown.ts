@@ -8,8 +8,8 @@ let loading: Promise<MarkdownModule> | undefined;
 
 /**
  * The README renderer (react-markdown, GFM, raw HTML, sanitizer) is half of
- * the app's JavaScript and only package pages need it, so it is a chunk of its
- * own. Package pages load it before hydrating, and links to them start loading
+ * the app's JavaScript and only mod pages need it, so it is a chunk of its
+ * own. Mod pages load it before hydrating, and links to them start loading
  * it on hover.
  */
 export function loadMarkdown(): Promise<MarkdownModule> {

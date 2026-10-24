@@ -1,7 +1,7 @@
-// What GitHub knows about each package's repository: where it lives today (a
+// What GitHub knows about each mod's repository: where it lives today (a
 // tooth keeps the path it was published under; GitHub redirects renamed and
 // transferred repositories from there), when it was created, its license and
-// its releases. One GraphQL request per 50 packages.
+// its releases. One GraphQL request per 50 mods.
 //
 // Needs GITHUB_TOKEN (GitHub's GraphQL API requires one; the workflow passes
 // its own). Without a token, or if GitHub cannot be reached, the build goes on
@@ -110,7 +110,7 @@ async function queryBatch(token: string, tooths: string[]): Promise<Map<string, 
       hasIssues: node.hasIssuesEnabled,
     };
     addReleases(meta, node.releases.nodes);
-    // Packages with more releases than one page (LeviLamina, LegacyScriptEngine) get the rest one by one.
+    // Mods with more releases than one page (LeviLamina, LegacyScriptEngine) get the rest one by one.
     let { hasNextPage, endCursor } = node.releases.pageInfo;
     while (hasNextPage && endCursor) {
       const more = await graphql<{ repository: { releases: ReleaseConnection } | null; rateLimit: { cost: number } }>(
@@ -132,13 +132,13 @@ export interface RepoMetaResult {
   meta: Map<string, RepoMeta>;
   /**
    * Every batch was read. Only then do the License filter and the "Newest"
-   * sort cover the whole catalogue (a package missing from a failed batch
+   * sort cover the whole catalogue (a mod missing from a failed batch
    * would look closed-source and the oldest).
    */
   complete: boolean;
 }
 
-/** What GitHub knows about the packages' repositories (a failed batch is tried once more). */
+/** What GitHub knows about the mods' repositories (a failed batch is tried once more). */
 export async function fetchRepoMeta(tooths: string[]): Promise<RepoMetaResult> {
   const token = process.env.GITHUB_TOKEN;
   const github = tooths.filter((t) => t.startsWith(GITHUB_PREFIX) && t.split("/").length === 3);
@@ -150,7 +150,7 @@ export async function fetchRepoMeta(tooths: string[]): Promise<RepoMetaResult> {
   let complete = true;
   for (let i = 0; i < github.length; i += BATCH) {
     const batch = github.slice(i, i + BATCH);
-    // a failed batch costs its own packages' data, not the others'
+    // a failed batch costs its own mods' data, not the others'
     let result: Map<string, RepoMeta> | undefined;
     for (let attempt = 1; !result && attempt <= 2; attempt++) {
       // a moment's pause before the retry: a rate limit or a 502 rarely clears at once
@@ -158,7 +158,7 @@ export async function fetchRepoMeta(tooths: string[]): Promise<RepoMetaResult> {
       try {
         result = await queryBatch(token, batch);
       } catch (error) {
-        console.warn(`::warning::Could not read GitHub data for ${batch.length} packages (attempt ${attempt} of 2): ${String(error)}`);
+        console.warn(`::warning::Could not read GitHub data for ${batch.length} mods (attempt ${attempt} of 2): ${String(error)}`);
       }
     }
     if (result) for (const [tooth, m] of result) meta.set(tooth, m);
@@ -169,7 +169,7 @@ export async function fetchRepoMeta(tooths: string[]): Promise<RepoMetaResult> {
 }
 
 /**
- * The packages whose repository moved, as lower-case `owner/repo` → current
+ * The mods whose repository moved, as lower-case `owner/repo` → current
  * `Owner/Repo`: the form README links and avatars are matched against (see
  * `updateUrl` in `lib/markdown.ts`).
  */

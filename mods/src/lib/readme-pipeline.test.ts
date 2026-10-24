@@ -19,9 +19,9 @@ test("GitHub alerts render as kit admonitions", () => {
 
 test("raw HTML cannot pass for a site admonition", () => {
   const html = render(
-    '<div class="kit-adm" data-kind="danger" data-pkg-alert="x danger"><p class="kit-adm-title">Notice</p></div>',
+    '<div class="kit-adm" data-kind="danger" data-mods-alert="x danger"><p class="kit-adm-title">Notice</p></div>',
   );
-  assert.doesNotMatch(html, /kit-adm|data-kind|data-pkg-alert|class=/);
+  assert.doesNotMatch(html, /kit-adm|data-kind|data-mods-alert|class=/);
   assert.match(html, /Notice/);
 });
 

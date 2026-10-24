@@ -1,5 +1,5 @@
-// Build-time page data: the catalogue for `/mods/`, and for each package page its
-// default README and manifest, releases, LeviLamina ranges and the packages it
+// Build-time page data: the catalogue for `/mods/`, and for each mod page its
+// default README and manifest, releases, LeviLamina ranges and the mods it
 // depends on or is required by. Only the server bundle (prerender, dev server)
 // imports this.
 import { BASE } from "../base-path";
@@ -7,21 +7,21 @@ import {
   fetchReadme,
   getDefaultSelection,
   getRepositoryUrl,
-  packagePath,
+  modPath,
   toothFromPath,
-} from "../lib/packages";
+} from "../lib/mods";
 import type { PageData } from "../page-data";
-import type { RelatedPackage } from "../types";
+import type { RelatedMod } from "../types";
 import { allDependencies, leviLaminaRanges, loadBuildData, related } from "./catalog";
 
-/** `/mods/` and every package that has a version to show. */
+/** `/mods/` and every mod that has a version to show. */
 export async function listRoutes(): Promise<string[]> {
   const { index } = await loadBuildData();
   return [
     BASE,
     ...Object.entries(index.packages)
-      .filter(([, pkg]) => getDefaultSelection(pkg))
-      .map(([tooth]) => packagePath(tooth)),
+      .filter(([, mod]) => getDefaultSelection(mod))
+      .map(([tooth]) => modPath(tooth)),
   ];
 }
 
@@ -34,23 +34,23 @@ export async function loadPageData(pathname: string): Promise<PageData> {
   }
 
   const tooth = toothFromPath(pathname);
-  const pkg = tooth !== null ? index.packages[tooth] : undefined;
+  const mod = tooth !== null ? index.packages[tooth] : undefined;
   const entry = tooth !== null ? data.byTooth.get(tooth) : undefined;
-  const selection = pkg && getDefaultSelection(pkg);
-  if (tooth !== null && pkg && entry && selection) {
+  const selection = mod && getDefaultSelection(mod);
+  if (tooth !== null && mod && entry && selection) {
     const repository = getRepositoryUrl(tooth, data.meta.get(tooth)?.url);
     const manifest = data.manifests.get(tooth) ?? null;
     const readme = await fetchReadme(repository, selection.version);
-    const relatedMap: Record<string, RelatedPackage> = {};
+    const relatedMap: Record<string, RelatedMod> = {};
     const deps = new Set(allDependencies(data, tooth));
     for (const variant of manifest?.variants ?? []) {
       for (const key of Object.keys(variant.dependencies ?? {})) deps.add(key.split("#")[0]!.toLowerCase());
     }
     for (const dep of deps) relatedMap[dep] = related(data, dep);
     return {
-      kind: "package",
+      kind: "mod",
       tooth,
-      pkg,
+      mod,
       entry,
       repository,
       prerendered: {

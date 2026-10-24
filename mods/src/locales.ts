@@ -1,6 +1,6 @@
 // The site's UI languages. The pages are prerendered in English; the visitor's
 // cross-site language preference (levimc_lang, see kit/components/prefs.ts)
-// switches the interface after hydration. Package data (names, descriptions,
+// switches the interface after hydration. Mod data (names, descriptions,
 // READMEs) stays as published. Shared with vite.config.ts, whose pre-paint
 // script hides the page until the switch so it never flashes in English.
 export const LOCALES = [

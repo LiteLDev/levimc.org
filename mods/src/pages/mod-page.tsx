@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
-import { PackageDetail, type PackagePageData } from "../components/package-detail";
-import { fetchManifest, fetchReadme, parseTab, resolveSelection, type PackageSelection } from "../lib/packages";
-import type { PackageDetails } from "../page-data";
+import { ModDetail, type ModPageData } from "../components/mod-detail";
+import { fetchManifest, fetchReadme, parseTab, resolveSelection, type ModSelection } from "../lib/mods";
+import type { ModDetails } from "../page-data";
 import { useHydrated } from "../page-store";
 
-function selectionKey({ variant, version }: PackageSelection): string {
+function selectionKey({ variant, version }: ModSelection): string {
   return `${variant}@${version}`;
 }
 
@@ -15,19 +15,19 @@ function selectionKey({ variant, version }: PackageSelection): string {
  * here, and the other tabs (`?tab=versions|dependencies`) render from the
  * page data once hydrated. Both lipr and GitHub allow cross-origin reads.
  * (The app renders one of these per tooth, so its state never outlives the
- * package.)
+ * mod.)
  */
-export function PackagePage({ data }: { data: PackagePageData }) {
-  const { tooth, pkg, repository, prerendered } = data;
+export function ModPage({ data }: { data: ModPageData }) {
+  const { tooth, mod, repository, prerendered } = data;
   const [searchParams] = useSearchParams();
   const hydrated = useHydrated();
   const selection =
-    (hydrated && resolveSelection(pkg, searchParams.get("variant"), searchParams.get("version"))) || prerendered;
+    (hydrated && resolveSelection(mod, searchParams.get("variant"), searchParams.get("version"))) || prerendered;
   const tab = hydrated ? parseTab(searchParams.get("tab")) : "description";
   const key = selectionKey(selection);
   const isPrerendered = key === selectionKey(prerendered);
 
-  const [fetched, setFetched] = useState<{ key: string } & PackageDetails>();
+  const [fetched, setFetched] = useState<{ key: string } & ModDetails>();
 
   useEffect(() => {
     if (isPrerendered) return;
@@ -48,13 +48,13 @@ export function PackagePage({ data }: { data: PackagePageData }) {
     };
   }, [tooth, repository, isPrerendered, selection.variant, selection.version]);
 
-  let details: Partial<PackageDetails> = {};
+  let details: Partial<ModDetails> = {};
   if (isPrerendered) details = prerendered;
   else if (fetched?.key === key) details = fetched;
 
   return (
-    <main id="main" className="pkg-main kit-above-backdrop" tabIndex={-1} data-pkg-detail="">
-      <PackageDetail
+    <main id="main" className="mods-main kit-above-backdrop" tabIndex={-1} data-mods-detail="">
+      <ModDetail
         data={data}
         selection={selection}
         tab={tab}

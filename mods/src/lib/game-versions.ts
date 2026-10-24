@@ -1,6 +1,6 @@
-// Which Minecraft versions a package runs on, for the Game Version filter.
+// Which Minecraft versions a mod runs on, for the Game Version filter.
 // Nothing in lipr says so directly: LeviLamina's versions depend on a `bds`
-// version, and every other package reaches LeviLamina through its
+// version, and every other mod reaches LeviLamina through its
 // dependency ranges (directly, or through LegacyScriptEngine and the like).
 // Resolved at build time from levilauncher.json.
 
@@ -117,15 +117,15 @@ const toothOf = (key: string) => key.split("#")[0]!.toLowerCase();
 const variantOf = (key: string) => key.split("#")[1] ?? "";
 
 /**
- * Every package's game versions (lower-case tooth → versions, newest first),
+ * Every mod's game versions (lower-case tooth → versions, newest first),
  * over all of its versions and variants.
  */
 export function resolveGameVersions(launcher: LauncherIndex): Map<string, string[]> {
-  const packages = new Map(Object.entries(launcher.packages).map(([t, p]) => [t.toLowerCase(), p]));
+  const mods = new Map(Object.entries(launcher.packages).map(([t, p]) => [t.toLowerCase(), p]));
 
   // LeviLamina version → game versions, from the server variant's `bds` dependency.
   const leviLamina = new Map<string, string[]>();
-  for (const variant of Object.values(packages.get(LEVILAMINA)?.variants ?? {})) {
+  for (const variant of Object.values(mods.get(LEVILAMINA)?.variants ?? {})) {
     for (const [version, { dependencies }] of Object.entries(variant.versions)) {
       const key = Object.keys(dependencies ?? {}).find((k) => toothOf(k) === BDS);
       if (key && !leviLamina.has(version)) leviLamina.set(version, bdsVersions(dependencies![key]!));
@@ -147,12 +147,12 @@ export function resolveGameVersions(launcher: LauncherIndex): Map<string, string
     }
     if (visiting.has(id)) return out;
     visiting.add(id);
-    const deps = packages.get(tooth)?.variants[variant]?.versions[version]?.dependencies ?? {};
+    const deps = mods.get(tooth)?.variants[variant]?.versions[version]?.dependencies ?? {};
     for (const [key, range] of Object.entries(deps)) {
       const depTooth = toothOf(key);
       if (depTooth === tooth) continue;
       const depVariant = variantOf(key);
-      const versions = depTooth === LEVILAMINA ? [...leviLamina.keys()] : Object.keys(packages.get(depTooth)?.variants[depVariant]?.versions ?? {});
+      const versions = depTooth === LEVILAMINA ? [...leviLamina.keys()] : Object.keys(mods.get(depTooth)?.variants[depVariant]?.versions ?? {});
       for (const v of versions) {
         if (satisfies(v, range)) for (const g of ofVersion(depTooth, depVariant, v)) out.add(g);
       }
@@ -163,9 +163,9 @@ export function resolveGameVersions(launcher: LauncherIndex): Map<string, string
   }
 
   const result = new Map<string, string[]>();
-  for (const [tooth, pkg] of packages) {
+  for (const [tooth, mod] of mods) {
     const all = new Set<string>();
-    for (const [variant, { versions }] of Object.entries(pkg.variants)) {
+    for (const [variant, { versions }] of Object.entries(mod.variants)) {
       for (const version of Object.keys(versions)) for (const g of ofVersion(tooth, variant, version)) all.add(g);
     }
     result.set(tooth, [...all].sort((a, b) => compareVersions(b, a)));

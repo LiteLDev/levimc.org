@@ -53,24 +53,24 @@ function Option({ label, icon, count, included, excluded, onInclude, onExclude }
   const { t, locale } = useI18n();
   const dimmed = count === 0 && !included && !excluded;
   return (
-    <li className={`pkg-opt${excluded ? " is-excluded" : ""}${dimmed ? " is-dimmed" : ""}`}>
+    <li className={`mods-opt${excluded ? " is-excluded" : ""}${dimmed ? " is-dimmed" : ""}`}>
       <button
         type="button"
-        className="pkg-opt-btn"
+        className="mods-opt-btn"
         aria-pressed={included}
         aria-disabled={dimmed || undefined}
         onClick={dimmed ? undefined : onInclude}
       >
-        <span className="pkg-opt-mark" aria-hidden="true">
+        <span className="mods-opt-mark" aria-hidden="true">
           {included ? <MaskIcon name="check" /> : icon ? <Sprite name={icon} /> : null}
         </span>
-        <span className="pkg-opt-label">{label}</span>
-        <span className="pkg-opt-count">{formatNumber(count, locale)}</span>
+        <span className="mods-opt-label">{label}</span>
+        <span className="mods-opt-count">{formatNumber(count, locale)}</span>
       </button>
       {onExclude ? (
         <button
           type="button"
-          className="mc-icon-btn pkg-opt-exclude"
+          className="mc-icon-btn mods-opt-exclude"
           aria-label={t.exclude(label)}
           aria-pressed={!!excluded}
           aria-disabled={dimmed || undefined}
@@ -80,7 +80,7 @@ function Option({ label, icon, count, included, excluded, onInclude, onExclude }
         </button>
       ) : (
         // keeps the exclude column, so every group's options end at the same edge
-        <span className="pkg-opt-exclude-spacer" aria-hidden="true" />
+        <span className="mods-opt-exclude-spacer" aria-hidden="true" />
       )}
     </li>
   );
@@ -101,15 +101,15 @@ interface GroupProps {
 function Group({ title, collapsed, onToggle, children, footer, list = true }: GroupProps) {
   const panel = useId();
   return (
-    <section className="pkg-group pkg-group-flat">
-      <h3 className="pkg-group-heading">
-        <button type="button" className="pkg-group-toggle" aria-expanded={!collapsed} aria-controls={panel} onClick={onToggle}>
+    <section className="mods-group mods-group-flat">
+      <h3 className="mods-group-heading">
+        <button type="button" className="mods-group-toggle" aria-expanded={!collapsed} aria-controls={panel} onClick={onToggle}>
           <span>{title}</span>
-          <MaskIcon name="chevronDown" className="pkg-group-chevron" />
+          <MaskIcon name="chevronDown" className="mods-group-chevron" />
         </button>
       </h3>
-      <div id={panel} className="pkg-group-body" hidden={collapsed}>
-        {list ? <ul className="pkg-opts">{children}</ul> : children}
+      <div id={panel} className="mods-group-body" hidden={collapsed}>
+        {list ? <ul className="mods-opts">{children}</ul> : children}
         {footer}
       </div>
     </section>
@@ -127,7 +127,7 @@ interface LongOption {
 }
 
 /**
- * The options of a group too long to show at once (game versions, packages,
+ * The options of a group too long to show at once (game versions, mods,
  * tags): a search field over them, the first few, and "Show more". Selected
  * options always show.
  */
@@ -152,8 +152,8 @@ function LongOptions({
   return (
     <>
       {options.length > CATEGORY_LIMIT ? (
-        <label className="mc-input pkg-group-search">
-          <PixelIcon name="search" className="pkg-search-icon" />
+        <label className="mc-input mods-group-search">
+          <PixelIcon name="search" className="mods-search-icon" />
           <input
             type="search"
             placeholder={placeholder}
@@ -165,7 +165,7 @@ function LongOptions({
           />
         </label>
       ) : null}
-      <ul className="pkg-opts">
+      <ul className="mods-opts">
         {shown.map((o) => (
           <Option
             key={o.id}
@@ -178,7 +178,7 @@ function LongOptions({
         ))}
       </ul>
       {!q && (hidden > 0 || more) ? (
-        <button type="button" className="mc-btn mc-btn-ghost mc-btn-sm pkg-group-more" aria-expanded={more} onClick={() => setMore(!more)}>
+        <button type="button" className="mc-btn mc-btn-ghost mc-btn-sm mods-group-more" aria-expanded={more} onClick={() => setMore(!more)}>
           <MaskIcon name={more ? "arrowUp" : "chevronDown"} />
           {more ? t.showFewer : t.showMore(hidden)}
         </button>
@@ -192,10 +192,10 @@ interface FilterGroupsProps {
   counts: FacetCounts;
   /** The values of the Game Version, Depends On and Tags groups. */
   options: FacetOptions;
-  /** Package names by tooth, for Depends On. */
+  /** Mod names by tooth, for Depends On. */
   names: ReadonlyMap<string, string>;
   features: CatalogFeatures;
-  /** Category ids by how many packages they hold in the whole catalogue. */
+  /** Category ids by how many mods they hold in the whole catalogue. */
   categoryOrder: string[];
   /** Applies a new state (a new history entry; the page goes back to 1). */
   apply: (next: QueryState) => void;
@@ -224,7 +224,7 @@ export function FilterGroups({ state, counts, options, names, features, category
   const deps = lower(state.dep);
 
   return (
-    <div className="pkg-groups pkg-groups-flat">
+    <div className="mods-groups mods-groups-flat">
       {options.gv.length ? (
         <Group id="gameVersion" title={t.groupGameVersion} collapsed={collapsed.has("gameVersion")} onToggle={() => toggle("gameVersion")} flat={flat} list={false}>
           <LongOptions
@@ -260,7 +260,7 @@ export function FilterGroups({ state, counts, options, names, features, category
           categories.length > CATEGORY_LIMIT ? (
             <button
               type="button"
-              className="mc-btn mc-btn-ghost mc-btn-sm pkg-group-more"
+              className="mc-btn mc-btn-ghost mc-btn-sm mods-group-more"
               aria-expanded={moreCats}
               onClick={() => {
                 writeStorage(STORAGE_KEYS.moreCategories, moreCats ? null : "1");
@@ -317,7 +317,7 @@ export function FilterGroups({ state, counts, options, names, features, category
           <LongOptions
             options={options.dep.map((d) => ({ id: d, label: names.get(d) ?? d.split("/").at(-1)!, selected: deps.includes(d.toLowerCase()) }))}
             counts={counts.dep}
-            placeholder={t.searchPackages}
+            placeholder={t.searchMods}
             onToggle={(d) => set({ dep: deps.includes(d.toLowerCase()) ? state.dep.filter((x) => x.toLowerCase() !== d.toLowerCase()) : [...state.dep, d] })}
           />
         </Group>

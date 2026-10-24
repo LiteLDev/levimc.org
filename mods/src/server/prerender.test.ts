@@ -18,7 +18,7 @@ const PRERENDER = new URL("../../kit/ssg/prerender.mjs", import.meta.url).href;
 // the page data in <head>. String.prototype.replace would expand `$&`, `$'`,
 // `` $` `` and `$$` in them (LegacyMoney's `"$&"`, YEssential's `elytra$"`).
 test("prerendered pages keep $&, $', $` and $$ as written", async () => {
-  const root = mkdtempSync(join(tmpdir(), "pkg-prerender-"));
+  const root = mkdtempSync(join(tmpdir(), "mods-prerender-"));
   try {
     const template =
       '<!doctype html><html lang="en"><head><!--app-head--></head>' +

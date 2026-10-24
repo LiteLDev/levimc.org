@@ -61,9 +61,9 @@ export function ActiveFilters({ state, names, className }: { state: QueryState; 
   const chips = useActiveChips(state, names);
   if (!chips.length) return null;
   return (
-    <ul className={`pkg-active${className ? ` ${className}` : ""}`} aria-label={t.activeFilters}>
+    <ul className={`mods-active${className ? ` ${className}` : ""}`} aria-label={t.activeFilters}>
       <li>
-        <RouterLink href={serializeQuery(clearFilters(state))} className="pkg-chip pkg-chip-link pkg-chip-clear">
+        <RouterLink href={serializeQuery(clearFilters(state))} className="mods-chip mods-chip-link mods-chip-clear">
           <MaskIcon name="close" />
           {t.clearAll}
         </RouterLink>
@@ -72,10 +72,10 @@ export function ActiveFilters({ state, names, className }: { state: QueryState; 
         <li key={c.key}>
           <RouterLink
             href={serializeQuery(c.without)}
-            className={`pkg-chip pkg-chip-link pkg-chip-active${c.excluded ? " is-excluded" : ""}`}
+            className={`mods-chip mods-chip-link mods-chip-active${c.excluded ? " is-excluded" : ""}`}
             aria-label={t.removeFilter(c.label)}
           >
-            <span className="pkg-chip-x" aria-hidden="true">
+            <span className="mods-chip-x" aria-hidden="true">
               ×
             </span>
             {c.icon ? <Sprite name={c.icon} /> : null}

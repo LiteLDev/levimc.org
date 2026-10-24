@@ -9,14 +9,14 @@ import {
 import { formatCompact, formatNumber, useI18n, type Strings } from "../i18n";
 import type { Locale } from "../locales";
 import { fitChips, initialFit } from "../lib/chip-fit";
-import { packagePath } from "../lib/packages";
+import { modPath } from "../lib/mods";
 import type { CatalogEntry } from "../types";
 import { formatUtcDate, RelativeDate } from "./local-date";
 import { ProjectIcon } from "./project-icon";
 import { RouterLink } from "./router-link";
 import { Sprite } from "./sprite";
 
-/** History state of a package page opened from the listing ("Back to search" then goes back). */
+/** History state of a mod page opened from the listing ("Back to search" then goes back). */
 export const FROM_LISTING = { fromListing: true };
 
 export interface Chip {
@@ -56,8 +56,8 @@ export function entryChips(entry: CatalogEntry, locale: Locale, t: Strings): Chi
 
 /** Keeps a "+N" tooltip inside its tag line, over the chip as far as it can. */
 function place(host: HTMLElement) {
-  const ul = host.closest<HTMLElement>(".pkg-row-tags");
-  const tip = host.querySelector<HTMLElement>(".pkg-row-more-tip");
+  const ul = host.closest<HTMLElement>(".mods-row-tags");
+  const tip = host.querySelector<HTMLElement>(".mods-row-more-tip");
   if (!ul || !tip) return;
   const line = ul.getBoundingClientRect();
   const chip = host.getBoundingClientRect();
@@ -88,14 +88,14 @@ function ChipList({ chips }: { chips: Chip[] }) {
       // every chip in one unwrapped line, at its full width
       ul.classList.add("is-measuring");
       const widths = [...ul.querySelectorAll<HTMLElement>(":scope > [data-chip]")].map((li) => li.getBoundingClientRect().width);
-      const more = ul.querySelector<HTMLElement>(":scope > .pkg-row-more-li")?.getBoundingClientRect().width ?? 0;
+      const more = ul.querySelector<HTMLElement>(":scope > .mods-row-more-li")?.getBoundingClientRect().width ?? 0;
       const style = getComputedStyle(ul);
       const gap = parseFloat(style.columnGap) || 0;
       const room = ul.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0);
       ul.classList.remove("is-measuring");
       setFit(fitChips(widths, gap, more, room).map(Number).join(""));
       // an open tooltip follows its chip
-      const open = ul.querySelector<HTMLElement>(".pkg-row-more-host:hover, .pkg-row-more-host:focus-within");
+      const open = ul.querySelector<HTMLElement>(".mods-row-more-host:hover, .mods-row-more-host:focus-within");
       if (open) requestAnimationFrame(() => place(open));
     };
     measure();
@@ -108,37 +108,37 @@ function ChipList({ chips }: { chips: Chip[] }) {
 
   const chip = (c: Chip) =>
     c.tone ? (
-      <span className={`kit-badge kit-badge-${c.tone} pkg-row-platform`}>{c.label}</span>
+      <span className={`kit-badge kit-badge-${c.tone} mods-row-platform`}>{c.label}</span>
     ) : (
-      <span className="pkg-chip">
+      <span className="mods-chip">
         {c.icon ? <Sprite name={c.icon} /> : null}
         {c.label}
       </span>
     );
   return (
-    <ul ref={ref} className="pkg-row-tags" data-fit={fit === null ? undefined : ""}>
+    <ul ref={ref} className="mods-row-tags" data-fit={fit === null ? undefined : ""}>
       {chips.map((c, i) => (
         <li key={c.key} data-chip="" className={shown[i] === "1" ? undefined : "is-overflow"}>
           {chip(c)}
         </li>
       ))}
       {chips.length ? (
-        <li className={`pkg-row-more-li${rest.length ? "" : " is-overflow"}`}>
+        <li className={`mods-row-more-li${rest.length ? "" : " is-overflow"}`}>
           <span
-            className="kit-tooltip-host pkg-row-more-host"
+            className="kit-tooltip-host mods-row-more-host"
             data-placement="top"
             onPointerEnter={(e) => place(e.currentTarget)}
             onFocus={(e) => place(e.currentTarget)}
           >
             <button
               type="button"
-              className="pkg-chip pkg-row-more"
+              className="mods-chip mods-row-more"
               tabIndex={rest.length ? undefined : -1}
               aria-label={`+${rest.length}: ${rest.map((c) => c.label).join(", ")}`}
             >
               +{Math.max(1, rest.length)}
             </button>
-            <span role="tooltip" className="mc-tooltip kit-tooltip pkg-row-more-tip" aria-hidden="true">
+            <span role="tooltip" className="mc-tooltip kit-tooltip mods-row-more-tip" aria-hidden="true">
               <span className="mc-tooltip-title">{t.moreTags(rest.length)}</span>
               {rest.map((c) => (
                 <span key={c.key} className="mc-tooltip-lore">
@@ -171,49 +171,49 @@ export function ProjectRow({ entry, eager, ownerHref }: ProjectRowProps) {
   const chips = entryChips(entry, locale, t);
   const description = entry.description.trim();
   return (
-    <article className="px-card pkg-row" data-tooth={entry.tooth}>
-      <span className="kit-slot pkg-row-icon">
+    <article className="px-card mods-row" data-tooth={entry.tooth}>
+      <span className="kit-slot mods-row-icon">
         <ProjectIcon icon={entry.icon} owner={entry.owner} size={72} eager={eager} />
       </span>
-      <div className="pkg-row-head">
-        <h3 className="pkg-row-name">
-          <RouterLink href={packagePath(entry.tooth)} className="pkg-card-link" state={FROM_LISTING}>
+      <div className="mods-row-head">
+        <h3 className="mods-row-name">
+          <RouterLink href={modPath(entry.tooth)} className="mods-card-link" state={FROM_LISTING}>
             {entry.name}
           </RouterLink>
         </h3>
-        <span className="pkg-row-by">
+        <span className="mods-row-by">
           {t.by}{" "}
-          <RouterLink href={ownerHref} className="pkg-row-owner">
+          <RouterLink href={ownerHref} className="mods-row-owner">
             {entry.owner}
           </RouterLink>
         </span>
       </div>
-      <p className={description ? "pkg-row-desc" : "pkg-row-desc pkg-row-desc-empty"}>{description || t.noDescription}</p>
+      <p className={description ? "mods-row-desc" : "mods-row-desc mods-row-desc-empty"}>{description || t.noDescription}</p>
       <ChipList chips={chips} />
-      {/* above the row's link for its tooltip; a click still opens the package (the link is the keyboard path) */}
+      {/* above the row's link for its tooltip; a click still opens the mod (the link is the keyboard path) */}
       <div
-        className="pkg-row-stats kit-tooltip-host"
+        className="mods-row-stats kit-tooltip-host"
         data-placement="top"
-        onClick={(e) => e.currentTarget.closest(".pkg-row")?.querySelector<HTMLAnchorElement>(".pkg-card-link")?.click()}
+        onClick={(e) => e.currentTarget.closest(".mods-row")?.querySelector<HTMLAnchorElement>(".mods-card-link")?.click()}
       >
         {entry.stars > 0 ? (
-          <span className="pkg-stat pkg-stat-stars">
+          <span className="mods-stat mods-stat-stars">
             <Sprite name="diamond" />
             <span aria-hidden="true">{formatCompact(entry.stars, locale)}</span>
             <span className="kit-sr-only">{t.starsExact(formatNumber(entry.stars, locale))}</span>
           </span>
         ) : null}
-        <span className="pkg-stat pkg-stat-updated">
+        <span className="mods-stat mods-stat-updated">
           <Sprite name="clock" />
           <RelativeDate value={entry.updated} />
         </span>
         {(entry.requiredBy ?? 0) >= 2 ? (
-          <span className="pkg-stat pkg-stat-required">
+          <span className="mods-stat mods-stat-required">
             <Sprite name="bookQuill" />
             {t.requiredBy(entry.requiredBy ?? 0)}
           </span>
         ) : null}
-        <span className="mc-tooltip kit-tooltip pkg-row-stats-tip" aria-hidden="true">
+        <span className="mc-tooltip kit-tooltip mods-row-stats-tip" aria-hidden="true">
           <span className="mc-tooltip-title">{entry.name}</span>
           {entry.stars > 0 ? <span className="mc-tooltip-lore">{t.starsExact(formatNumber(entry.stars, locale))}</span> : null}
           <span className="mc-tooltip-lore">{t.updatedExact(formatUtcDate(entry.updated, locale))}</span>

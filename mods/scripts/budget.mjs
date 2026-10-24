@@ -15,7 +15,7 @@ const kb = (n) => `${(n / 1024).toFixed(1)} KB`;
 const gz = (s) => gzipSync(s, { level: 9 }).length;
 
 const html = readFileSync(join(dist, "index.html"), "utf8");
-const data = /<script type="application\/json" id="pkg-page-data">([\s\S]*?)<\/script>/.exec(html)?.[1] ?? "";
+const data = /<script type="application\/json" id="mods-page-data">([\s\S]*?)<\/script>/.exec(html)?.[1] ?? "";
 // the shared chrome: the LeviMC bar (from its element to <main>) and the footer
 const bar = html.slice(html.lastIndexOf("<div", html.indexOf("data-kit-globalbar")), html.indexOf("<main"));
 const chrome = bar + (/<footer[^>]*data-kit-footer[\s\S]*?<\/footer>/.exec(html)?.[0] ?? "");

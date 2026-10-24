@@ -552,7 +552,7 @@ All components are SSR-safe and render identical markup on server and client.
 
 | Component | Purpose / key props |
 |---|---|
-| `GlobalBar` | the bar at the top of every LeviMC site — identical everywhere: the LeviMC mark (`BrandMark`), tabs **Home · Projects ▾ · Mods · Blog · Community · About** (`globalNav()`), then **language menu · theme menu · GitHub** (→ LiteLDev); below 960px the tabs fold into one menu (≤ 400px the triggers lose their chevrons). **Projects ▾** is a mega menu of `PROJECTS` (`projects.ts`) by group (Core · Launchers · Official mods): each row opens the project's docs (or repository), with explicit Docs and GitHub links, and the GitHub organisation at the bottom; on phones it is a collapsed section of the menu. Props: `current` (`'home'\|'projects'\|'packages'\|'blog'\|'community'\|'about'`), `currentProject` (docs: marks the project and the Projects tab), `locale`, `strings`, `languages` (`{ options, current, onSelect?, linkComponent? }`; the options are the site's locales, named the kit's way — `uiLocaleName`; omitted → the 9 chrome languages, stored as the preference, then `onLanguageChange` or a reload), `siteOrigin` + `linkComponent` + `isAppPath` (same-site links through the router), `menu` (false when the site's own drawer carries the links, see `GlobalNavList`), `sticky`. `github`, `brandIcon` and `currentDocs` are deprecated (ignored / alias). A labelled region; `<details>` menus work without JS. No props to hide, add or reorder tabs or controls |
+| `GlobalBar` | the bar at the top of every LeviMC site — identical everywhere: the LeviMC mark (`BrandMark`), tabs **Home · Projects ▾ · Mods · Blog · Community · About** (`globalNav()`), then **language menu · theme menu · GitHub** (→ LiteLDev); below 960px the tabs fold into one menu (≤ 400px the triggers lose their chevrons). **Projects ▾** is a mega menu of `PROJECTS` (`projects.ts`) by group (Core · Launchers · Official mods): each row opens the project's docs (or repository), with explicit Docs and GitHub links, and the GitHub organisation at the bottom; on phones it is a collapsed section of the menu. Props: `current` (`'home'\|'projects'\|'mods'\|'blog'\|'community'\|'about'`), `currentProject` (docs: marks the project and the Projects tab), `locale`, `strings`, `languages` (`{ options, current, onSelect?, linkComponent? }`; the options are the site's locales, named the kit's way — `uiLocaleName`; omitted → the 9 chrome languages, stored as the preference, then `onLanguageChange` or a reload), `siteOrigin` + `linkComponent` + `isAppPath` (same-site links through the router), `menu` (false when the site's own drawer carries the links, see `GlobalNavList`), `sticky`. `github`, `brandIcon` and `currentDocs` are deprecated (ignored / alias). A labelled region; `<details>` menus work without JS. No props to hide, add or reorder tabs or controls |
 | `GlobalNavList` | the bar's tabs + the Projects menu as a vertical list (the bar's phone menu; the "LeviMC" part of the docs drawer) |
 | `ThemeSwitcher` | the theme menu: **Auto** (default; follows `prefers-color-scheme` live) / Light / Dark. Trigger sprite + name and the checked item come from `html[data-theme-pref]` via CSS (right before hydration and on static pages); the choice is the cross-site `levimc_theme` cookie. `ThemeToggle` is a deprecated alias |
 | `LocaleSwitcher` | `options[{ code, label, short?, lang, href? }]` (`href` → links to the equivalent page; none → buttons), `current`, `onSelect(code, option)`, `persist` (default: store `lang` as the cross-site `levimc_lang`; a modified click on a link opens it elsewhere and stores nothing), `linkComponent`, `showLabel` |
@@ -580,7 +580,7 @@ Stable test hooks: `data-kit-theme-toggle` (theme menu trigger), `data-kit-theme
 
 Canonical cross-site URLs (exact, no redirect): Home `https://levimc.org/`, Projects
 `https://levimc.org/projects/`, Community `https://levimc.org/community/`, About `https://levimc.org/about/`,
-Mods (LeviMC Mods, id `packages`) `https://levimc.org/mods/` (pkg.levimc.org redirects there), Blog
+Mods (LeviMC Mods, id `mods`) `https://levimc.org/mods/` (pkg.levimc.org redirects there), Blog
 `https://levimc.org/blog/` (blog.levimc.org redirects there), GitHub `https://github.com/LiteLDev`,
 Docs `https://docs.levimc.org/{LeviLamina,LegacyScriptEngine,lip,LeviLauncher,LeviLaunchroid}/`,
 Discord `https://discord.gg/v5R5P4vRZk`, Telegram `https://t.me/LiteLoader`, X `https://x.com/levimc_org`,
@@ -816,6 +816,15 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.3.0 — 2026-10-24
+
+**LeviMC Mods moves to levimc.org/mods/.** pkg.levimc.org became `mods/` in LiteLDev/levimc.org, deployed at `/mods/`
+(mod pages are `/mods/<tooth>/`; pkg.levimc.org redirects there).
+* The Mods link (`LINKS.mods`, was `LINKS.packages`) is `https://levimc.org/mods/`.
+* The Mods tab's id is `mods` everywhere (was `packages`): `SiteId`, `MODS_SITE.id`, the UI string key (`t.mods`),
+  and `data-kit-t="mods"` in the static chrome and kit.js. A site passing `current="packages"` passes `"mods"`.
+* Two apps share levimc.org: each keeps router links to its own part with `isAppPath` (see Plain Vite apps).
 
 ### 2.2.0 — 2026-10-19
 

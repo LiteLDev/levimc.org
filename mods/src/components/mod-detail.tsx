@@ -5,12 +5,12 @@ import { BrandIcon, PixelIcon } from "../kit-ui";
 import { CATEGORY_BY_ID } from "../data/categories";
 import { formatNumber, useI18n } from "../i18n";
 import { DEFAULT_STATE, serializeQuery } from "../lib/catalog-query";
-import { buildPackageUrl, getRepoBaseUrls, type PackageSelection, type PackageTab, getAllVersions } from "../lib/packages";
+import { buildModUrl, getRepoBaseUrls, type ModSelection, type ModTab, getAllVersions } from "../lib/mods";
 import { readStorage, STORAGE_KEYS } from "../lib/storage";
 import type { PageData } from "../page-data";
 import { useHydrated } from "../page-store";
 import { useRenames } from "../repository-renames";
-import type { ManifestVariant, PackageInfo } from "../types";
+import type { ManifestVariant, ModInfo } from "../types";
 import { DependenciesList } from "./dependencies-list";
 import { InstallDialog } from "./install-dialog";
 import { LazyMarkdown } from "./lazy-markdown";
@@ -21,7 +21,7 @@ import { Sprite } from "./sprite";
 import { ProjectSidebar } from "./project-sidebar";
 import { VersionsTable } from "./versions-table";
 
-export type PackagePageData = Extract<PageData, { kind: "package" }>;
+export type ModPageData = Extract<PageData, { kind: "mod" }>;
 
 /** "‹ Back to search": the listing the visitor came from, as they left it. */
 function BackLink() {
@@ -34,7 +34,7 @@ function BackLink() {
   return (
     <RouterLink
       href={href}
-      className="mc-btn mc-btn-ghost mc-btn-sm pkg-back"
+      className="mc-btn mc-btn-ghost mc-btn-sm mods-back"
       onClick={(e: MouseEvent<HTMLAnchorElement>) => {
         if (!fromListing || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
         // Back in history: the browser restores the listing's scroll position.
@@ -48,48 +48,48 @@ function BackLink() {
   );
 }
 
-interface PackageDetailProps {
-  data: PackagePageData;
-  selection: PackageSelection;
-  tab: PackageTab;
+interface ModDetailProps {
+  data: ModPageData;
+  selection: ModSelection;
+  tab: ModTab;
   /** The selected version's manifest info (`null`: use the index's). */
-  info: PackageInfo | null;
+  info: ModInfo | null;
   /** The selected version's manifest variants (`undefined` while loading, `null` without a manifest). */
   variants: ManifestVariant[] | null | undefined;
   /** `null` when the version has no README, `undefined` while it loads. */
   readme: string | null | undefined;
 }
 
-export function PackageDetail({ data, selection, tab, info: manifestInfo, variants, readme }: PackageDetailProps) {
+export function ModDetail({ data, selection, tab, info: manifestInfo, variants, readme }: ModDetailProps) {
   const { t, locale } = useI18n();
-  const { tooth, pkg, entry, repository, releases } = data;
+  const { tooth, mod, entry, repository, releases } = data;
   const renames = useRenames();
   const [installing, setInstalling] = useState(false);
-  const info = manifestInfo || pkg.info;
+  const info = manifestInfo || mod.info;
   const repoUrls = getRepoBaseUrls(repository, selection.version);
   const depCount = variants?.find((v) => v.label === selection.variant)?.dependencies;
-  const tabs: { id: PackageTab; label: string }[] = [
+  const tabs: { id: ModTab; label: string }[] = [
     { id: "description", label: t.tabDescription },
-    { id: "versions", label: `${t.tabVersions} (${formatNumber(getAllVersions(pkg).length, locale)})` },
+    { id: "versions", label: `${t.tabVersions} (${formatNumber(getAllVersions(mod).length, locale)})` },
     { id: "dependencies", label: depCount ? `${t.tabDependencies} (${Object.keys(depCount).length})` : t.tabDependencies },
   ];
 
   return (
-    <div className="pkg-detail">
+    <div className="mods-detail">
       <BackLink />
 
-      <header className="pkg-project-head">
-        <span className="kit-item-frame pkg-project-icon">
+      <header className="mods-project-head">
+        <span className="kit-item-frame mods-project-icon">
           <ProjectIcon icon={entry.icon} owner={entry.owner} size={96} eager />
         </span>
-        <div className="pkg-project-heading">
-          <h1 className="pkg-project-name">{info.name || entry.name}</h1>
-          <p className="pkg-project-by">
+        <div className="mods-project-heading">
+          <h1 className="mods-project-name">{info.name || entry.name}</h1>
+          <p className="mods-project-by">
             {t.by}{" "}
             <RouterLink href={serializeQuery({ ...DEFAULT_STATE, author: [entry.owner] })}>{entry.owner}</RouterLink>
           </p>
-          {info.description ? <p className="pkg-project-summary">{info.description}</p> : null}
-          <ul className="pkg-project-stats">
+          {info.description ? <p className="mods-project-summary">{info.description}</p> : null}
+          <ul className="mods-project-stats">
             {entry.stars > 0 ? (
               <li>
                 <Sprite name="diamond" />
@@ -112,8 +112,8 @@ export function PackageDetail({ data, selection, tab, info: manifestInfo, varian
             {entry.categories.map((id) => {
               const c = CATEGORY_BY_ID.get(id);
               return c ? (
-                <li key={id} className="pkg-project-cat">
-                  <RouterLink href={serializeQuery({ ...DEFAULT_STATE, cat: { inc: [id], exc: [] } })} className="pkg-chip pkg-chip-link">
+                <li key={id} className="mods-project-cat">
+                  <RouterLink href={serializeQuery({ ...DEFAULT_STATE, cat: { inc: [id], exc: [] } })} className="mods-chip mods-chip-link">
                     <Sprite name={c.icon} />
                     {c.label[locale]}
                   </RouterLink>
@@ -122,29 +122,29 @@ export function PackageDetail({ data, selection, tab, info: manifestInfo, varian
             })}
           </ul>
         </div>
-        <div className="pkg-project-actions">
-          <div className="pkg-project-buttons">
-            <button type="button" className="mc-btn mc-btn-primary mc-btn-lg pkg-install-btn" onClick={() => setInstalling(true)} aria-haspopup="dialog">
+        <div className="mods-project-actions">
+          <div className="mods-project-buttons">
+            <button type="button" className="mc-btn mc-btn-primary mc-btn-lg mods-install-btn" onClick={() => setInstalling(true)} aria-haspopup="dialog">
               <PixelIcon name="pickaxe" />
               {t.install}
             </button>
-            <a className="mc-btn mc-btn-lg pkg-github-btn" href={repository} target="_blank" rel="noopener noreferrer" aria-label={t.viewOnGitHub} title={t.viewOnGitHub}>
+            <a className="mc-btn mc-btn-lg mods-github-btn" href={repository} target="_blank" rel="noopener noreferrer" aria-label={t.viewOnGitHub} title={t.viewOnGitHub}>
               <BrandIcon name="github" size={18} />
             </a>
           </div>
-          <span className="kit-badge kit-badge-grass pkg-project-version" title={t.version}>
+          <span className="kit-badge kit-badge-grass mods-project-version" title={t.version}>
             {selection.variant ? `${selection.variant} · ` : ""}
             {selection.version}
           </span>
         </div>
       </header>
 
-      <nav className="pkg-tabs-nav" aria-label={t.tabsLabel}>
-        <div className="hotbar pkg-tabs">
+      <nav className="mods-tabs-nav" aria-label={t.tabsLabel}>
+        <div className="hotbar mods-tabs">
           {tabs.map((tb) => (
             <RouterLink
               key={tb.id}
-              href={buildPackageUrl(tooth, pkg, selection, tb.id)}
+              href={buildModUrl(tooth, mod, selection, tb.id)}
               aria-current={tb.id === tab ? "page" : undefined}
             >
               {tb.label}
@@ -157,39 +157,39 @@ export function PackageDetail({ data, selection, tab, info: manifestInfo, varian
         </div>
       </nav>
 
-      <div className="pkg-detail-grid">
-        <div className="pkg-detail-main" data-tab={tab}>
+      <div className="mods-detail-grid">
+        <div className="mods-detail-main" data-tab={tab}>
           {tab === "description" ? (
-            <section className="px-card pkg-panel pkg-readme" aria-labelledby="pkg-readme-title">
-              <h2 id="pkg-readme-title" className="pkg-panel-title pkg-readme-title">
+            <section className="px-card mods-panel mods-readme" aria-labelledby="mods-readme-title">
+              <h2 id="mods-readme-title" className="mods-panel-title mods-readme-title">
                 <PixelIcon name="bookQuill" />
                 {t.readme}
-                <span className="pkg-readme-version">{selection.version}</span>
+                <span className="mods-readme-version">{selection.version}</span>
               </h2>
               {readme === undefined ? (
-                <div className="pkg-skeleton" aria-busy="true">
-                  <span className="pkg-skeleton-bar pkg-skeleton-title" />
-                  <span className="pkg-skeleton-bar" />
-                  <span className="pkg-skeleton-bar pkg-skeleton-90" />
-                  <span className="pkg-skeleton-bar pkg-skeleton-70" />
+                <div className="mods-skeleton" aria-busy="true">
+                  <span className="mods-skeleton-bar mods-skeleton-title" />
+                  <span className="mods-skeleton-bar" />
+                  <span className="mods-skeleton-bar mods-skeleton-90" />
+                  <span className="mods-skeleton-bar mods-skeleton-70" />
                 </div>
               ) : readme ? (
-                <div className="kit-prose pkg-readme-body" data-doc-content="">
+                <div className="kit-prose mods-readme-body" data-doc-content="">
                   <LazyMarkdown rawBase={repoUrls.raw} blobBase={repoUrls.blob} renames={renames}>
                     {readme}
                   </LazyMarkdown>
                 </div>
               ) : (
-                <div className="pkg-empty pkg-readme-empty">
+                <div className="mods-empty mods-readme-empty">
                   <p>{t.noReadme(selection.version)}</p>
                 </div>
               )}
             </section>
           ) : tab === "versions" ? (
-            <section className="px-card pkg-panel" aria-label={t.tabVersions} id="versions">
+            <section className="px-card mods-panel" aria-label={t.tabVersions} id="versions">
               <VersionsTable
                 tooth={tooth}
-                pkg={pkg}
+                mod={mod}
                 repository={repository}
                 selection={selection}
                 releases={releases}
@@ -197,7 +197,7 @@ export function PackageDetail({ data, selection, tab, info: manifestInfo, varian
               />
             </section>
           ) : (
-            <section className="px-card pkg-panel" aria-label={t.tabDependencies}>
+            <section className="px-card mods-panel" aria-label={t.tabDependencies}>
               <DependenciesList
                 selection={selection}
                 variants={variants}
@@ -209,11 +209,11 @@ export function PackageDetail({ data, selection, tab, info: manifestInfo, varian
           )}
         </div>
 
-        <aside className="pkg-detail-side" aria-label={t.details}>
+        <aside className="mods-detail-side" aria-label={t.details}>
           <ProjectSidebar
             tooth={tooth}
             entry={entry}
-            pkg={pkg}
+            mod={mod}
             repository={repository}
             selection={selection}
             variants={variants}
@@ -228,7 +228,7 @@ export function PackageDetail({ data, selection, tab, info: manifestInfo, varian
         onClose={() => setInstalling(false)}
         name={info.name || entry.name}
         tooth={tooth}
-        pkg={pkg}
+        mod={mod}
         repository={repository}
         selection={selection}
         releases={releases}

@@ -1,6 +1,6 @@
-// Package icons are whatever a manifest's `avatar_url` says, and many of
+// Mod icons are whatever a manifest's `avatar_url` says, and many of
 // those no longer load: template placeholders on example.com, deleted files,
-// GitHub pages instead of images. The build tries each one once; a package
+// GitHub pages instead of images. The build tries each one once; a mod
 // whose icon does not load as an image shows its owner's GitHub avatar
 // instead, so no visitor waits for a request that is bound to fail.
 const TIMEOUT = 10_000;

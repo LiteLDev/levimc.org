@@ -190,7 +190,7 @@ test("raw-file links of other repositories are kept (an LFS file is served from 
   assert.equal(updateUrl(lfs, {}, "all"), "https://raw.githubusercontent.com/someone/big-assets/main/video.mp4");
 });
 
-test("links to renamed package repositories skip GitHub's redirect", () => {
+test("links to renamed mod repositories skip GitHub's redirect", () => {
   const renames = { "zimuya4153/lse_waila": "MiracleForest/LSE_Waila", "lwenk/stats": "LeafKnife/Stats" };
   const at = (url: string) => resolveMarkdownUrl(url, "link", BASES, renames);
   assert.equal(

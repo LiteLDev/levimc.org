@@ -10,8 +10,8 @@ export interface UiStrings {
   home: string;
   projects: string;
   docs: string;
-  /** Top-bar / footer label of LeviMC Mods, levimc.org/mods/ ("Mods"; the id stays `packages`). */
-  packages: string;
+  /** Top-bar / footer label of LeviMC Mods, levimc.org/mods/ ("Mods"). */
+  mods: string;
   community: string;
   blog: string;
   about: string;
@@ -75,7 +75,7 @@ const en: UiStrings = {
   home: 'Home',
   projects: 'Projects',
   docs: 'Docs',
-  packages: 'Mods',
+  mods: 'Mods',
   community: 'Community',
   blog: 'Blog',
   about: 'About',
@@ -137,7 +137,7 @@ const zhCN: UiStrings = {
   home: '首页',
   projects: '项目',
   docs: '文档',
-  packages: '模组',
+  mods: '模组',
   community: '社区',
   blog: '博客',
   about: '关于',
@@ -200,7 +200,7 @@ const zhHK: UiStrings = {
   home: '首頁',
   projects: '專案',
   docs: '文檔',
-  packages: '模組',
+  mods: '模組',
   community: '社群',
   blog: '網誌',
   about: '關於',
@@ -260,7 +260,7 @@ const es: UiStrings = {
   home: 'Inicio',
   projects: 'Proyectos',
   docs: 'Documentación',
-  packages: 'Mods',
+  mods: 'Mods',
   community: 'Comunidad',
   blog: 'Blog',
   about: 'Acerca de',
@@ -322,7 +322,7 @@ const ru: UiStrings = {
   home: 'Главная',
   projects: 'Проекты',
   docs: 'Документация',
-  packages: 'Моды',
+  mods: 'Моды',
   community: 'Сообщество',
   blog: 'Блог',
   about: 'О нас',
@@ -384,7 +384,7 @@ const de: UiStrings = {
   home: 'Startseite',
   projects: 'Projekte',
   docs: 'Dokumentation',
-  packages: 'Mods',
+  mods: 'Mods',
   community: 'Community',
   blog: 'Blog',
   about: 'Über uns',
@@ -446,7 +446,7 @@ const ja: UiStrings = {
   home: 'ホーム',
   projects: 'プロジェクト',
   docs: 'ドキュメント',
-  packages: 'MOD',
+  mods: 'MOD',
   community: 'コミュニティ',
   blog: 'ブログ',
   about: '概要',
@@ -508,7 +508,7 @@ const ko: UiStrings = {
   home: '홈',
   projects: '프로젝트',
   docs: '문서',
-  packages: '모드',
+  mods: '모드',
   community: '커뮤니티',
   blog: '블로그',
   about: '소개',
@@ -570,7 +570,7 @@ const fr: UiStrings = {
   home: 'Accueil',
   projects: 'Projets',
   docs: 'Documentation',
-  packages: 'Mods',
+  mods: 'Mods',
   community: 'Communauté',
   blog: 'Blog',
   about: 'À propos',

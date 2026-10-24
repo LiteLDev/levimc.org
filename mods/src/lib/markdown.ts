@@ -1,13 +1,13 @@
-import type { RepoBaseUrls } from "./packages";
+import type { RepoBaseUrls } from "./mods";
 
 /** `https:`, `mailto:`, or a protocol-relative `//host`. */
 const ABSOLUTE_URL = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
 
 /**
  * Repositories GitHub now serves under another name, as `owner/repo` in
- * lower case → current `Owner/Repo`. The build adds every package repository
+ * lower case → current `Owner/Repo`. The build adds every mod repository
  * that moved (see `repositoryRenames` in `server/github.ts`); these are LiteLDev's own, which
- * READMEs link to but which are not packages.
+ * READMEs link to but which are not mods.
  */
 export type RepositoryRenames = Readonly<Record<string, string>>;
 
@@ -282,7 +282,7 @@ export function resolveMarkdownUrl(
 }
 
 /**
- * Package avatars come from manifests that are never updated once published,
+ * Mod avatars come from manifests that are never updated once published,
  * so URLs on retired hosts and renamed repositories are rewritten here
  * (`lamina.levimc.org/logo.svg`). Anything else that fails to load falls back
  * to the chest sprite.

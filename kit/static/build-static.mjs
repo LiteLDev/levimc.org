@@ -58,7 +58,7 @@ writeFileSync(join(out, 'theme-init-doxygen.js'), doxygenInit + '\n');
 
 // ---------------------------------------------------------------- 2. kit.js (static/kit.src.js + preferences + chrome strings)
 const CHROME_KEYS = [
-  'home', 'projects', 'docs', 'packages', 'blog', 'community', 'about', 'network', 'menu', 'theme', 'themeAuto', 'themeLight', 'themeDark',
+  'home', 'projects', 'docs', 'mods', 'blog', 'community', 'about', 'network', 'menu', 'theme', 'themeAuto', 'themeLight', 'themeDark',
   'language', 'tagline', 'footerConnect', 'email', 'supportUs', 'allRepositories', 'skipToContent',
 ];
 const chromeStrings = Object.fromEntries(

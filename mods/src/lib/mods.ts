@@ -1,8 +1,8 @@
 import { BASE } from "../base-path.ts";
-import type { Manifest, PackageIndex, RawPackageEntry } from "../types";
+import type { Manifest, ModIndex, RawModEntry } from "../types";
 
-const PACKAGE_INDEX_URL = "https://lipr.levimc.org/index.json";
-const PACKAGE_REGISTRY_URL = "https://lipr.levimc.org";
+const MOD_INDEX_URL = "https://lipr.levimc.org/index.json";
+const MOD_REGISTRY_URL = "https://lipr.levimc.org";
 
 // ---------------------------------------------------------------------------
 // Data fetching
@@ -28,9 +28,9 @@ export async function fetchWithRetry(url: string, attempts = 3): Promise<Respons
 }
 
 /** The lipr index. The build fetches it once and bakes it into the pages. */
-export async function fetchPackageIndex(): Promise<PackageIndex> {
-  const res = await fetchWithRetry(PACKAGE_INDEX_URL);
-  if (!res.ok) throw new Error("Failed to fetch package index");
+export async function fetchModIndex(): Promise<ModIndex> {
+  const res = await fetchWithRetry(MOD_INDEX_URL);
+  if (!res.ok) throw new Error("Failed to fetch mod index");
   return res.json();
 }
 
@@ -48,16 +48,16 @@ export function ownerAvatar(owner: string, size = 144): string {
   return `https://avatars.githubusercontent.com/${encodeURIComponent(owner)}?s=${size}`;
 }
 
-/** The page of a package: `/mods/github.com/LiteLDev/LeviLamina/`. */
-export function packagePath(tooth: string): string {
+/** The page of a mod: `/mods/github.com/LiteLDev/LeviLamina/`. */
+export function modPath(tooth: string): string {
   return `${BASE}${tooth}/`;
 }
 
-const PACKAGE_PAGE = new RegExp(`^${BASE}(.+)/$`);
+const MOD_PAGE = new RegExp(`^${BASE}(.+)/$`);
 
-/** The tooth a package page path names, or `null` for any other path. */
+/** The tooth a mod page path names, or `null` for any other path. */
 export function toothFromPath(pathname: string): string | null {
-  const match = PACKAGE_PAGE.exec(pathname);
+  const match = MOD_PAGE.exec(pathname);
   if (!match?.[1]) return null;
   try {
     return decodeURIComponent(match[1]);
@@ -66,8 +66,8 @@ export function toothFromPath(pathname: string): string | null {
   }
 }
 
-export function getPackageManifestUrl(tooth: string, version: string): string {
-  return `${PACKAGE_REGISTRY_URL}/packages/${tooth}@${version}/tooth.json`;
+export function getModManifestUrl(tooth: string, version: string): string {
+  return `${MOD_REGISTRY_URL}/packages/${tooth}@${version}/tooth.json`;
 }
 
 export interface RepoBaseUrls {
@@ -116,14 +116,14 @@ export function getReleaseUrl(repository: string, release: { tag: string } | und
 }
 
 // ---------------------------------------------------------------------------
-// Package details  (fetched at build time for the latest version, and in the
+// Mod details  (fetched at build time for the latest version, and in the
 // browser for any other; both hosts allow cross-origin reads)
 // ---------------------------------------------------------------------------
 
 /** A version's manifest (`tooth.json`), or `null` when lipr has none for it. */
 export async function fetchManifest(tooth: string, version: string): Promise<Manifest | null> {
   try {
-    const res = await fetchWithRetry(getPackageManifestUrl(tooth, version));
+    const res = await fetchWithRetry(getModManifestUrl(tooth, version));
     if (!res.ok) return null;
     const manifest = (await res.json()) as Partial<Manifest> | null;
     if (!manifest?.info) return null;
@@ -157,8 +157,8 @@ export async function fetchReadme(
 }
 
 /** Variants in display order, the default (`""`) variant first. */
-export function getSortedVariants(pkg: RawPackageEntry): string[] {
-  return Object.keys(pkg.variants).sort((a, b) => {
+export function getSortedVariants(mod: RawModEntry): string[] {
+  return Object.keys(mod.variants).sort((a, b) => {
     if (a === "") return -1;
     if (b === "") return 1;
     return a.localeCompare(b);
@@ -166,17 +166,17 @@ export function getSortedVariants(pkg: RawPackageEntry): string[] {
 }
 
 export function getVersionsForVariant(
-  pkg: RawPackageEntry,
+  mod: RawModEntry,
   variant: string,
 ): string[] {
-  const variantMeta = pkg.variants[variant];
+  const variantMeta = mod.variants[variant];
   if (!variantMeta) return [];
   return Array.from(new Set(variantMeta.versions));
 }
 
-/** Every version of a package, over all variants, in index order. */
-export function getAllVersions(pkg: RawPackageEntry): string[] {
-  return Array.from(new Set(Object.values(pkg.variants).flatMap((v) => v.versions)));
+/** Every version of a mod, over all variants, in index order. */
+export function getAllVersions(mod: RawModEntry): string[] {
+  return Array.from(new Set(Object.values(mod.variants).flatMap((v) => v.versions)));
 }
 
 /** A semver pre-release (`1.0.0-rc.1`, `0.3.0-mc26.51`). */
@@ -184,40 +184,40 @@ export function isPrerelease(version: string): boolean {
   return /^\d+\.\d+\.\d+-/.test(version);
 }
 
-export interface PackageSelection {
+export interface ModSelection {
   variant: string;
   version: string;
 }
 
-/** What a package page shows when the URL asks for nothing in particular. */
+/** What a mod page shows when the URL asks for nothing in particular. */
 export function getDefaultSelection(
-  pkg: RawPackageEntry,
-): PackageSelection | null {
-  for (const variant of getSortedVariants(pkg)) {
-    const version = getVersionsForVariant(pkg, variant).at(-1);
+  mod: RawModEntry,
+): ModSelection | null {
+  for (const variant of getSortedVariants(mod)) {
+    const version = getVersionsForVariant(mod, variant).at(-1);
     if (version) return { variant, version };
   }
   return null;
 }
 
 /**
- * Honors the requested variant and version where the package has them, and
+ * Honors the requested variant and version where the mod has them, and
  * falls back to the default variant and its latest version otherwise.
  */
 export function resolveSelection(
-  pkg: RawPackageEntry,
+  mod: RawModEntry,
   requestedVariant: string | null,
   requestedVersion: string | null,
-): PackageSelection | null {
-  const fallback = getDefaultSelection(pkg);
+): ModSelection | null {
+  const fallback = getDefaultSelection(mod);
   if (!fallback) return null;
 
   const variant =
     requestedVariant !== null &&
-    getVersionsForVariant(pkg, requestedVariant).length > 0
+    getVersionsForVariant(mod, requestedVariant).length > 0
       ? requestedVariant
       : fallback.variant;
-  const versions = getVersionsForVariant(pkg, variant);
+  const versions = getVersionsForVariant(mod, variant);
   const version =
     requestedVersion !== null && versions.includes(requestedVersion)
       ? requestedVersion
@@ -225,26 +225,26 @@ export function resolveSelection(
   return { variant, version };
 }
 
-/** The package page's tabs; Description is the default and has no `tab=`. */
-export const PACKAGE_TABS = ["description", "versions", "dependencies"] as const;
-export type PackageTab = (typeof PACKAGE_TABS)[number];
+/** The mod page's tabs; Description is the default and has no `tab=`. */
+export const MOD_TABS = ["description", "versions", "dependencies"] as const;
+export type ModTab = (typeof MOD_TABS)[number];
 
-export function parseTab(value: string | null): PackageTab {
-  return (PACKAGE_TABS as readonly string[]).includes(value ?? "") ? (value as PackageTab) : "description";
+export function parseTab(value: string | null): ModTab {
+  return (MOD_TABS as readonly string[]).includes(value ?? "") ? (value as ModTab) : "description";
 }
 
 /**
  * The URL of a selection (and tab). The default selection on the Description
  * tab is the bare page, so it has one URL.
  */
-export function buildPackageUrl(
+export function buildModUrl(
   tooth: string,
-  pkg: RawPackageEntry,
-  selection: PackageSelection,
-  tab: PackageTab = "description",
+  mod: RawModEntry,
+  selection: ModSelection,
+  tab: ModTab = "description",
 ): string {
-  const fallback = getDefaultSelection(pkg);
-  const base = packagePath(tooth);
+  const fallback = getDefaultSelection(mod);
+  const base = modPath(tooth);
   const query = new URLSearchParams();
   if (
     !fallback ||

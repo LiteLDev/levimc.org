@@ -20,7 +20,7 @@ export async function render(url: string) {
   const pathname = new URL(url, "http://localhost").pathname;
   const data = await loadPageData(pathname);
   let head = pageHead(data);
-  if (data.kind === "package") {
+  if (data.kind === "mod") {
     await loadMarkdown();
     const preload = modulePreloadTags("src/components/markdown.tsx");
     if (preload) head += `\n    ${preload}`;

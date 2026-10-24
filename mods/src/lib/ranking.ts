@@ -1,5 +1,5 @@
 // The default order of the listing (Relevance without a search): one score
-// per package from popularity, adoption, compatibility and upkeep, computed at
+// per mod from popularity, adoption, compatibility and upkeep, computed at
 // build time so the prerendered page and the browser agree. The listing then
 // spreads authors out (see `spreadAuthors`).
 import { compareVersions } from "./game-versions.ts";
@@ -14,11 +14,11 @@ export const RANK_WEIGHTS = {
 
 /** Days over which the freshness signal falls to 1/e. */
 const FRESH_DAYS = 90;
-/** A package created this recently gets the new-package boost. */
+/** A mod created this recently gets the new-mod boost. */
 const NEW_DAYS = 30;
-/** Compatibility lost per game version a package is behind the newest one. */
+/** Compatibility lost per game version a mod is behind the newest one. */
 const COMPAT_STEP = 0.25;
-/** Compatibility of a package whose game versions are unknown. */
+/** Compatibility of a mod whose game versions are unknown. */
 const COMPAT_UNKNOWN = 0.3;
 
 const DAY = 86_400_000;
@@ -38,7 +38,7 @@ const daysSince = (iso: string | undefined, now: number) => {
 };
 
 /**
- * 1 for a package that runs on the newest game version in the catalogue, less
+ * 1 for a mod that runs on the newest game version in the catalogue, less
  * per version it is behind (`allVersions`, newest first), 0 from four behind.
  */
 export function compatibility(gameVersions: readonly string[], allVersions: readonly string[]): number {
@@ -48,7 +48,7 @@ export function compatibility(gameVersions: readonly string[], allVersions: read
   return behind < 0 ? COMPAT_UNKNOWN : Math.max(0, 1 - COMPAT_STEP * behind);
 }
 
-/** The default-order score of a package (higher first), rounded to keep the embedded catalogue small. */
+/** The default-order score of a mod (higher first), rounded to keep the embedded catalogue small. */
 export function rankScore(entry: RankInput, allVersions: readonly string[], now: number): number {
   const w = RANK_WEIGHTS;
   const score =
@@ -61,7 +61,7 @@ export function rankScore(entry: RankInput, allVersions: readonly string[], now:
 }
 
 /**
- * At most `perAuthor` packages of one author in each `block` of results (a
+ * At most `perAuthor` mods of one author in each `block` of results (a
  * page): the rest move on to the next block, in order.
  */
 export function spreadAuthors<T extends { owner: string }>(sorted: readonly T[], block: number, perAuthor = 3): T[] {

@@ -3,7 +3,7 @@
 // the values of the listing's `cat=`, `platform=` and `env=` query parameters.
 import type { Locale } from "../locales.ts";
 
-/** A kit sprite that `styles.css` provides as a CSS background (`.pkg-sprite-<name>`). */
+/** A kit sprite that `styles.css` provides as a CSS background (`.mods-sprite-<name>`). */
 export type SpriteName =
   | "apps"
   | "pickaxe"
@@ -35,7 +35,7 @@ export interface CategoryDef {
   id: string;
   label: Labels;
   icon: SpriteName;
-  /** Raw lipr tags (lower case) that put a package in this category. */
+  /** Raw lipr tags (lower case) that put a mod in this category. */
   tags: string[];
 }
 

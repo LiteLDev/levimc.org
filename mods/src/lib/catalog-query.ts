@@ -29,9 +29,9 @@ export interface QueryState {
   platform: Facet;
   /** Environments: any of them (OR). */
   env: string[];
-  /** Only packages under an open-source license. */
+  /** Only mods under an open-source license. */
   license: boolean;
-  /** Packages the latest version depends on (tooths, case-insensitive): every one of them (AND). */
+  /** Mods the latest version depends on (tooths, case-insensitive): every one of them (AND). */
   dep: string[];
   /** Repository owners, as written in the URL; matched case-insensitively (OR). */
   author: string[];
@@ -241,9 +241,9 @@ export interface FacetCounts {
 export interface QueryResult {
   /** The page shown. */
   items: CatalogEntry[];
-  /** Every package matching the query, in order. */
+  /** Every mod matching the query, in order. */
   matched: CatalogEntry[];
-  /** Packages listed in all. */
+  /** Mods listed in all. */
   total: number;
   /** The page shown, clamped to the last one. */
   page: number;
@@ -259,9 +259,9 @@ export interface QueryResult {
 export interface FacetOptions {
   /** Newest first. */
   gv: string[];
-  /** Tooths as the index spells them, by how many packages depend on them. */
+  /** Tooths as the index spells them, by how many mods depend on them. */
   dep: string[];
-  /** Plain tags (see {@link isPlainTag}), by how many packages carry them. */
+  /** Plain tags (see {@link isPlainTag}), by how many mods carry them. */
   tags: string[];
 }
 

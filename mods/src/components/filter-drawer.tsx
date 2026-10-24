@@ -32,8 +32,8 @@ export function FilterDrawer({ open, onClose, returnFocus, resultCount, onClearA
   return (
     <dialog
       ref={ref}
-      className="pkg-filter-drawer"
-      aria-labelledby="pkg-drawer-title"
+      className="mods-filter-drawer"
+      aria-labelledby="mods-drawer-title"
       onClose={() => {
         onClose();
         returnFocus.current?.focus();
@@ -43,25 +43,25 @@ export function FilterDrawer({ open, onClose, returnFocus, resultCount, onClearA
         if (e.target === e.currentTarget) e.currentTarget.close();
       }}
     >
-      <div className="pkg-drawer-panel">
-        <header className="pkg-drawer-head">
-          <h2 id="pkg-drawer-title">{t.filters}</h2>
+      <div className="mods-drawer-panel">
+        <header className="mods-drawer-head">
+          <h2 id="mods-drawer-title">{t.filters}</h2>
           <button type="button" className="mc-icon-btn" aria-label={t.closeFilters} onClick={() => ref.current?.close()}>
             <PixelIcon name="close" />
           </button>
         </header>
-        <div className="pkg-drawer-body">{children}</div>
-        <footer className="pkg-drawer-foot">
-          <div className="pkg-drawer-actions">
+        <div className="mods-drawer-body">{children}</div>
+        <footer className="mods-drawer-foot">
+          <div className="mods-drawer-actions">
             <button type="button" className="mc-btn mc-btn-ghost" onClick={onClearAll} disabled={!canClear}>
               {t.clearAll}
             </button>
             <button
               type="button"
-              className="mc-btn mc-btn-primary pkg-drawer-show"
+              className="mc-btn mc-btn-primary mods-drawer-show"
               onClick={() => {
                 ref.current?.close();
-                requestAnimationFrame(() => document.getElementById("pkg-status")?.focus());
+                requestAnimationFrame(() => document.getElementById("mods-status")?.focus());
               }}
             >
               {t.showResults(resultCount)}

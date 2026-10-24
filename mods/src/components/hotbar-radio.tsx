@@ -40,7 +40,7 @@ export function HotbarRadio<T extends string | number>({ label, options, value, 
   return (
     <div
       ref={ref}
-      className={`hotbar pkg-radio${className ? ` ${className}` : ""}`}
+      className={`hotbar mods-radio${className ? ` ${className}` : ""}`}
       role="radiogroup"
       aria-label={label}
       onKeyDown={onKeyDown}
