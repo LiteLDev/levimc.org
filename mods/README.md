@@ -61,6 +61,22 @@ To put mods in a category, add their tags to that category's `tags` in
 `src/data/categories.ts`, or tag the mod `category:<id>` in its
 `tooth.json`.
 
+lipr is lip's registry, so it also holds what is not a mod. The listing
+(search, filters, counts, sitemap) has only mods; `src/lib/listing.ts` decides,
+from each package's latest manifest and its repository, again on every build:
+
+| Package | Shown as | Why |
+| ------- | -------- | --- |
+| installs nothing under `plugins/` or `mods/` (images, scripts, programs, nothing at all) | excluded: no page | not a mod |
+| a GitHub template, or a repository named `…-template`, `-example`, `-demo`, `-sample`, `-test` | excluded: no page | not a mod |
+| LeviLamina and everything it depends on | unlisted: its page stays for dependency cards | the platform |
+| another tooth of a repository the index already has (renamed, transferred, differing in case) | unlisted: its page points to the listed one as canonical | listed once, under the name GitHub serves it as, else the latest version |
+
+Where lipr has no manifest at the tooth's path, the rules read lipr's under the
+repository's current name, else the repository's own `tooth.json` at the
+version's tag (older formats too); a package with none is listed. The build log
+prints every package left out and why (`listing: …`).
+
 ## Development
 
 Requires Node.js 22.18 or later (the unit tests run TypeScript directly) and

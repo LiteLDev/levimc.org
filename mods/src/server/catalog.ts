@@ -5,6 +5,7 @@
 // (prerender, dev server) imports this; it is memoised per build.
 import { deriveFacets } from "../lib/facets";
 import { resolveGameVersions, type LauncherIndex } from "../lib/game-versions";
+import { classifyListings, manifestOf, type Listing } from "../lib/listing";
 import { rankScores, type RankRow } from "../lib/ranking";
 import { updateUrl, type RepositoryRenames } from "../lib/markdown";
 import {
@@ -27,8 +28,12 @@ const LEVILAMINA = "github.com/liteldev/levilamina";
 
 export interface BuildData {
   index: ModIndex;
+  /** The listed mods. */
   catalog: Catalog;
+  /** Every mod with a page: the listed and the unlisted ones. */
   byTooth: Map<string, CatalogEntry>;
+  /** How each package of the index is shown (see `lib/listing.ts`). */
+  listings: Map<string, Listing>;
   meta: Map<string, RepoMeta>;
   renames: RepositoryRenames;
   /** The latest manifest of each mod's default selection (`null`: lipr has none). */
@@ -131,25 +136,49 @@ async function build(): Promise<BuildData> {
   const manifests = new Map(tooths.map((t, i) => [t, manifestList[i] ?? null]));
   const renames = repositoryRenames(meta);
 
-  // Who depends on whom, from every mod's latest versions.
+  const judged = await mapLimit(tooths, async (tooth) => manifests.get(tooth) ?? findManifest(tooth, index.packages[tooth]!, meta.get(tooth)));
+  const listings = classifyListings(
+    tooths.map((tooth, i) => {
+      const repo = meta.get(tooth);
+      const version = getDefaultSelection(index.packages[tooth]!)?.version;
+      return {
+        tooth,
+        manifest: judged[i] ?? null,
+        ...(version ? { version } : {}),
+        ...(repo ? { repo } : {}),
+        updated: index.packages[tooth]!.updated_at,
+      };
+    }),
+  );
+  const status = (tooth: string) => listings.get(tooth)?.status ?? "listed";
+  const paged = tooths.filter((t) => status(t) !== "excluded");
+  const listed = paged.filter((t) => status(t) === "listed");
+  logListings(listings);
+
+  // Who depends on whom, from every mod's latest versions. Only listed mods count as dependents, and a
+  // dependency on an old name of a repository is one on the name it is listed under.
   const dependents = new Map<string, string[]>();
   const dependsOn = new Map<string, string[]>();
   if (launcher) {
-    for (const tooth of tooths) {
+    for (const tooth of listed) {
       for (const dep of latestDependencies(launcher, tooth, index.packages[tooth]!)) {
         if (dep === tooth.toLowerCase()) continue;
-        const listed = canonical.get(dep);
-        if (listed) dependsOn.set(tooth, [...(dependsOn.get(tooth) ?? []), listed]);
-        const list = dependents.get(dep) ?? [];
+        const target = pageOf(listings, canonical.get(dep));
+        if (target === tooth) continue;
+        if (target && !dependsOn.get(tooth)?.includes(target)) {
+          dependsOn.set(tooth, [...(dependsOn.get(tooth) ?? []), target]);
+        }
+        const key = target?.toLowerCase() ?? dep;
+        const list = dependents.get(key) ?? [];
         if (!list.includes(tooth)) list.push(tooth);
-        dependents.set(dep, list);
+        dependents.set(key, list);
       }
     }
   }
 
   // Icons: the manifest's avatar where it loads, else the owner's (in the browser).
   const iconUrls = new Map<string, string>();
-  for (const tooth of tooths) {
+  for (const tooth of paged) {
     const url = index.packages[tooth]!.info.avatar_url;
     // "all": an icon that does not load as an image (an LFS pointer, say) is dropped by checkIcons
     if (url) iconUrls.set(tooth, updateUrl(url, renames, "all"));
@@ -157,7 +186,7 @@ async function build(): Promise<BuildData> {
   const loadable = await checkIcons(iconUrls.values());
   const gameVersions = launcher ? resolveGameVersions(launcher) : new Map<string, string[]>();
 
-  const unranked: Omit<CatalogEntry, "rank">[] = tooths.map((tooth) => {
+  const unranked: Omit<CatalogEntry, "rank">[] = paged.map((tooth) => {
     const mod = index.packages[tooth]!;
     const tags = Array.isArray(mod.info.tags) ? mod.info.tags : [];
     const manifest = manifests.get(tooth) ?? null;
@@ -184,15 +213,18 @@ async function build(): Promise<BuildData> {
     };
   });
 
-  const { scores, model } = rankScores(unranked.map((e) => rankRow(e, meta.get(e.tooth), metaComplete)));
-  const entries: CatalogEntry[] = unranked.map((e, i) => ({ ...e, rank: scores[i]! }));
+  // The default order is fitted to the listed mods; the unlisted ones are never sorted.
+  const ranked = unranked.filter((e) => status(e.tooth) === "listed");
+  const { scores, model } = rankScores(ranked.map((e) => rankRow(e, meta.get(e.tooth), metaComplete)));
+  const entries: CatalogEntry[] = ranked.map((e, i) => ({ ...e, rank: scores[i]! }));
+  const unlisted: CatalogEntry[] = unranked.filter((e) => status(e.tooth) !== "listed").map((e) => ({ ...e, rank: 0 }));
   const coef = (names: string[], beta: number[]) => ["const", ...names].map((k, j) => `${k} ${beta[j]!.toFixed(2)}`).join(", ");
   console.log(
     `rank: ${model.rows} repositories; stars ~ ${coef(model.starsCovariates, model.stars.beta)} (r ${model.stars.r.toFixed(2)}); ` +
       `dependents ~ ${coef(["ln_age"], model.dependents.beta)}; shared r ${model.r.toFixed(2)}; q ${model.q.toFixed(3)}`,
   );
 
-  const versions = tooths.reduce((n, t) => n + getAllVersions(index.packages[t]!).length, 0);
+  const versions = listed.reduce((n, t) => n + getAllVersions(index.packages[t]!).length, 0);
   const catalog: Catalog = {
     entries,
     stats: {
@@ -210,7 +242,8 @@ async function build(): Promise<BuildData> {
   return {
     index,
     catalog,
-    byTooth: new Map(entries.map((e) => [e.tooth, e])),
+    byTooth: new Map([...entries, ...unlisted].map((e) => [e.tooth, e])),
+    listings,
     meta,
     renames,
     manifests,
@@ -218,6 +251,48 @@ async function build(): Promise<BuildData> {
     dependents,
     canonical,
   };
+}
+
+/**
+ * The manifest the listing rules read when lipr has none at the tooth's path
+ * (it files some under the repository's current name or another path): lipr's
+ * under the current name, else the repository's own `tooth.json` at the
+ * version's tag. `null`: neither.
+ */
+async function findManifest(tooth: string, mod: RawModEntry, repo: RepoMeta | undefined): Promise<Manifest | null> {
+  const version = getDefaultSelection(mod)?.version;
+  const path = repo?.url.match(/^https:\/\/github\.com\/([^/]+\/[^/]+)$/)?.[1];
+  if (!version || !path) return null;
+  if (`github.com/${path}` !== tooth) {
+    const manifest = await fetchManifest(`github.com/${path}`, version);
+    if (manifest) return manifest;
+  }
+  try {
+    const res = await fetchWithRetry(`https://raw.githubusercontent.com/${path}/v${version}/tooth.json`);
+    return res.ok ? manifestOf(await res.json()) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The tooth whose page shows `tooth`: itself, the tooth its repository is listed under, or none (excluded). */
+function pageOf(listings: Map<string, Listing>, tooth: string | undefined): string | undefined {
+  if (!tooth) return undefined;
+  const listing = listings.get(tooth);
+  if (listing?.status === "excluded") return undefined;
+  return listing?.status === "unlisted" && listing.reason === "duplicate" ? listing.canonical : tooth;
+}
+
+/** What the listing leaves out, and why, in the build log. */
+function logListings(listings: Map<string, Listing>) {
+  const byReason = new Map<string, string[]>();
+  for (const [tooth, listing] of listings) {
+    if (listing.status === "listed") continue;
+    const label = listing.reason === "duplicate" ? `${tooth} (→ ${listing.canonical})` : tooth;
+    const key = `${listing.status} as ${listing.reason}`;
+    byReason.set(key, [...(byReason.get(key) ?? []), label]);
+  }
+  for (const [key, list] of byReason) console.log(`listing: ${list.length} ${key}: ${list.sort().join(", ")}`);
 }
 
 let data: Promise<BuildData> | undefined;
@@ -228,9 +303,9 @@ export function loadBuildData(): Promise<BuildData> {
   return data;
 }
 
-/** A mod as dependency and dependent lists show it. */
+/** A mod as dependency and dependent lists show it (an old name of a repository leads to the one it is listed under). */
 export function related(data: BuildData, tooth: string): RelatedMod {
-  const entry = data.byTooth.get(data.canonical.get(tooth.toLowerCase()) ?? "");
+  const entry = data.byTooth.get(pageOf(data.listings, data.canonical.get(tooth.toLowerCase())) ?? "");
   if (entry) return { tooth: entry.tooth, name: entry.name, owner: entry.owner, ...(entry.icon ? { icon: entry.icon } : {}), listed: true };
   return { tooth, name: tooth.split("/").at(-1) ?? tooth, owner: ownerOf(tooth) };
 }

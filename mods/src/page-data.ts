@@ -47,6 +47,8 @@ export type PageData = (
       hasIssues: boolean;
       /** levilauncher.json was available ("Required by" is known). */
       dependentsKnown: boolean;
+      /** The repository is listed under another tooth, whose page is the canonical one (an old name). */
+      canonicalTooth?: string;
     }
   | { kind: "not-found" }
 ) & {
@@ -110,7 +112,7 @@ export function pageMeta(data: PageData): PageMeta {
       return {
         title: `${data.entry.name} | ${SITE_NAME}`,
         description: data.mod.info.description || `${data.entry.name} on ${SITE_NAME}`,
-        canonical: `${SITE_ORIGIN}${BASE}${data.tooth}/`,
+        canonical: `${SITE_ORIGIN}${BASE}${data.canonicalTooth ?? data.tooth}/`,
       };
     case "not-found":
       return { title: `Not Found | ${SITE_NAME}`, description: `${SITE_NAME} — ${SITE_TAGLINE}` };

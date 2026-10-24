@@ -28,6 +28,8 @@ export interface RepoMeta {
   latestRelease?: string;
   /** The repository takes issues. */
   hasIssues: boolean;
+  /** A template repository (not listed, see `lib/listing.ts`). */
+  isTemplate: boolean;
   /** It belongs to an organization, not a user (a covariate of the default order). */
   orgOwned: boolean;
 }
@@ -48,6 +50,7 @@ interface RepositoryNode {
   url: string;
   createdAt: string;
   hasIssuesEnabled: boolean;
+  isTemplate: boolean;
   owner: { __typename: string };
   licenseInfo: { spdxId: string | null } | null;
   releases: ReleaseConnection;
@@ -92,7 +95,7 @@ let cost = 0;
 async function queryBatch(token: string, tooths: string[]): Promise<Map<string, RepoMeta>> {
   const fields = tooths.map(
     (tooth, i) =>
-      `r${i}: repository(${ownerAndName(tooth)}) { url createdAt hasIssuesEnabled owner { __typename } licenseInfo { spdxId } ` +
+      `r${i}: repository(${ownerAndName(tooth)}) { url createdAt hasIssuesEnabled isTemplate owner { __typename } licenseInfo { spdxId } ` +
       `releases(first: ${RELEASES}, orderBy: { field: CREATED_AT, direction: DESC }) { ${RELEASE_FIELDS} } }`,
   );
   const data = await graphql<Record<string, RepositoryNode | null> & { rateLimit: { cost: number } }>(
@@ -111,6 +114,7 @@ async function queryBatch(token: string, tooths: string[]): Promise<Map<string, 
       ...(spdx ? { license: spdx } : {}),
       releases: {},
       hasIssues: node.hasIssuesEnabled,
+      isTemplate: node.isTemplate,
       orgOwned: node.owner.__typename === "Organization",
     };
     addReleases(meta, node.releases.nodes);

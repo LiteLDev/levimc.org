@@ -5,11 +5,11 @@ import { App } from "./App";
 import { loadMarkdown } from "./components/lazy-markdown";
 import { pageHead, parsePageData } from "./page-data";
 import { PageStore } from "./page-store";
-import { loadPageData, listRoutes } from "./server/build-data";
+import { loadPageData, listRoutes, listSitemapRoutes } from "./server/build-data";
 import { modulePreloadTags } from "./server/client-assets";
 
 // For prerender.mjs: the pages to write, a check of what was written, and the hero paintings.
-export { listRoutes, parsePageData };
+export { listRoutes, listSitemapRoutes, parsePageData };
 export { HERO_FILES, heroSvg } from "./server/hero";
 
 /**
