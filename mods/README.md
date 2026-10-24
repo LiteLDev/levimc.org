@@ -2,7 +2,7 @@
 
 LeviMC Mods (LeviMC 模组) is the catalogue of mods and plugins for Minecraft
 Bedrock — LeviLamina, LegacyScriptEngine and Endstone — served at
-<https://levimc.org/mods/> (it was pkg.levimc.org, which redirects there). Every
+<https://levimc.org/mods/> (it was pkg.levimc.org). Every
 mod in it can be installed with [lip](https://github.com/LiteLDev/lip).
 
 It is a static site built from the [lipr](https://github.com/LiteLDev/lipr)
@@ -34,10 +34,6 @@ built with Vite `base: '/mods/'`: every page and file is under `/mods/`.
   language preference shared by every LeviMC site (the LeviMC bar's language
   menu); the theme (Auto, Light, Dark) is shared the same way. Mod data is
   shown as published.
-- The 404 page sends case-mismatched mod paths
-  (`/mods/github.com/liteldev/levilamina/`) and pkg.levimc.org's old form
-  (`/mods/packages/<tooth>/`) on to the real mod. GitHub Pages serves only
-  levimc.org's `404.html`, which hands every `/mods/…` path to this one.
 
 ## Data
 

@@ -48,7 +48,7 @@ export type PageData = (
       /** levilauncher.json was available ("Required by" is known). */
       dependentsKnown: boolean;
     }
-  | { kind: "not-found"; tooths: string[] }
+  | { kind: "not-found" }
 ) & {
   /**
    * Mod repositories GitHub now serves under another name, so avatars

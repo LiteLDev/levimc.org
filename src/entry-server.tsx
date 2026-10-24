@@ -7,7 +7,7 @@ import { buildHead } from './head';
 import { DEFAULT_LOCALE } from './i18n';
 import { preloadBlogPath } from './blog/data';
 
-export { ROUTE_PATHS, NOT_FOUND_PATH, SITE_ORIGIN, MOVED, MODS_PATH } from './routes';
+export { ROUTE_PATHS, NOT_FOUND_PATH, SITE_ORIGIN, MODS_PATH } from './routes';
 export { BLOG_ROUTES } from './blog/data';
 
 export async function render(url: string) {

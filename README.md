@@ -51,8 +51,7 @@ npm run smoke:kit
 
 ## Layout
 
-- `src/App.tsx` — routes (`/`, `/community/`, `/about/`, `/support/`, `/blog/…`, and the 404 page); `/projects/` and
-  `/features/` are redirects to the home page's `#projects` and `#features` sections (`MOVED` in `src/routes.ts`)
+- `src/App.tsx` — routes (`/`, `/community/`, `/about/`, `/support/`, `/blog/…`, and the 404 page)
 - `src/pages/`, `src/components/` — page content; `src/i18n/locales/{en,zh}.ts` — all site text
 - `src/routes.ts` — route list, titles and descriptions; `src/head.ts` — per-page `<head>` tags
 - `src/components/SiteHeader.tsx`, `src/components/Footer.tsx` — the kit GlobalBar and SiteFooter, the same on every
@@ -120,8 +119,7 @@ pnpm dev        # http://localhost:5173/mods/
 ```
 
 The two apps share the origin: their bar and footer links into the other one are ordinary links (`isAppPath`).
-GitHub Pages serves only the site's `404.html`, which hands a `/mods/…` path to `mods/404.html` (it sends
-mistyped and old `/mods/packages/<tooth>/` paths on to the mod), and `robots.txt` lists the mods sitemap.
+`robots.txt` lists the mods sitemap.
 
 ## License
 

@@ -69,5 +69,5 @@ export async function loadPageData(pathname: string): Promise<PageData> {
     };
   }
 
-  return { kind: "not-found", tooths: Object.keys(index.packages), renames };
+  return { kind: "not-found", renames };
 }
