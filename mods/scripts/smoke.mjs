@@ -7,8 +7,7 @@
 // (`pnpm add -D playwright`). Checks the listing (default order, search as you type, filters and
 // their counts, exclusions, sort, page size, pagination, empty state, view mode, keyboard, the phone
 // drawer), the density targets (results above the fold), backward-compatible URLs, mod pages
-// (README, tabs, install dialog, variant/version switching, back to the listing), the
-// case-insensitive mod redirect, the 404 page, the shared theme/language preferences, phone
+// (README, tabs, install dialog, variant/version switching, back to the listing), the 404 page, the shared theme/language preferences, phone
 // layouts without sideways scroll, layout shift, and that every mod page hydrates without
 // errors. Only the site itself is loaded: third-party requests (README images, avatars, fonts) are
 // blocked. Exit code 1 on any failure.
@@ -465,24 +464,6 @@ await check("old mod URLs: ?variant=&version=, an invalid version, /index.html",
   assert(response.status() === 200, `index.html ${response.status()}`);
   await ctx.close();
   return latest;
-});
-
-await check("case-mismatched mod paths reach the mod", async () => {
-  const { page, response } = await open("github.com/liteldev/levilamina/?version=x");
-  assert(response.status() === 404, `status ${response.status()}`);
-  await page.waitForURL((u) => u.pathname === `${base}${LEVILAMINA}`, { timeout: 15000 });
-  await page.waitForSelector("[data-mods-detail]");
-  assert(new URL(page.url()).search === "?version=x", `query lost: ${page.url()}`);
-  await page.close();
-  // a #heading survives and is scrolled to
-  const { page: deep } = await open("github.com/liteldev/levilamina/#acknowledgements");
-  await deep.waitForURL((u) => u.pathname === `${base}${LEVILAMINA}` && u.hash === "#acknowledgements", { timeout: 15000 });
-  await deep.waitForSelector("[data-mods-detail]");
-  await deep.waitForTimeout(300);
-  const top = await deep.evaluate(() => document.getElementById("acknowledgements")?.getBoundingClientRect().top);
-  assert(top !== undefined && top >= 0 && top < DESKTOP.viewport.height, `#acknowledgements at ${top}px`);
-  await deep.close();
-  return "query and #heading kept";
 });
 
 await check("unknown paths get the themed 404 page", async () => {

@@ -579,9 +579,9 @@ Stable test hooks: `data-kit-theme-toggle` (theme menu trigger), `data-kit-theme
 `data-kit-footer`, `data-kit-hero`.
 
 Canonical cross-site URLs (exact, no redirect): Home `https://levimc.org/`, Projects
-`https://levimc.org/projects/`, Community `https://levimc.org/community/`, About `https://levimc.org/about/`,
-Mods (LeviMC Mods, id `mods`) `https://levimc.org/mods/` (pkg.levimc.org redirects there), Blog
-`https://levimc.org/blog/` (blog.levimc.org redirects there), GitHub `https://github.com/LiteLDev`,
+`https://levimc.org/#projects`, Community `https://levimc.org/community/`, About `https://levimc.org/about/`,
+Mods (LeviMC Mods, id `mods`) `https://levimc.org/mods/`, Blog `https://levimc.org/blog/`, GitHub
+`https://github.com/LiteLDev`,
 Docs `https://docs.levimc.org/{LeviLamina,LegacyScriptEngine,lip,LeviLauncher,LeviLaunchroid}/`,
 Discord `https://discord.gg/v5R5P4vRZk`, Telegram `https://t.me/LiteLoader`, X `https://x.com/levimc_org`,
 YouTube `https://www.youtube.com/@LeviLamina`, `mailto:contact@levimc.org`. lip's repository is
@@ -820,7 +820,7 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 ### 2.3.0 — 2026-10-24
 
 **LeviMC Mods moves to levimc.org/mods/.** pkg.levimc.org became `mods/` in LiteLDev/levimc.org, deployed at `/mods/`
-(mod pages are `/mods/<tooth>/`; pkg.levimc.org redirects there).
+(mod pages are `/mods/<tooth>/`).
 * The Mods link (`LINKS.mods`, was `LINKS.packages`) is `https://levimc.org/mods/`.
 * The Mods tab's id is `mods` everywhere (was `packages`): `SiteId`, `MODS_SITE.id`, the UI string key (`t.mods`),
   and `data-kit-t="mods"` in the static chrome and kit.js. A site passing `current="packages"` passes `"mods"`.

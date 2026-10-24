@@ -147,20 +147,6 @@ await check('/index.html and /<route>/index.html show their page at the canonica
   return '/index.html, /about/index.html, /community/index.html?…#…, /support//';
 });
 
-await check('/projects/ and /features/ (now home-page sections) redirect to /#projects and /#features', async () => {
-  const ctx = await newContext();
-  for (const [from, hash] of [['projects/', '#projects'], ['features/', '#features']]) {
-    const page = await ctx.newPage();
-    await page.goto(base + from, { waitUntil: 'networkidle' });
-    const u = new URL(page.url());
-    assert(u.pathname === '/' && u.hash === hash, `${from} → ${u.pathname}${u.hash}`);
-    assert(await page.locator(hash).isVisible(), `${hash} section missing`);
-    await page.close();
-  }
-  await ctx.close();
-  return '/projects/ → /#projects, /features/ → /#features';
-});
-
 await check('client-side navigation from the header (no full reload, canonical URL)', async () => {
   const ctx = await newContext();
   const page = await ctx.newPage();
@@ -523,33 +509,6 @@ await check('blog: Waline comments of the old blog load (old path as the key)', 
   assert(n >= 1, 'no comments');
   await ctx.close();
   return `${n} comments`;
-});
-
-await check('case-variant URLs: the 404 page sends /About/ and wrongly-cased blog URLs to the real page (no hydration error)', async () => {
-  const ctx = await newContext();
-  for (const [from, to] of [
-    ['About/', '/about/'],
-    ['Community/', '/community/'],
-    ['blog/2023/07/26/original-fix-beecrash/', '/blog/2023/07/26/original-fix-BeeCrash/'],
-    ['Blog/Tags/leviLamina', '/blog/tags/LeviLamina/'],
-  ]) {
-    const page = await ctx.newPage();
-    const errs = watch(page);
-    await page.goto(base + from, { waitUntil: 'networkidle' });
-    assert(new URL(page.url()).pathname === to, `${from} → ${new URL(page.url()).pathname}`);
-    assert(!(await page.title()).startsWith('404'), `${from}: 404 title`);
-    // the 404 page's own asset requests are cancelled by the redirect (expected)
-    const real = errs.filter((e) => !e.includes('net::ERR_ABORTED'));
-    assert(!real.length, `${from}: ${real.join(' | ')}`);
-    await page.close();
-  }
-  const page = await ctx.newPage();
-  const errs = watch(page);
-  const res = await page.goto(base + 'Nope/', { waitUntil: 'networkidle' });
-  assert(res?.status() === 404 && (await page.locator('.kit-notfound').count()) === 1, 'unknown path is not the 404 page');
-  assert(!errs.length, errs.join(' | '));
-  await ctx.close();
-  return '/About/ → /about/, …; /Nope/ → 404';
 });
 
 await browser.close();

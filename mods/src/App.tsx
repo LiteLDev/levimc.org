@@ -165,7 +165,7 @@ function renderPage(data: PageData) {
       return (
         <>
           <Header />
-          <NotFoundPage tooths={data.tooths} />
+          <NotFoundPage />
         </>
       );
   }

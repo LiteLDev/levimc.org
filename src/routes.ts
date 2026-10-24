@@ -18,15 +18,6 @@ export const ROUTES: readonly { id: RouteId; path: string }[] = [
   { id: 'blog', path: '/blog/' },
 ];
 
-/**
- * Pages that became sections of the home page (kit 2: the bar's Projects menu replaced the projects page). Each
- * old URL is a redirect page to its section (prerender.mjs), so links and bookmarks keep working.
- */
-export const MOVED: Record<string, string> = {
-  '/projects/': '/#projects',
-  '/features/': '/#features',
-};
-
 /** Every prerendered route (used by prerender.mjs): the pages above plus every blog page. */
 export const ROUTE_PATHS: string[] = [...new Set([...ROUTES.map((r) => r.path), ...BLOG_ROUTES])];
 /** Rendered into 404.html. */

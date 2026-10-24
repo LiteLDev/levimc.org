@@ -11,7 +11,7 @@ export const LINKS = {
   about: 'https://levimc.org/about/',
   /** Donations (linked from the footer: it has no bar tab). */
   support: 'https://levimc.org/support/',
-  /** LeviMC Mods moved into levimc.org (pkg.levimc.org redirects here). */
+  /** LeviMC Mods (it was pkg.levimc.org). */
   mods: 'https://levimc.org/mods/',
   /** The blog moved into levimc.org (blog.levimc.org no longer resolves). */
   blog: 'https://levimc.org/blog/',
