@@ -67,14 +67,15 @@ from each package's latest manifest and its repository, again on every build:
 
 | Package | Shown as | Why |
 | ------- | -------- | --- |
-| installs nothing under `plugins/` or `mods/` (images, scripts, programs, nothing at all) | excluded: no page | not a mod |
+| places files, but none under `plugins/` or `mods/` nor where the game loads add-ons from (`behavior_packs/`, `resource_packs/`, `worlds/`, … at any depth, or `.mcpack`/`.mcaddon` files): images, scripts, programs | excluded: no page | not a mod |
 | a GitHub template, or a repository named `…-template`, `-example`, `-demo`, `-sample`, `-test` | excluded: no page | not a mod |
 | LeviLamina and everything it depends on | unlisted: its page stays for dependency cards | the platform |
 | another tooth of a repository the index already has (renamed, transferred, differing in case) | unlisted: its page points to the listed one as canonical | listed once, under the name GitHub serves it as, else the latest version |
 
 Where lipr has no manifest at the tooth's path, the rules read lipr's under the
 repository's current name, else the repository's own `tooth.json` at the
-version's tag (older formats too); a package with none is listed. The build log
+version's tag (older formats too); a package with none, or whose manifest
+places nothing (older manifests often list no files), is listed. The build log
 prints every package left out and why (`listing: …`).
 
 ## Development
