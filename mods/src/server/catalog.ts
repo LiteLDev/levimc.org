@@ -4,8 +4,8 @@
 // with the parts that need the missing data left out. Only the server bundle
 // (prerender, dev server) imports this; it is memoised per build.
 import { deriveFacets } from "../lib/facets";
-import { compareVersions, resolveGameVersions, type LauncherIndex } from "../lib/game-versions";
-import { rankScore } from "../lib/ranking";
+import { resolveGameVersions, type LauncherIndex } from "../lib/game-versions";
+import { rankScores, type RankRow } from "../lib/ranking";
 import { updateUrl, type RepositoryRenames } from "../lib/markdown";
 import {
   fetchManifest,
@@ -87,6 +87,34 @@ const truncate = (text: string) => {
   return chars.length > DESCRIPTION_MAX ? `${chars.slice(0, DESCRIPTION_MAX - 1).join("").trimEnd()}…` : chars.join("");
 };
 
+const DAY = 86_400_000;
+
+/**
+ * A mod as the default order's model sees it (`lib/ranking.ts`): one key per
+ * repository (renamed repositories are listed under several tooths), and only
+ * covariates fixed before anyone could star it. Without GitHub data the age
+ * runs from the index's update and the owner is not known.
+ */
+function rankRow(e: Omit<CatalogEntry, "rank">, repo: RepoMeta | undefined, withOwner: boolean): RankRow {
+  const since = Date.parse(e.created ?? e.updated);
+  const covariates: Record<string, number> = {
+    icon: e.icon ? 1 : 0,
+    license: e.license ? 1 : 0,
+    category: e.categories.length ? 1 : 0,
+  };
+  if (withOwner) covariates["org"] = repo?.orgOwned ? 1 : 0;
+  for (const p of e.platforms) covariates[`plat:${p}`] = 1;
+  for (const env of e.env) covariates[`env:${env}`] = 1;
+  return {
+    key: (repo?.url ?? e.tooth).toLowerCase(),
+    stars: e.stars,
+    dependents: e.requiredBy ?? 0,
+    ageDays: Number.isNaN(since) ? 0 : Math.max(0, (Date.now() - since) / DAY),
+    covariates,
+    gameVersions: e.gameVersions,
+  };
+}
+
 async function build(): Promise<BuildData> {
   const index = await fetchModIndex();
   const tooths = Object.keys(index.packages);
@@ -156,9 +184,13 @@ async function build(): Promise<BuildData> {
     };
   });
 
-  const allGameVersions = [...new Set(unranked.flatMap((e) => e.gameVersions))].sort((a, b) => compareVersions(b, a));
-  const now = Date.now();
-  const entries: CatalogEntry[] = unranked.map((e) => ({ ...e, rank: rankScore(e, allGameVersions, now) }));
+  const { scores, model } = rankScores(unranked.map((e) => rankRow(e, meta.get(e.tooth), metaComplete)));
+  const entries: CatalogEntry[] = unranked.map((e, i) => ({ ...e, rank: scores[i]! }));
+  const coef = (names: string[], beta: number[]) => ["const", ...names].map((k, j) => `${k} ${beta[j]!.toFixed(2)}`).join(", ");
+  console.log(
+    `rank: ${model.rows} repositories; stars ~ ${coef(model.starsCovariates, model.stars.beta)} (r ${model.stars.r.toFixed(2)}); ` +
+      `dependents ~ ${coef(["ln_age"], model.dependents.beta)}; shared r ${model.r.toFixed(2)}; q ${model.q.toFixed(3)}`,
+  );
 
   const versions = tooths.reduce((n, t) => n + getAllVersions(index.packages[t]!).length, 0);
   const catalog: Catalog = {

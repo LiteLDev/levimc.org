@@ -13,8 +13,8 @@ the shared LeviMC design system, levimc-kit, which `pnpm install` copies from
 built with Vite `base: '/mods/'`: every page and file is under `/mods/`.
 
 - **The listing** (`/mods/`) has the whole catalogue baked in: search as you type,
-  filters (platform, category, environment, license), sort (relevance — by
-  GitHub stars when nothing is searched — stars, updated, newest), page size,
+  filters (platform, category, environment, license), sort (relevance — when
+  nothing is searched, the default order below — stars, updated, newest), page size,
   list or grid view and pagination all run in the browser and read
   `?q=&cat=&platform=&env=&license=&author=&tags=&sort=&page=`. As on
   Modrinth, a mod must have every included category (AND) and any of the
@@ -44,7 +44,17 @@ At build time (`src/server/catalog.ts`) the lipr index is enriched with:
 | lipr tags | categories (the tag map in `src/data/categories.ts`; a `category:<id>` tag wins), platforms and the LSE language | — |
 | latest `tooth.json` of each mod | environment (files placed in `plugins/` → server, `mods/` → client), dependencies, OS | the variant labels |
 | `lipr.levimc.org/levilauncher.json` | "Required by", Depends On, Game Version (every version's dependency ranges, followed to LeviLamina and its `bds` version), the LeviLamina range of each version | those are left out |
-| GitHub GraphQL (`GITHUB_TOKEN`) | where renamed repositories live, release dates, creation date, license | links keep the tooth path, dates come from the index, no "Newest" sort and no License filter |
+| GitHub GraphQL (`GITHUB_TOKEN`) | where renamed repositories live, release dates, creation date, license, organization owner | links keep the tooth path, dates come from the index, no "Newest" sort and no License filter |
+
+**Default order** (relevance without a search, `src/lib/ranking.ts`), fitted
+over the whole catalogue at every build, one row per repository:
+negative-binomial GLMs give the stars and dependents a mod like it would get
+(stars: covariates fixed before anyone could star it, chosen by BIC — age,
+owner, icon, license, category, platforms, environments; dependents: age
+only); a Poisson–Gamma model gives the posterior E[ln θ] of its quality from
+its actual stars and dependents against those; and each game version it is
+behind the newest costs ln q, q being how often the catalogue's mods keep
+supporting the next version. The build log prints the fitted model.
 
 Nothing is curated by hand: a mod's categories come from its lipr tags.
 To put mods in a category, add their tags to that category's `tags` in
