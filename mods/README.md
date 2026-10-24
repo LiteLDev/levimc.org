@@ -25,7 +25,8 @@ built with Vite `base: '/mods/'`: every page and file is under `/mods/`.
 - **Mod pages** (`/mods/<tooth>/`, e.g. `/mods/github.com/LiteLDev/LeviLamina/`) are prerendered with the README and
   manifest of the default variant's latest version; other variants and
   versions (`?variant=&version=`) are fetched in the browser from lipr and
-  GitHub. Tabs: Description, Versions (`?tab=versions`), Dependencies
+  GitHub. Tabs: Description, Gallery (`?tab=gallery`, when the mod has one, see
+  [Galleries](#galleries)), Versions (`?tab=versions`), Dependencies
   (`?tab=dependencies`).
 - Pages hydrate into a single-page app: following a link fetches the target's
   prerendered HTML and reads its embedded data, so a page looks the same
@@ -45,6 +46,38 @@ At build time (`src/server/catalog.ts`) the lipr index is enriched with:
 | latest `tooth.json` of each mod | environment (files placed in `plugins/` → server, `mods/` → client), dependencies, OS | the variant labels |
 | `lipr.levimc.org/levilauncher.json` | "Required by", Depends On, Game Version (every version's dependency ranges, followed to LeviLamina and its `bds` version), the LeviLamina range of each version | those are left out |
 | GitHub GraphQL (`GITHUB_TOKEN`) | where renamed repositories live, release dates, creation date, license, organization owner | links keep the tooth path, dates come from the index, no "Newest" sort and no License filter |
+| `docs/showcase/showcase.json` on each mod's default branch | the Gallery tab (`src/server/showcase.ts`) | no Gallery tab |
+
+### Galleries
+
+A mod gets a Gallery tab by committing `docs/showcase/showcase.json` and the files it lists to its
+repository's default branch. The gallery is not tied to a version; the next build (hourly) picks it up.
+
+```json
+{
+  "items": [
+    {
+      "kind": "video",
+      "src": "teleport.mp4",
+      "poster": "teleport.webp",
+      "width": 1280,
+      "height": 720,
+      "title": { "en": "Teleport between waystones", "zh-CN": "在传送石碑之间传送" },
+      "caption": { "en": "One sentence a player cares about." }
+    }
+  ]
+}
+```
+
+- `kind`: `image` (WebP, PNG, JPEG), `video` (MP4, WebM; `poster` is an image) or `svg`; `src` is a file
+  name in `docs/showcase/`. `title` is required, `caption` optional; each is a string or
+  `{ "en", "zh-CN", "zh-HK" }` (Traditional Chinese falls back to Simplified, then English). The first item is
+  shown large. At most 24 items, 8 MB per file, 30 MB per mod.
+- The build copies the files into the site (`/mods/showcase/<owner>/<repo>/`), so they are served with the right
+  types. Files that are missing, too large or not what their extension says are left out, and so are SVGs that
+  could run script or load anything when opened on their own (scripts, event handlers, links, external
+  references; embedded `data:image/png|webp|jpeg` sprites and `#id` references are fine). The build log says
+  what it left out (`showcase: …`).
 
 **Default order** (relevance without a search, `src/lib/ranking.ts`), fitted
 over the whole catalogue at every build, one row per repository:
@@ -117,7 +150,7 @@ src/
   components/       listing (search, toolbar, filters, rows), mod page (header, tabs, versions,
                     dependencies, sidebar, install dialog), README renderer
   lib/              catalogue query (parse/serialize/run), search, facets, lipr and GitHub URLs, markdown helpers
-  server/           build-time data: catalogue, GitHub, icons, hero paintings
+  server/           build-time data: catalogue, GitHub, icons, galleries, hero paintings
 kit/                levimc-kit, copied from ../kit by `pnpm install` (git-ignored; never edit it)
 public/             icon.png
 ```

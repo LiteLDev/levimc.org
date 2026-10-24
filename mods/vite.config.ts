@@ -63,6 +63,19 @@ function devServerRender(): Plugin {
             res.end(entry.heroSvg(hero[1]));
             return;
           }
+          // Gallery files are written by prerender.mjs; served from the pages' build data here.
+          const shot = /^\/mods\/(showcase\/.+)$/.exec(url.split("?")[0] ?? "");
+          if (shot) {
+            const entry = await server.ssrLoadModule("/src/entry-server.tsx");
+            const file = entry.showcaseFiles().get(decodeURIComponent(shot[1] ?? ""));
+            if (!file) {
+              next();
+              return;
+            }
+            res.setHeader("Content-Type", file.type);
+            res.end(file.body);
+            return;
+          }
           const accept = req.headers.accept ?? "";
           if (req.method !== "GET" || !accept.includes("text/html")) {
             next();

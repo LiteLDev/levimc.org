@@ -1,7 +1,8 @@
 // Prerenders every page into dist/ after `vite build` and the SSR build:
 // `/mods/`, one page per mod, and 404.html; then writes sitemap.xml. See README.md.
 // dist/ is the site's /mods/ folder: the levimc.org build copies it there.
-import { readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { prerenderRoutes } from "./kit/ssg/prerender.mjs";
 
 const ORIGIN = "https://levimc.org";
@@ -27,6 +28,12 @@ for (const file of files) {
     throw new Error(`${file}: a template placeholder is left in the page`);
   }
   if (!ssr.parsePageData(html)) throw new Error(`${file}: the page data is missing`);
+}
+
+// The mods' galleries, as the pages above loaded them (see src/server/showcase.ts).
+for (const [path, { body }] of ssr.showcaseFiles()) {
+  mkdirSync(dirname(`dist/${path}`), { recursive: true });
+  writeFileSync(`dist/${path}`, body);
 }
 
 // The home page's painted strip, one file per theme (see src/server/hero.ts).

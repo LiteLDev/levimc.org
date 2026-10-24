@@ -11,6 +11,7 @@ import { modulePreloadTags } from "./server/client-assets";
 // For prerender.mjs: the pages to write, a check of what was written, and the hero paintings.
 export { listRoutes, listSitemapRoutes, parsePageData };
 export { HERO_FILES, heroSvg } from "./server/hero";
+export { showcaseFiles } from "./server/showcase";
 
 /**
  * Renders one page for prerender.mjs (and the dev server): `/mods/`,

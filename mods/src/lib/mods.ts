@@ -225,8 +225,8 @@ export function resolveSelection(
   return { variant, version };
 }
 
-/** The mod page's tabs; Description is the default and has no `tab=`. */
-export const MOD_TABS = ["description", "versions", "dependencies"] as const;
+/** The mod page's tabs; Description is the default and has no `tab=` (Gallery only when the mod has one). */
+export const MOD_TABS = ["description", "gallery", "versions", "dependencies"] as const;
 export type ModTab = (typeof MOD_TABS)[number];
 
 export function parseTab(value: string | null): ModTab {

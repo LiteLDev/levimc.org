@@ -70,7 +70,8 @@ test("the default selection has the bare URL; tabs add tab=", () => {
 test("tabs: unknown values show the description", () => {
   assert.equal(parseTab("versions"), "versions");
   assert.equal(parseTab("dependencies"), "dependencies");
-  assert.equal(parseTab("gallery"), "description");
+  assert.equal(parseTab("gallery"), "gallery");
+  assert.equal(parseTab("screenshots"), "description");
   assert.equal(parseTab(null), "description");
 });
 

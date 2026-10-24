@@ -110,3 +110,22 @@ export interface RelatedMod {
   /** The mod is in the index (it has a page here). */
   listed?: boolean;
 }
+
+/** Text a mod gives in the site's languages (`en` always; the others fall back to it). */
+export type LocalizedText = { en: string } & Partial<Record<"zh-CN" | "zh-HK", string>>;
+
+/**
+ * One picture, video or animation of a mod's gallery (the Gallery tab), from
+ * `docs/showcase/showcase.json` on its default branch (see `server/showcase.ts`).
+ */
+export interface ShowcaseItem {
+  kind: "image" | "video" | "svg";
+  /** The file as this site serves it (under `/mods/showcase/`). */
+  src: string;
+  /** A video's still frame. */
+  poster?: string;
+  width: number;
+  height: number;
+  title: LocalizedText;
+  caption?: LocalizedText;
+}
