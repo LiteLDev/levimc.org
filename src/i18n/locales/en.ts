@@ -51,8 +51,6 @@ const en = {
     title: "Our projects.",
     moreOnGitHub: "More projects on GitHub",
     explore: "Explore",
-    docs: "Docs",
-    github: "GitHub",
   },
 
   // Features section

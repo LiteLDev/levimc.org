@@ -343,8 +343,9 @@ await check('header: one bar, every destination once; Projects menu opens; cross
   assert((await page.locator('.kit-gbar-link[aria-current="page"]').innerText()) === 'About', 'About not current');
   await page.click('.kit-gbar-projects > summary');
   const panel = page.locator('.kit-gbar-projects-panel');
-  assert(await panel.locator('a.kit-proj-link[href="https://docs.levimc.org/LeviLamina/"]').isVisible(), 'LeviLamina docs link');
-  assert(await panel.locator('a.kit-proj-link[href="https://github.com/LiteLDev/LeviLamina"]').isVisible(), 'LeviLamina repository link');
+  assert(await panel.locator('a.kit-proj-main[href="https://docs.levimc.org/LeviLamina/"]').isVisible(), 'LeviLamina leads to its docs');
+  assert(await panel.locator('a.kit-proj-main[href="/mods/github.com/LiteLDev/LeviOptimize/"], a.kit-proj-main[href="https://levimc.org/mods/github.com/LiteLDev/LeviOptimize/"]').isVisible(), 'LeviOptimize leads to its LeviMC Mods page');
+  assert((await panel.locator('.kit-proj-link').count()) === 0, 'Projects menu rows carry extra links');
   await page.keyboard.press('Escape');
   await ctx.close();
   return 'ok';

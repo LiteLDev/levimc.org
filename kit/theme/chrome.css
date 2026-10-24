@@ -357,7 +357,6 @@
     list-style: none;
   }
   .kit-proj-item {
-    position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     padding: 0.125rem 0;
@@ -366,13 +365,10 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.5rem 0.5rem 1.875rem;
+    padding: 0.5rem;
     color: var(--color-ink);
     text-decoration: none;
     line-height: 1.3;
-  }
-  .kit-proj-item-repo .kit-proj-main {
-    padding-bottom: 0.5rem;
   }
   .kit-proj-main:hover {
     background: color-mix(in srgb, var(--color-ink) 6%, transparent);
@@ -415,35 +411,6 @@
     font-size: 0.75rem;
     color: var(--color-muted);
   }
-  /* Docs · GitHub: under the name, inside the row's padding (siblings of the row link, not nested in it) */
-  .kit-proj-links {
-    position: absolute;
-    left: calc(0.5rem + 2.25rem + 0.75rem);
-    bottom: 0.5rem;
-    display: flex;
-    gap: 0.25rem;
-  }
-  .kit-proj-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.0625rem 0.4375rem;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    line-height: 1.25rem;
-    color: var(--color-muted);
-    text-decoration: none;
-    background: color-mix(in srgb, var(--color-ink) 5%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 14%, transparent);
-  }
-  .kit-proj-link:hover {
-    color: var(--color-primary-strong);
-    background: var(--color-primary-soft);
-    box-shadow: inset 0 0 0 1px var(--color-primary);
-  }
-  .dark .kit-proj-link:hover {
-    color: var(--color-primary);
-  }
   .kit-proj-all {
     display: flex;
     align-items: center;
@@ -465,7 +432,7 @@
   .kit-proj-all > svg:last-child {
     margin-left: auto;
   }
-  :is(.kit-proj-main, .kit-proj-link, .kit-proj-all):focus-visible {
+  :is(.kit-proj-main, .kit-proj-all):focus-visible {
     outline: var(--px) solid var(--color-focus);
     outline-offset: calc(var(--px) * -1);
   }

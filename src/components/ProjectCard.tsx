@@ -1,7 +1,6 @@
 import { Star } from 'lucide-react';
-import { PixelIcon } from '../../kit/components';
+import { LINKS, PixelIcon } from '../../kit/components';
 import type { Project } from '../data/projects';
-import { useI18n } from '../i18n';
 
 interface ProjectCardProps {
   project: Project;
@@ -12,17 +11,23 @@ interface ProjectCardProps {
   headingLevel?: 2 | 3;
 }
 
-/** One project in the home grid: no frame, a hairline above it; sprite, name, one line of meta, two text links. */
+/** One project in the home grid: no frame, a hairline above it; logo, name, one line of meta. The whole card links to the project's home page. */
 export default function ProjectCard({ project, stars, language, loading, headingLevel = 3 }: ProjectCardProps) {
   const Name = headingLevel === 2 ? 'h2' : 'h3';
   const displayStars = stars ?? project.stars;
   const kind = language ?? project.tags[0];
-  const { t } = useI18n();
+  // LeviMC Mods pages stay in this tab; docs and repositories open beside it, as before
+  const external = !project.link.startsWith(LINKS.home);
 
   return (
     <article className="lm-project">
       <img className="lm-project-icon lm-project-logo" src={project.logo} alt="" width={56} height={56} loading="lazy" decoding="async" />
-      <Name className="lm-project-name">{project.name}</Name>
+      <Name className="lm-project-name">
+        <a href={project.link} className="lm-project-link" {...(external ? { target: '_blank', rel: 'noopener' } : {})}>
+          {project.name}
+          <PixelIcon name="arrowRight" />
+        </a>
+      </Name>
       <p className="lm-project-desc">{project.description}</p>
 
       <p className="lm-project-meta">
@@ -39,18 +44,6 @@ export default function ProjectCard({ project, stars, language, loading, heading
         </span>
       </p>
 
-      <div className="lm-project-links">
-        {project.docs && (
-          <a href={project.docs} target="_blank" rel="noopener" className="lm-text-link">
-            {t.projects.docs}
-            <PixelIcon name="arrowRight" />
-          </a>
-        )}
-        <a href={project.link} target="_blank" rel="noopener" className="lm-text-link">
-          {t.projects.github}
-          <PixelIcon name="arrowRight" />
-        </a>
-      </div>
     </article>
   );
 }

@@ -817,6 +817,18 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 ## Changelog
 
+### 2.6.0 — 2026-10-24
+
+**Every project leads to its home page.** The Projects menu drops the Docs · GitHub chips under the projects with
+docs: every row is one link, to `projectHome(p)` — the official mods' page on LeviMC Mods (`Project.mod`,
+`https://levimc.org/mods/github.com/LiteLDev/<mod>/`), else the docs, else the repository. The GitHub mark beside the
+name now marks the rows that lead to a repository (LeviStone), and every row is one line tall.
+* New: `Project.mod`, `projectHome()`.
+* Removed: `.kit-proj-links`, `.kit-proj-link`, `.kit-proj-item-repo`.
+* levimc.org's project cards link as a whole to the same home page (no more Docs / GitHub text links).
+
+**Compatible.** Sites only rebuild; nothing to change.
+
 ### 2.5.0 — 2026-10-24
 
 **Every project shows its own logo** instead of a Minecraft item sprite: the Projects menu, levimc.org's project cards

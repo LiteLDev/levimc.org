@@ -52,6 +52,8 @@ export interface Project {
   repo: string;
   /** Documentation site, when the project has one. */
   docs?: string;
+  /** Page on LeviMC Mods (levimc.org/mods/<tooth>/), for the official mods. */
+  mod?: string;
   /** The project's logo (square, 128×128): its own where it has one, else one in the kit's style. */
   logo: string;
   /** @deprecated kit < 2.5 showed a pixel sprite; kept for sites that still read it. Show `logo`. */
@@ -59,6 +61,7 @@ export interface Project {
 }
 
 const logo = (id: ProjectId) => `${LINKS.logos}${id}.webp`;
+const modPage = (repo: string) => `${LINKS.mods}github.com/LiteLDev/${repo}/`;
 
 /**
  * Every LeviMC project, in the order of the Projects menu (grouped by `group`, see PROJECT_GROUPS). This is the one
@@ -87,15 +90,20 @@ export const PROJECTS: readonly Project[] = [
     logo: logo('LeviLaunchroid'),
     icon: 'pickaxe',
   },
-  { id: 'LeviOptimize', name: 'LeviOptimize', group: 'mods', repo: 'https://github.com/LiteLDev/LeviOptimize', logo: logo('LeviOptimize'), icon: 'potion' },
-  { id: 'LeviAntiCheat', name: 'LeviAntiCheat', group: 'mods', repo: 'https://github.com/LiteLDev/LeviAntiCheat', logo: logo('LeviAntiCheat'), icon: 'torch' },
-  { id: 'MoreDimensions', name: 'MoreDimensions', group: 'mods', repo: 'https://github.com/LiteLDev/MoreDimensions', logo: logo('MoreDimensions'), icon: 'compass' },
-  { id: 'BarelyEnoughItems', name: 'BarelyEnoughItems', group: 'mods', repo: 'https://github.com/LiteLDev/BarelyEnoughItems', logo: logo('BarelyEnoughItems'), icon: 'paper' },
-  { id: 'AlleviatedBackpacks', name: 'AlleviatedBackpacks', group: 'mods', repo: 'https://github.com/LiteLDev/AlleviatedBackpacks', logo: logo('AlleviatedBackpacks'), icon: 'chest' },
-  { id: 'Bedstones', name: 'Bedstones', group: 'mods', repo: 'https://github.com/LiteLDev/Bedstones', logo: logo('Bedstones'), icon: 'diamond' },
-  { id: 'BeetrootSkin', name: 'BeetrootSkin', group: 'mods', repo: 'https://github.com/LiteLDev/BeetrootSkin', logo: logo('BeetrootSkin'), icon: 'heart' },
-  { id: 'LeviHeadlessInput', name: 'LeviHeadlessInput', group: 'mods', repo: 'https://github.com/LiteLDev/LeviHeadlessInput', logo: logo('LeviHeadlessInput'), icon: 'monitor' },
+  { id: 'LeviOptimize', name: 'LeviOptimize', group: 'mods', repo: 'https://github.com/LiteLDev/LeviOptimize', mod: modPage('LeviOptimize'), logo: logo('LeviOptimize'), icon: 'potion' },
+  { id: 'LeviAntiCheat', name: 'LeviAntiCheat', group: 'mods', repo: 'https://github.com/LiteLDev/LeviAntiCheat', mod: modPage('LeviAntiCheat'), logo: logo('LeviAntiCheat'), icon: 'torch' },
+  { id: 'MoreDimensions', name: 'MoreDimensions', group: 'mods', repo: 'https://github.com/LiteLDev/MoreDimensions', mod: modPage('MoreDimensions'), logo: logo('MoreDimensions'), icon: 'compass' },
+  { id: 'BarelyEnoughItems', name: 'BarelyEnoughItems', group: 'mods', repo: 'https://github.com/LiteLDev/BarelyEnoughItems', mod: modPage('BarelyEnoughItems'), logo: logo('BarelyEnoughItems'), icon: 'paper' },
+  { id: 'AlleviatedBackpacks', name: 'AlleviatedBackpacks', group: 'mods', repo: 'https://github.com/LiteLDev/AlleviatedBackpacks', mod: modPage('AlleviatedBackpacks'), logo: logo('AlleviatedBackpacks'), icon: 'chest' },
+  { id: 'Bedstones', name: 'Bedstones', group: 'mods', repo: 'https://github.com/LiteLDev/Bedstones', mod: modPage('Bedstones'), logo: logo('Bedstones'), icon: 'diamond' },
+  { id: 'BeetrootSkin', name: 'BeetrootSkin', group: 'mods', repo: 'https://github.com/LiteLDev/BeetrootSkin', mod: modPage('BeetrootSkin'), logo: logo('BeetrootSkin'), icon: 'heart' },
+  { id: 'LeviHeadlessInput', name: 'LeviHeadlessInput', group: 'mods', repo: 'https://github.com/LiteLDev/LeviHeadlessInput', mod: modPage('LeviHeadlessInput'), logo: logo('LeviHeadlessInput'), icon: 'monitor' },
 ];
+
+/** Where a project leads (its home page): the official mods' LeviMC Mods page, else the docs, else the repository. */
+export function projectHome(p: Project): string {
+  return p.mod ?? p.docs ?? p.repo;
+}
 
 export const PROJECT_GROUPS: readonly ProjectGroupId[] = ['core', 'launchers', 'mods'];
 

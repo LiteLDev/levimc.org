@@ -682,13 +682,6 @@ html.dark-mode summary:focus-visible {
   color: #ffffff !important;
   background: rgb(93 161 48 / 0.35);
 }
-.kit-menu-panel a.kit-proj-link:is(:link, :visited, :active, :focus),
-.kit-dox-drawer a.kit-proj-link:is(:link, :visited, :active, :focus) {
-  color: var(--color-muted) !important;
-  font-weight: 600;
-}
-.kit-menu-panel a.kit-proj-link:hover,
-.kit-dox-drawer a.kit-proj-link:hover,
 .kit-menu-panel a.kit-proj-all:hover,
 .kit-dox-drawer a.kit-proj-all:hover {
   color: var(--color-primary-strong) !important;

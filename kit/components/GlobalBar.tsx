@@ -2,7 +2,7 @@ import { useRef, type ComponentType, type ReactNode } from 'react';
 import { PixelIcon, BrandIcon } from './PixelIcon';
 import { useDismissableDetails } from './menu';
 import { UI_LOCALES, UI_LOCALE_NAMES, resolveUiLocale, uiLocaleName, uiStrings, type UiStrings } from './i18n';
-import { LINKS, PROJECTS, PROJECT_GROUPS, globalNav, sameSitePath, type Project, type ProjectId, type SiteId } from './projects';
+import { LINKS, PROJECTS, PROJECT_GROUPS, globalNav, projectHome, sameSitePath, type Project, type ProjectId, type SiteId } from './projects';
 import { LocaleSwitcher, type LinkLikeProps, type LocaleOption } from './LocaleSwitcher';
 import { ThemeSwitcher } from './ThemeToggle';
 
@@ -92,49 +92,37 @@ export function BrandMark({ className }: { className?: string }) {
 }
 
 /**
- * One project. With docs, the row leads to them, with explicit Docs and GitHub links under the name; without, the
- * row itself is the repository link (a GitHub mark beside the name says so) and the row stays one line shorter.
+ * One project: the whole row leads to its home page (projectHome: LeviMC Mods page, docs, or repository). A row that
+ * leads to the repository says so with a GitHub mark beside the name.
  */
 function ProjectItem({ p, t, current, ctx }: { p: Project; t: UiStrings; current: boolean; ctx: LinkCtx }) {
+  const home = projectHome(p);
   return (
-    <li className={p.docs ? 'kit-proj-item' : 'kit-proj-item kit-proj-item-repo'}>
-      <BarLink url={p.docs ?? p.repo} ctx={ctx} className="kit-proj-main" current={current}>
+    <li className="kit-proj-item">
+      <BarLink url={home} ctx={ctx} className="kit-proj-main" current={current}>
         <span className="kit-slot kit-proj-slot" aria-hidden="true">
           <img className="kit-proj-logo" src={p.logo} alt="" width={36} height={36} loading="lazy" decoding="async" />
         </span>
         <span className="kit-proj-text">
           <span className="kit-proj-name">
             {p.name}
-            {p.docs ? null : (
+            {home === p.repo ? (
               <>
                 <BrandIcon name="github" size={11} className="kit-proj-repo-mark" aria-hidden="true" />
                 <span className="kit-sr-only"> (GitHub)</span>
               </>
-            )}
+            ) : null}
           </span>
           <span className="kit-proj-blurb" data-kit-t={`projectBlurbs.${p.id}`}>
             {t.projectBlurbs[p.id]}
           </span>
         </span>
       </BarLink>
-      {p.docs ? (
-        <span className="kit-proj-links">
-          <BarLink url={p.docs} ctx={ctx} className="kit-proj-link">
-            <span className="kit-sr-only">{p.name} </span>
-            <span data-kit-t="docs">{t.docs}</span>
-          </BarLink>
-          <a className="kit-proj-link" href={p.repo}>
-            <BrandIcon name="github" size={12} />
-            <span className="kit-sr-only">{p.name} </span>
-            <span>GitHub</span>
-          </a>
-        </span>
-      ) : null}
     </li>
   );
 }
 
-/** The Projects menu: every LeviMC project by group, each with its docs and repository, then the GitHub organisation. */
+/** The Projects menu: every LeviMC project by group, each leading to its home page, then the GitHub organisation. */
 function ProjectsPanel({ t, currentProject, ctx }: { t: UiStrings; currentProject?: string; ctx: LinkCtx }) {
   return (
     <div className="kit-proj">

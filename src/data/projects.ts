@@ -1,4 +1,4 @@
-import { PROJECTS } from '../../kit/components';
+import { PROJECTS, projectHome } from '../../kit/components';
 import { useI18n } from '../i18n';
 
 export interface Project {
@@ -8,8 +8,8 @@ export interface Project {
   /** The project's logo (the kit's registry), shown at the top of its card. */
   logo: string;
   tags: string[];
+  /** Home page: the LeviMC Mods page of an official mod, else the docs, else the repository. */
   link: string;
-  docs?: string;
   stars?: number;
 }
 
@@ -49,7 +49,6 @@ export function useProjects(): Project[] {
     description: t.projects_desc[p.id.toLowerCase() as keyof typeof t.projects_desc],
     logo: p.logo,
     tags: [TAGS[p.id] ?? ''],
-    link: p.repo,
-    docs: p.docs,
+    link: projectHome(p),
   }));
 }

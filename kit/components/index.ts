@@ -56,6 +56,7 @@ export {
   COPYRIGHT_HOLDER,
   MODS_SITE,
   globalNav,
+  projectHome,
   originOf,
   sameSitePath,
   type Project,

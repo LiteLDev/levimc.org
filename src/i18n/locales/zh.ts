@@ -51,8 +51,6 @@ const zh: typeof en = {
     title: "我们的项目",
     moreOnGitHub: "更多项目请访问 GitHub",
     explore: "探索",
-    docs: "文档",
-    github: "GitHub",
   },
 
   // Features section
