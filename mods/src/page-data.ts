@@ -9,6 +9,7 @@ import type {
   RawModEntry,
   RelatedMod,
   ReleaseInfo,
+  ShowcaseItem,
 } from "./types";
 
 /** A version's manifest info and variants (`null`: lipr has no manifest for it) and README. */
@@ -49,6 +50,8 @@ export type PageData = (
       dependentsKnown: boolean;
       /** The repository is listed under another tooth, whose page is the canonical one (an old name). */
       canonicalTooth?: string;
+      /** The mod's gallery (the Gallery tab; empty: no tab). */
+      showcase: ShowcaseItem[];
     }
   | { kind: "not-found" }
 ) & {

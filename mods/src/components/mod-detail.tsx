@@ -19,6 +19,7 @@ import { ProjectIcon } from "./project-icon";
 import { RouterLink } from "./router-link";
 import { Sprite } from "./sprite";
 import { ProjectSidebar } from "./project-sidebar";
+import { ShowcaseGallery } from "./showcase-gallery";
 import { VersionsTable } from "./versions-table";
 
 export type ModPageData = Extract<PageData, { kind: "mod" }>;
@@ -60,7 +61,7 @@ interface ModDetailProps {
   readme: string | null | undefined;
 }
 
-export function ModDetail({ data, selection, tab, info: manifestInfo, variants, readme }: ModDetailProps) {
+export function ModDetail({ data, selection, tab: requestedTab, info: manifestInfo, variants, readme }: ModDetailProps) {
   const { t, locale } = useI18n();
   const { tooth, mod, entry, repository, releases } = data;
   const renames = useRenames();
@@ -68,8 +69,12 @@ export function ModDetail({ data, selection, tab, info: manifestInfo, variants, 
   const info = manifestInfo || mod.info;
   const repoUrls = getRepoBaseUrls(repository, selection.version);
   const depCount = variants?.find((v) => v.label === selection.variant)?.dependencies;
+  // a mod without a gallery has no Gallery tab (an old ?tab=gallery link shows the Description)
+  const showcase = data.showcase ?? [];
+  const tab = requestedTab === "gallery" && !showcase.length ? "description" : requestedTab;
   const tabs: { id: ModTab; label: string }[] = [
     { id: "description", label: t.tabDescription },
+    ...(showcase.length ? [{ id: "gallery" as const, label: `${t.tabGallery} (${formatNumber(showcase.length, locale)})` }] : []),
     { id: "versions", label: `${t.tabVersions} (${formatNumber(getAllVersions(mod).length, locale)})` },
     { id: "dependencies", label: depCount ? `${t.tabDependencies} (${Object.keys(depCount).length})` : t.tabDependencies },
   ];
@@ -185,6 +190,8 @@ export function ModDetail({ data, selection, tab, info: manifestInfo, variants, 
                 </div>
               )}
             </section>
+          ) : tab === "gallery" ? (
+            <ShowcaseGallery items={showcase} name={info.name || entry.name} />
           ) : tab === "versions" ? (
             <section className="px-card mods-panel" aria-label={t.tabVersions} id="versions">
               <VersionsTable

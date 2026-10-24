@@ -2280,6 +2280,122 @@
   .mods-skeleton-70 {
     width: 70%;
   }
+
+  /* ================================================================== gallery (the Gallery tab) */
+  /* frameless items under hairlines; each picture keeps a hairline frame, the first one spans the row */
+  .mods-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mods-shot {
+    min-width: 0;
+  }
+  .mods-shot-lead {
+    grid-column: 1 / -1;
+  }
+  .mods-shot figure {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    margin: 0;
+  }
+  .mods-shot-frame {
+    --px-border: var(--color-line);
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: color-mix(in srgb, var(--color-ink) 5%, transparent);
+    box-shadow:
+      0 calc(var(--px) * -1) 0 0 var(--px-border),
+      0 var(--px) 0 0 var(--px-border),
+      calc(var(--px) * -1) 0 0 0 var(--px-border),
+      var(--px) 0 0 0 var(--px-border);
+  }
+  .mods-shot-open {
+    cursor: zoom-in;
+    transition: box-shadow 0.12s var(--ease-pixel);
+  }
+  .mods-shot-open:hover {
+    --px-border: var(--color-line-strong);
+    box-shadow:
+      0 calc(var(--px) * -1) 0 0 var(--px-border),
+      0 var(--px) 0 0 var(--px-border),
+      calc(var(--px) * -1) 0 0 0 var(--px-border),
+      var(--px) 0 0 0 var(--px-border),
+      var(--shadow-float);
+  }
+  .mods-shot-open:focus-visible {
+    outline: none;
+    --px-border: var(--color-focus);
+  }
+  .mods-shot-media {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: transparent;
+  }
+  .mods-shot figcaption,
+  .mods-lightbox-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+  }
+  .mods-shot-title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--color-ink);
+  }
+  .mods-shot-lead .mods-shot-title {
+    font-size: 1.125rem;
+  }
+  .mods-shot-caption {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+  @media (max-width: 640px) {
+    .mods-gallery-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .mods-dialog.mods-lightbox {
+    width: min(72rem, calc(100vw - 2rem));
+  }
+  .mods-lightbox-panel {
+    padding: 1rem;
+  }
+  .mods-lightbox .mods-shot-media {
+    max-height: calc(100dvh - 10rem);
+    object-fit: contain;
+  }
+  .mods-lightbox-bar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .mods-lightbox-nav {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .mods-lightbox-count {
+    min-width: 3.5rem;
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    color: var(--color-muted);
+  }
 }
 
 @keyframes mods-pulse {

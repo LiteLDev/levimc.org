@@ -1,5 +1,5 @@
 // Build-time page data: the catalogue for `/mods/`, and for each mod page its
-// default README and manifest, releases, LeviLamina ranges and the mods it
+// default README and manifest, gallery, releases, LeviLamina ranges and the mods it
 // depends on or is required by. Only the server bundle (prerender, dev server)
 // imports this.
 import { BASE } from "../base-path";
@@ -13,6 +13,7 @@ import {
 import type { PageData } from "../page-data";
 import type { RelatedMod } from "../types";
 import { allDependencies, leviLaminaRanges, loadBuildData, related } from "./catalog";
+import { loadShowcase } from "./showcase";
 
 /** `/mods/` and every listed or unlisted mod that has a version to show (see `lib/listing.ts`). */
 export async function listRoutes(): Promise<string[]> {
@@ -50,7 +51,7 @@ export async function loadPageData(pathname: string): Promise<PageData> {
   if (tooth !== null && mod && entry && selection) {
     const repository = getRepositoryUrl(tooth, data.meta.get(tooth)?.url);
     const manifest = data.manifests.get(tooth) ?? null;
-    const readme = await fetchReadme(repository, selection.version);
+    const [readme, showcase] = await Promise.all([fetchReadme(repository, selection.version), loadShowcase(repository)]);
     const relatedMap: Record<string, RelatedMod> = {};
     const deps = new Set(allDependencies(data, tooth));
     for (const variant of manifest?.variants ?? []) {
@@ -76,6 +77,7 @@ export async function loadPageData(pathname: string): Promise<PageData> {
       hasIssues: data.meta.get(tooth)?.hasIssues ?? false,
       dependentsKnown: data.launcher !== null,
       ...(listing?.status === "unlisted" && listing.reason === "duplicate" ? { canonicalTooth: listing.canonical } : {}),
+      showcase,
       renames,
     };
   }
