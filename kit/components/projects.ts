@@ -29,12 +29,18 @@ export type ProjectGroupId = 'core' | 'launchers' | 'mods';
 export type ProjectId =
   | 'LeviLamina'
   | 'LegacyScriptEngine'
+  | 'LeviStone'
   | 'lip'
   | 'LeviLauncher'
   | 'LeviLaunchroid'
   | 'LeviOptimize'
   | 'LeviAntiCheat'
-  | 'MoreDimensions';
+  | 'MoreDimensions'
+  | 'BarelyEnoughItems'
+  | 'AlleviatedBackpacks'
+  | 'Bedstones'
+  | 'BeetrootSkin'
+  | 'LeviHeadlessInput';
 
 export interface Project {
   id: ProjectId;
@@ -61,6 +67,7 @@ export const PROJECTS: readonly Project[] = [
     docs: 'https://docs.levimc.org/LegacyScriptEngine/',
     icon: 'bookQuill',
   },
+  { id: 'LeviStone', name: 'LeviStone', group: 'core', repo: 'https://github.com/LiteLDev/LeviStone', icon: 'emerald' },
   { id: 'lip', name: 'lip', group: 'core', repo: 'https://github.com/LiteLDev/lip', docs: 'https://docs.levimc.org/lip/', icon: 'chest' },
   { id: 'LeviLauncher', name: 'LeviLauncher', group: 'launchers', repo: 'https://github.com/LiteLDev/LeviLauncher', docs: 'https://docs.levimc.org/LeviLauncher/', icon: 'map' },
   {
@@ -74,6 +81,11 @@ export const PROJECTS: readonly Project[] = [
   { id: 'LeviOptimize', name: 'LeviOptimize', group: 'mods', repo: 'https://github.com/LiteLDev/LeviOptimize', icon: 'potion' },
   { id: 'LeviAntiCheat', name: 'LeviAntiCheat', group: 'mods', repo: 'https://github.com/LiteLDev/LeviAntiCheat', icon: 'torch' },
   { id: 'MoreDimensions', name: 'MoreDimensions', group: 'mods', repo: 'https://github.com/LiteLDev/MoreDimensions', icon: 'compass' },
+  { id: 'BarelyEnoughItems', name: 'BarelyEnoughItems', group: 'mods', repo: 'https://github.com/LiteLDev/BarelyEnoughItems', icon: 'paper' },
+  { id: 'AlleviatedBackpacks', name: 'AlleviatedBackpacks', group: 'mods', repo: 'https://github.com/LiteLDev/AlleviatedBackpacks', icon: 'chest' },
+  { id: 'Bedstones', name: 'Bedstones', group: 'mods', repo: 'https://github.com/LiteLDev/Bedstones', icon: 'diamond' },
+  { id: 'BeetrootSkin', name: 'BeetrootSkin', group: 'mods', repo: 'https://github.com/LiteLDev/BeetrootSkin', icon: 'heart' },
+  { id: 'LeviHeadlessInput', name: 'LeviHeadlessInput', group: 'mods', repo: 'https://github.com/LiteLDev/LeviHeadlessInput', icon: 'monitor' },
 ];
 
 export const PROJECT_GROUPS: readonly ProjectGroupId[] = ['core', 'launchers', 'mods'];

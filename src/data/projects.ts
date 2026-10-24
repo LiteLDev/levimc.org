@@ -18,12 +18,18 @@ export interface Project {
 const TAGS: Record<string, string> = {
   LeviLamina: 'Mod Loader',
   LegacyScriptEngine: 'Script Engine',
+  LeviStone: 'Script Engine',
   lip: 'Package Manager',
   LeviLauncher: 'Windows',
   LeviLaunchroid: 'Android',
   LeviOptimize: 'Performance',
   LeviAntiCheat: 'Security',
   MoreDimensions: 'Functionality',
+  BarelyEnoughItems: 'Client',
+  AlleviatedBackpacks: 'Functionality',
+  Bedstones: 'Functionality',
+  BeetrootSkin: 'Client',
+  LeviHeadlessInput: 'Testing',
 };
 
 // GitHub repositories of the projects: stars, language and description are fetched from the GitHub API

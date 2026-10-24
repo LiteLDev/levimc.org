@@ -91,34 +91,45 @@ export function BrandMark({ className }: { className?: string }) {
   return <span className={className ? `kit-brand-mark ${className}` : 'kit-brand-mark'} aria-hidden="true" />;
 }
 
-/** One project: the row leads to its docs (or its repository), with explicit Docs and GitHub links beside it. */
+/**
+ * One project. With docs, the row leads to them, with explicit Docs and GitHub links under the name; without, the
+ * row itself is the repository link (a GitHub mark beside the name says so) and the row stays one line shorter.
+ */
 function ProjectItem({ p, t, current, ctx }: { p: Project; t: UiStrings; current: boolean; ctx: LinkCtx }) {
   return (
-    <li className="kit-proj-item">
+    <li className={p.docs ? 'kit-proj-item' : 'kit-proj-item kit-proj-item-repo'}>
       <BarLink url={p.docs ?? p.repo} ctx={ctx} className="kit-proj-main" current={current}>
         <span className="kit-slot kit-proj-slot" aria-hidden="true">
           <PixelIcon name={p.icon} size={16} />
         </span>
         <span className="kit-proj-text">
-          <span className="kit-proj-name">{p.name}</span>
+          <span className="kit-proj-name">
+            {p.name}
+            {p.docs ? null : (
+              <>
+                <BrandIcon name="github" size={11} className="kit-proj-repo-mark" aria-hidden="true" />
+                <span className="kit-sr-only"> (GitHub)</span>
+              </>
+            )}
+          </span>
           <span className="kit-proj-blurb" data-kit-t={`projectBlurbs.${p.id}`}>
             {t.projectBlurbs[p.id]}
           </span>
         </span>
       </BarLink>
-      <span className="kit-proj-links">
-        {p.docs ? (
+      {p.docs ? (
+        <span className="kit-proj-links">
           <BarLink url={p.docs} ctx={ctx} className="kit-proj-link">
             <span className="kit-sr-only">{p.name} </span>
             <span data-kit-t="docs">{t.docs}</span>
           </BarLink>
-        ) : null}
-        <a className="kit-proj-link" href={p.repo}>
-          <BrandIcon name="github" size={12} />
-          <span className="kit-sr-only">{p.name} </span>
-          <span>GitHub</span>
-        </a>
-      </span>
+          <a className="kit-proj-link" href={p.repo}>
+            <BrandIcon name="github" size={12} />
+            <span className="kit-sr-only">{p.name} </span>
+            <span>GitHub</span>
+          </a>
+        </span>
+      ) : null}
     </li>
   );
 }
@@ -129,7 +140,7 @@ function ProjectsPanel({ t, currentProject, ctx }: { t: UiStrings; currentProjec
     <div className="kit-proj">
       <div className="kit-proj-groups">
         {PROJECT_GROUPS.map((g) => (
-          <div key={g} className="kit-proj-group">
+          <div key={g} className={`kit-proj-group kit-proj-group-${g}`}>
             <p className="kit-proj-heading" aria-hidden="true" data-kit-t={`projectGroups.${g}`}>
               {t.projectGroups[g]}
             </p>
@@ -256,7 +267,7 @@ export function GlobalBar({
           <ul>
             {items.map((item) =>
               item.id === 'projects' ? (
-                <li key={item.id}>
+                <li key={item.id} className="kit-gbar-projects-tab">
                   <details ref={projRef} className="kit-menu kit-gbar-projects">
                     <summary className="kit-gbar-link" aria-current={tab === 'projects' ? 'page' : undefined}>
                       <span data-kit-t="projects">{item.label}</span>
