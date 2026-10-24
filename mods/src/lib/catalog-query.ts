@@ -207,9 +207,9 @@ const time = (iso: string | undefined) => {
 
 /**
  * The order of the listing. Relevance is the search score or, without a
- * search, the default-order score (`entry.rank`: stars, dependents,
- * compatibility with the newest game version, upkeep; see `lib/ranking.ts`),
- * which also breaks search ties.
+ * search, the default-order score (`entry.rank`: stars and dependents
+ * against what a mod like it would get, and how likely it runs on the newest
+ * game version; see `lib/ranking.ts`), which also breaks search ties.
  */
 export function compareEntries(sort: SortKey, scores: Map<string, number> | null) {
   const byStars = (a: CatalogEntry, b: CatalogEntry) => b.stars - a.stars || time(b.updated) - time(a.updated);
