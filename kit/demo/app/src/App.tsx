@@ -55,7 +55,7 @@ function Projects({ t }: { t: L }) {
       <h1 className="mb-8 font-display text-4xl">{t.projects}</h1>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {DOCS_PROJECTS.map((p) => (
-          <Card key={p.id} icon={p.icon} title={p.name} description={p.repo} href={p.url} />
+          <Card key={p.id} icon={<img className="kit-card-logo" src={p.logo} alt="" width={52} height={52} />} title={p.name} description={p.repo} href={p.url} />
         ))}
       </div>
     </main>

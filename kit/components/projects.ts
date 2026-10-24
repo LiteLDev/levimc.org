@@ -16,6 +16,8 @@ export const LINKS = {
   /** The blog moved into levimc.org (blog.levimc.org no longer resolves). */
   blog: 'https://levimc.org/blog/',
   github: 'https://github.com/LiteLDev',
+  /** Project logos (levimc.org's public/logos/, built by scripts/build-logos.mjs): <base><ProjectId>.webp, 128×128. */
+  logos: 'https://levimc.org/logos/',
 } as const;
 
 /**
@@ -50,42 +52,49 @@ export interface Project {
   repo: string;
   /** Documentation site, when the project has one. */
   docs?: string;
+  /** The project's logo (square, 128×128): its own where it has one, else one in the kit's style. */
+  logo: string;
+  /** @deprecated kit < 2.5 showed a pixel sprite; kept for sites that still read it. Show `logo`. */
   icon: PixelIconName;
 }
+
+const logo = (id: ProjectId) => `${LINKS.logos}${id}.webp`;
 
 /**
  * Every LeviMC project, in the order of the Projects menu (grouped by `group`, see PROJECT_GROUPS). This is the one
  * list of projects: the bar's Projects menu, the docs.levimc.org root and levimc.org's project cards all read it.
  */
 export const PROJECTS: readonly Project[] = [
-  { id: 'LeviLamina', name: 'LeviLamina', group: 'core', repo: 'https://github.com/LiteLDev/LeviLamina', docs: 'https://docs.levimc.org/LeviLamina/', icon: 'grass' },
+  { id: 'LeviLamina', name: 'LeviLamina', group: 'core', repo: 'https://github.com/LiteLDev/LeviLamina', docs: 'https://docs.levimc.org/LeviLamina/', logo: logo('LeviLamina'), icon: 'grass' },
   {
     id: 'LegacyScriptEngine',
     name: 'LegacyScriptEngine',
     group: 'core',
     repo: 'https://github.com/LiteLDev/LegacyScriptEngine',
     docs: 'https://docs.levimc.org/LegacyScriptEngine/',
+    logo: logo('LegacyScriptEngine'),
     icon: 'bookQuill',
   },
-  { id: 'LeviStone', name: 'LeviStone', group: 'core', repo: 'https://github.com/LiteLDev/LeviStone', icon: 'emerald' },
-  { id: 'lip', name: 'lip', group: 'core', repo: 'https://github.com/LiteLDev/lip', docs: 'https://docs.levimc.org/lip/', icon: 'chest' },
-  { id: 'LeviLauncher', name: 'LeviLauncher', group: 'launchers', repo: 'https://github.com/LiteLDev/LeviLauncher', docs: 'https://docs.levimc.org/LeviLauncher/', icon: 'map' },
+  { id: 'LeviStone', name: 'LeviStone', group: 'core', repo: 'https://github.com/LiteLDev/LeviStone', logo: logo('LeviStone'), icon: 'emerald' },
+  { id: 'lip', name: 'lip', group: 'core', repo: 'https://github.com/LiteLDev/lip', docs: 'https://docs.levimc.org/lip/', logo: logo('lip'), icon: 'chest' },
+  { id: 'LeviLauncher', name: 'LeviLauncher', group: 'launchers', repo: 'https://github.com/LiteLDev/LeviLauncher', docs: 'https://docs.levimc.org/LeviLauncher/', logo: logo('LeviLauncher'), icon: 'map' },
   {
     id: 'LeviLaunchroid',
     name: 'LeviLaunchroid',
     group: 'launchers',
     repo: 'https://github.com/LiteLDev/LeviLaunchroid',
     docs: 'https://docs.levimc.org/LeviLaunchroid/',
+    logo: logo('LeviLaunchroid'),
     icon: 'pickaxe',
   },
-  { id: 'LeviOptimize', name: 'LeviOptimize', group: 'mods', repo: 'https://github.com/LiteLDev/LeviOptimize', icon: 'potion' },
-  { id: 'LeviAntiCheat', name: 'LeviAntiCheat', group: 'mods', repo: 'https://github.com/LiteLDev/LeviAntiCheat', icon: 'torch' },
-  { id: 'MoreDimensions', name: 'MoreDimensions', group: 'mods', repo: 'https://github.com/LiteLDev/MoreDimensions', icon: 'compass' },
-  { id: 'BarelyEnoughItems', name: 'BarelyEnoughItems', group: 'mods', repo: 'https://github.com/LiteLDev/BarelyEnoughItems', icon: 'paper' },
-  { id: 'AlleviatedBackpacks', name: 'AlleviatedBackpacks', group: 'mods', repo: 'https://github.com/LiteLDev/AlleviatedBackpacks', icon: 'chest' },
-  { id: 'Bedstones', name: 'Bedstones', group: 'mods', repo: 'https://github.com/LiteLDev/Bedstones', icon: 'diamond' },
-  { id: 'BeetrootSkin', name: 'BeetrootSkin', group: 'mods', repo: 'https://github.com/LiteLDev/BeetrootSkin', icon: 'heart' },
-  { id: 'LeviHeadlessInput', name: 'LeviHeadlessInput', group: 'mods', repo: 'https://github.com/LiteLDev/LeviHeadlessInput', icon: 'monitor' },
+  { id: 'LeviOptimize', name: 'LeviOptimize', group: 'mods', repo: 'https://github.com/LiteLDev/LeviOptimize', logo: logo('LeviOptimize'), icon: 'potion' },
+  { id: 'LeviAntiCheat', name: 'LeviAntiCheat', group: 'mods', repo: 'https://github.com/LiteLDev/LeviAntiCheat', logo: logo('LeviAntiCheat'), icon: 'torch' },
+  { id: 'MoreDimensions', name: 'MoreDimensions', group: 'mods', repo: 'https://github.com/LiteLDev/MoreDimensions', logo: logo('MoreDimensions'), icon: 'compass' },
+  { id: 'BarelyEnoughItems', name: 'BarelyEnoughItems', group: 'mods', repo: 'https://github.com/LiteLDev/BarelyEnoughItems', logo: logo('BarelyEnoughItems'), icon: 'paper' },
+  { id: 'AlleviatedBackpacks', name: 'AlleviatedBackpacks', group: 'mods', repo: 'https://github.com/LiteLDev/AlleviatedBackpacks', logo: logo('AlleviatedBackpacks'), icon: 'chest' },
+  { id: 'Bedstones', name: 'Bedstones', group: 'mods', repo: 'https://github.com/LiteLDev/Bedstones', logo: logo('Bedstones'), icon: 'diamond' },
+  { id: 'BeetrootSkin', name: 'BeetrootSkin', group: 'mods', repo: 'https://github.com/LiteLDev/BeetrootSkin', logo: logo('BeetrootSkin'), icon: 'heart' },
+  { id: 'LeviHeadlessInput', name: 'LeviHeadlessInput', group: 'mods', repo: 'https://github.com/LiteLDev/LeviHeadlessInput', logo: logo('LeviHeadlessInput'), icon: 'monitor' },
 ];
 
 export const PROJECT_GROUPS: readonly ProjectGroupId[] = ['core', 'launchers', 'mods'];
@@ -98,6 +107,8 @@ export interface DocsProject {
   name: string;
   url: string;
   repo: string;
+  logo: string;
+  /** @deprecated show `logo`. */
   icon: PixelIconName;
 }
 
@@ -107,6 +118,7 @@ export const DOCS_PROJECTS: readonly DocsProject[] = PROJECTS.filter((p) => p.do
   name: p.name,
   url: p.docs!,
   repo: p.repo,
+  logo: p.logo,
   icon: p.icon,
 }));
 

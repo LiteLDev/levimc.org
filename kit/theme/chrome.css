@@ -386,6 +386,13 @@
     height: 2.25rem;
     flex: none;
     align-self: flex-start;
+    overflow: hidden;
+  }
+  /* the project's logo fills its slot (painted ones edge to edge; transparent ones show the slot behind) */
+  .kit-proj-logo {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
   .kit-proj-text {
     display: flex;
@@ -953,6 +960,14 @@
     width: 2rem;
     height: 2rem;
     object-fit: contain;
+  }
+  /* a project's logo fills the slot */
+  .kit-card-icon:has(> .kit-card-logo) {
+    overflow: hidden;
+  }
+  .kit-card-icon img.kit-card-logo {
+    width: 100%;
+    height: 100%;
   }
   .kit-card-body {
     display: flex;

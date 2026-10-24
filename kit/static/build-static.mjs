@@ -91,7 +91,7 @@ const icon = (name) => `${assetBase}icons/${name.replace(/[A-Z]/g, (m) => '-' + 
 // the cards are page content (English, like the rest of the page): kit.js translates only the chrome
 const docsCards = projects.DOCS_PROJECTS.map(
   (p) =>
-    `<a class="px-card kit-card" href="${p.url}"><span class="kit-card-icon kit-slot"><img src="${icon(p.icon)}" width="32" height="32" alt="" class="pixelated"></span><span class="kit-card-body"><span class="kit-card-title">${p.name}</span> <span class="kit-card-desc">${esc(i18n.UI_STRINGS.en.projectBlurbs[p.id])}</span></span></a>`,
+    `<a class="px-card kit-card" href="${p.url}"><span class="kit-card-icon kit-slot"><img src="${p.logo}" width="52" height="52" alt="" class="kit-card-logo"></span><span class="kit-card-body"><span class="kit-card-title">${p.name}</span> <span class="kit-card-desc">${esc(i18n.UI_STRINGS.en.projectBlurbs[p.id])}</span></span></a>`,
 ).join('\n        ');
 const page = ({ title, first, extraHead, main }) => `<!doctype html>
 <html lang="en">

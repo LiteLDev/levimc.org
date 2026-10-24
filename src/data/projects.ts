@@ -1,13 +1,12 @@
 import { PROJECTS } from '../../kit/components';
-import type { PixelIconName } from '../../kit/components/PixelIcon';
 import { useI18n } from '../i18n';
 
 export interface Project {
   id: string;
   name: string;
   description: string;
-  /** Pixel sprite shown in the card's inventory slot. */
-  icon: PixelIconName;
+  /** The project's logo (the kit's registry), shown at the top of its card. */
+  logo: string;
   tags: string[];
   link: string;
   docs?: string;
@@ -48,7 +47,7 @@ export function useProjects(): Project[] {
     id: p.id.toLowerCase(),
     name: p.name,
     description: t.projects_desc[p.id.toLowerCase() as keyof typeof t.projects_desc],
-    icon: p.icon,
+    logo: p.logo,
     tags: [TAGS[p.id] ?? ''],
     link: p.repo,
     docs: p.docs,

@@ -817,6 +817,19 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 ## Changelog
 
+### 2.5.0 — 2026-10-24
+
+**Every project shows its own logo** instead of a Minecraft item sprite: the Projects menu, levimc.org's project cards
+and the docs.levimc.org root's cards.
+* `Project.logo` / `DocsProject.logo`: a 128×128 WebP at `https://levimc.org/logos/<ProjectId>.webp` (`LINKS.logos`).
+  `icon` stays, deprecated, for sites that still read it.
+* A project with a logo of its own keeps it (LeviLamina, LegacyScriptEngine, LeviLauncher, LeviLaunchroid and the five
+  new mods). LeviStone, lip, LeviOptimize, LeviAntiCheat and MoreDimensions get one in the kit's style — the recipe of
+  the LeviMC Mods logos: a Monet scene from `paint.ts` behind, a crisp 32×32 pixel object in front, its shadow and its
+  reflection in the water. `scripts/build-logos.mjs` in levimc.org draws them (seeded) and fetches the others; the
+  512×512 artwork is `public/logos/<Project>.png`.
+* `Card` takes the logo as its `icon` node (`<img class="kit-card-logo">` fills the slot).
+
 ### 2.4.0 — 2026-10-24
 
 **Six more projects.** `PROJECTS` (and `ProjectId`) adds LeviStone (Core) and BarelyEnoughItems, AlleviatedBackpacks,

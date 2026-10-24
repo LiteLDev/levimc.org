@@ -304,6 +304,14 @@
   .lm-project-icon {
     margin-bottom: 1.25rem;
   }
+  /* the project's logo: a small framed painting, square-cornered like every kit slot */
+  .lm-project-logo {
+    display: block;
+    width: 3.5rem;
+    height: 3.5rem;
+    background: color-mix(in srgb, var(--color-ink) 5%, transparent);
+    box-shadow: 0 0 0 1px var(--color-line);
+  }
   .lm-project-name {
     margin: 0 0 0.5rem;
     font-family: var(--font-display);

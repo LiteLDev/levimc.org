@@ -100,7 +100,7 @@ function ProjectItem({ p, t, current, ctx }: { p: Project; t: UiStrings; current
     <li className={p.docs ? 'kit-proj-item' : 'kit-proj-item kit-proj-item-repo'}>
       <BarLink url={p.docs ?? p.repo} ctx={ctx} className="kit-proj-main" current={current}>
         <span className="kit-slot kit-proj-slot" aria-hidden="true">
-          <PixelIcon name={p.icon} size={16} />
+          <img className="kit-proj-logo" src={p.logo} alt="" width={36} height={36} loading="lazy" decoding="async" />
         </span>
         <span className="kit-proj-text">
           <span className="kit-proj-name">

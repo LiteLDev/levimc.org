@@ -21,7 +21,7 @@ export default function ProjectCard({ project, stars, language, loading, heading
 
   return (
     <article className="lm-project">
-      <PixelIcon name={project.icon} size={32} className="lm-project-icon" />
+      <img className="lm-project-icon lm-project-logo" src={project.logo} alt="" width={56} height={56} loading="lazy" decoding="async" />
       <Name className="lm-project-name">{project.name}</Name>
       <p className="lm-project-desc">{project.description}</p>
 
