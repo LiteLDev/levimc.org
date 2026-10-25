@@ -112,7 +112,7 @@ export interface RelatedMod {
 }
 
 /** Text a mod gives in the site's languages (`en` always; the others fall back to it). */
-export type LocalizedText = { en: string } & Partial<Record<"zh-CN" | "zh-HK", string>>;
+export type LocalizedText = { en: string } & Partial<Record<"zh-CN" | "zh-Hant", string>>;
 
 /**
  * One picture, video or animation of a mod's gallery (the Gallery tab), from

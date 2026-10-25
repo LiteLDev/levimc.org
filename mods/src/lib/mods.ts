@@ -1,5 +1,6 @@
 import { BASE } from "../base-path.ts";
 import type { Manifest, ModIndex, RawModEntry } from "../types";
+import { labelReadmes, type Readme } from "./readme-language.ts";
 
 const MOD_INDEX_URL = "https://lipr.levimc.org/index.json";
 const MOD_REGISTRY_URL = "https://lipr.levimc.org";
@@ -103,8 +104,8 @@ export function getRepoBaseUrls(repository: string, version: string): RepoBaseUr
   };
 }
 
-export function getReadmeUrl(repository: string, version: string): string {
-  return `${getRepoBaseUrls(repository, version).raw}README.md`;
+export function getReadmeUrl(repository: string, version: string, file = "README.md"): string {
+  return `${getRepoBaseUrls(repository, version).raw}${file}`;
 }
 
 /**
@@ -143,17 +144,24 @@ export async function fetchManifest(tooth: string, version: string): Promise<Man
   }
 }
 
-export async function fetchReadme(
-  repository: string,
-  version: string,
-): Promise<string | null> {
+async function fetchReadme(repository: string, version: string, file: string): Promise<string | null> {
   try {
-    const res = await fetchWithRetry(getReadmeUrl(repository, version));
-    if (!res.ok) return null;
+    const res = await fetchWithRetry(getReadmeUrl(repository, version, file));
+    // raw files are never HTML: a host answering every path with a page (a parked domain) has no README
+    if (!res.ok || res.headers.get("content-type")?.startsWith("text/html")) return null;
     return await res.text();
   } catch {
     return null;
   }
+}
+
+/**
+ * A version's README in each of its languages (`files`: the README files the
+ * repository has, see `readmeFiles`); empty when it has none.
+ */
+export async function fetchReadmes(repository: string, version: string, files: readonly string[]): Promise<Readme[]> {
+  const texts = await Promise.all(files.map((file) => fetchReadme(repository, version, file)));
+  return labelReadmes(files.flatMap((file, i) => (texts[i] === null ? [] : [{ file, text: texts[i]! }])));
 }
 
 /** Variants in display order, the default (`""`) variant first. */

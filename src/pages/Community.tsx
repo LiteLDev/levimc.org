@@ -1,7 +1,7 @@
 import { DiscordCard, GitHubCard, QQCard, TelegramCard } from '../components/CommunityCards';
 import { PageHeader } from '../components/ui';
 import { useDiscordInfo } from '../hooks/useExternalData';
-import { useI18n } from '../i18n';
+import { isChineseLocale, useI18n } from '../i18n';
 
 export default function Community() {
   const { t, locale } = useI18n();
@@ -15,7 +15,7 @@ export default function Community() {
         <TelegramCard headingLevel={2} />
         <GitHubCard headingLevel={2} />
         {/* QQ Card - Only show in Chinese */}
-        {locale === 'zh' && <QQCard headingLevel={2} />}
+        {isChineseLocale(locale) && <QQCard headingLevel={2} />}
       </div>
     </div>
   );

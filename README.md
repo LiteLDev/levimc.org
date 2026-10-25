@@ -52,7 +52,7 @@ npm run smoke:kit
 ## Layout
 
 - `src/App.tsx` — routes (`/`, `/community/`, `/about/`, `/support/`, `/blog/…`, and the 404 page)
-- `src/pages/`, `src/components/` — page content; `src/i18n/locales/{en,zh}.ts` — all site text
+- `src/pages/`, `src/components/` — page content; `src/i18n/locales/{en,zh,zh-Hant}.ts` — all site text (English, Simplified and Traditional Chinese)
 - `src/routes.ts` — route list, titles and descriptions; `src/head.ts` — per-page `<head>` tags
 - `src/components/SiteHeader.tsx`, `src/components/Footer.tsx` — the kit GlobalBar and SiteFooter, the same on every
   LeviMC site (the Projects menu lists every project with its docs and repository; the footer links Support Us).

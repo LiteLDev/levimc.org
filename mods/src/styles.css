@@ -1694,10 +1694,20 @@
   .mods-readme {
     padding: 0;
   }
-  .mods-readme-title {
-    margin: 0;
+  .mods-readme-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
     padding: 0.875rem 1.5rem;
     border-bottom: 1px solid var(--color-line);
+  }
+  .mods-readme-title {
+    flex: 1 1 auto;
+    margin: 0;
+  }
+  .mods-readme-langs {
+    margin: var(--px);
   }
   .mods-readme-version {
     margin-left: auto;
@@ -1822,7 +1832,7 @@
     padding: 3rem 1rem;
   }
   @media (max-width: 640px) {
-    .mods-readme-title {
+    .mods-readme-head {
       padding: 0.75rem 1rem;
     }
     .mods-readme-body {

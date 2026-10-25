@@ -93,6 +93,7 @@ const en = {
   starsCount: (n: string) => `${n} ${n === "1" ? "star" : "stars"}`,
   updatedRelative: (rel: string) => `Updated ${rel}`,
   readme: "README",
+  readmeLanguage: "README language",
   noReadme: (v: string) => `No README available for version ${v}`,
   loading: "Loading…",
   showPrereleases: "Show pre-releases",
@@ -239,6 +240,7 @@ const zhCN: Strings = {
   starsCount: (n) => `${n} 个星标`,
   updatedRelative: (rel) => `更新于${rel}`,
   readme: "README",
+  readmeLanguage: "README 语言",
   noReadme: (v) => `版本 ${v} 没有 README`,
   loading: "加载中…",
   showPrereleases: "显示预发布版本",
@@ -295,7 +297,7 @@ const zhCN: Strings = {
   tryAgain: "重试",
 };
 
-const zhHK: Strings = {
+const zhHant: Strings = {
   ...zhCN,
   siteName: "LeviMC 模組",
   tagline: "Minecraft 基岩版的模組與插件",
@@ -374,6 +376,7 @@ const zhHK: Strings = {
   tabReleases: "發佈",
   starsCount: (n) => `${n} 個星標`,
   updatedRelative: (rel) => `更新於${rel}`,
+  readmeLanguage: "README 語言",
   noReadme: (v) => `版本 ${v} 沒有 README`,
   loading: "載入中…",
   showPrereleases: "顯示預發佈版本",
@@ -423,7 +426,7 @@ const zhHK: Strings = {
   tryAgain: "重試",
 };
 
-export const STRINGS: Record<Locale, Strings> = { en, "zh-CN": zhCN, "zh-HK": zhHK };
+export const STRINGS: Record<Locale, Strings> = { en, "zh-CN": zhCN, "zh-Hant": zhHant };
 
 export interface LocaleValue {
   locale: Locale;

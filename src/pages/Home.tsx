@@ -6,7 +6,7 @@ import { DiscordCard, GITHUB_URL, QQCard, TelegramCard } from '../components/Com
 import { Eyebrow } from '../components/ui';
 import { useProjects } from '../data/projects';
 import { useDiscordInfo, useRepoData } from '../hooks/useExternalData';
-import { useI18n } from '../i18n';
+import { isChineseLocale, useI18n } from '../i18n';
 
 export default function Home() {
   const { t, locale } = useI18n();
@@ -59,10 +59,10 @@ export default function Home() {
             <p className="lm-lead">{t.community.description}</p>
           </div>
 
-          <div className={locale === 'zh' ? 'lm-join-grid lm-join-grid-3' : 'lm-join-grid'}>
+          <div className={isChineseLocale(locale) ? 'lm-join-grid lm-join-grid-3' : 'lm-join-grid'}>
             <DiscordCard info={discordInfo} />
             <TelegramCard />
-            {locale === 'zh' && <QQCard />}
+            {isChineseLocale(locale) && <QQCard />}
           </div>
 
           <div className="lm-join-foot">

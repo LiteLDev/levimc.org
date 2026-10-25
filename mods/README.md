@@ -71,7 +71,8 @@ repository's default branch. The gallery is not tied to a version; the next buil
 
 - `kind`: `image` (WebP, PNG, JPEG), `video` (MP4, WebM; `poster` is an image) or `svg`; `src` is a file
   name in `docs/showcase/`. `title` is required, `caption` optional; each is a string or
-  `{ "en", "zh-CN", "zh-HK" }` (Traditional Chinese falls back to Simplified, then English). The first item is
+  `{ "en", "zh-CN", "zh-Hant" }` (`zh-Hans` is read as `zh-CN`, `zh-HK` and `zh-TW` as `zh-Hant`; Traditional Chinese
+  falls back to Simplified, then English). The first item is
   shown large. At most 24 items, 8 MB per file, 30 MB per mod.
 - The build copies the files into the site (`/mods/showcase/<owner>/<repo>/`), so they are served with the right
   types. Files that are missing, too large or not what their extension says are left out, and so are SVGs that
@@ -143,7 +144,7 @@ src/
   entry-server.tsx  renders one page (prerender and dev server)
   App.tsx           shell: LeviMC bar, page, footer
   base-path.ts      BASE, the site's path on levimc.org (`/mods/`)
-  i18n.ts           interface strings (en, zh-CN, zh-HK); locales.ts lists the languages
+  i18n.ts           interface strings (en, zh-CN, zh-Hant); locales.ts lists the languages
   kit-ui.ts         the kit components the site uses
   data/             categories (with their tag map), platforms, environments
   pages/            home, mod and 404 pages

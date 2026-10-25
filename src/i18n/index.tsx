@@ -2,15 +2,17 @@ import { createContext, useContext, useLayoutEffect, useEffect, useMemo, type Re
 import { usePreferredLocale } from '../../kit/components/locale';
 import en from './locales/en';
 import zh from './locales/zh';
+import zhHant from './locales/zh-Hant';
 import { DEFAULT_LOCALE, LOCALES, type Locale, type SiteLocale } from './config';
 
-export { kitLocale, LOCALES, DEFAULT_LOCALE, type Locale, type SiteLocale } from './config';
+export { kitLocale, isChineseLocale, LOCALES, DEFAULT_LOCALE, type Locale, type SiteLocale } from './config';
 
 export type Messages = typeof en;
 
 export const locales: Record<Locale, Messages> = {
   en,
   zh,
+  'zh-Hant': zhHant,
 };
 
 interface I18nContextType {

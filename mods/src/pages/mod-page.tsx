@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 import { ModDetail, type ModPageData } from "../components/mod-detail";
-import { fetchManifest, fetchReadme, parseTab, resolveSelection, type ModSelection } from "../lib/mods";
+import { fetchManifest, fetchReadmes, parseTab, resolveSelection, type ModSelection } from "../lib/mods";
 import type { ModDetails } from "../page-data";
 import { useHydrated } from "../page-store";
 
@@ -18,7 +18,7 @@ function selectionKey({ variant, version }: ModSelection): string {
  * mod.)
  */
 export function ModPage({ data }: { data: ModPageData }) {
-  const { tooth, mod, repository, prerendered } = data;
+  const { tooth, mod, repository, prerendered, readmeFiles } = data;
   const [searchParams] = useSearchParams();
   const hydrated = useHydrated();
   const selection =
@@ -34,19 +34,19 @@ export function ModPage({ data }: { data: ModPageData }) {
 
     let cancelled = false;
     const [variant, version] = [selection.variant, selection.version];
-    Promise.all([fetchManifest(tooth, version), fetchReadme(repository, version)]).then(([manifest, readme]) => {
+    Promise.all([fetchManifest(tooth, version), fetchReadmes(repository, version, readmeFiles)]).then(([manifest, readmes]) => {
       if (cancelled) return;
       setFetched({
         key: selectionKey({ variant, version }),
         info: manifest?.info ?? null,
         variants: manifest?.variants ?? null,
-        readme,
+        readmes,
       });
     });
     return () => {
       cancelled = true;
     };
-  }, [tooth, repository, isPrerendered, selection.variant, selection.version]);
+  }, [tooth, repository, readmeFiles, isPrerendered, selection.variant, selection.version]);
 
   let details: Partial<ModDetails> = {};
   if (isPrerendered) details = prerendered;
@@ -60,7 +60,7 @@ export function ModPage({ data }: { data: ModPageData }) {
         tab={tab}
         info={details.info ?? null}
         variants={details.variants}
-        readme={details.readme}
+        readmes={details.readmes}
       />
     </main>
   );

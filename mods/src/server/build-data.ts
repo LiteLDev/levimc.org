@@ -1,15 +1,16 @@
 // Build-time page data: the catalogue for `/mods/`, and for each mod page its
-// default README and manifest, gallery, releases, LeviLamina ranges and the mods it
+// default READMEs and manifest, gallery, releases, LeviLamina ranges and the mods it
 // depends on or is required by. Only the server bundle (prerender, dev server)
 // imports this.
 import { BASE } from "../base-path";
 import {
-  fetchReadme,
+  fetchReadmes,
   getDefaultSelection,
   getRepositoryUrl,
   modPath,
   toothFromPath,
 } from "../lib/mods";
+import { DEFAULT_README_FILES } from "../lib/readme-language.ts";
 import type { PageData } from "../page-data";
 import type { RelatedMod } from "../types";
 import { allDependencies, leviLaminaRanges, loadBuildData, related } from "./catalog";
@@ -51,7 +52,13 @@ export async function loadPageData(pathname: string): Promise<PageData> {
   if (tooth !== null && mod && entry && selection) {
     const repository = getRepositoryUrl(tooth, data.meta.get(tooth)?.url);
     const manifest = data.manifests.get(tooth) ?? null;
-    const [readme, showcase] = await Promise.all([fetchReadme(repository, selection.version), loadShowcase(repository)]);
+    // without GitHub's file list, the usual names are tried on GitHub (README.md elsewhere)
+    const readmeFiles =
+      data.meta.get(tooth)?.readmeFiles ?? (repository.startsWith("https://github.com/") ? DEFAULT_README_FILES : ["README.md"]);
+    const [readmes, showcase] = await Promise.all([
+      fetchReadmes(repository, selection.version, readmeFiles),
+      loadShowcase(repository),
+    ]);
     const relatedMap: Record<string, RelatedMod> = {};
     const deps = new Set(allDependencies(data, tooth));
     for (const variant of manifest?.variants ?? []) {
@@ -68,8 +75,9 @@ export async function loadPageData(pathname: string): Promise<PageData> {
         ...selection,
         info: manifest?.info ?? null,
         variants: manifest?.variants ?? null,
-        readme,
+        readmes,
       },
+      readmeFiles,
       releases: data.meta.get(tooth)?.releases ?? {},
       llRanges: leviLaminaRanges(data, tooth),
       dependents: (data.dependents.get(tooth.toLowerCase()) ?? []).map((t) => related(data, t)),

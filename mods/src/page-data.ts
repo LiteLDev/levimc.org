@@ -1,6 +1,7 @@
 import { BASE } from "./base-path";
 import type { RepositoryRenames } from "./lib/markdown";
 import type { ModSelection } from "./lib/mods";
+import type { Readme } from "./lib/readme-language";
 import type {
   Catalog,
   CatalogEntry,
@@ -12,12 +13,12 @@ import type {
   ShowcaseItem,
 } from "./types";
 
-/** A version's manifest info and variants (`null`: lipr has no manifest for it) and README. */
+/** A version's manifest info and variants (`null`: lipr has no manifest for it) and READMEs. */
 export interface ModDetails {
   info: ModInfo | null;
   variants: ManifestVariant[] | null;
-  /** `null` when the version has no README. */
-  readme: string | null;
+  /** The version's README in each of its languages; empty when it has none. */
+  readmes: Readme[];
 }
 
 /**
@@ -36,6 +37,8 @@ export type PageData = (
       repository: string;
       /** The selection the page is prerendered for, and its details. */
       prerendered: ModSelection & ModDetails;
+      /** The README files to fetch for another version (`README.md`, `README.zh.md` …, see `readmeFiles`). */
+      readmeFiles: string[];
       /** GitHub releases by version (empty without GitHub data). */
       releases: Record<string, ReleaseInfo>;
       /** The LeviLamina range of each version, per variant (empty without levilauncher.json). */

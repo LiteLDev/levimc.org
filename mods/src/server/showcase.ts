@@ -61,9 +61,11 @@ function localized(value: unknown): LocalizedText | null {
   const v = value as Record<string, unknown>;
   if (typeof v.en !== "string" || !v.en.trim()) return null;
   const out: LocalizedText = { en: v.en.trim().slice(0, 300) };
-  for (const key of ["zh-CN", "zh-HK"] as const) {
-    const s = v[key];
-    if (typeof s === "string" && s.trim()) out[key] = s.trim().slice(0, 300);
+  // the site's codes, then the other tags manifests use for the same script
+  const keys = { "zh-CN": ["zh-CN", "zh-Hans"], "zh-Hant": ["zh-Hant", "zh-HK", "zh-TW"] } as const;
+  for (const [key, tags] of Object.entries(keys) as [keyof typeof keys, readonly string[]][]) {
+    const s = tags.map((tag) => v[tag]).find((x) => typeof x === "string" && x.trim()) as string | undefined;
+    if (s) out[key] = s.trim().slice(0, 300);
   }
   return out;
 }

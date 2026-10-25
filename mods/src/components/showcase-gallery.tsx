@@ -5,7 +5,7 @@ import type { LocalizedText, ShowcaseItem } from "../types";
 
 /** A mod's text in the visitor's language: Traditional Chinese falls back to Simplified, then English. */
 export function localize(text: LocalizedText, locale: Locale): string {
-  return text[locale as keyof LocalizedText] ?? (locale === "zh-HK" ? text["zh-CN"] : undefined) ?? text.en;
+  return text[locale as keyof LocalizedText] ?? (locale === "zh-Hant" ? text["zh-CN"] : undefined) ?? text.en;
 }
 
 function Media({ item, title, eager, inDialog }: { item: ShowcaseItem; title: string; eager?: boolean; inDialog?: boolean }) {

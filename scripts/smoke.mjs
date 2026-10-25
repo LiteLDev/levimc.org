@@ -16,10 +16,11 @@ const require = createRequire(process.env.LEVIMC_PW_DIR ? process.env.LEVIMC_PW_
 const { chromium } = require('playwright');
 
 const ROUTES = ['', 'community/', 'about/', 'support/'];
-const LANG = { en: 'en', zh: 'zh-CN' };
+const LANG = { en: 'en', zh: 'zh-CN', 'zh-Hant': 'zh-Hant' };
 const H1 = {
   en: { '': 'Mod Bedrock', 'community/': 'Get Involved', 'about/': 'The story of a small team.', 'support/': 'Support LeviMC' },
   zh: { '': '随心所欲', 'community/': '参与进来', 'about/': '一个无名小团队的故事。', 'support/': '支持 LeviMC' },
+  'zh-Hant': { '': '隨心所欲', 'community/': '參與進來', 'about/': '一個無名小團隊的故事。', 'support/': '支持 LeviMC' },
 };
 
 const results = [];
@@ -71,7 +72,7 @@ const watch = (page) => {
 
 console.log(`smoke: ${base}`);
 
-for (const locale of ['en', 'zh']) {
+for (const locale of ['en', 'zh', 'zh-Hant']) {
   await check(`${locale}: every route renders (200, h1, lang, no console/hydration errors, no sideways scroll)`, async () => {
     const ctx = await newContext({ locale: locale === 'en' ? undefined : locale });
     for (const r of ROUTES) {

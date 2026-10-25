@@ -6,12 +6,14 @@ import { CATEGORY_BY_ID } from "../data/categories";
 import { formatNumber, useI18n } from "../i18n";
 import { DEFAULT_STATE, serializeQuery } from "../lib/catalog-query";
 import { buildModUrl, getRepoBaseUrls, type ModSelection, type ModTab, getAllVersions } from "../lib/mods";
+import { pickReadme, readmeLabel, type Readme } from "../lib/readme-language";
 import { readStorage, STORAGE_KEYS } from "../lib/storage";
 import type { PageData } from "../page-data";
 import { useHydrated } from "../page-store";
 import { useRenames } from "../repository-renames";
 import type { ManifestVariant, ModInfo } from "../types";
 import { DependenciesList } from "./dependencies-list";
+import { HotbarRadio } from "./hotbar-radio";
 import { InstallDialog } from "./install-dialog";
 import { LazyMarkdown } from "./lazy-markdown";
 import { RelativeDate } from "./local-date";
@@ -57,12 +59,15 @@ interface ModDetailProps {
   info: ModInfo | null;
   /** The selected version's manifest variants (`undefined` while loading, `null` without a manifest). */
   variants: ManifestVariant[] | null | undefined;
-  /** `null` when the version has no README, `undefined` while it loads. */
-  readme: string | null | undefined;
+  /** The version's README in each of its languages (empty: none), `undefined` while they load. */
+  readmes: Readme[] | undefined;
 }
 
-export function ModDetail({ data, selection, tab: requestedTab, info: manifestInfo, variants, readme }: ModDetailProps) {
+export function ModDetail({ data, selection, tab: requestedTab, info: manifestInfo, variants, readmes }: ModDetailProps) {
   const { t, locale } = useI18n();
+  // the README in the interface language, unless the visitor picked another (kept across versions that have it)
+  const [readmeFile, setReadmeFile] = useState<string>();
+  const readme = readmes && (readmes.find((r) => r.file === readmeFile) ?? pickReadme(readmes, locale));
   const { tooth, mod, entry, repository, releases } = data;
   const renames = useRenames();
   const [installing, setInstalling] = useState(false);
@@ -166,12 +171,23 @@ export function ModDetail({ data, selection, tab: requestedTab, info: manifestIn
         <div className="mods-detail-main" data-tab={tab}>
           {tab === "description" ? (
             <section className="px-card mods-panel mods-readme" aria-labelledby="mods-readme-title">
-              <h2 id="mods-readme-title" className="mods-panel-title mods-readme-title">
-                <PixelIcon name="bookQuill" />
-                {t.readme}
-                <span className="mods-readme-version">{selection.version}</span>
-              </h2>
-              {readme === undefined ? (
+              <div className="mods-readme-head">
+                <h2 id="mods-readme-title" className="mods-panel-title mods-readme-title">
+                  <PixelIcon name="bookQuill" />
+                  {t.readme}
+                  <span className="mods-readme-version">{selection.version}</span>
+                </h2>
+                {readme && readmes.length > 1 ? (
+                  <HotbarRadio
+                    label={t.readmeLanguage}
+                    className="mods-readme-langs"
+                    options={readmes.map((r) => ({ value: r.file, label: readmeLabel(r) }))}
+                    value={readme.file}
+                    onChange={setReadmeFile}
+                  />
+                ) : null}
+              </div>
+              {readmes === undefined ? (
                 <div className="mods-skeleton" aria-busy="true">
                   <span className="mods-skeleton-bar mods-skeleton-title" />
                   <span className="mods-skeleton-bar" />
@@ -179,9 +195,9 @@ export function ModDetail({ data, selection, tab: requestedTab, info: manifestIn
                   <span className="mods-skeleton-bar mods-skeleton-70" />
                 </div>
               ) : readme ? (
-                <div className="kit-prose mods-readme-body" data-doc-content="">
+                <div className="kit-prose mods-readme-body" data-doc-content="" lang={readme.lang ?? undefined}>
                   <LazyMarkdown rawBase={repoUrls.raw} blobBase={repoUrls.blob} renames={renames}>
-                    {readme}
+                    {readme.text}
                   </LazyMarkdown>
                 </div>
               ) : (

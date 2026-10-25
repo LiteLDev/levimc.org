@@ -1,7 +1,7 @@
 // What GitHub knows about each mod's repository: where it lives today (a
 // tooth keeps the path it was published under; GitHub redirects renamed and
-// transferred repositories from there), when it was created, its license and
-// its releases. One GraphQL request per 50 mods.
+// transferred repositories from there), when it was created, its license,
+// its releases and its README files. One GraphQL request per 50 mods.
 //
 // Needs GITHUB_TOKEN (GitHub's GraphQL API requires one; the workflow passes
 // its own). Without a token, or if GitHub cannot be reached, the build goes on
@@ -9,6 +9,7 @@
 // index, and the "Newest" sort and the License filter are left out (also when
 // only some batches could be read).
 import type { RepositoryRenames } from "../lib/markdown";
+import { readmeFiles } from "../lib/readme-language.ts";
 import type { ReleaseInfo } from "../types";
 
 const GITHUB_PREFIX = "github.com/";
@@ -32,6 +33,8 @@ export interface RepoMeta {
   isTemplate: boolean;
   /** It belongs to an organization, not a user (a covariate of the default order). */
   orgOwned: boolean;
+  /** Its README files (`README.md`, `README.zh.md` …) on the default branch, see `readmeFiles`. */
+  readmeFiles?: string[];
 }
 
 interface ReleaseNode {
@@ -54,6 +57,7 @@ interface RepositoryNode {
   owner: { __typename: string };
   licenseInfo: { spdxId: string | null } | null;
   releases: ReleaseConnection;
+  defaultBranchRef: { target: { tree?: { entries: { name: string }[] } } | null } | null;
 }
 
 const RELEASE_FIELDS = `totalCount pageInfo { hasNextPage endCursor } nodes { tagName publishedAt isPrerelease }`;
@@ -96,7 +100,8 @@ async function queryBatch(token: string, tooths: string[]): Promise<Map<string, 
   const fields = tooths.map(
     (tooth, i) =>
       `r${i}: repository(${ownerAndName(tooth)}) { url createdAt hasIssuesEnabled isTemplate owner { __typename } licenseInfo { spdxId } ` +
-      `releases(first: ${RELEASES}, orderBy: { field: CREATED_AT, direction: DESC }) { ${RELEASE_FIELDS} } }`,
+      `releases(first: ${RELEASES}, orderBy: { field: CREATED_AT, direction: DESC }) { ${RELEASE_FIELDS} } ` +
+      `defaultBranchRef { target { ... on Commit { tree { entries { name } } } } } }`,
   );
   const data = await graphql<Record<string, RepositoryNode | null> & { rateLimit: { cost: number } }>(
     token,
@@ -108,6 +113,7 @@ async function queryBatch(token: string, tooths: string[]): Promise<Map<string, 
     const node = data[`r${i}`] as RepositoryNode | null | undefined;
     if (!node) continue;
     const spdx = node.licenseInfo?.spdxId;
+    const files = node.defaultBranchRef?.target?.tree?.entries.map((e) => e.name);
     const meta: RepoMeta = {
       url: node.url,
       createdAt: node.createdAt,
@@ -116,6 +122,7 @@ async function queryBatch(token: string, tooths: string[]): Promise<Map<string, 
       hasIssues: node.hasIssuesEnabled,
       isTemplate: node.isTemplate,
       orgOwned: node.owner.__typename === "Organization",
+      ...(files ? { readmeFiles: readmeFiles(files) } : {}),
     };
     addReleases(meta, node.releases.nodes);
     // Mods with more releases than one page (LeviLamina, LegacyScriptEngine) get the rest one by one.
