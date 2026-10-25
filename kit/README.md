@@ -831,6 +831,8 @@ converted pages. Where the locale has none of its own, the source locale's per-l
 too. Its own pages (`x.zh-Hant.md`, `zh-Hant/x.md`) still win, and edit links point at the Simplified source.
 * New: `LocaleConfig.convertFrom`, `docs/node/convert.ts`; `PageRoute.converted`.
 * Sites using it add `opencc-js` 1.4.2 to their devDependencies; nothing changes for the others.
+* LeviLamina, LegacyScriptEngine, lip and LeviLaunchroid add `zh-Hant` (繁體中文) this way; the Doxygen header of
+  LeviLamina's API reference lists it too (`DOX.locales`).
 
 ### 2.6.0 — 2026-10-24
 

@@ -158,21 +158,23 @@ const DOX = {
   project: 'LeviLamina',
   base: '/LeviLamina/',
   github: 'https://github.com/LiteLDev/LeviLamina',
-  // the docs site's locales (mkdocs-static-i18n suffix mode: en at the root, zh under zh/)
+  // the docs site's locales (mkdocs-static-i18n suffix mode: en at the root, zh under zh/, zh-Hant — converted from
+  // zh, kit 2.7 convertFrom — under zh-Hant/)
   locales: [
     { c: 'en', l: 'en', prefix: '' },
     { c: 'zh', l: 'zh', prefix: 'zh/' },
+    { c: 'zh-Hant', l: 'zh-Hant', prefix: 'zh-Hant/' },
   ],
   // the top-level tabs of the docs, in its docs.config.ts nav order and labels (a group links to its first page;
   // `url` = an external link, opened like the docs row does; `active` = the tab the API reference belongs to)
   sections: [
-    { path: '', label: { en: 'Home', zh: '主页' } },
-    { path: 'user_guides/install/', label: { en: 'User Guides', zh: '用户指南' } },
-    { path: 'developer_guides/tutorials/create_your_first_mod/', label: { en: 'Developer Guides', zh: '开发者指南' }, active: true },
-    { path: 'maintainer_guides/cpp_style_guide/', label: { en: 'Maintainer Guides', zh: '维护者指南' } },
-    { path: 'versions/', label: { en: 'Supported Versions', zh: '支持的版本' } },
+    { path: '', label: { en: 'Home', zh: '主页', 'zh-Hant': '主頁' } },
+    { path: 'user_guides/install/', label: { en: 'User Guides', zh: '用户指南', 'zh-Hant': '用戶指南' } },
+    { path: 'developer_guides/tutorials/create_your_first_mod/', label: { en: 'Developer Guides', zh: '开发者指南', 'zh-Hant': '開發者指南' }, active: true },
+    { path: 'maintainer_guides/cpp_style_guide/', label: { en: 'Maintainer Guides', zh: '维护者指南', 'zh-Hant': '維護者指南' } },
+    { path: 'versions/', label: { en: 'Supported Versions', zh: '支持的版本', 'zh-Hant': '支持的版本' } },
     { url: 'https://docs.levimc.org/LegacyScriptEngine/', label: { en: 'LegacyScriptEngine' } },
-    { url: 'https://levimc.org/about/', label: { en: 'About', zh: '关于我们' } },
+    { url: 'https://levimc.org/about/', label: { en: 'About', zh: '关于我们', 'zh-Hant': '關於我們' } },
   ],
 };
 const doxLocalesAttr = esc(JSON.stringify(DOX.locales.map(({ c, l }) => ({ c, l }))));
