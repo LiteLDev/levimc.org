@@ -100,7 +100,9 @@ export function createLinkResolver(ctx: LinkContext, page: PageRoute) {
         const routes = scan.byKey.get(src.key);
         if (!routes) return null;
         // folder mode (VitePress): a link names one file, so `/` from zh-CN/index.md is the English home
-        const want = found.explicit || (cfg.i18nMode === 'folder' && !page.fallback) ? src.locale : page.locale;
+        let want = found.explicit || (cfg.i18nMode === 'folder' && !page.fallback) ? src.locale : page.locale;
+        // a converted page links to the converted pages, not to the ones it was converted from
+        if (want !== page.locale && cfg.locales.find((l) => l.code === page.locale)?.convertFrom === want) want = page.locale;
         const r = routes.get(want) ?? routes.get(cfg.defaultLocale) ?? [...routes.values()][0]!;
         return { url: routeUrl(r), route: r };
       }

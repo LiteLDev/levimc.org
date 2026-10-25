@@ -98,10 +98,13 @@ export function buildNavigation({ cfg, scan, titles, warn }: NavBuildInput): Nav
   };
   const tr = (code: string, text: string) => cfg.navTranslations?.[code]?.[text] ?? text;
 
+  const convertedFrom = new Map(cfg.locales.filter((l) => l.convertFrom).map((l) => [l.code, l.convertFrom!]));
   const routeOf = (key: string, locale: string | undefined, code: string): PageRoute | undefined => {
     const m = scan.byKey.get(key);
     if (!m) return undefined;
-    return m.get(locale ?? code) ?? m.get(cfg.defaultLocale) ?? [...m.values()][0];
+    // a converted locale's nav (derived from its source locale's) names the source locale's pages: use its own
+    const want = locale !== undefined && convertedFrom.get(code) === locale ? code : locale;
+    return m.get(want ?? code) ?? m.get(cfg.defaultLocale) ?? [...m.values()][0];
   };
 
   const materialize = (nodes: Node[], code: string): NavItem[] =>

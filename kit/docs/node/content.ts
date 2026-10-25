@@ -30,6 +30,8 @@ export interface PageRoute {
   file: string;
   source: SourceFile;
   fallback: boolean;
+  /** The page is the source locale's, converted (see `LocaleConfig.convertFrom`). */
+  converted?: boolean;
 }
 
 const ALWAYS_EXCLUDE = ['**/node_modules/**', '**/.*/**', '**/.*', '.vitepress/**', 'public/**'];
@@ -140,11 +142,13 @@ export function scanContent(cfg: ResolvedConfig): ContentScan {
   for (const key of keys) {
     for (const loc of cfg.locales) {
       const own = byKeyLoc.get(`${loc.code}:${key}`);
+      const convertSrc = loc.convertFrom ? byKeyLoc.get(`${loc.convertFrom}:${key}`) : undefined;
       const fallbackSrc = loc.isDefault ? undefined : byKeyLoc.get(`${def.code}:${key}`);
-      const src = own ?? (cfg.fallback ? fallbackSrc : undefined);
+      const src = own ?? convertSrc ?? (cfg.fallback ? fallbackSrc : undefined);
       if (!src) continue;
       const { path, file } = routeFor(cfg, key, loc);
-      add({ id: `${loc.code}:${key}`, key, locale: loc.code, path, file, source: src, fallback: !own });
+      const converted = !own && !!convertSrc;
+      add({ id: `${loc.code}:${key}`, key, locale: loc.code, path, file, source: src, fallback: !own && !converted, ...(converted ? { converted } : {}) });
     }
   }
   return { sources, bySource, assets, routes, byKey, byPath };

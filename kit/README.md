@@ -168,6 +168,8 @@ needs Node ≥ 22.18 for native TypeScript stripping). Copy the fields of `packa
 | @types/mdast | 4.0.4 | | picomatch | 4.0.7 |
 | @types/unist | 3.0.3 | | @types/picomatch | 4.0.3 |
 
+Optional: `opencc-js` 1.4.2 (devDependency), only for a locale with `convertFrom`; the engine loads it only then.
+
 The kit type-checks clean with TypeScript 7.0.2 and 6.0.3 (typescript-eslint needs < 6.1; levimc.org/mods pins 6.0.3).
 
 Playwright is only needed for `smoke.mjs`, `text-parity.mjs`, `shot.mjs` and `tests/cross-site.e2e.mjs`; they resolve it from
@@ -304,7 +306,7 @@ export default defineDocsConfig({ … });
 | `exclude` | globs relative to contentDir | e.g. `['overrides/**']`; `node_modules`, dot folders, `.vitepress`, `public` are always excluded |
 | `i18n.mode` | `'suffix'` \| `'folder'` | mkdocs-static-i18n (`x.md`, `x.zh.md`, `x.en.md` = default) / VitePress (`zh-CN/x.md`) |
 | `i18n.defaultLocale` | locale code | |
-| `i18n.locales[]` | `{ code, label, lang?, prefix?, suffix?, folder? }` | `prefix` defaults to `''` (default) / `'<code>/'`; `lang` is used for `<html lang>`/hreflang |
+| `i18n.locales[]` | `{ code, label, lang?, prefix?, suffix?, folder?, convertFrom? }` | `prefix` defaults to `''` (default) / `'<code>/'`; `lang` is used for `<html lang>`/hreflang; `convertFrom: '<zh locale>'` generates Traditional Chinese from that locale (see below) |
 | `i18n.fallback` | default `true` (suffix) / `false` (folder) | build default-locale content at localized URLs when a translation is missing (static-i18n `fallback_to_default`) |
 | `urlStyle` | `'directory'` (default) \| `'html'` | MkDocs directory URLs / VitePress `.html` files |
 | `cleanUrls` | `false` | html style: link `a/b` instead of `a/b.html` |
@@ -816,6 +818,19 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.7.0 — 2026-10-25
+
+**Traditional Chinese from Simplified.** A docs locale with `convertFrom: '<zh locale>'` — e.g.
+`{ code: 'zh-Hant', label: '繁體中文', lang: 'zh-Hant', convertFrom: 'zh' }` — gets every page it has no translation
+of from that locale, converted with OpenCC (`opencc-js/cn2t`, `cn` → `tw`, or `hk` for a zh-HK / zh-MO `lang`):
+characters only, no phrase rewriting, so the wording stays the author's. Code blocks, inline code, link paths and
+URLs are left as written; link fragments convert with the headings they point at, and converted pages link to
+converted pages. Where the locale has none of its own, the source locale's per-locale `nav` and `sidebar`
+(path-prefix keys move to the locale's prefix), `navTranslations`, `ui` overrides and `editLink.text` are converted
+too. Its own pages (`x.zh-Hant.md`, `zh-Hant/x.md`) still win, and edit links point at the Simplified source.
+* New: `LocaleConfig.convertFrom`, `docs/node/convert.ts`; `PageRoute.converted`.
+* Sites using it add `opencc-js` 1.4.2 to their devDependencies; nothing changes for the others.
 
 ### 2.6.0 — 2026-10-24
 

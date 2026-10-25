@@ -24,6 +24,13 @@ export interface LocaleConfig {
   /** suffix mode: file suffix (x.<suffix>.md). Defaults to `code`. folder mode: folder name (defaults to prefix without '/'). */
   suffix?: string;
   folder?: string;
+  /**
+   * Traditional Chinese from Simplified: the code of a zh locale. Every page this locale has no translation of is
+   * that locale's page converted with OpenCC (characters only; code and link targets untouched), and so are its nav
+   * titles, nav translations, sidebar, `ui` overrides and edit link label where this locale has none. Needs
+   * opencc-js (devDependency). E.g. `{ code: 'zh-Hant', label: '繁體中文', lang: 'zh-Hant', convertFrom: 'zh' }`.
+   */
+  convertFrom?: string;
 }
 
 /**
@@ -167,6 +174,8 @@ export interface ResolvedLocale {
   suffix: string;
   folder: string;
   isDefault: boolean;
+  /** The locale this one is converted from (see `LocaleConfig.convertFrom`). */
+  convertFrom?: string;
 }
 
 export interface ResolvedConfig extends Omit<DocsConfig, 'i18n' | 'outline' | 'logo' | 'editLink' | 'markdown'> {
@@ -214,8 +223,14 @@ export function resolveConfig(config: DocsConfig, root: string): ResolvedConfig 
       suffix: l.suffix ?? l.code,
       folder: l.folder ?? prefix.replace(/\/$/, ''),
       isDefault,
+      ...(l.convertFrom ? { convertFrom: l.convertFrom } : {}),
     };
   });
+  for (const l of locales) {
+    if (l.convertFrom && !locales.some((x) => x.code === l.convertFrom && !x.convertFrom)) {
+      throw new Error(`i18n: locale '${l.code}' converts from '${l.convertFrom}', which is not a locale of its own`);
+    }
+  }
   // default locale first
   locales.sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
 

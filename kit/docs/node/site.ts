@@ -10,6 +10,7 @@ import { createLinkResolver, type AssetRef } from './links.ts';
 import { renderMarkdown, type RenderResult } from './markdown/render.ts';
 import { TokenStyles } from './markdown/shiki.ts';
 import { buildNavigation } from './nav.ts';
+import { convertMarkdown, prepareConvertedLocales } from './convert.ts';
 import { gitLastUpdated } from './git.ts';
 import { uiStrings } from '../../components/i18n.ts';
 import { searchOptions, SNIPPET_STORE_CHARS } from '../shared/search.ts';
@@ -42,6 +43,7 @@ const styles = new TokenStyles();
 
 export async function buildSite(cfg: ResolvedConfig, opts: { changed?: Set<string> } = {}): Promise<BuiltSite> {
   const warnings: string[] = [];
+  const converters = await prepareConvertedLocales(cfg);
   const scan = scanContent(cfg);
   const lastUpdated = cfg.lastUpdated ? gitLastUpdated(cfg.contentRoot) : new Map<string, number>();
   const assets = new Map<string, AssetRef>();
@@ -52,7 +54,8 @@ export async function buildSite(cfg: ResolvedConfig, opts: { changed?: Set<strin
   const worker = async () => {
     for (let r = queue.shift(); r; r = queue.shift()) {
       const route = r;
-      const src = readFileSync(route.source.abs, 'utf8');
+      const raw = readFileSync(route.source.abs, 'utf8');
+      const src = route.converted ? convertMarkdown(raw, converters.get(route.locale)!) : raw;
       const t = uiStrings(cfg.locales.find((l) => l.code === route.locale)?.lang, cfg.ui?.[route.locale]);
       const resolve = createLinkResolver({ cfg, scan, assets }, route);
       const pageWarn = (m: string) => warnings.push(`${route.source.rel}${route.fallback ? ` (as ${route.locale})` : ''}: ${m}`);
