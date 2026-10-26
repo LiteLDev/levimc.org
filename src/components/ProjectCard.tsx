@@ -5,17 +5,16 @@ import type { Project } from '../data/projects';
 interface ProjectCardProps {
   project: Project;
   stars?: number;
-  language?: string;
   loading?: boolean;
   /** 3 under a section heading (Home), 2 directly under the page h1 (/projects/). */
   headingLevel?: 2 | 3;
 }
 
 /** One project in the home grid: no frame, a hairline above it; logo, name, one line of meta. The whole card links to the project's home page. */
-export default function ProjectCard({ project, stars, language, loading, headingLevel = 3 }: ProjectCardProps) {
+export default function ProjectCard({ project, stars, loading, headingLevel = 3 }: ProjectCardProps) {
   const Name = headingLevel === 2 ? 'h2' : 'h3';
   const displayStars = stars ?? project.stars;
-  const kind = language ?? project.tags[0];
+  const kind = project.tags[0];
   // LeviMC Mods pages stay in this tab; docs and repositories open beside it, as before
   const external = !project.link.startsWith(LINKS.home);
 

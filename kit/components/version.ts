@@ -1,5 +1,5 @@
 // The kit version (keep in sync with ../VERSION; static/build-static.mjs and the tests check it).
-export const KIT_VERSION = '2.7.0';
+export const KIT_VERSION = '2.7.1';
 /**
  * Content hash of the published kit (scripts/publish-kit.mjs stamps it into the copy levimc.org publishes, and into
  * levimc.org's own build): every site that fetched the same kit shows the same build, so a stale deployment is

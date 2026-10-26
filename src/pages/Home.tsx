@@ -37,9 +37,8 @@ export default function Home() {
             return (
               <ProjectCard
                 key={project.id}
-                project={{ ...project, description: data?.description || project.description }}
+                project={project}
                 stars={data?.stars}
-                language={data?.language}
                 loading={loading}
               />
             );

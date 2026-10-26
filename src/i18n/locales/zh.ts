@@ -6,20 +6,21 @@ const zh: typeof en = {
   nav: {
     home: "首页",
     projects: "项目",
-    about: "关于我们",
+    about: "关于",
     community: "社区",
     support: "支持我们",
   },
 
   // Hero section
   hero: {
-    badge: "已发布",
+    badge: "现已推出",
     title1: "随心所欲",
     title2: "开发模组。",
-    description: "轻量、模块化的模组加载器，适用于",
+    description: "轻量、模块化、多功能的模组加载器，适用于",
     descriptionHighlight: "Minecraft 基岩版",
     descriptionEnd: "。使用",
     descriptionLanguages: "开发，或通过 LegacyScriptEngine 使用",
+    listSeparator: "、",
     descriptionLSE: "。",
     getStarted: "快速开始",
     documentation: "文档",
@@ -31,18 +32,42 @@ const zh: typeof en = {
   // About page
   about: {
     pageTitle: "关于 LeviMC",
-    pageSubtitle: "一个无名小团队的故事。",
+    pageSubtitle: "一个小团队的故事。",
     intro:
-      "LeviMC(原LiteLDev)起始于2021年1月27日，最初的目的是开发一款替代BedrockX的Bedrock Dedicated Server插件加载器，也就是LiteLoaderBDS，起初只有三人。\n\n后来LiteXLoader开发团队的成员也加入了LeviMC，随着时间的推移，团队逐渐壮大。\n\n在2021年12月9日，LiteLoaderBDS迭代到了v2.0版本，将LiteXLoader并入了LiteLoaderBDS，开始从BedrockX的技术路线上开始发展创新，首次引入了延迟加载机制实现了无需在头文件中调用符号查找函数实现函数的调用，以及完成了自研的头文件生成系统。\n\n后来由于LiteLoaderBDS的代码库中的历史遗留问题，LeviMC决定从头开始开发一款全新的模组加载器，2023年12月1日，LeviLamina发布了，吸取了LiteLoaderBDS过于耦合的经验教训，采用了模块化的设计理念，极大的提升了加载器的可维护性和扩展性，并且进一步优化了头文件生成，进一步优化了Hook，引入了诸多新特性。",
+      "LeviMC(原LiteLDev)起始于2021年1月27日，最初的目的是开发一款替代BedrockX的基岩版专用服务器（Bedrock Dedicated Server）插件加载器，也就是LiteLoaderBDS，起初只有三人。\n\n后来LiteXLoader开发团队的成员也加入了LeviMC，随着时间的推移，团队逐渐壮大。\n\n在2021年12月9日，LiteLoaderBDS迭代到了v2.0版本，将LiteXLoader并入了LiteLoaderBDS，开始从BedrockX的技术路线上开始发展创新，首次引入了延迟加载机制实现了无需在头文件中调用符号查找函数实现函数的调用，以及完成了自研的头文件生成系统。\n\n后来由于LiteLoaderBDS的代码库中的历史遗留问题，LeviMC决定从头开始开发一款全新的模组加载器，2023年12月1日，LeviLamina发布了，吸取了LiteLoaderBDS过于耦合的经验教训，采用了模块化的设计理念，极大的提升了加载器的可维护性和扩展性，并且进一步优化了头文件生成，进一步优化了钩子（Hook），引入了诸多新特性。",
     question1Title: "LeviLamina来自哪里？",
     question1Body:
-      "LeviLamina从Minecraft基岩服务器的深处出现，从LiteLoaderBDS项目的种子中发芽。\n\nMinecraft Bedrock Edition的最初版本缺乏Minecraft Java Edition中存在的广泛的模组和服务器插件生态系统，从而限制了其游戏可能性。一群精通Minecraft Bedrock Server的C++爱好者，进行了分析，并利用逆向工程技术和钩子注入机制，干预了游戏服务器的运行，从而开创了第一套服务器模组的开发。\n\n然而，这种开发范式遇到了一些挑战。首先，缺乏底层框架的支持，使得模组开发过程中需要依赖各种低级工具来进行符号分析、注入实现、钩子注册等功能。这导致了不同模组之间的代码冗余和重复，以及潜在的冲突。其次，缺乏明确的类型定义，迫使开发者在创建模组时进行逆向工程分析，导致了开发门槛的提高和效率的降低。\n\n为了应对这些困境，前期项目LiteLoaderBDS的维护者，构建了一个基于注入的模组加载引擎和一个模组开发框架。此外，他们还提供了类型信息，使模组开发者无需深入了解底层原理就能创建模组。这大大降低了模组开发的入门难度，促进了模组生态系统的繁荣。\n\n然而，随着LiteLoaderBDS的进展，一些问题也暴露出来。早期的设计没有考虑到未来的发展，使得许多方面过时和难以使用现代化的工具，从而无法满足最新的性能要求。此外，它的紧耦合设计在适应新版本的Minecraft Bedrock Server时也需要付出巨大的努力。因此，LeviMC决定从头开始，利用现有的专业知识，进行全面的框架重设计，培育一个对维护者、开发者和用户都友好的模组引擎。。",
+      "LeviLamina从基岩版专用服务器的深处出现，从LiteLoaderBDS项目的种子中发芽。\n\nMinecraft 基岩版的最初版本缺乏Minecraft Java版中存在的广泛的模组和服务器插件生态系统，从而限制了其游戏可能性。一群精通基岩版专用服务器的C++爱好者，进行了分析，并利用逆向工程技术和钩子注入机制，干预了游戏服务器的运行，从而开创了第一套服务器模组的开发。\n\n然而，这种开发范式遇到了一些挑战。首先，缺乏底层框架的支持，使得模组开发过程中需要依赖各种低级工具来进行符号分析、注入实现、钩子注册等功能。这导致了不同模组之间的代码冗余和重复，以及潜在的冲突。其次，缺乏明确的类型定义，迫使开发者在创建模组时进行逆向工程分析，导致了开发门槛的提高和效率的降低。\n\n为了应对这些困境，前期项目LiteLoaderBDS的维护者，构建了一个基于注入的模组加载引擎和一个模组开发框架。此外，他们还提供了类型信息，使模组开发者无需深入了解底层原理就能创建模组。这大大降低了模组开发的入门难度，促进了模组生态系统的繁荣。\n\n然而，随着LiteLoaderBDS的进展，一些问题也暴露出来。早期的设计没有考虑到未来的发展，使得许多方面过时和难以使用现代化的工具，从而无法满足最新的性能要求。此外，它的紧耦合设计在适应新版本的基岩版专用服务器时也需要付出巨大的努力。因此，LeviMC决定从头开始，利用现有的专业知识，进行全面的框架重设计，培育一个对维护者、开发者和用户都友好的模组引擎。",
     question2Title: "为什么LiteLoaderBDS更名为LeviLamina？",
     question2Body:
-      "哦，这真是一个故事！您看，LiteLoaderBDS一开始只是一个小笑话，一个有趣的实验。但你瞧，它的生长速度比服用类固醇的苦力怕还要快！\n\n起初，我们注意到LiteLoaderBDS这个名字听起来与Minecraft Java版本中的mod启动器项目惊人地相似。因此，我们灵机一动，在其上加上了“BDS”后缀，以凸显自己的特色。聪明吧？\n\n但随着LiteLoaderBDS2.0的扩展，它开始像自助餐上的小猪一样膨胀起来。它的性能急剧下降，让我们摸不着头脑。\n\n就在那时，我们做出了一个大胆的决定，从头开始重建整个项目。随着我们更深入地研究改造过程，很明显，一个新的开始值得一个全新的绰号。因此，我们涉足了拉丁语根源的古老艺术，保留了人们喜爱的缩写“ll”，瞧！LeviLamina诞生了，这个名字与我们宏伟的创造相称。",
+      "哦，这真是一个故事！您看，LiteLoaderBDS一开始只是一个小笑话，一个有趣的实验。但你瞧，它的生长速度比服用类固醇的苦力怕还要快！\n\n起初，我们注意到LiteLoaderBDS这个名字听起来与Minecraft Java版的模组加载器LiteLoader惊人地相似。因此，我们灵机一动，在其上加上了“BDS”后缀，以凸显自己的特色。聪明吧？\n\n但随着LiteLoaderBDS2.0的扩展，它开始像自助餐上的小猪一样膨胀起来。它的性能急剧下降，让我们摸不着头脑。\n\n就在那时，我们做出了一个大胆的决定，从头开始重建整个项目。随着我们更深入地研究改造过程，很明显，一个新的开始值得一个全新的绰号。因此，我们涉足了拉丁语根源的古老艺术，保留了人们喜爱的缩写“ll”，瞧！LeviLamina诞生了，这个名字与我们宏伟的创造相称。",
     valueOneTitle: "开发者优先",
     teamTitle: "团队成员",
     teamSubtitle: "认识我们的团队成员。",
+    badgeWhere: "起源",
+    badgeWhy: "缘由",
+    members: {
+      "OEOTYAN": { role: "团队负责人", bio: "领导 LeviMC 项目，把握项目方向。LeviLamina 维护者。" },
+      "dreamguxiang": { role: "启动器作者", bio: "LeviLauncher 与 LeviLaunchroid 的作者，LeviLamina 开发者。" },
+      "KawaiiNahida": { role: "头文件生成器维护者", bio: "维护头文件生成系统，确保头文件高效准确。LeviAntiCheat 作者。" },
+      "RimuruChan": { role: "头文件生成器维护者", bio: "维护头文件生成系统，确保头文件高效准确。" },
+      "Dofes": { role: "LeviOptimize 作者", bio: "开发并维护 LeviOptimize——为 LeviLamina 服务器和客户端提供性能优化的模组。LeviLamina 与 LegacyScriptEngine 开发者。" },
+      "futrime": { role: "lip 作者", bio: "开发并维护通用包安装器 lip。LegacyScriptEngine 开发者。" },
+      "wu-vincent": { role: "Endstone 作者", bio: "开发并维护 Endstone——广受欢迎的基岩版专用服务器插件加载器。为 LeviStone 提供支持。" },
+      "quizhizhe": { role: "MoreDimensions 作者", bio: "通过 MoreDimensions API 为 Minecraft 基岩版带来自定义维度。LeviLamina 开发者，LiteLoaderBDS 1.16.40 作者。" },
+      "Lovelylavender4": { role: "LeviLamina 维护者", bio: "维护 LeviLamina，参与开发与社区支持。" },
+      "zimuya4153": { role: "LeviLamina 开发者", bio: "参与 LeviLamina 的开发。" },
+      "PA733": { role: "服务器管理员", bio: "管理服务器与基础设施。LeviLamina 与 LiteLoaderBDS 开发者。" },
+      "ShrBox": { role: "LeviMC（原 LiteLDev）创始人", bio: "LiteLDev（现 LeviMC）的创始人，LegacyScriptEngine 与 LeviLamina 贡献者。" },
+      "yqs112358": { role: "LiteXLoader 作者", bio: "开发了 LiteXLoader，并为 LiteLoaderBDS 做出贡献。" },
+      "xiaoqch": { role: "LeviLamina 开发者", bio: "参与 LeviLamina 与 LiteLoaderBDS 的开发。" },
+      "wzyyyyyyy": { role: "LiteLoaderBDS 开发者", bio: "参与 LiteLoaderBDS 与 LiteXLoader 的开发。" },
+      "twoone-3": { role: "LLSE Python 引擎开发者", bio: "为 LLSE 插件提供 Python 脚本支持。PythonRunner 作者，LiteLoaderBDS 开发者。" },
+      "ddf8196": { role: "LeviLamina 开发者", bio: "参与 LeviLamina 的开发。" },
+      "Pd233": { role: "LiteLoader.NET 作者", bio: "为 LiteLoaderBDS 提供 .NET 脚本支持。" },
+      "Jaciezyt": { role: "LeviLamina 开发者", bio: "为 LeviLamina 与 LiteLoaderBDS 做出贡献。" },
+      "cryx233": { role: "众多 LiteLoaderBDS 插件的开发者", bio: "为 LiteLoaderBDS 提供各类插件，增强服务器功能。" },
+    },
   },
 
   // Projects section
@@ -55,7 +80,7 @@ const zh: typeof en = {
 
   // Features section
   features: {
-    label: "为何选择 LEVIMC",
+    label: "为何选择 LeviMC",
     title1: "按你的方式",
     title2: "开发模组。",
     description:
@@ -66,13 +91,13 @@ const zh: typeof en = {
     // Feature items
     nativeCpp: "原生 C++ 模组",
     nativeCppDesc:
-      "使用现代 C++ 编写高性能模组。通过全面的 API 完全访问 BDS 内部。",
+      "使用现代 C++ 编写高性能模组。通过全面的 API 完全访问游戏内部。",
     multiLang: "多语言支持",
     multiLangDesc:
-      "使用 LegacyScriptEngine 支持 JavaScript、Lua 或 Python。更低的入门门槛，同样的能力。",
+      "使用 LegacyScriptEngine，以 JavaScript、Node.js、Lua 或 Python 编写插件。入门门槛更低。",
     openSource: "开源",
     openSourceDesc:
-      "LGPL-3.0 许可证。完全透明，社区驱动。欢迎在 GitHub 上贡献。",
+      "开源部分采用 LGPL-3.0 许可证。社区驱动，欢迎在 GitHub 上贡献。",
     community: "活跃社区",
     communityDesc: "在 Discord 获取帮助，阅读文档，加入不断壮大的开发者社区。",
   },
@@ -113,7 +138,7 @@ const zh: typeof en = {
     contributeTitle: "贡献代码",
     contributeDesc:
       "挑选一个 Issue、完善文档或添加新特性。每个 PR 都能帮助社区。",
-    contributeCta: "查看贡献指南",
+    contributeCta: "挑选一个 Issue",
     donateTitle: "捐助项目",
     donateDesc: "你的支持能帮助我们维持基础设施，并投入更多时间开发新功能。",
     donateChannels: "捐助渠道",
@@ -132,14 +157,14 @@ const zh: typeof en = {
 
   // Project descriptions
   projects_desc: {
-    levilamina: "轻量、模块化且功能丰富的 Minecraft 基岩版模组加载器。",
-    legacyscriptengine: "在 LeviLamina 上运行 JavaScript、Lua 和 Python 插件。",
+    levilamina: "轻量、模块化、多功能的 Minecraft 基岩版模组加载器。",
+    legacyscriptengine: "在 LeviLamina 上运行以 JavaScript、Node.js、Lua 或 Python 编写的 LLSE 插件。",
     lip: "通用包安装器：一条命令安装模组及其依赖。",
     levilaunchroid: "适用于 Android 的 Minecraft 基岩版启动器。",
-    levilauncher: "适用于 Windows 的 Minecraft 基岩版 GDK 启动器。",
-    levioptimize: "为 LeviLamina 服务器提供性能优化的模组。",
+    levilauncher: "适用于 Windows 的 Minecraft 基岩版（GDK / UWP）启动器。",
+    levioptimize: "为 LeviLamina 服务器和客户端提供性能优化的模组。",
     levianticheat: "为 LeviLamina 服务器提供反作弊解决方案。",
-    moredimensions: "为 Minecraft 基岩版世界添加新的维度和生物群系。",
+    moredimensions: "为 Minecraft 基岩版添加自定义维度的 API。",
     levistone: "在 LeviLamina 上运行 Endstone 插件的运行时。",
     barelyenoughitems: "Minecraft 基岩版的 JEI：浏览所有物品，查看它们的配方与用途。",
     alleviatedbackpacks: "Minecraft 基岩版的 Sophisticated Backpacks：可以安装升级的背包。",
@@ -150,7 +175,7 @@ const zh: typeof en = {
   // 博客
   blog: {
     name: "LeviMC's blog",
-    tagline: "Everything about development",
+    tagline: "关于开发的一切",
     eyebrow: "博客",
     sections: "博客栏目",
     posts: "文章",
@@ -158,7 +183,7 @@ const zh: typeof en = {
     categories: "分类",
     archives: "归档",
     about: "关于",
-    friends: "友链",
+    friends: "友情链接",
     rss: "RSS",
     latest: "最新文章",
     readMore: "阅读全文",
@@ -171,7 +196,7 @@ const zh: typeof en = {
     page: (n: number) => `第 ${n} 页`,
     previousPost: "上一篇",
     nextPost: "下一篇",
-    writtenIn: "中文",
+    writtenIn: "简体中文",
     by: "作者",
     comments: "评论",
     commentsLoading: "正在加载评论…",

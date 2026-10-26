@@ -55,7 +55,8 @@ npm run smoke:kit
 - `src/pages/`, `src/components/` — page content; `src/i18n/locales/{en,zh,zh-Hant}.ts` — all site text (English, Simplified and Traditional Chinese)
 - `src/routes.ts` — route list, titles and descriptions; `src/head.ts` — per-page `<head>` tags
 - `src/components/SiteHeader.tsx`, `src/components/Footer.tsx` — the kit GlobalBar and SiteFooter, the same on every
-  LeviMC site (the Projects menu lists every project with its docs and repository; the footer links Support Us).
+  LeviMC site (each project in the Projects menu leads to its home page: its LeviMC Mods page, docs or repository;
+  the footer links Support us).
   The project list is `PROJECTS` in `kit/components/projects.ts`; the home page's project cards read it too.
 - `src/prepaint.ts` — the pre-paint script: theme and language come from the cross-site LeviMC preferences
   (cookies `levimc_theme` = auto | light | dark, Auto by default, and `levimc_lang`, shared by levimc.org and

@@ -19,8 +19,14 @@ export default function Hero() {
         <>
           {t.hero.description} <strong className="lm-hero-strong">{t.hero.descriptionHighlight}</strong>
           {t.hero.descriptionEnd} <span className="lm-hero-lang">C++</span>
-          {t.hero.descriptionLanguages} <span className="lm-hero-lang">JavaScript</span>, <span className="lm-hero-lang">Lua</span>,{' '}
-          <span className="lm-hero-lang">Python</span> {t.hero.descriptionLSE}
+          {t.hero.descriptionLanguages} <span className="lm-hero-lang">JavaScript</span>
+          {t.hero.listSeparator}
+          <span className="lm-hero-lang">Node.js</span>
+          {t.hero.listSeparator}
+          <span className="lm-hero-lang">Lua</span>
+          {t.hero.listSeparator}
+          <span className="lm-hero-lang">Python</span>
+          {t.hero.descriptionLSE}
         </>
       }
       badge={

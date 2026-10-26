@@ -8,7 +8,7 @@ const en = {
     projects: "Projects",
     about: "About",
     community: "Community",
-    support: "Support Us",
+    support: "Support us",
   },
 
   // Hero section
@@ -16,11 +16,12 @@ const en = {
     badge: "available",
     title1: "Mod Bedrock",
     title2: "your way.",
-    description: "A lightweight, modular mod loader for",
+    description: "A lightweight, modular and versatile mod loader for",
     descriptionHighlight: "Minecraft Bedrock Edition",
     descriptionEnd: ". Write mods in",
     descriptionLanguages: ", or use",
-    descriptionLSE: "with LegacyScriptEngine.",
+    listSeparator: ", ",
+    descriptionLSE: " with LegacyScriptEngine.",
     getStarted: "Get Started",
     documentation: "Documentation",
     stars: "GitHub Stars",
@@ -33,16 +34,40 @@ const en = {
     pageTitle: "About LeviMC",
     pageSubtitle: "The story of a small team.",
     intro:
-      "LeviMC (formerly LiteLDev) began on January 27, 2021.\n\n It started as a project to develop a Bedrock Dedicated Server plugin loader to replace BedrockX—LiteLoaderBDS—with an initial team of three.\n\n Later, members of the LiteXLoader team joined and the team grew. On December 9, 2021, LiteLoaderBDS reached v2.0, merging LiteXLoader and introducing innovations beyond the BedrockX approach, including a delay-loading mechanism that enabled function calls without requiring symbol lookup in headers and a custom header-generation system.\n\n Due to legacy issues in the codebase, the team decided to rebuild the mod loader from scratch. On December 1, 2023, LeviLamina was released, adopting a modular design to improve maintainability and extensibility, while further optimizing header generation, hooks, and adding many new features.",
+      "LeviMC (formerly LiteLDev) began on January 27, 2021.\n\n It started as a project to develop a Bedrock Dedicated Server plugin loader to replace BedrockX—LiteLoaderBDS—with an initial team of three.\n\n Later, members of the LiteXLoader team joined and the team grew. On December 9, 2021, LiteLoaderBDS reached v2.0, merging LiteXLoader and introducing innovations beyond the BedrockX approach, including a delay-loading mechanism that enabled function calls without requiring symbol lookup in headers and a custom header-generation system.\n\n Due to legacy issues in the codebase, the team decided to rebuild the mod loader from scratch. On December 1, 2023, LeviLamina was released. Learning from how tightly coupled LiteLoaderBDS had become, it adopted a modular design that greatly improved maintainability and extensibility, while further optimizing header generation and hooks and adding many new features.",
     question1Title: "Where does LeviLamina come from?",
     question1Body:
-      "LeviLamina emerges from the depths of Minecraft Bedrock Server, sprouting forth from the seeds of the LiteLoaderBDS project.\n\nThe initial versions of Minecraft Bedrock Edition lacked the extensive mod and server plugin ecosystem present in Minecraft Java Edition, thereby limiting its gameplay possibilities. A collective of C++ enthusiasts, well-versed in Minecraft Bedrock Server, conducted an analysis and utilized reverse engineering techniques and hook injection mechanisms to intervene in the operation of the game server, thus pioneering the development of the first set of server mods.\n\nHowever, this development paradigm encountered several challenges. Primarily, the absence of underlying framework support necessitated the reliance on diverse low-level tools for symbol analysis, injection implementation, hook registration, and other functionalities during mod development. Consequently, this led to code redundancy and duplication across different mods, as well as the potential for unforeseen conflicts among them. Moreover, the lack of explicit type definitions compelled developers to engage in reverse engineering analysis while creating mods, resulting in elevated development barriers and diminished efficiency.\n\nIn response to these predicaments, the maintainers of the precursor project, LiteLoaderBDS, constructed an injection-based mod loading engine and a mod development framework. In addition, they provided type information, enabling mod developers to create mods without requiring an exhaustive comprehension of the underlying principles. This significantly mitigated the entry barriers for mod development and facilitated the flourishing of the mod ecosystem.\n\nNevertheless, as LiteLoaderBDS progressed, certain issues came to the fore. The early design failed to account for future advancements, rendering many aspects obsolete and impeding the utilization of contemporary tools, thereby falling short of meeting the latest performance requirements. Furthermore, its tightly coupled design engendered substantial efforts when adapting to new iterations of Minecraft Bedrock Server. Consequently, LeviMC made the decision to commence from scratch, leveraging existing expertise, and undertaking a comprehensive framework redesign to cultivate a mod engine that promotes user-friendliness for maintainers, developers, and users alike.",
+      "LeviLamina emerges from the depths of Bedrock Dedicated Server, sprouting forth from the seeds of the LiteLoaderBDS project.\n\nThe initial versions of Minecraft Bedrock Edition lacked the extensive mod and server plugin ecosystem present in Minecraft Java Edition, thereby limiting its gameplay possibilities. A collective of C++ enthusiasts, well-versed in Bedrock Dedicated Server, conducted an analysis and utilized reverse engineering techniques and hook injection mechanisms to intervene in the operation of the game server, thus pioneering the development of the first set of server mods.\n\nHowever, this development paradigm encountered several challenges. Primarily, the absence of underlying framework support necessitated the reliance on diverse low-level tools for symbol analysis, injection implementation, hook registration, and other functionalities during mod development. Consequently, this led to code redundancy and duplication across different mods, as well as the potential for unforeseen conflicts among them. Moreover, the lack of explicit type definitions compelled developers to engage in reverse engineering analysis while creating mods, resulting in elevated development barriers and diminished efficiency.\n\nIn response to these predicaments, the maintainers of the precursor project, LiteLoaderBDS, constructed an injection-based mod loading engine and a mod development framework. In addition, they provided type information, enabling mod developers to create mods without requiring an exhaustive comprehension of the underlying principles. This significantly mitigated the entry barriers for mod development and facilitated the flourishing of the mod ecosystem.\n\nNevertheless, as LiteLoaderBDS progressed, certain issues came to the fore. The early design failed to account for future advancements, rendering many aspects obsolete and impeding the utilization of contemporary tools, thereby falling short of meeting the latest performance requirements. Furthermore, its tightly coupled design engendered substantial efforts when adapting to new versions of Bedrock Dedicated Server. Consequently, LeviMC made the decision to commence from scratch, leveraging existing expertise, and undertaking a comprehensive framework redesign to cultivate a mod engine that promotes user-friendliness for maintainers, developers, and users alike.",
     question2Title: "Why was LiteLoaderBDS renamed to LeviLamina?",
     question2Body:
-      "Oh, it's quite a tale! You see, LiteLoaderBDS started off as a little joke, a playful experiment. But lo and behold, it grew faster than a creeper on steroids!\n\nAt first, we noticed that the name LiteLoaderBDS sounded strikingly similar to a mod launcher project in the Minecraft Java version. So, in a moment of genius, we slapped a \"BDS\" suffix on it to differentiate ourselves. Clever, right?\n\nBut as LiteLoaderBDS 2.0 expanded, it started bulking up like a piglet at an all-you-can-eat buffet. Its performance took a nosedive, leaving us scratching our heads.\n\nThat's when we made a bold decision to rebuild the entire project from scratch. And as we delved deeper into the revamping process, it became clear that a fresh start deserved a brand-new moniker. So, we dabbled in the ancient arts of Latin roots, preserving the beloved abbreviation `ll`, and voila! LeviLamina was born, a name befitting our magnificent creation.",
+      "Oh, it's quite a tale! You see, LiteLoaderBDS started off as a little joke, a playful experiment. But lo and behold, it grew faster than a creeper on steroids!\n\nAt first, we noticed that the name LiteLoaderBDS sounded strikingly similar to LiteLoader, a mod loader for Minecraft Java Edition. So, in a moment of genius, we slapped a \"BDS\" suffix on it to differentiate ourselves. Clever, right?\n\nBut as LiteLoaderBDS 2.0 expanded, it started bulking up like a piglet at an all-you-can-eat buffet. Its performance took a nosedive, leaving us scratching our heads.\n\nThat's when we made a bold decision to rebuild the entire project from scratch. And as we delved deeper into the revamping process, it became clear that a fresh start deserved a brand-new moniker. So, we dabbled in the ancient arts of Latin roots, preserving the beloved abbreviation `ll`, and voila! LeviLamina was born, a name befitting our magnificent creation.",
     valueOneTitle: "Developers first",
     teamTitle: "Team members",
     teamSubtitle: "Meet our team members.",
+    badgeWhere: "Where",
+    badgeWhy: "Why",
+    members: {
+      "OEOTYAN": { role: "Team Lead", bio: "Leads the LeviMC project, and ensures the project stays on course. Maintainer of LeviLamina." },
+      "dreamguxiang": { role: "Author of Launcher", bio: "Author of LeviLauncher and LeviLaunchroid. Developer of LeviLamina." },
+      "KawaiiNahida": { role: "Maintainer of Header Generator", bio: "Maintains the header generation system, ensuring efficient and accurate header files. Author of LeviAntiCheat." },
+      "RimuruChan": { role: "Maintainer of Header Generator", bio: "Maintains the header generation system, ensuring efficient and accurate header files." },
+      "Dofes": { role: "Author of LeviOptimize", bio: "Creates and maintains LeviOptimize, a performance optimization mod for LeviLamina servers and clients. Developer of LeviLamina and LegacyScriptEngine." },
+      "futrime": { role: "Author of lip", bio: "Develops and maintains lip, the general package installer. Developer of LegacyScriptEngine." },
+      "wu-vincent": { role: "Author of Endstone", bio: "Creates and maintains Endstone, a popular plugin loader for Bedrock Dedicated Server. Provides support for LeviStone." },
+      "quizhizhe": { role: "Author of MoreDimensions", bio: "Brings custom dimensions to Minecraft Bedrock Edition with the MoreDimensions API. Developer of LeviLamina, author of LiteLoaderBDS 1.16.40." },
+      "Lovelylavender4": { role: "Maintainer of LeviLamina", bio: "Maintains LeviLamina, contributing to its development and community support." },
+      "zimuya4153": { role: "Developer of LeviLamina", bio: "Contributes to the development of LeviLamina." },
+      "PA733": { role: "Server Administrator", bio: "Manages servers and infrastructure. Developer of LeviLamina and LiteLoaderBDS." },
+      "ShrBox": { role: "Creator of LeviMC (formerly LiteLDev)", bio: "Original creator of LiteLDev (now LeviMC) and a contributor to LegacyScriptEngine and LeviLamina." },
+      "yqs112358": { role: "Author of LiteXLoader", bio: "Creates LiteXLoader and contributes to LiteLoaderBDS." },
+      "xiaoqch": { role: "Developer of LeviLamina", bio: "Contributes to the development of LeviLamina and LiteLoaderBDS." },
+      "wzyyyyyyy": { role: "Developer of LiteLoaderBDS", bio: "Contributes to the development of LiteLoaderBDS and LiteXLoader." },
+      "twoone-3": { role: "Developer of the LLSE Python engine", bio: "Provides Python scripting for LLSE plugins. Author of PythonRunner, developer of LiteLoaderBDS." },
+      "ddf8196": { role: "Developer of LeviLamina", bio: "Contributes to the development of LeviLamina." },
+      "Pd233": { role: "Author of LiteLoader.NET", bio: "Provides .NET scripting support for LiteLoaderBDS." },
+      "Jaciezyt": { role: "Developer of LeviLamina", bio: "Makes contributions to LeviLamina and LiteLoaderBDS." },
+      "cryx233": { role: "Developer of many LiteLoaderBDS plugins", bio: "Provides various plugins for LiteLoaderBDS to enhance server functionality." },
+    } as Record<string, { role: string; bio: string }>,
   },
 
   // Projects section
@@ -66,13 +91,13 @@ const en = {
     // Feature items
     nativeCpp: "Native C++ Mods",
     nativeCppDesc:
-      "Write high-performance mods with modern C++. Full access to BDS internals via comprehensive API.",
+      "Write high-performance mods with modern C++. Full access to the game's internals via a comprehensive API.",
     multiLang: "Multi-Language",
     multiLangDesc:
-      "Use LegacyScriptEngine for JavaScript, Lua, or Python. Lower barrier to entry, same capabilities.",
+      "Use LegacyScriptEngine to write plugins in JavaScript, Node.js, Lua or Python. A lower barrier to entry.",
     openSource: "Open Source",
     openSourceDesc:
-      "LGPL-3.0 licensed. Fully transparent, community-driven. Contribute on GitHub.",
+      "The open-source parts are LGPL-3.0 licensed. Community-driven. Contribute on GitHub.",
     community: "Active Community",
     communityDesc:
       "Get help on Discord, read the docs, and join a growing ecosystem of developers.",
@@ -117,7 +142,7 @@ const en = {
     contributeTitle: "Contribute code",
     contributeDesc:
       "Pick an issue, improve docs, or add a feature. Every pull request helps the community.",
-    contributeCta: "View contributing guide",
+    contributeCta: "Find an issue to work on",
     donateTitle: "Donate to the project",
     donateDesc:
       "Your support keeps our infrastructure running and lets us spend more time on features.",
@@ -142,14 +167,14 @@ const en = {
     levilamina:
       "A lightweight, modular and versatile mod loader for Minecraft Bedrock Edition.",
     legacyscriptengine:
-      "Run JavaScript, Lua, and Python plugins on LeviLamina.",
-    lip: "A general-purpose package installer: install mods and their dependencies with one command.",
+      "Run LLSE plugins written in JavaScript, Node.js, Lua or Python on LeviLamina.",
+    lip: "A general package installer: install mods and their dependencies with one command.",
     levilaunchroid: "A launcher for Minecraft Bedrock Edition on Android.",
-    levilauncher: "Minecraft Bedrock Edition GDK Launcher for Windows.",
-    levioptimize: "Performance optimization mod for LeviLamina servers.",
+    levilauncher: "A launcher for Minecraft Bedrock Edition (GDK / UWP) on Windows.",
+    levioptimize: "Performance optimization mod for LeviLamina servers and clients.",
     levianticheat: "Anti-cheating solution for LeviLamina servers.",
     moredimensions:
-      "Expand your Minecraft Bedrock world with new dimensions and biomes.",
+      "An API for adding custom dimensions to Minecraft Bedrock Edition.",
     levistone: "A runtime for running Endstone plugins on LeviLamina.",
     barelyenoughitems:
       "Just Enough Items for Minecraft Bedrock Edition: browse every item and look up its recipes and uses.",
@@ -165,7 +190,7 @@ const en = {
   // Blog (levimc.org/blog/) — the chrome around the posts; the posts themselves are in Chinese
   blog: {
     name: "LeviMC's blog",
-    tagline: "Everything about development",
+    tagline: "All about development",
     eyebrow: "Blog",
     sections: "Blog sections",
     posts: "Posts",
@@ -186,7 +211,7 @@ const en = {
     page: (n: number) => `Page ${n}`,
     previousPost: "Previous post",
     nextPost: "Next post",
-    writtenIn: "Written in Chinese",
+    writtenIn: "Written in Simplified Chinese",
     by: "by",
     comments: "Comments",
     commentsLoading: "Loading comments…",

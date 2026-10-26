@@ -62,7 +62,7 @@ repository's default branch. The gallery is not tied to a version; the next buil
       "poster": "teleport.webp",
       "width": 1280,
       "height": 720,
-      "title": { "en": "Teleport between waystones", "zh-CN": "在传送石碑之间传送" },
+      "title": { "en": "Teleport between waystones", "zh-CN": "在传送石之间传送" },
       "caption": { "en": "One sentence a player cares about." }
     }
   ]

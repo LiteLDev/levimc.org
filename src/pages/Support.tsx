@@ -25,7 +25,7 @@ export default function Support() {
           <h2 className="lm-way-title">{t.support.contributeTitle}</h2>
           <p className="lm-way-desc">{t.support.contributeDesc}</p>
           <div className="lm-way-actions">
-            <PixelButton href="https://docs.levimc.org/LeviLamina/maintainer_guides/cpp_style_guide/" variant="primary">
+            <PixelButton href="https://github.com/LiteLDev/LeviLamina/issues" variant="primary">
               {t.support.contributeCta}
             </PixelButton>
             <PixelButton href="https://github.com/LiteLDev">GitHub</PixelButton>

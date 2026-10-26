@@ -67,7 +67,7 @@ export const CATEGORIES: readonly CategoryDef[] = [
   },
   {
     id: "library",
-    label: { en: "Library / API", "zh-CN": "前置库", "zh-Hant": "前置庫" },
+    label: { en: "Library / API", "zh-CN": "前置库 / API", "zh-Hant": "前置庫 / API" },
     icon: "bookQuill",
     tags: ["type:library", "library", "pland:library", "modapi", "event", "nativeapi", "export", "form"],
   },
@@ -85,13 +85,13 @@ export const CATEGORIES: readonly CategoryDef[] = [
   },
   {
     id: "social",
-    label: { en: "Chat & social", "zh-CN": "社交", "zh-Hant": "社交" },
+    label: { en: "Chat & social", "zh-CN": "聊天与社交", "zh-Hant": "聊天與社交" },
     icon: "quote",
     tags: ["welcome"],
   },
   {
     id: "bugfix",
-    label: { en: "Bug fixes", "zh-CN": "漏洞修复", "zh-Hant": "漏洞修復" },
+    label: { en: "Bug fixes", "zh-CN": "错误修复", "zh-Hant": "錯誤修復" },
     icon: "bug",
     tags: ["fix"],
   },
@@ -184,7 +184,7 @@ export const ENVIRONMENTS: readonly EnvDef[] = [
 ];
 
 /** The language an LSE plugin is written for, shown as "LSE · Node.js". */
-export const LSE_LANGUAGES: Record<string, string> = { js: "JS", nodejs: "Node.js" };
+export const LSE_LANGUAGES: Record<string, string> = { js: "JS", nodejs: "Node.js", lua: "Lua", python: "Python" };
 
 export const CATEGORY_BY_ID = new Map(CATEGORIES.map((c) => [c.id, c]));
 export const PLATFORM_BY_ID = new Map(PLATFORMS.map((p) => [p.id, p]));

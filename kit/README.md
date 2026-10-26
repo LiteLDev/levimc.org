@@ -554,11 +554,11 @@ All components are SSR-safe and render identical markup on server and client.
 
 | Component | Purpose / key props |
 |---|---|
-| `GlobalBar` | the bar at the top of every LeviMC site — identical everywhere: the LeviMC mark (`BrandMark`), tabs **Home · Projects ▾ · Mods · Blog · Community · About** (`globalNav()`), then **language menu · theme menu · GitHub** (→ LiteLDev); below 960px the tabs fold into one menu (≤ 400px the triggers lose their chevrons). **Projects ▾** is a mega menu of `PROJECTS` (`projects.ts`) in four columns — Core · Launchers · Official mods (two columns) — hung from the bar's content box so it never leaves the window: a row with docs opens them, with explicit Docs and GitHub links; a row without is the repository link (a GitHub mark beside the name); the GitHub organisation at the bottom; on phones it is a collapsed section of the menu. Props: `current` (`'home'\|'projects'\|'mods'\|'blog'\|'community'\|'about'`), `currentProject` (docs: marks the project and the Projects tab), `locale`, `strings`, `languages` (`{ options, current, onSelect?, linkComponent? }`; the options are the site's locales, named the kit's way — `uiLocaleName`; omitted → the 9 chrome languages, stored as the preference, then `onLanguageChange` or a reload), `siteOrigin` + `linkComponent` + `isAppPath` (same-site links through the router), `menu` (false when the site's own drawer carries the links, see `GlobalNavList`), `sticky`. `github`, `brandIcon` and `currentDocs` are deprecated (ignored / alias). A labelled region; `<details>` menus work without JS. No props to hide, add or reorder tabs or controls |
+| `GlobalBar` | the bar at the top of every LeviMC site — identical everywhere: the LeviMC mark (`BrandMark`), tabs **Home · Projects ▾ · Mods · Blog · Community · About** (`globalNav()`), then **language menu · theme menu · GitHub** (→ LiteLDev); below 960px the tabs fold into one menu (≤ 400px the triggers lose their chevrons). **Projects ▾** is a mega menu of `PROJECTS` (`projects.ts`) in four columns — Core · Launchers · Official mods (two columns) — hung from the bar's content box so it never leaves the window: each row is one link to the project's home page (`projectHome()`: its LeviMC Mods page, else its docs, else its repository); the GitHub organisation at the bottom; on phones it is a collapsed section of the menu. Props: `current` (`'home'\|'projects'\|'mods'\|'blog'\|'community'\|'about'`), `currentProject` (docs: marks the project and the Projects tab), `locale`, `strings`, `languages` (`{ options, current, onSelect?, linkComponent? }`; the options are the site's locales, named the kit's way — `uiLocaleName`; omitted → the 9 chrome languages, stored as the preference, then `onLanguageChange` or a reload), `siteOrigin` + `linkComponent` + `isAppPath` (same-site links through the router), `menu` (false when the site's own drawer carries the links, see `GlobalNavList`), `sticky`. `github`, `brandIcon` and `currentDocs` are deprecated (ignored / alias). A labelled region; `<details>` menus work without JS. No props to hide, add or reorder tabs or controls |
 | `GlobalNavList` | the bar's tabs + the Projects menu as a vertical list (the bar's phone menu; the "LeviMC" part of the docs drawer) |
 | `ThemeSwitcher` | the theme menu: **Auto** (default; follows `prefers-color-scheme` live) / Light / Dark. Trigger sprite + name and the checked item come from `html[data-theme-pref]` via CSS (right before hydration and on static pages); the choice is the cross-site `levimc_theme` cookie. `ThemeToggle` is a deprecated alias |
 | `LocaleSwitcher` | `options[{ code, label, short?, lang, href? }]` (`href` → links to the equivalent page; none → buttons), `current`, `onSelect(code, option)`, `persist` (default: store `lang` as the cross-site `levimc_lang`; a modified click on a link opens it elsewhere and stores nothing), `linkComponent`, `showLabel` |
-| `SiteFooter` | the theme's painting (Nymphéas / Impression, soleil levant) rising out of the page through the pixel dissolve; LeviMC mark + tagline, Discord/Telegram/X/YouTube/GitHub/email, © year · Support us, Minecraft notice; `strings`, `year`, `siteOrigin` + `linkComponent` + `isAppPath`, `locale` |
+| `SiteFooter` | the theme's painting (Nymphéas / Impression, soleil levant) rising out of the page through the pixel dissolve; LeviMC mark + tagline, Discord/Telegram/X/YouTube/GitHub/email, © year · Support us; `strings`, `year`, `siteOrigin` + `linkComponent` + `isAppPath`, `locale` |
 | `PaintedBackdrop` | fixed impressionist dabs + brush + grain; optional painted scene band at the page top |
 | `PaintedHero` | painted pond with block-built Japanese bridge (light) / harbour sunrise with pixel boats (dark) on the right of the copy (`--kit-hero-paint-x`), its left and bottom edges in the pixel dissolve (below 961px: a band on top; `.kit-hero-strip` keeps it on the right); `eyebrow name text tagline actions image badge aside linkComponent`. The default scenes are cached CSS backgrounds (`theme/hero.css`, imported by the component — no per-page SVG, no flash); a custom `seed` or `pixelProps={false}` renders inline SVG |
 | `PixelButton` | Minecraft bevel button: `variant` default/primary/ghost, `size`, `icon`, `iconRight`, `href` |
@@ -580,8 +580,8 @@ Stable test hooks: `data-kit-theme-toggle` (theme menu trigger), `data-kit-theme
 `data-kit-copy`, `data-kit-tabs`, `data-doc-content` (wraps rendered markdown only), `data-kit-globalbar`,
 `data-kit-footer`, `data-kit-hero`.
 
-Canonical cross-site URLs (exact, no redirect): Home `https://levimc.org/`, Projects
-`https://levimc.org/#projects`, Community `https://levimc.org/community/`, About `https://levimc.org/about/`,
+Canonical cross-site URLs (exact, no redirect): Home `https://levimc.org/`, Projects (the tab without its menu: the
+GitHub organisation) `https://github.com/LiteLDev`, Community `https://levimc.org/community/`, About `https://levimc.org/about/`,
 Mods (LeviMC Mods, id `mods`) `https://levimc.org/mods/`, Blog `https://levimc.org/blog/`, GitHub
 `https://github.com/LiteLDev`,
 Docs `https://docs.levimc.org/{LeviLamina,LegacyScriptEngine,lip,LeviLauncher,LeviLaunchroid}/`,
@@ -818,6 +818,19 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.7.1 — 2026-10-26
+
+**Project blurbs agree with the projects.** The chrome's words now say what each project's own README says, in all
+nine languages:
+* LeviLamina is a mod loader for Minecraft Bedrock Edition (server and client), not only for Bedrock Dedicated
+  Server; LegacyScriptEngine runs LLSE script plugins on LeviLamina; lip is a (general) package *installer* in every
+  language (zh-CN / zh-HK said 包管理器 / 套件管理器); LeviLauncher is GDK / UWP; LeviOptimize is for servers and
+  clients; MoreDimensions is an API for custom dimensions.
+* `modsBlurb`: LeviMC Mods covers Minecraft Bedrock (LeviLamina, LegacyScriptEngine and Endstone), not only
+  LeviLamina. The footer `tagline` names the official mods and says "package installer".
+* zh-HK uses 外掛 for plugins throughout (as levimc.org's 繁體中文); ja writes MOD everywhere, like its tab.
+* No API change.
 
 ### 2.7.0 — 2026-10-25
 

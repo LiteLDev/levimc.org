@@ -17,8 +17,8 @@ export interface Project {
 const TAGS: Record<string, string> = {
   LeviLamina: 'Mod Loader',
   LegacyScriptEngine: 'Script Engine',
-  LeviStone: 'Script Engine',
-  lip: 'Package Manager',
+  LeviStone: 'Plugin Runtime',
+  lip: 'Package Installer',
   LeviLauncher: 'Windows',
   LeviLaunchroid: 'Android',
   LeviOptimize: 'Performance',
@@ -39,7 +39,8 @@ export const PROJECT_CONFIGS: { id: string; owner: string; repo: string }[] = PR
 
 /**
  * Every LeviMC project (the kit's registry, in the order of the bar's Projects menu) with this site's
- * descriptions — the fallback when the GitHub API is unavailable. A hook, so translations are read inside it.
+ * descriptions (translated, never replaced by the repositories' English GitHub descriptions). A hook, so translations
+ * are read inside it.
  */
 export function useProjects(): Project[] {
   const { t } = useI18n();
