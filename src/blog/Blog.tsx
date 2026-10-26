@@ -153,7 +153,7 @@ function TermChips({ post, withCategory = false }: { post: BlogPost; withCategor
 
 function PostCard({ post, b, headingLevel = 2 }: { post: BlogPost; b: B; headingLevel?: 2 | 3 }) {
   const H = `h${headingLevel}` as 'h2';
-  const { title, excerpt, lang } = useTranslatedPost(post);
+  const { title, excerpt, lang, pending } = useTranslatedPost(post);
   return (
     <article className="px-card lm-blog-card">
       {post.category ? (
@@ -161,11 +161,11 @@ function PostCard({ post, b, headingLevel = 2 }: { post: BlogPost; b: B; heading
           {post.category.name}
         </Link>
       ) : null}
-      <H className="lm-blog-card-title" lang={lang}>
+      <H className="lm-blog-card-title" lang={lang} data-ghost={pending || undefined} aria-busy={pending || undefined}>
         <Link to={post.url}>{title}</Link>
       </H>
       <PostMeta post={post} b={b} />
-      <p className="lm-blog-excerpt" lang={lang}>
+      <p className="lm-blog-excerpt" lang={lang} data-ghost={pending || undefined} aria-busy={pending || undefined}>
         {excerpt}
       </p>
       <div className="lm-blog-card-foot">
@@ -287,13 +287,13 @@ function Index({ page }: { page: number }) {
 }
 
 function PostRow({ post }: { post: BlogPost }) {
-  const { title, lang } = useTranslatedPost(post);
+  const { title, lang, pending } = useTranslatedPost(post);
   return (
     <li className="lm-blog-row">
       <time className="lm-blog-row-date" dateTime={post.date}>
         {post.date.slice(5, 10)}
       </time>
-      <Link to={post.url} className="lm-blog-row-title" lang={lang}>
+      <Link to={post.url} className="lm-blog-row-title" lang={lang} data-ghost={pending || undefined} aria-busy={pending || undefined}>
         {title}
       </Link>
       {post.author ? <span className="lm-blog-row-author">{post.author.name}</span> : null}
@@ -352,14 +352,14 @@ function ListPage({ view, eyebrow, title, posts, base, page }: { view: BlogView;
   );
 }
 
-function BlogHead({ eyebrow, title, lead, lang }: { eyebrow: string; title: ReactNode; lead?: ReactNode; lang?: string }) {
+function BlogHead({ eyebrow, title, lead, lang, ghost = false }: { eyebrow: string; title: ReactNode; lead?: ReactNode; lang?: string; ghost?: boolean }) {
   return (
     <header className="lm-page-head lm-blog-head">
       <p className={isLatin(eyebrow) ? 'lm-eyebrow kit-pixel-label' : 'lm-eyebrow lm-eyebrow-cjk'}>
         <span className="px-dot" aria-hidden="true" />
         <Link to="/blog/">{eyebrow}</Link>
       </p>
-      <h1 className="lm-title" lang={lang}>
+      <h1 className="lm-title" lang={lang} data-ghost={ghost || undefined} aria-busy={ghost || undefined}>
         {title}
       </h1>
       {lead ? <p className="lm-lead">{lead}</p> : null}
@@ -399,8 +399,11 @@ function Toc({ toc, label }: { toc: { level: number; id: string; text: string }[
   );
 }
 
-/** A post's / page's rendered markdown (`doc` as useTranslatedDoc gives it: undefined while loading, null when it failed). */
-function Prose({ id, doc }: { id: string; doc: BlogDoc | null | undefined }) {
+/**
+ * A post's / page's rendered markdown (`doc` as useTranslatedDoc gives it: undefined while loading, null when it
+ * failed; `pending` while its translation is on the way).
+ */
+function Prose({ id, doc, pending }: { id: string; doc: BlogDoc | null | undefined; pending: boolean }) {
   const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   useProseEnhancements(ref, doc ? `${id}\u0000${doc.lang}` : '');
@@ -413,11 +416,11 @@ function Prose({ id, doc }: { id: string; doc: BlogDoc | null | undefined }) {
       </p>
     );
   if (!doc) return <div className="lm-blog-loading" aria-busy="true" />;
-  return <div ref={ref} className="kit-prose lm-blog-prose" lang={doc.lang} data-doc-content="" dangerouslySetInnerHTML={{ __html: doc.html }} />;
+  return <div ref={ref} className="kit-prose lm-blog-prose" lang={doc.lang} data-doc-content="" data-ghost={pending || undefined} aria-busy={pending || undefined} dangerouslySetInnerHTML={{ __html: doc.html }} />;
 }
 
 function PagerLink({ post, side, b }: { post: BlogPost; side: 'prev' | 'next'; b: B }) {
-  const { title, lang } = useTranslatedPost(post);
+  const { title, lang, pending } = useTranslatedPost(post);
   return (
     <Link to={post.url} className={side === 'next' ? 'px-card kit-pager-link is-next' : 'px-card kit-pager-link'} rel={side}>
       <span className="kit-pager-label">
@@ -425,7 +428,7 @@ function PagerLink({ post, side, b }: { post: BlogPost; side: 'prev' | 'next'; b
         {side === 'prev' ? b.previousPost : b.nextPost}
         {side === 'next' ? <PixelIcon name="arrowRight" /> : null}
       </span>
-      <span className="kit-pager-title" lang={lang}>
+      <span className="kit-pager-title" lang={lang} data-ghost={pending || undefined}>
         {title}
       </span>
     </Link>
@@ -436,8 +439,8 @@ function PostView({ post }: { post: BlogPost }) {
   const { t, locale } = useI18n();
   const b = t.blog;
   const ui = uiStrings(kitLocale[locale]);
-  const doc = useTranslatedDoc(post.slug, useBlogDoc(post.slug));
-  const { title, lang } = useTranslatedPost(post);
+  const { doc, pending: docPending } = useTranslatedDoc(post.slug, useBlogDoc(post.slug));
+  const { title, lang, pending } = useTranslatedPost(post);
   const i = blog.posts.findIndex((p) => p.slug === post.slug);
   const newer = blog.posts[i - 1];
   const older = blog.posts[i + 1];
@@ -455,7 +458,7 @@ function PostView({ post }: { post: BlogPost }) {
                 </>
               ) : null}
             </nav>
-            <h1 id="lm-blog-post-title" className="lm-title lm-blog-post-title" lang={lang}>
+            <h1 id="lm-blog-post-title" className="lm-title lm-blog-post-title" lang={lang} data-ghost={pending || undefined} aria-busy={pending || undefined}>
               {title}
             </h1>
             <PostMeta post={post} b={b} />
@@ -465,14 +468,16 @@ function PostView({ post }: { post: BlogPost }) {
             </div>
           </header>
           <div className="kit-rule lm-blog-rule" aria-hidden="true" />
-          <Prose id={post.slug} doc={doc} />
+          <Prose id={post.slug} doc={doc} pending={docPending} />
           <nav className="kit-pager lm-blog-pager" aria-label={`${b.previousPost} / ${b.nextPost}`}>
             {older ? <PagerLink post={older} side="prev" b={b} /> : <span />}
             {newer ? <PagerLink post={newer} side="next" b={b} /> : null}
           </nav>
           <Comments path={post.oldPath} />
         </article>
-        <div className="lm-blog-post-side">{doc ? <Toc toc={doc.toc} label={ui.onThisPage} /> : null}</div>
+        <div className="lm-blog-post-side" data-ghost={docPending || undefined}>
+          {doc ? <Toc toc={doc.toc} label={ui.onThisPage} /> : null}
+        </div>
       </div>
     </div>
   );
@@ -482,15 +487,15 @@ function PageView({ name }: { name: string }) {
   const { t } = useI18n();
   const b = t.blog;
   const page = blog.pages[name]!;
-  const { texts, lang } = useTranslated([page.title], blog.lang);
-  const doc = useTranslatedDoc(`page:${name}`, useBlogDoc(`page:${name}`));
+  const { texts, lang, pending } = useTranslated([page.title], blog.lang);
+  const { doc, pending: docPending } = useTranslatedDoc(`page:${name}`, useBlogDoc(`page:${name}`));
   return (
     <div className="lm-page lm-container lm-blog-body">
-      <BlogHead eyebrow={b.eyebrow} title={texts[0] ?? page.title} lang={lang} />
+      <BlogHead eyebrow={b.eyebrow} title={texts[0] ?? page.title} lang={lang} ghost={pending} />
       <BlogTools view={{ kind: 'page', name }} />
       <div className="lm-blog-page">
         <div className="px-card lm-blog-page-card">
-          <Prose id={`page:${name}`} doc={doc} />
+          <Prose id={`page:${name}`} doc={doc} pending={docPending} />
         </div>
         <Comments path={page.oldPath} />
       </div>

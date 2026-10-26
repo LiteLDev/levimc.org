@@ -50,6 +50,13 @@ test('everything asked for in one tick goes out as one request, in order, dedupl
   assert.equal(translationActivity().busy, false);
 });
 
+test('Chinese punctuation between inline markup becomes its Latin counterpart, with no round trip', async () => {
+  assert.deepEqual(await translateTexts(['\u3001', '\uff0c', ' \uff08', '\uff09\u3002'], 'zh-CN', 'en'), [', ', ', ', ' (', ') . ']);
+  assert.deepEqual(cachedTranslations(['\u3001'], 'zh-CN', 'en'), [', ']);
+  assert.deepEqual(await translateTexts(['\u3001'], 'zh-CN', 'zh-Hant'), ['\u3001']);
+  assert.equal(calls.length, 0);
+});
+
 test('translations are kept: the same text is never fetched twice, and a render can read them synchronously', async () => {
   assert.equal(cachedTranslations(['\u7f13\u5b58'], 'zh-CN', 'en'), undefined);
   await translateTexts(['\u7f13\u5b58'], 'zh-CN', 'en');

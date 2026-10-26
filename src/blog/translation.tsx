@@ -1,6 +1,7 @@
-// The blog in the reader's language: a switch, remembered in this browser, that machine-translates the posts'
-// titles, excerpts and text into the interface language whenever that is not the language they were written in
-// (see translator.ts for who translates). Off, and for readers of the posts' own language, nothing changes.
+// The blog in the reader's language: the posts' titles, excerpts and text are machine-translated into the
+// interface language whenever that is not the language they were written in (see translator.ts for who
+// translates), unless the reader asked for the original — a switch, remembered in this browser. For readers of
+// the posts' own language nothing changes.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { Badge, PixelIcon } from '../../kit/components';
 import { useI18n } from '../i18n';
@@ -20,17 +21,18 @@ interface TranslationState {
 }
 const Context = createContext<TranslationState>({ uiLang: 'en', enabled: false, setEnabled: () => {}, attempt: 0, retry: () => {} });
 
+/** On unless the reader turned it off. */
 function readChoice(): boolean {
   try {
-    return localStorage.getItem(STORAGE_KEY) === 'on';
+    return localStorage.getItem(STORAGE_KEY) !== 'off';
   } catch {
-    return false;
+    return true;
   }
 }
 function writeChoice(on: boolean) {
   try {
-    if (on) localStorage.setItem(STORAGE_KEY, 'on');
-    else localStorage.removeItem(STORAGE_KEY);
+    if (on) localStorage.removeItem(STORAGE_KEY);
+    else localStorage.setItem(STORAGE_KEY, 'off');
   } catch {
     /* storage blocked: the choice lasts the visit */
   }
@@ -40,7 +42,7 @@ export function BlogTranslationProvider({ children }: { children: ReactNode }) {
   const { info } = useI18n();
   const [enabled, setOn] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  // the prerendered page (and its hydration) shows the original; the remembered choice applies right after
+  // the prerendered page (and its hydration) shows the original; translation starts right after
   useEffect(() => setOn(readChoice()), []);
   const setEnabled = useCallback((on: boolean) => {
     setOn(on);
@@ -60,42 +62,48 @@ function useTarget(lang: string): string | null {
   return enabled ? translationTarget(lang, uiLang) : null;
 }
 
-/** `texts`, written in `lang`, in the reader's language once translated — the originals until then. */
-export function useTranslated(texts: readonly string[], lang: string): { texts: readonly string[]; lang: string } {
+/**
+ * `texts`, written in `lang`, in the reader's language once translated — the originals until then, `pending`
+ * while they are on their way (shown as ghost text: data-ghost).
+ */
+export function useTranslated(texts: readonly string[], lang: string): { texts: readonly string[]; lang: string; pending: boolean } {
   const to = useTarget(lang);
   const { attempt } = useContext(Context);
-  const key = texts.join('\u0000');
+  const key = `${texts.join('\u0000')}\u0000${to}\u0000${attempt}`;
   const [, rerender] = useState(0);
+  const [failedKey, setFailedKey] = useState('');
   useEffect(() => {
     if (!to || cachedTranslations(texts, lang, to)) return;
     let live = true;
     translateTexts(texts, lang, to).then(
       () => live && rerender((n) => n + 1),
-      () => {},
+      () => live && setFailedKey(key),
     );
     return () => {
       live = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `key` stands for `texts`
-  }, [key, lang, to, attempt]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `key` stands for `texts`, `to` and `attempt`
+  }, [key, lang]);
   const translated = to ? cachedTranslations(texts, lang, to) : undefined;
-  return translated ? { texts: translated, lang: to! } : { texts, lang };
+  if (translated) return { texts: translated, lang: to!, pending: false };
+  return { texts, lang, pending: !!to && failedKey !== key };
 }
 
-export function useTranslatedPost(post: BlogPost): { title: string; excerpt: string; lang: string } {
-  const { texts, lang } = useTranslated([post.title, post.excerpt], post.lang);
-  return { title: texts[0] ?? post.title, excerpt: texts[1] ?? post.excerpt, lang };
+export function useTranslatedPost(post: BlogPost): { title: string; excerpt: string; lang: string; pending: boolean } {
+  const { texts, lang, pending } = useTranslated([post.title, post.excerpt], post.lang);
+  return { title: texts[0] ?? post.title, excerpt: texts[1] ?? post.excerpt, lang, pending };
 }
 
 const translatedDocs = new Map<string, BlogDoc>();
 
 /** A post's rendered markdown (and its headings' outline) in the reader's language — the original until then. */
-export function useTranslatedDoc(id: string, doc: BlogDoc | null | undefined): BlogDoc | null | undefined {
+export function useTranslatedDoc(id: string, doc: BlogDoc | null | undefined): { doc: BlogDoc | null | undefined; pending: boolean } {
   const target = useTarget(doc?.lang ?? '');
   const { attempt } = useContext(Context);
   const to = doc ? target : null;
   const key = `${id}\u0000${to}`;
   const [, rerender] = useState(0);
+  const [failedKey, setFailedKey] = useState('');
   useEffect(() => {
     if (!doc || !to || translatedDocs.has(key)) return;
     let live = true;
@@ -104,13 +112,15 @@ export function useTranslatedDoc(id: string, doc: BlogDoc | null | undefined): B
         translatedDocs.set(key, { html, toc: doc.toc.map((e, i) => ({ ...e, text: toc[i] ?? e.text })), lang: to });
         if (live) rerender((n) => n + 1);
       },
-      () => {},
+      () => live && setFailedKey(`${key}\u0000${attempt}`),
     );
     return () => {
       live = false;
     };
   }, [doc, to, key, attempt]);
-  return (to && translatedDocs.get(key)) || doc;
+  const translated = to ? translatedDocs.get(key) : undefined;
+  if (translated) return { doc: translated, pending: false };
+  return { doc, pending: !!to && failedKey !== `${key}\u0000${attempt}` };
 }
 
 /**

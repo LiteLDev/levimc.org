@@ -6,8 +6,9 @@
 //   2. Google Translate's public endpoint: no key, no server of ours, every other browser. It is not reachable
 //      from mainland China; when it fails, a pack that is on its way is waited for after all.
 // Everything asked for in the same tick goes out as one batch, translations are kept for the rest of the visit,
-// and a post's HTML is translated text node by text node: its markup, code, links and images stay as rendered
-// (so a sentence broken up by inline markup is translated in pieces — the price of never inserting foreign HTML).
+// and a post's HTML is translated text node by text node: its markup, links and images stay as rendered (so a
+// sentence broken up by inline markup is translated in pieces — the price of never inserting foreign HTML). Code
+// is left alone, except plain-text blocks and comment lines, which are prose.
 
 const GOOGLE_ENDPOINT = 'https://translate.googleapis.com/translate_a/t?client=gtx';
 /** One Google request carries at most this many segments / characters. */
@@ -17,7 +18,13 @@ const GOOGLE_TIMEOUT_MS = 10_000;
 /** The browser's translator gets this long to say whether it is ready (its availability check can hang). */
 const BROWSER_TIMEOUT_MS = 1_500;
 /** Inside a post, nothing in these is text to translate. */
-const SKIP = 'pre, code, kbd, samp, var, svg, math, [translate="no"]';
+const NEVER = 'kbd, samp, var, svg, math, [translate="no"]';
+/** Code blocks in these "languages" are prose; in the others only comment lines are. */
+const PLAIN_CODE = new Set(['', 'text', 'txt', 'plain', 'plaintext']);
+const COMMENT_LINE = /^\s*(?:\/\/|#|\/\*|\*|;|%|--|<!--)/;
+/** Chinese punctuation between inline markup, e.g. the enumeration comma in `<code>a</code>、<code>b</code>`. */
+const CJK_PUNCTUATION: Record<string, string> = { '、': ', ', '，': ', ', '。': '. ', '：': ': ', '；': '; ', '！': '! ', '？': '? ', '（': ' (', '）': ') ', '《': ' "', '》': '" ', '「': ' "', '」': '" ', '【': ' [', '】': '] ' };
+const CJK_PUNCTUATION_RE = new RegExp(`[${Object.keys(CJK_PUNCTUATION).join('')}]`, 'g');
 
 export type TranslatorName = 'browser' | 'google';
 
@@ -43,6 +50,13 @@ export function translationTarget(source: string, ui: string): string | null {
 /** Whether a text has words in `lang` at all: numbers, punctuation and Latin names in a Chinese text stay as they are. */
 export function hasWords(text: string, lang: string): boolean {
   return (/^zh\b/i.test(lang) ? /\p{Script=Han}/u : /\p{L}/u).test(text);
+}
+
+const isChinese = (lang: string) => /^zh\b/i.test(lang);
+
+/** A text without words, in `to`: Chinese punctuation becomes its Latin counterpart for a reader of another language. */
+function punctuation(text: string, to: string): string {
+  return isChinese(to) ? text : text.replace(CJK_PUNCTUATION_RE, (c) => CJK_PUNCTUATION[c]!).replace(/ {2,}/g, ' ');
 }
 
 // ---- what is going on (for the switch's status line)
@@ -231,7 +245,7 @@ export function translateTexts(texts: readonly string[], from: string, to: strin
   return Promise.all(
     texts.map(async (text) => {
       const [lead, core, trail] = splitSpace(text);
-      return hasWords(core, from) ? lead + (await translateOne(core, from, to)) + trail : text;
+      return hasWords(core, from) ? lead + (await translateOne(core, from, to)) + trail : punctuation(text, to);
     }),
   );
 }
@@ -242,7 +256,7 @@ export function cachedTranslations(texts: readonly string[], from: string, to: s
   for (const text of texts) {
     const [lead, core, trail] = splitSpace(text);
     if (!hasWords(core, from)) {
-      out.push(text);
+      out.push(punctuation(text, to));
       continue;
     }
     const hit = cache.get(keyOf(from, to, core));
@@ -252,11 +266,25 @@ export function cachedTranslations(texts: readonly string[], from: string, to: s
   return out;
 }
 
+/** Whether a text node of rendered markdown is prose to translate (code is not, except prose-like code blocks and comments). */
+function isProse(node: Text, from: string): boolean {
+  const el = node.parentElement;
+  const text = node.data;
+  if (!el || el.closest(NEVER)) return false;
+  const pre = el.closest('pre');
+  if (pre) {
+    const lang = pre.closest('.kit-code')?.getAttribute('data-lang') ?? '';
+    return hasWords(text, from) && (PLAIN_CODE.has(lang) || COMMENT_LINE.test(text));
+  }
+  if (el.closest('code')) return false;
+  return hasWords(text, from) || (isChinese(from) && CJK_PUNCTUATION_RE.test(text));
+}
+
 /** The text of rendered markdown in `to`; its elements, attributes, code and anchors stay as they are. */
 export async function translateHtml(html: string, from: string, to: string): Promise<string> {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, {
-    acceptNode: (node) => (node.parentElement?.closest(SKIP) || !hasWords(node.nodeValue ?? '', from) ? NodeFilter.FILTER_SKIP : NodeFilter.FILTER_ACCEPT),
+    acceptNode: (node) => (isProse(node as Text, from) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP),
   });
   const nodes: Text[] = [];
   for (let n = walker.nextNode(); n; n = walker.nextNode()) nodes.push(n as Text);
@@ -268,8 +296,9 @@ export async function translateHtml(html: string, from: string, to: string): Pro
   nodes.forEach((n, i) => (n.data = translated[i]!));
   // Chinese puts no space between words: a translation into a language that does needs one beside inline markup
   // (a link, code, emphasis), or it reads "throughLeviLamina"
-  if (!/^zh\b/i.test(to))
+  if (!isChinese(to))
     for (const n of nodes) {
+      if (n.parentElement?.closest('pre')) continue;
       if (n.previousSibling?.nodeType === 1 && /^[\p{L}\p{N}]/u.test(n.data)) n.data = ' ' + n.data;
       if (n.nextSibling?.nodeType === 1 && /[\p{L}\p{N}]$/u.test(n.data)) n.data += ' ';
     }

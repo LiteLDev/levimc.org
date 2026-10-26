@@ -102,14 +102,14 @@ First paragraph (it is also the excerpt on the index and in the feeds) …
 
 ### Reading it in another language
 
-The posts are written in Chinese. A reader whose interface language is not Chinese gets a **Translate** switch
-(on a post, beside its tags; on the index and the other lists, at the end of the sections row) that
-machine-translates the titles, excerpts and text in the browser — `src/blog/translator.ts`: the browser's own
-Translator API (Chrome / Edge 138+, on the device) when it has the language pack, else Google Translate's public
-endpoint; code, links and images stay as rendered (text is translated node by node, so a sentence broken up by
-inline markup is translated in pieces). The choice is remembered in the browser
-(`localStorage["levimc-blog-translate"]`). Nothing is fetched while prerendering, or for readers of the posts' own
-language.
+The posts are written in Chinese. For a reader whose interface language is not Chinese, the titles, excerpts and
+text are machine-translated in the browser — `src/blog/translator.ts`: the browser's own Translator API
+(Chrome / Edge 138+, on the device) when it has the language pack, else Google Translate's public endpoint. Links,
+images and code stay as rendered (text is translated node by node, so a sentence broken up by inline markup is
+translated in pieces; plain-text code blocks and comment lines are translated, other code is not). A **Show
+original** switch (on a post, beside its tags; on the index and the other lists, at the end of the sections row)
+turns it off, remembered in the browser (`localStorage["levimc-blog-translate"] = "off"`). Nothing is fetched while
+prerendering, or for readers of the posts' own language.
 
 `npm run build` writes the index (10 posts per page), the posts, tag / category / archive pages, `/blog/about/`,
 `/blog/friends/` (from `content/blog/pages/`) and the feeds `/blog/rss.xml`, `/blog/atom.xml`, `/blog/feed.json`.

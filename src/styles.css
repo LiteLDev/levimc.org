@@ -866,6 +866,23 @@
   .lm-blog-translate-note:empty {
     display: none;
   }
+  /* ghost text: what is being translated, until it is — the original's own shape keeps the layout (code blocks
+     are not translated, so they stay readable); !important: every element's own colour must give way */
+  [data-ghost] {
+    animation: lm-pulse 1.4s steps(2, end) infinite;
+  }
+  [data-ghost],
+  [data-ghost] *:not(pre, pre *, img) {
+    color: transparent !important;
+    text-shadow: 0 0 0.3em color-mix(in srgb, var(--color-ink) 60%, transparent) !important;
+    user-select: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-ghost] {
+      animation: none;
+      opacity: 0.6;
+    }
+  }
   .lm-blog-translate-retry {
     padding: 0;
     border: 0;
