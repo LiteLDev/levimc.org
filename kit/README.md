@@ -2,7 +2,7 @@
 
 The shared design system and static docs engine for every LeviMC website — levimc.org (with LeviMC Mods at /mods/) and
 the project docs at `docs.levimc.org/<Project>/` (LeviLamina, LegacyScriptEngine, lip, LeviLauncher,
-LeviLaunchroid), plus the Doxygen API reference.
+LeviLauncher for Android — repository LeviLaunchroid), plus the Doxygen API reference.
 
 **Design concept: "Impression, Craft".** Monet's Giverny rendered as if built in Minecraft.
 *Painterly = atmosphere* (impressionist colour fields and brush-dab texture in heroes, backdrops and margins);
@@ -818,6 +818,13 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.7.2 — 2026-10-27
+
+**LeviLauncher for Android.** The Android launcher's display name (`PROJECTS`, so the Projects menu, the
+docs.levimc.org root's cards and levimc.org's project cards) is "LeviLauncher for Android" in every language. Its id,
+repository (`LiteLDev/LeviLaunchroid`), docs URL (`docs.levimc.org/LeviLaunchroid/`) and logo file are unchanged.
+* No API change.
 
 ### 2.7.1 — 2026-10-26
 

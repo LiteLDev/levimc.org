@@ -83,7 +83,7 @@ export const PROJECTS: readonly Project[] = [
   { id: 'LeviLauncher', name: 'LeviLauncher', group: 'launchers', repo: 'https://github.com/LiteLDev/LeviLauncher', docs: 'https://docs.levimc.org/LeviLauncher/', logo: logo('LeviLauncher'), icon: 'map' },
   {
     id: 'LeviLaunchroid',
-    name: 'LeviLaunchroid',
+    name: 'LeviLauncher for Android',
     group: 'launchers',
     repo: 'https://github.com/LiteLDev/LeviLaunchroid',
     docs: 'https://docs.levimc.org/LeviLaunchroid/',

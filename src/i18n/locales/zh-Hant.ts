@@ -48,7 +48,7 @@ const zhHant: typeof en = {
     badgeWhy: "緣由",
     members: {
       "OEOTYAN": { role: "團隊負責人", bio: "領導 LeviMC 專案，把握專案方向。LeviLamina 維護者。" },
-      "dreamguxiang": { role: "啟動器作者", bio: "LeviLauncher 與 LeviLaunchroid 的作者，LeviLamina 開發者。" },
+      "dreamguxiang": { role: "啟動器作者", bio: "LeviLauncher 與 LeviLauncher for Android 的作者，LeviLamina 開發者。" },
       "KawaiiNahida": { role: "標頭檔產生器維護者", bio: "維護標頭檔產生系統，確保標頭檔高效準確。LeviAntiCheat 作者。" },
       "RimuruChan": { role: "標頭檔產生器維護者", bio: "維護標頭檔產生系統，確保標頭檔高效準確。" },
       "Dofes": { role: "LeviOptimize 作者", bio: "開發並維護 LeviOptimize——為 LeviLamina 伺服器和用戶端提供效能優化的模組。LeviLamina 與 LegacyScriptEngine 開發者。" },

@@ -48,7 +48,7 @@ const en = {
     badgeWhy: "Why",
     members: {
       "OEOTYAN": { role: "Team Lead", bio: "Leads the LeviMC project, and ensures the project stays on course. Maintainer of LeviLamina." },
-      "dreamguxiang": { role: "Author of Launcher", bio: "Author of LeviLauncher and LeviLaunchroid. Developer of LeviLamina." },
+      "dreamguxiang": { role: "Author of Launcher", bio: "Author of LeviLauncher and LeviLauncher for Android. Developer of LeviLamina." },
       "KawaiiNahida": { role: "Maintainer of Header Generator", bio: "Maintains the header generation system, ensuring efficient and accurate header files. Author of LeviAntiCheat." },
       "RimuruChan": { role: "Maintainer of Header Generator", bio: "Maintains the header generation system, ensuring efficient and accurate header files." },
       "Dofes": { role: "Author of LeviOptimize", bio: "Creates and maintains LeviOptimize, a performance optimization mod for LeviLamina servers and clients. Developer of LeviLamina and LegacyScriptEngine." },
