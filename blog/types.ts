@@ -54,6 +54,8 @@ export interface BlogData {
   archives: BlogArchiveYear[];
   pages: Record<string, BlogPage>;
   perPage: number;
+  /** Language the posts and pages are written in (BCP-47). */
+  lang: string;
 }
 
 export interface BlogDoc {

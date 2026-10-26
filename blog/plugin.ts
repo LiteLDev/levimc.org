@@ -6,7 +6,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { Plugin, ViteDevServer } from 'vite';
-import { buildBlog, type BuiltBlog } from './content.ts';
+import { buildBlog, CONTENT_LANG, type BuiltBlog } from './content.ts';
 import { feeds } from './feeds.ts';
 
 const MAIN_ID = 'virtual:levimc-blog';
@@ -57,7 +57,7 @@ export function levimcBlog(): Plugin {
       if (id.startsWith(R_DOC)) {
         const b = await ensure();
         const doc = b.docs.get(decodeURIComponent(id.slice(R_DOC.length)));
-        return `export default ${JSON.stringify(doc ?? { html: '', toc: [], lang: 'zh-CN' })};`;
+        return `export default ${JSON.stringify(doc ?? { html: '', toc: [], lang: CONTENT_LANG })};`;
       }
       if (id === R_TOKENS) return (await ensure()).tokenCss;
       return null;

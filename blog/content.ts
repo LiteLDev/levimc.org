@@ -18,6 +18,8 @@ import type { BlogData, BlogDoc, BlogPost, BlogTerm, BlogArchiveYear } from './t
 export const BLOG_BASE = '/blog/';
 /** Index / tag / category / archive pages list this many posts (Hexo `per_page`). */
 export const PER_PAGE = 10;
+/** The posts are written in Simplified Chinese (the app translates them for other readers on request). */
+export const CONTENT_LANG = 'zh-CN';
 /** Hexo `timezone`: the old permalinks' dates are local dates in Asia/Shanghai (UTC+8, no DST since 1991). */
 const TZ_OFFSET = '+08:00';
 /** Images the posts load from s2.loli.net (SM.MS) are served from public/blog/images/ (same path). */
@@ -148,7 +150,7 @@ export async function buildBlog(root: string): Promise<BuiltBlog> {
     if (fm.published === false) continue;
     const slug = basename(name, '.md');
     const date = parseHexoDate(fm.date, file);
-    const r = await render(file, body, 'zh-CN');
+    const r = await render(file, body, CONTENT_LANG);
     const authorName = typeof fm.author === 'string' && fm.author.trim() ? fm.author.trim() : null;
     const a = authorName ? authors[authorName] : undefined;
     const term = (kind: 'tags' | 'categories', n: string): BlogTerm => ({ name: n, slug: hexoSlugize(n), url: `${BLOG_BASE}${kind}/${hexoSlugize(n)}/`, count: 0 });
@@ -164,7 +166,7 @@ export async function buildBlog(root: string): Promise<BuiltBlog> {
       category: asList(fm.categories ?? fm.category).map((c) => term('categories', c))[0] ?? null,
       excerpt: r.description.length > 140 ? r.description.slice(0, 138).replace(/[\s，。,.;；：:、]+$/, '') + '…' : r.description,
       readingMinutes: Math.max(1, Math.round(chars / 400)),
-      lang: 'zh-CN',
+      lang: CONTENT_LANG,
     });
     docs.set(slug, { html: r.html, toc: r.toc, lang: r.lang });
   }
@@ -202,7 +204,7 @@ export async function buildBlog(root: string): Promise<BuiltBlog> {
     const file = `content/blog/pages/${name}`;
     const { data: fm, body } = splitFrontmatter(readFileSync(join(pageDir, name), 'utf8'));
     const key = basename(name, '.md');
-    const r = await render(file, body, 'zh-CN');
+    const r = await render(file, body, CONTENT_LANG);
     pages[key] = { name: key, title: String(fm.title ?? key), date: fm.date ? parseHexoDate(fm.date, file).iso : undefined, url: `${BLOG_BASE}${key}/`, oldPath: `/${key}/` };
     docs.set(`page:${key}`, { html: r.html, toc: r.toc, lang: r.lang });
   }
@@ -222,5 +224,5 @@ export async function buildBlog(root: string): Promise<BuiltBlog> {
     ...Object.values(pages).map((p) => p.url),
   ];
 
-  return { data: { posts, tags, categories, archives, pages, perPage: PER_PAGE }, docs, tokenCss: styles.css(), warnings, routes };
+  return { data: { posts, tags, categories, archives, pages, perPage: PER_PAGE, lang: CONTENT_LANG }, docs, tokenCss: styles.css(), warnings, routes };
 }

@@ -2,13 +2,14 @@
 // the blog's own pages, in the kit's language (painted hero, pixel cards, hotbar, prose canvas).
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
-import { Badge, PaintedHero, Pagination, PixelIcon, uiStrings, type PixelIconName } from '../../kit/components';
+import { PaintedHero, Pagination, PixelIcon, uiStrings, type PixelIconName } from '../../kit/components';
 import { useI18n, kitLocale, type Messages } from '../i18n';
 import NotFound from '../pages/NotFound';
 import { isLatin } from '../components/ui';
-import { blog, pageOf, pagedHref, resolveBlogPath, useBlogDoc, type BlogPost, type BlogTerm, type BlogView } from './data';
+import { blog, pageOf, pagedHref, resolveBlogPath, useBlogDoc, type BlogDoc, type BlogPost, type BlogTerm, type BlogView } from './data';
 import Comments from './Comments';
 import { useProseEnhancements } from './enhance';
+import { BlogTranslationProvider, TranslateToggle, useTranslated, useTranslatedDoc, useTranslatedPost } from './translation';
 import 'virtual:levimc-blog/tokens.css';
 
 type B = Messages['blog'];
@@ -71,6 +72,16 @@ function BlogNav({ view }: { view: BlogView }) {
         </a>
       </div>
     </nav>
+  );
+}
+
+/** The sections row and, for readers of another language, the translate switch at its end. */
+function BlogTools({ view }: { view: BlogView }) {
+  return (
+    <div className="lm-blog-tools">
+      <BlogNav view={view} />
+      <TranslateToggle lang={blog.lang} />
+    </div>
   );
 }
 
@@ -142,6 +153,7 @@ function TermChips({ post, withCategory = false }: { post: BlogPost; withCategor
 
 function PostCard({ post, b, headingLevel = 2 }: { post: BlogPost; b: B; headingLevel?: 2 | 3 }) {
   const H = `h${headingLevel}` as 'h2';
+  const { title, excerpt, lang } = useTranslatedPost(post);
   return (
     <article className="px-card lm-blog-card">
       {post.category ? (
@@ -149,12 +161,12 @@ function PostCard({ post, b, headingLevel = 2 }: { post: BlogPost; b: B; heading
           {post.category.name}
         </Link>
       ) : null}
-      <H className="lm-blog-card-title" lang={post.lang}>
-        <Link to={post.url}>{post.title}</Link>
+      <H className="lm-blog-card-title" lang={lang}>
+        <Link to={post.url}>{title}</Link>
       </H>
       <PostMeta post={post} b={b} />
-      <p className="lm-blog-excerpt" lang={post.lang}>
-        {post.excerpt}
+      <p className="lm-blog-excerpt" lang={lang}>
+        {excerpt}
       </p>
       <div className="lm-blog-card-foot">
         <TermChips post={post} />
@@ -253,7 +265,7 @@ function Index({ page }: { page: number }) {
       {/* the hero's eyebrow is a Silkscreen micro-label: Latin only */}
       <PaintedHero className="lm-blog-hero" eyebrow="Blog" name={b.name} tagline={b.tagline} horizon />
       <div className="lm-container lm-blog-body">
-        <BlogNav view={{ kind: 'index', page }} />
+        <BlogTools view={{ kind: 'index', page }} />
         <div className="lm-blog-layout">
           <section className="lm-blog-main" aria-labelledby="lm-blog-latest">
             <h2 id="lm-blog-latest" className="lm-blog-section-title">
@@ -271,6 +283,21 @@ function Index({ page }: { page: number }) {
         </div>
       </div>
     </>
+  );
+}
+
+function PostRow({ post }: { post: BlogPost }) {
+  const { title, lang } = useTranslatedPost(post);
+  return (
+    <li className="lm-blog-row">
+      <time className="lm-blog-row-date" dateTime={post.date}>
+        {post.date.slice(5, 10)}
+      </time>
+      <Link to={post.url} className="lm-blog-row-title" lang={lang}>
+        {title}
+      </Link>
+      {post.author ? <span className="lm-blog-row-author">{post.author.name}</span> : null}
+    </li>
   );
 }
 
@@ -300,15 +327,7 @@ function Timeline({ posts, b }: { posts: BlogPost[]; b: B }) {
               </h3>
               <ul className="lm-blog-rows">
                 {m.posts.map((p) => (
-                  <li key={p.slug} className="lm-blog-row">
-                    <time className="lm-blog-row-date" dateTime={p.date}>
-                      {p.date.slice(5, 10)}
-                    </time>
-                    <Link to={p.url} className="lm-blog-row-title" lang={p.lang}>
-                      {p.title}
-                    </Link>
-                    {p.author ? <span className="lm-blog-row-author">{p.author.name}</span> : null}
-                  </li>
+                  <PostRow key={p.slug} post={p} />
                 ))}
               </ul>
             </div>
@@ -326,7 +345,7 @@ function ListPage({ view, eyebrow, title, posts, base, page }: { view: BlogView;
   return (
     <div className="lm-page lm-container lm-blog-body">
       <BlogHead eyebrow={eyebrow} title={title} lead={b.postCount(posts.length)} />
-      <BlogNav view={view} />
+      <BlogTools view={view} />
       <Timeline posts={items} b={b} />
       <BlogPagination page={page} pageCount={pageCount} base={base} />
     </div>
@@ -355,7 +374,7 @@ function TermsPage({ kind }: { kind: 'tags' | 'categories' }) {
   return (
     <div className="lm-page lm-container lm-blog-body">
       <BlogHead eyebrow={b.eyebrow} title={kind === 'tags' ? b.tags : b.categories} lead={b.postCount(blog.posts.length)} />
-      <BlogNav view={{ kind }} />
+      <BlogTools view={{ kind }} />
       <div className="px-card lm-blog-terms-card">
         <TermList terms={terms} kind={kind} />
       </div>
@@ -380,11 +399,11 @@ function Toc({ toc, label }: { toc: { level: number; id: string; text: string }[
   );
 }
 
-function Prose({ id, lang }: { id: string; lang: string }) {
+/** A post's / page's rendered markdown (`doc` as useTranslatedDoc gives it: undefined while loading, null when it failed). */
+function Prose({ id, doc }: { id: string; doc: BlogDoc | null | undefined }) {
   const { t } = useI18n();
-  const doc = useBlogDoc(id);
   const ref = useRef<HTMLDivElement>(null);
-  useProseEnhancements(ref, doc ? id : '');
+  useProseEnhancements(ref, doc ? `${id}\u0000${doc.lang}` : '');
   if (doc === null)
     return (
       <p className="lm-blog-loading">
@@ -394,14 +413,31 @@ function Prose({ id, lang }: { id: string; lang: string }) {
       </p>
     );
   if (!doc) return <div className="lm-blog-loading" aria-busy="true" />;
-  return <div ref={ref} className="kit-prose lm-blog-prose" lang={lang} data-doc-content="" dangerouslySetInnerHTML={{ __html: doc.html }} />;
+  return <div ref={ref} className="kit-prose lm-blog-prose" lang={doc.lang} data-doc-content="" dangerouslySetInnerHTML={{ __html: doc.html }} />;
+}
+
+function PagerLink({ post, side, b }: { post: BlogPost; side: 'prev' | 'next'; b: B }) {
+  const { title, lang } = useTranslatedPost(post);
+  return (
+    <Link to={post.url} className={side === 'next' ? 'px-card kit-pager-link is-next' : 'px-card kit-pager-link'} rel={side}>
+      <span className="kit-pager-label">
+        {side === 'prev' ? <PixelIcon name="arrowLeft" /> : null}
+        {side === 'prev' ? b.previousPost : b.nextPost}
+        {side === 'next' ? <PixelIcon name="arrowRight" /> : null}
+      </span>
+      <span className="kit-pager-title" lang={lang}>
+        {title}
+      </span>
+    </Link>
+  );
 }
 
 function PostView({ post }: { post: BlogPost }) {
   const { t, locale } = useI18n();
   const b = t.blog;
   const ui = uiStrings(kitLocale[locale]);
-  const doc = useBlogDoc(post.slug);
+  const doc = useTranslatedDoc(post.slug, useBlogDoc(post.slug));
+  const { title, lang } = useTranslatedPost(post);
   const i = blog.posts.findIndex((p) => p.slug === post.slug);
   const newer = blog.posts[i - 1];
   const older = blog.posts[i + 1];
@@ -419,46 +455,20 @@ function PostView({ post }: { post: BlogPost }) {
                 </>
               ) : null}
             </nav>
-            <h1 id="lm-blog-post-title" className="lm-title lm-blog-post-title" lang={post.lang}>
-              {post.title}
+            <h1 id="lm-blog-post-title" className="lm-title lm-blog-post-title" lang={lang}>
+              {title}
             </h1>
             <PostMeta post={post} b={b} />
             <div className="lm-blog-post-tags">
               <TermChips post={post} />
-              {locale !== 'zh' ? (
-                <Badge tone="pond" className="lm-blog-lang">
-                  {b.writtenIn}
-                </Badge>
-              ) : null}
+              <TranslateToggle lang={post.lang} writtenIn />
             </div>
           </header>
           <div className="kit-rule lm-blog-rule" aria-hidden="true" />
-          <Prose id={post.slug} lang={post.lang} />
+          <Prose id={post.slug} doc={doc} />
           <nav className="kit-pager lm-blog-pager" aria-label={`${b.previousPost} / ${b.nextPost}`}>
-            {older ? (
-              <Link to={older.url} className="px-card kit-pager-link" rel="prev">
-                <span className="kit-pager-label">
-                  <PixelIcon name="arrowLeft" />
-                  {b.previousPost}
-                </span>
-                <span className="kit-pager-title" lang={older.lang}>
-                  {older.title}
-                </span>
-              </Link>
-            ) : (
-              <span />
-            )}
-            {newer ? (
-              <Link to={newer.url} className="px-card kit-pager-link is-next" rel="next">
-                <span className="kit-pager-label">
-                  {b.nextPost}
-                  <PixelIcon name="arrowRight" />
-                </span>
-                <span className="kit-pager-title" lang={newer.lang}>
-                  {newer.title}
-                </span>
-              </Link>
-            ) : null}
+            {older ? <PagerLink post={older} side="prev" b={b} /> : <span />}
+            {newer ? <PagerLink post={newer} side="next" b={b} /> : null}
           </nav>
           <Comments path={post.oldPath} />
         </article>
@@ -472,13 +482,15 @@ function PageView({ name }: { name: string }) {
   const { t } = useI18n();
   const b = t.blog;
   const page = blog.pages[name]!;
+  const { texts, lang } = useTranslated([page.title], blog.lang);
+  const doc = useTranslatedDoc(`page:${name}`, useBlogDoc(`page:${name}`));
   return (
     <div className="lm-page lm-container lm-blog-body">
-      <BlogHead eyebrow={b.eyebrow} title={page.title} lang="zh-CN" />
-      <BlogNav view={{ kind: 'page', name }} />
+      <BlogHead eyebrow={b.eyebrow} title={texts[0] ?? page.title} lang={lang} />
+      <BlogTools view={{ kind: 'page', name }} />
       <div className="lm-blog-page">
         <div className="px-card lm-blog-page-card">
-          <Prose id={`page:${name}`} lang="zh-CN" />
+          <Prose id={`page:${name}`} doc={doc} />
         </div>
         <Comments path={page.oldPath} />
       </div>
@@ -486,8 +498,16 @@ function PageView({ name }: { name: string }) {
   );
 }
 
-/** Every /blog/… URL. Unknown ones are the site's 404 (like GitHub Pages: only prerendered pages exist). */
 export default function Blog() {
+  return (
+    <BlogTranslationProvider>
+      <BlogRoute />
+    </BlogTranslationProvider>
+  );
+}
+
+/** Every /blog/… URL. Unknown ones are the site's 404 (like GitHub Pages: only prerendered pages exist). */
+function BlogRoute() {
   const { pathname } = useLocation();
   const { t } = useI18n();
   const b = t.blog;

@@ -819,8 +819,63 @@
     overflow-x: auto;
     scrollbar-width: thin;
   }
-  .lm-blog-hero + .lm-blog-body .lm-blog-nav {
+  /* the sections row and, for readers of another language, the translate switch at its end */
+  .lm-blog-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    margin: 0 0 2.25rem;
+  }
+  .lm-blog-tools .lm-blog-nav {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+  }
+  .lm-blog-hero + .lm-blog-body .lm-blog-tools {
     margin-top: 1.75rem;
+  }
+  /* translate: the switch and, beside it, what is happening (or the language the text is written in) */
+  .lm-blog-translate {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+  }
+  .lm-blog-translate-btn[data-on] {
+    --mc-btn-bg: var(--color-primary-soft);
+    --mc-btn-bg-hover: var(--color-primary-soft);
+    --mc-btn-ink: var(--color-primary-strong);
+  }
+  .dark .lm-blog-translate-btn[data-on] {
+    --mc-btn-ink: var(--color-primary);
+  }
+  .lm-blog-translate-btn[data-busy] svg {
+    animation: lm-blink 0.9s steps(2, end) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lm-blog-translate-btn[data-busy] svg {
+      animation: none;
+    }
+  }
+  .lm-blog-translate-note {
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+  .lm-blog-translate-note:empty {
+    display: none;
+  }
+  .lm-blog-translate-retry {
+    padding: 0;
+    border: 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--color-link);
+    background: none;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
   }
   /* one row; on phones it scrolls sideways instead of squeezing the slots */
   .lm-blog-nav .hotbar {
