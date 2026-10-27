@@ -25,6 +25,7 @@ dreamguxiang/Glacie-Release
 edshPC/PlayerRegister
 engsr6982/FastMiner
 engsr6982/TeleportSystem
+Eragon327/LazyBedrockBreaker2
 FeixiangTMC/Stipuleroo
 GeneralUniversal/EnchantX
 GlacieTeam/AntiXray
