@@ -1,10 +1,10 @@
 // Which Minecraft versions a mod runs on, for the Game Version filter.
-// Nothing in lipr says so directly: LeviLamina's versions depend on a `bds`
+// No manifest says so directly: LeviLamina's versions depend on a `bds`
 // version, and every other mod reaches LeviLamina through its
 // dependency ranges (directly, or through LegacyScriptEngine and the like).
-// Resolved at build time from levilauncher.json.
+// Resolved at build time from every version's dependencies (see server/registry.ts).
 
-/** levilauncher.json: every version's dependencies, per variant. */
+/** Every version's dependencies, per variant (lipr's levilauncher.json). */
 export interface LauncherIndex {
   packages: Record<string, { variants: Record<string, { versions: Record<string, { dependencies?: Record<string, string> }> }> }>;
 }

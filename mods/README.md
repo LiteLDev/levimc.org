@@ -5,8 +5,8 @@ Bedrock — LeviLamina, LegacyScriptEngine and Endstone — served at
 <https://levimc.org/mods/> (it was pkg.levimc.org). Every
 mod in it can be installed with [lip](https://github.com/LiteLDev/lip).
 
-It is a static site built from the [lipr](https://github.com/LiteLDev/lipr)
-index with the LeviMC web stack — [Vite](https://vite.dev), React 19,
+It is a static site built from the mods' own repositories — the ones
+[`repos.txt`](repos.txt) names, see [Registry](#registry) — with the LeviMC web stack — [Vite](https://vite.dev), React 19,
 [React Router](https://reactrouter.com) 7, TypeScript and Tailwind CSS v4 — and
 the shared LeviMC design system, levimc-kit, which `pnpm install` copies from
 `../kit` into `kit/` (git-ignored; see [Design system](#design-system)). It is
@@ -20,14 +20,22 @@ built with Vite `base: '/mods/'`: every page and file is under `/mods/`.
   Modrinth, a mod must have every included category (AND) and any of the
   included platforms or environments (OR); excluded options are left out, and
   the groups combine with AND. Old links
-  keep working: `?tags=` still filters by raw lipr tags, `?sort=downloads`
+  keep working: `?tags=` still filters by raw manifest tags, `?sort=downloads`
   sorts by stars.
 - **Mod pages** (`/mods/<tooth>/`, e.g. `/mods/github.com/LiteLDev/LeviLamina/`) are prerendered with the README and
   manifest of the default variant's latest version; other variants and
-  versions (`?variant=&version=`) are fetched in the browser from lipr and
-  GitHub. Tabs: Description, Gallery (`?tab=gallery`, when the mod has one, see
+  versions (`?variant=&version=`) are fetched in the browser: the manifest from the mod's
+  `index.json`, the README from GitHub. Tabs: Description, Gallery (`?tab=gallery`, when the mod has one, see
   [Galleries](#galleries)), Versions (`?tab=versions`), Dependencies
   (`?tab=dependencies`).
+- **JSON**: every page has its data next to it as `index.json` (linked from the page as
+  `rel="alternate"`): [`/mods/index.json`](https://levimc.org/mods/index.json) is the listing
+  as `/mods/` shows it, unfiltered and in the default order (a query string does not reach the
+  host, so filtering is left to the reader); `/mods/<tooth>/index.json` is the mod page — name,
+  description, links, stats, facets, the latest version's READMEs and install command, the
+  gallery, dependencies and dependents — with every version included (its manifest info, each
+  variant's platform, dependencies, LeviLamina range and install command, its release). The
+  shapes are `CatalogJson` and `ModJson` in `src/types.ts`; `src/server/api.ts` writes them.
 - Pages hydrate into a single-page app: following a link fetches the target's
   prerendered HTML and reads its embedded data, so a page looks the same
   however it was reached.
@@ -36,16 +44,39 @@ built with Vite `base: '/mods/'`: every page and file is under `/mods/`.
   menu); the theme (Auto, Light, Dark) is shared the same way. Mod data is
   shown as published.
 
+## Registry
+
+[`repos.txt`](repos.txt) lists the GitHub repositories the catalogue is built from, one `owner/repo` per line. It
+replaces [lipr](https://github.com/LiteLDev/lipr) (lip's registry, which the site used to read): it started as the
+repositories of every package lipr had.
+
+- **Versions.** `src/server/registry.ts` lists each repository's tags (`git ls-remote`); every `v<semver>` tag is a
+  version, read from the `tooth.json` at that tag and migrated to the current format the way `lip migrate` does
+  (`src/lib/manifest.ts`). It also makes the repairs lipr's maintainers made by hand: the tag is the version (a
+  manifest saying `v1.2.0`, or not bumped), and a manifest is filed under the tooth it names only when that is
+  where the repository was before a rename (an old release keeps its old address); any other tooth (`CFSP`, a
+  template's `my-mod`, another repository's) is the repository's address as `repos.txt` spells it. The manifests
+  are otherwise taken as the repositories have them, so a dependency on a host that no longer exists stays.
+- **Cache.** What was read is kept in `.cache/registry.json` (git-ignored; the deploy keeps it in the Actions
+  cache, saved when it changed): a tag whose commit is unchanged is not read again, so an hourly build reads only
+  new tags. It is only a cache: without it every tag is read anew (about a minute). `MODS_REGISTRY_CACHE` moves it.
+- **Discovery.** `scripts/discover.mjs` (`.github/workflows/mods-discover.yml`, every two hours) searches GitHub's
+  code for a top-level `tooth.json` (what lipr searched for) and opens a pull request adding each repository that is
+  not in `repos.txt`, not a fork and has a version tag with a `tooth.json` lip can read. Merging lists it at the
+  next deploy; closing it keeps it out, since a repository that ever had a pull request (branch
+  `mods/add/<owner>/<repo>`) is not proposed again. To take a mod off, close its pull request or delete its line.
+  `node scripts/discover.mjs --dry-run` shows what it would propose (needs `GH_TOKEN`).
+
 ## Data
 
-At build time (`src/server/catalog.ts`) the lipr index is enriched with:
+At build time (`src/server/catalog.ts`) the registry is enriched with:
 
 | Source | Used for | Without it |
 | ------ | -------- | ---------- |
-| lipr tags | categories (the tag map in `src/data/categories.ts`; a `category:<id>` tag wins), platforms and the LSE language | — |
-| latest `tooth.json` of each mod | environment (files placed in `plugins/` → server, `mods/` → client), dependencies, OS | the variant labels |
-| `lipr.levimc.org/levilauncher.json` | "Required by", Depends On, Game Version (every version's dependency ranges, followed to LeviLamina and its `bds` version), the LeviLamina range of each version | those are left out |
-| GitHub GraphQL (`GITHUB_TOKEN`) | where renamed repositories live, release dates, creation date, license, organization owner | links keep the tooth path, dates come from the index, no "Newest" sort and no License filter |
+| manifest tags | categories (the tag map in `src/data/categories.ts`; a `category:<id>` tag wins), platforms and the LSE language | — |
+| latest `tooth.json` of each mod | environment (files placed in `plugins/` → server, `mods/` → client), dependencies, OS | — |
+| every version's `tooth.json` | "Required by", Depends On, Game Version (every version's dependency ranges, followed to LeviLamina and its `bds` version), the LeviLamina range of each version | — |
+| GitHub GraphQL (`GITHUB_TOKEN`) | where renamed repositories live, stars, release dates, creation date, license, organization owner | links keep the tooth path, no stars, dates are when the build first saw a version, no "Newest" sort and no License filter |
 | `docs/showcase/showcase.json` on each mod's default branch | the Gallery tab (`src/server/showcase.ts`) | no Gallery tab |
 
 ### Galleries
@@ -90,12 +121,12 @@ its actual stars and dependents against those; and each game version it is
 behind the newest costs ln q, q being how often the catalogue's mods keep
 supporting the next version. The build log prints the fitted model.
 
-Nothing is curated by hand: a mod's categories come from its lipr tags.
+Nothing is curated by hand beyond `repos.txt`: a mod's categories come from its manifest's tags.
 To put mods in a category, add their tags to that category's `tags` in
 `src/data/categories.ts`, or tag the mod `category:<id>` in its
 `tooth.json`.
 
-lipr is lip's registry, so it also holds what is not a mod. The listing
+The registry has every package lip installs, so it also holds what is not a mod. The listing
 (search, filters, counts, sitemap) has only mods; `src/lib/listing.ts` decides,
 from each package's latest manifest and its repository, again on every build:
 
@@ -106,11 +137,8 @@ from each package's latest manifest and its repository, again on every build:
 | LeviLamina and everything it depends on | unlisted: its page stays for dependency cards | the platform |
 | another tooth of a repository the index already has (renamed, transferred, differing in case) | unlisted: its page points to the listed one as canonical | listed once, under the name GitHub serves it as, else the latest version |
 
-Where lipr has no manifest at the tooth's path, the rules read lipr's under the
-repository's current name, else the repository's own `tooth.json` at the
-version's tag (older formats too); a package with none, or whose manifest
-places nothing (older manifests often list no files), is listed. The build log
-prints every package left out and why (`listing: …`).
+A package whose manifest places nothing (older manifests often list no files) is
+listed. The build log prints every package left out and why (`listing: …`).
 
 ## Development
 
@@ -125,7 +153,7 @@ pnpm dev        # http://localhost:5173/mods/, every page rendered on request
 
 | Command          | What it does                                                              |
 | ---------------- | ------------------------------------------------------------------------- |
-| `pnpm build`     | client build, SSR build, then `prerender.mjs` writes every page, the hero paintings and `sitemap.xml` to `dist/` |
+| `pnpm build`     | client build, SSR build, then `prerender.mjs` writes every page and its `index.json`, the hero paintings and `sitemap.xml` to `dist/` |
 | `pnpm preview`   | serves `dist/` at `/mods/` the way GitHub Pages does, on <http://127.0.0.1:4173/mods/> |
 | `pnpm lint`      | ESLint (typescript-eslint, React hooks)                                    |
 | `pnpm typecheck` | `tsc --noEmit`                                                             |
@@ -138,7 +166,9 @@ pnpm dev        # http://localhost:5173/mods/, every page rendered on request
 
 ```
 index.html          page template (the kit's pre-paint script and fonts, the listing's view/pending script)
-prerender.mjs       renders /mods/, /mods/<tooth>/ and 404.html into dist/, plus the hero paintings and sitemap.xml
+prerender.mjs       renders /mods/, /mods/<tooth>/ and 404.html into dist/, plus their index.json, the hero paintings and sitemap.xml
+repos.txt           the repositories the catalogue is built from (see Registry)
+scripts/discover.mjs  proposes new repositories in pull requests
 src/
   entry-client.tsx  hydrates a prerendered page
   entry-server.tsx  renders one page (prerender and dev server)
@@ -150,8 +180,8 @@ src/
   pages/            home, mod and 404 pages
   components/       listing (search, toolbar, filters, rows), mod page (header, tabs, versions,
                     dependencies, sidebar, install dialog), README renderer
-  lib/              catalogue query (parse/serialize/run), search, facets, lipr and GitHub URLs, markdown helpers
-  server/           build-time data: catalogue, GitHub, icons, galleries, hero paintings
+  lib/              catalogue query (parse/serialize/run), search, facets, manifests, URLs, markdown helpers
+  server/           build-time data: registry, catalogue, GitHub, JSON, icons, galleries, hero paintings
 kit/                levimc-kit, copied from ../kit by `pnpm install` (git-ignored; never edit it)
 public/             icon.png
 ```
@@ -166,8 +196,7 @@ into the rest of levimc.org (Home, Blog, …) are ordinary links (`isAppPath`): 
 ## Deployment
 
 levimc.org's `.github/workflows/deploy.yml` builds this app after the site and
-deploys `dist/` as levimc.org's `/mods/` on every push to `main`. It also
-rebuilds every hour, and on a `lipr-updated`
-[repository dispatch](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event)
-to LiteLDev/levimc.org, so the site picks up new mods and versions.
+deploys `dist/` as levimc.org's `/mods/` on every push to `main` (a merged
+discovery pull request among them). It also rebuilds every hour, so the site
+picks up new versions.
 `.github/workflows/mods.yml` lints, tests and builds it on pull requests.

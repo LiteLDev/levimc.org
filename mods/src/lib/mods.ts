@@ -1,9 +1,6 @@
 import { BASE } from "../base-path.ts";
-import type { Manifest, ModIndex, RawModEntry } from "../types";
+import type { Manifest, ModJson, RawModEntry } from "../types";
 import { labelReadmes, type Readme } from "./readme-language.ts";
-
-const MOD_INDEX_URL = "https://lipr.levimc.org/index.json";
-const MOD_REGISTRY_URL = "https://lipr.levimc.org";
 
 // ---------------------------------------------------------------------------
 // Data fetching
@@ -14,10 +11,10 @@ const MOD_REGISTRY_URL = "https://lipr.levimc.org";
  * single flaky request during the hourly rebuild would otherwise ship a page
  * without its README until the next one.
  */
-export async function fetchWithRetry(url: string, attempts = 3): Promise<Response> {
+export async function fetchWithRetry(url: string, init?: RequestInit, attempts = 3): Promise<Response> {
   for (let attempt = 1; ; attempt++) {
     try {
-      const res = await fetch(url);
+      const res = await fetch(url, init);
       if ((res.status < 500 && res.status !== 429) || attempt >= attempts) {
         return res;
       }
@@ -26,13 +23,6 @@ export async function fetchWithRetry(url: string, attempts = 3): Promise<Respons
     }
     await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
   }
-}
-
-/** The lipr index. The build fetches it once and bakes it into the pages. */
-export async function fetchModIndex(): Promise<ModIndex> {
-  const res = await fetchWithRetry(MOD_INDEX_URL);
-  if (!res.ok) throw new Error("Failed to fetch mod index");
-  return res.json();
 }
 
 // ---------------------------------------------------------------------------
@@ -67,8 +57,12 @@ export function toothFromPath(pathname: string): string | null {
   }
 }
 
-export function getModManifestUrl(tooth: string, version: string): string {
-  return `${MOD_REGISTRY_URL}/packages/${tooth}@${version}/tooth.json`;
+/** The listing's data: `/mods/index.json` (see `server/api.ts`). */
+export const CATALOG_JSON = `${BASE}index.json`;
+
+/** A mod's data, every version's included: `/mods/github.com/LiteLDev/LeviLamina/index.json`. */
+export function modJsonPath(tooth: string): string {
+  return `${modPath(tooth)}index.json`;
 }
 
 export interface RepoBaseUrls {
@@ -108,6 +102,11 @@ export function getReadmeUrl(repository: string, version: string, file = "README
   return `${getRepoBaseUrls(repository, version).raw}${file}`;
 }
 
+/** A version's `tooth.json`, as its repository has it. */
+export function getManifestUrl(repository: string, version: string): string {
+  return `${getRepoBaseUrls(repository, version).blob}tooth.json`;
+}
+
 /**
  * A version's release page on GitHub when the build saw that release (its
  * exact tag), else the repository's releases.
@@ -117,31 +116,29 @@ export function getReleaseUrl(repository: string, release: { tag: string } | und
 }
 
 // ---------------------------------------------------------------------------
-// Mod details  (fetched at build time for the latest version, and in the
-// browser for any other; both hosts allow cross-origin reads)
+// Mod details  (the latest version's are in the page; another version's
+// manifest comes from the mod's index.json, its README from GitHub, which
+// allows cross-origin reads)
 // ---------------------------------------------------------------------------
 
-/** A version's manifest (`tooth.json`), or `null` when lipr has none for it. */
+const modJsons = new Map<string, Promise<ModJson | null>>();
+
+/** A version's manifest, from the mod's index.json (read once per mod), or `null` when it cannot be loaded. */
 export async function fetchManifest(tooth: string, version: string): Promise<Manifest | null> {
-  try {
-    const res = await fetchWithRetry(getModManifestUrl(tooth, version));
-    if (!res.ok) return null;
-    const manifest = (await res.json()) as Partial<Manifest> | null;
-    if (!manifest?.info) return null;
-    return {
-      info: { ...manifest.info, tags: Array.isArray(manifest.info.tags) ? manifest.info.tags : [] },
-      variants: Array.isArray(manifest.variants)
-        ? manifest.variants.map(({ label, platform, dependencies, assets }) => ({
-            label: label ?? "",
-            ...(platform ? { platform } : {}),
-            ...(dependencies ? { dependencies } : {}),
-            ...(assets ? { assets: assets.map((a) => ({ placements: (a.placements ?? []).map((p) => ({ dest: p.dest })) })) } : {}),
-          }))
-        : [],
-    };
-  } catch {
-    return null;
+  let json = modJsons.get(tooth);
+  if (!json) {
+    json = fetchWithRetry(modJsonPath(tooth))
+      .then((res) => (res.ok ? (res.json() as Promise<ModJson>) : null))
+      .catch(() => null)
+      .then((loaded) => {
+        // a failed load is tried again for the next version
+        if (!loaded) modJsons.delete(tooth);
+        return loaded;
+      });
+    modJsons.set(tooth, json);
   }
+  const found = (await json)?.versions.find((v) => v.version === version);
+  return found ? { info: found.info, variants: found.variants } : null;
 }
 
 async function fetchReadme(repository: string, version: string, file: string): Promise<string | null> {

@@ -36,7 +36,19 @@ export async function listSitemapRoutes(): Promise<string[]> {
   return (await listRoutes()).filter((route) => !old.has(route));
 }
 
-export async function loadPageData(pathname: string): Promise<PageData> {
+const pages = new Map<string, Promise<PageData>>();
+
+/** A page's data, once per build (the page and its JSON share it, see `server/api.ts`). */
+export function loadPageData(pathname: string): Promise<PageData> {
+  let page = pages.get(pathname);
+  if (!page) {
+    page = buildPageData(pathname);
+    pages.set(pathname, page);
+  }
+  return page;
+}
+
+async function buildPageData(pathname: string): Promise<PageData> {
   const data = await loadBuildData();
   const { index, catalog, renames } = data;
 
@@ -83,7 +95,6 @@ export async function loadPageData(pathname: string): Promise<PageData> {
       dependents: (data.dependents.get(tooth.toLowerCase()) ?? []).map((t) => related(data, t)),
       related: relatedMap,
       hasIssues: data.meta.get(tooth)?.hasIssues ?? false,
-      dependentsKnown: data.launcher !== null,
       ...(listing?.status === "unlisted" && listing.reason === "duplicate" ? { canonicalTooth: listing.canonical } : {}),
       showcase,
       renames,

@@ -13,7 +13,8 @@ function selectionKey({ variant, version }: ModSelection): string {
  * Only the latest version's Description is prerendered; another variant or
  * version (`?variant=&version=`) fetches that version's manifest and README
  * here, and the other tabs (`?tab=versions|dependencies`) render from the
- * page data once hydrated. Both lipr and GitHub allow cross-origin reads.
+ * page data once hydrated. The manifest comes from the mod's index.json, the
+ * README from GitHub (which allows cross-origin reads).
  * (The app renders one of these per tooth, so its state never outlives the
  * mod.)
  */

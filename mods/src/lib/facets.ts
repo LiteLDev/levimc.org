@@ -1,5 +1,5 @@
 // What a mod is, for the listing's filters: its categories, platforms and
-// environments. Categories and platforms come from lipr's tags alone (through
+// environments. Categories and platforms come from the manifests' tags alone (through
 // the tag map in src/data/categories.ts), environments from the latest
 // manifest. Nothing is curated by hand.
 import { CATEGORIES, CATEGORY_BY_ID, type EnvId, type PlatformId } from "../data/categories.ts";
@@ -17,7 +17,7 @@ for (const c of CATEGORIES) for (const tag of c.tags) TAG_CATEGORY.set(tag, c.id
 
 const LSE_TAGS = new Set(["lse", "legacyscriptengine", "quickjs", "nodejs"]);
 
-/** Categories from `category:<id>` tags (lipr's future convention), which win over everything else. */
+/** Categories from `category:<id>` tags (the registry's future convention), which win over everything else. */
 function upstreamCategories(tags: readonly string[]): string[] {
   return tags
     .filter((t) => t.startsWith("category:"))

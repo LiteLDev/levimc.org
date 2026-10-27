@@ -35,7 +35,7 @@ export interface QueryState {
   dep: string[];
   /** Repository owners, as written in the URL; matched case-insensitively (OR). */
   author: string[];
-  /** Raw lipr tags, every one of them (AND). */
+  /** Raw manifest tags, every one of them (AND). */
   tags: string[];
   sort: SortKey;
   page: number;

@@ -1,5 +1,6 @@
 // Prerenders every page into dist/ after `vite build` and the SSR build:
-// `/mods/`, one page per mod, and 404.html; then writes sitemap.xml. See README.md.
+// `/mods/`, one page per mod, and 404.html, each page's index.json next to it;
+// then writes sitemap.xml. See README.md.
 // dist/ is the site's /mods/ folder: the levimc.org build copies it there.
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
@@ -36,6 +37,13 @@ for (const [path, { body }] of ssr.showcaseFiles()) {
   writeFileSync(`dist/${path}`, body);
 }
 
+// The pages' JSON: /mods/index.json and /mods/<tooth>/index.json (see src/server/api.ts).
+const json = await ssr.jsonFiles();
+for (const [path, body] of json) {
+  mkdirSync(dirname(`dist/${path}`), { recursive: true });
+  writeFileSync(`dist/${path}`, body);
+}
+
 // The home page's painted strip, one file per theme (see src/server/hero.ts).
 for (const file of ssr.HERO_FILES) writeFileSync(`dist/${file}`, ssr.heroSvg(file));
 
@@ -52,5 +60,5 @@ writeFileSync(
 );
 
 console.log(
-  `prerendered ${files.length} pages and a sitemap of ${sitemap.length} URLs in ${((Date.now() - started) / 1000).toFixed(1)}s`,
+  `prerendered ${files.length} pages, ${json.size} JSON files and a sitemap of ${sitemap.length} URLs in ${((Date.now() - started) / 1000).toFixed(1)}s`,
 );

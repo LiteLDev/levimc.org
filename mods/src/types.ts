@@ -47,7 +47,7 @@ export interface CatalogEntry {
   owner: string;
   /** The mod's own icon, when the build could load it; else the owner's avatar is shown. */
   icon?: string;
-  /** Raw lipr tags. */
+  /** Raw manifest tags. */
   tags: string[];
   categories: string[];
   platforms: PlatformId[];
@@ -128,4 +128,102 @@ export interface ShowcaseItem {
   height: number;
   title: LocalizedText;
   caption?: LocalizedText;
+}
+
+// ---------------------------------------------------------------------------
+// The site's JSON (`/mods/index.json`, `/mods/<tooth>/index.json`): what each
+// page shows, for programs (see `server/api.ts`).
+// ---------------------------------------------------------------------------
+
+/** A mod the JSON refers to. */
+export interface ModRefJson {
+  tooth: string;
+  name: string;
+  owner: string;
+  /** Its page here, when it has one. */
+  url?: string;
+}
+
+/** A mod in the listing's JSON: its row, and where its page and JSON are. */
+export interface CatalogEntryJson extends Omit<CatalogEntry, "rank" | "icon" | "requiredBy"> {
+  url: string;
+  json: string;
+  /** The mod's icon, else its owner's avatar (as the row shows). */
+  icon: string;
+  /** How many listed mods' latest versions depend on it. */
+  requiredBy: number;
+}
+
+/** `/mods/index.json`: the listing as `/mods/` shows it, unfiltered and in the default order. */
+export interface CatalogJson {
+  url: string;
+  stats: CatalogStats;
+  /** The order of `mods` (the listing's default). */
+  sort: "relevance";
+  mods: CatalogEntryJson[];
+}
+
+/** One variant of a version, as its manifest has it (where it puts its files aside). */
+export interface VersionVariantJson extends Omit<ManifestVariant, "assets"> {
+  /** The LeviLamina range it requires, when it requires LeviLamina. */
+  leviLamina?: string;
+  /** The `lip install` command. */
+  install: string;
+}
+
+/** A version of a mod, newest first in {@link ModJson.versions}. */
+export interface VersionJson {
+  version: string;
+  prerelease: boolean;
+  /** When its GitHub release was published (needs GitHub data). */
+  released?: string;
+  /** Its GitHub release, else the repository's releases. */
+  releaseUrl: string;
+  /** Its `tooth.json` in the repository. */
+  manifestUrl: string;
+  /** Name, description and tags as this version's manifest has them. */
+  info: ModInfo;
+  variants: VersionVariantJson[];
+}
+
+/** `/mods/<tooth>/index.json`: the mod page, every version included. */
+export interface ModJson {
+  url: string;
+  tooth: string;
+  /** The page of the repository's current name, when this is an old one. */
+  canonical?: string;
+  name: string;
+  description: string;
+  owner: string;
+  /** The mod's icon, else its owner's avatar. */
+  icon: string;
+  repository: string;
+  issues?: string;
+  releases: string;
+  stars: number;
+  /** Latest release, else the registry's update. */
+  updated: string;
+  /** The first GitHub release (needs GitHub data). */
+  published?: string;
+  /** Repository creation date (needs GitHub data). */
+  created?: string;
+  license?: string;
+  categories: string[];
+  platforms: PlatformId[];
+  lang?: string;
+  env: EnvId[];
+  gameVersions: string[];
+  tags: string[];
+  /** What the page shows when its URL asks for nothing in particular. */
+  latest: { variant: string; version: string; install: string };
+  /** The latest version's README in each of its languages. */
+  readmes: { file: string; lang: string | null; text: string }[];
+  gallery: ShowcaseItem[];
+  /** Variants (the default `""` first), each with its versions, newest first. */
+  variants: { label: string; versions: string[] }[];
+  versions: VersionJson[];
+  /** Mods any version depends on, by lower-case tooth (names for the variants' dependency keys). */
+  dependencies: Record<string, ModRefJson>;
+  /** Listed mods whose latest version depends on this one. */
+  requiredBy: ModRefJson[];
 }

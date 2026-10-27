@@ -38,6 +38,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # The registry cache the Pages deploy saves (see deploy.yml); read only here.
+      - uses: actions/cache/restore@v6
+        with:
+          path: mods/.cache
+          key: mods-registry-${{ github.run_id }}
+          restore-keys: mods-registry-
+
       - run: pnpm lint
 
       - run: pnpm typecheck

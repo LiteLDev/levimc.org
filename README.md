@@ -108,10 +108,11 @@ First paragraph (it is also the excerpt on the index and in the feeds) …
 
 The catalogue of mods at [levimc.org/mods/](https://levimc.org/mods/) (formerly pkg.levimc.org, the
 LiteLDev/pkg.levimc.org repository, merged here with its history) is its own app in [`mods/`](mods/README.md): pnpm,
-built from the lipr index with this checkout's kit (`pnpm install` copies `../kit`) and Vite `base: '/mods/'`.
-The deploy builds it after the site and copies `mods/dist/` into `dist/mods/`; it also runs every hour and on a
-`lipr-updated` repository dispatch, so the catalogue picks up new mods and versions. `.github/workflows/mods.yml`
-lints, tests and builds it on pull requests.
+built from the repositories in [`mods/repos.txt`](mods/repos.txt) (their version tags) with this checkout's kit
+(`pnpm install` copies `../kit`) and Vite `base: '/mods/'`. The deploy builds it after the site and copies
+`mods/dist/` into `dist/mods/`; it also runs every hour, so the catalogue picks up new versions.
+`.github/workflows/mods-discover.yml` opens a pull request for each new mod repository it finds; merging one lists
+it. `.github/workflows/mods.yml` lints, tests and builds it on pull requests.
 
 ```bash
 cd mods

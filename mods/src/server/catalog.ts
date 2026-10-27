@@ -1,29 +1,21 @@
-// The build-time catalogue: the lipr index, enriched with what the listing
-// filters and sorts on. Every input except the index is optional — a build
-// without GITHUB_TOKEN or without levilauncher.json still ships every page,
-// with the parts that need the missing data left out. Only the server bundle
-// (prerender, dev server) imports this; it is memoised per build.
+// The build-time catalogue: the registry (`server/registry.ts`), enriched with
+// what the listing filters and sorts on. GitHub's data is optional — a build
+// without GITHUB_TOKEN still ships every page, with the parts that need it
+// left out. Only the server bundle (prerender, dev server) imports this; it is
+// memoised per build.
 import { deriveFacets } from "../lib/facets";
 import { resolveGameVersions, type LauncherIndex } from "../lib/game-versions";
-import { classifyListings, manifestOf, type Listing } from "../lib/listing";
+import { classifyListings, type Listing } from "../lib/listing";
 import { rankScores, type RankRow } from "../lib/ranking";
 import { updateUrl, type RepositoryRenames } from "../lib/markdown";
-import {
-  fetchManifest,
-  fetchModIndex,
-  fetchWithRetry,
-  getAllVersions,
-  getDefaultSelection,
-  getSortedVariants,
-  ownerOf,
-} from "../lib/mods";
+import type { RegistryManifest } from "../lib/manifest";
+import { getAllVersions, getDefaultSelection, getSortedVariants, ownerOf } from "../lib/mods";
 import type { Catalog, CatalogEntry, Manifest, ModIndex, RawModEntry, RelatedMod } from "../types";
 import { fetchRepoMeta, repositoryRenames, type RepoMeta } from "./github";
 import { checkIcons } from "./icons";
+import { loadRegistry } from "./registry";
 
-const LEVILAUNCHER_URL = process.env.LIPR_LEVILAUNCHER_URL ?? "https://lipr.levimc.org/levilauncher.json";
 const DESCRIPTION_MAX = 200;
-const CONCURRENCY = 8;
 const LEVILAMINA = "github.com/liteldev/levilamina";
 
 export interface BuildData {
@@ -36,39 +28,15 @@ export interface BuildData {
   listings: Map<string, Listing>;
   meta: Map<string, RepoMeta>;
   renames: RepositoryRenames;
-  /** The latest manifest of each mod's default selection (`null`: lipr has none). */
+  /** The latest manifest of each mod's default selection. */
   manifests: Map<string, Manifest | null>;
-  launcher: LauncherIndex | null;
+  /** Every version's manifest, by tooth and version. */
+  versions: Map<string, Map<string, RegistryManifest>>;
+  launcher: LauncherIndex;
   /** Lower-case tooth → the mods whose latest version depends on it. */
   dependents: Map<string, string[]>;
   /** Lower-case tooth → the tooth as the index spells it. */
   canonical: Map<string, string>;
-}
-
-/** Runs `fn` over `items`, `CONCURRENCY` at a time. */
-async function mapLimit<T, R>(items: T[], fn: (item: T) => Promise<R>): Promise<R[]> {
-  const out: R[] = new Array(items.length);
-  let next = 0;
-  await Promise.all(
-    Array.from({ length: CONCURRENCY }, async () => {
-      while (next < items.length) {
-        const i = next++;
-        out[i] = await fn(items[i]!);
-      }
-    }),
-  );
-  return out;
-}
-
-async function fetchLauncherIndex(): Promise<LauncherIndex | null> {
-  try {
-    const res = await fetchWithRetry(LEVILAUNCHER_URL);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return (await res.json()) as LauncherIndex;
-  } catch (error) {
-    console.warn(`::warning::levilauncher.json is unavailable (${String(error)}): no "Required by" or LeviLamina ranges`);
-    return null;
-  }
 }
 
 /** A dependency key (`github.com/o/r#client`) as a lower-case tooth. */
@@ -121,29 +89,33 @@ function rankRow(e: Omit<CatalogEntry, "rank">, repo: RepoMeta | undefined, with
 }
 
 async function build(): Promise<BuildData> {
-  const index = await fetchModIndex();
+  const { index, launcher, manifests: versions } = await loadRegistry();
   const tooths = Object.keys(index.packages);
   const canonical = new Map(tooths.map((t) => [t.toLowerCase(), t]));
 
-  const [{ meta, complete: metaComplete }, launcher, manifestList] = await Promise.all([
-    fetchRepoMeta(tooths),
-    fetchLauncherIndex(),
-    mapLimit(tooths, async (tooth) => {
-      const selection = getDefaultSelection(index.packages[tooth]!);
-      return selection ? fetchManifest(tooth, selection.version) : null;
+  const { meta, complete: metaComplete } = await fetchRepoMeta(tooths);
+  // stars, and the repository's last update, as lipr's index has them
+  for (const tooth of tooths) {
+    const repo = meta.get(tooth);
+    if (!repo) continue;
+    index.packages[tooth]!.stargazer_count = repo.stars;
+    index.packages[tooth]!.updated_at = repo.updatedAt;
+  }
+  const manifests = new Map(
+    tooths.map((t) => {
+      const selection = getDefaultSelection(index.packages[t]!);
+      return [t, (selection && versions.get(t)?.get(selection.version)) ?? null];
     }),
-  ]);
-  const manifests = new Map(tooths.map((t, i) => [t, manifestList[i] ?? null]));
+  );
   const renames = repositoryRenames(meta);
 
-  const judged = await mapLimit(tooths, async (tooth) => manifests.get(tooth) ?? findManifest(tooth, index.packages[tooth]!, meta.get(tooth)));
   const listings = classifyListings(
-    tooths.map((tooth, i) => {
+    tooths.map((tooth) => {
       const repo = meta.get(tooth);
       const version = getDefaultSelection(index.packages[tooth]!)?.version;
       return {
         tooth,
-        manifest: judged[i] ?? null,
+        manifest: manifests.get(tooth) ?? null,
         ...(version ? { version } : {}),
         ...(repo ? { repo } : {}),
         updated: index.packages[tooth]!.updated_at,
@@ -159,20 +131,18 @@ async function build(): Promise<BuildData> {
   // dependency on an old name of a repository is one on the name it is listed under.
   const dependents = new Map<string, string[]>();
   const dependsOn = new Map<string, string[]>();
-  if (launcher) {
-    for (const tooth of listed) {
-      for (const dep of latestDependencies(launcher, tooth, index.packages[tooth]!)) {
-        if (dep === tooth.toLowerCase()) continue;
-        const target = pageOf(listings, canonical.get(dep));
-        if (target === tooth) continue;
-        if (target && !dependsOn.get(tooth)?.includes(target)) {
-          dependsOn.set(tooth, [...(dependsOn.get(tooth) ?? []), target]);
-        }
-        const key = target?.toLowerCase() ?? dep;
-        const list = dependents.get(key) ?? [];
-        if (!list.includes(tooth)) list.push(tooth);
-        dependents.set(key, list);
+  for (const tooth of listed) {
+    for (const dep of latestDependencies(launcher, tooth, index.packages[tooth]!)) {
+      if (dep === tooth.toLowerCase()) continue;
+      const target = pageOf(listings, canonical.get(dep));
+      if (target === tooth) continue;
+      if (target && !dependsOn.get(tooth)?.includes(target)) {
+        dependsOn.set(tooth, [...(dependsOn.get(tooth) ?? []), target]);
       }
+      const key = target?.toLowerCase() ?? dep;
+      const list = dependents.get(key) ?? [];
+      if (!list.includes(tooth)) list.push(tooth);
+      dependents.set(key, list);
     }
   }
 
@@ -184,7 +154,7 @@ async function build(): Promise<BuildData> {
     if (url) iconUrls.set(tooth, updateUrl(url, renames, "all"));
   }
   const loadable = await checkIcons(iconUrls.values());
-  const gameVersions = launcher ? resolveGameVersions(launcher) : new Map<string, string[]>();
+  const gameVersions = resolveGameVersions(launcher);
 
   const unranked: Omit<CatalogEntry, "rank">[] = paged.map((tooth) => {
     const mod = index.packages[tooth]!;
@@ -224,18 +194,18 @@ async function build(): Promise<BuildData> {
       `dependents ~ ${coef(["ln_age"], model.dependents.beta)}; shared r ${model.r.toFixed(2)}; q ${model.q.toFixed(3)}`,
   );
 
-  const versions = listed.reduce((n, t) => n + getAllVersions(index.packages[t]!).length, 0);
+  const versionCount = listed.reduce((n, t) => n + getAllVersions(index.packages[t]!).length, 0);
   const catalog: Catalog = {
     entries,
     stats: {
       projects: entries.length,
       authors: new Set(entries.map((e) => e.owner.toLowerCase())).size,
-      versions,
+      versions: versionCount,
     },
     features: { created: metaComplete, license: metaComplete },
   };
   console.log(
-    `catalog: ${entries.length} mods, ${catalog.stats.authors} authors, ${versions} versions; ` +
+    `catalog: ${entries.length} mods, ${catalog.stats.authors} authors, ${versionCount} versions; ` +
       `${loadable.size} of ${new Set(iconUrls.values()).size} icons load; ` +
       `${[...manifests.values()].filter(Boolean).length} latest manifests`,
   );
@@ -247,32 +217,11 @@ async function build(): Promise<BuildData> {
     meta,
     renames,
     manifests,
+    versions,
     launcher,
     dependents,
     canonical,
   };
-}
-
-/**
- * The manifest the listing rules read when lipr has none at the tooth's path
- * (it files some under the repository's current name or another path): lipr's
- * under the current name, else the repository's own `tooth.json` at the
- * version's tag. `null`: neither.
- */
-async function findManifest(tooth: string, mod: RawModEntry, repo: RepoMeta | undefined): Promise<Manifest | null> {
-  const version = getDefaultSelection(mod)?.version;
-  const path = repo?.url.match(/^https:\/\/github\.com\/([^/]+\/[^/]+)$/)?.[1];
-  if (!version || !path) return null;
-  if (`github.com/${path}` !== tooth) {
-    const manifest = await fetchManifest(`github.com/${path}`, version);
-    if (manifest) return manifest;
-  }
-  try {
-    const res = await fetchWithRetry(`https://raw.githubusercontent.com/${path}/v${version}/tooth.json`);
-    return res.ok ? manifestOf(await res.json()) : null;
-  } catch {
-    return null;
-  }
 }
 
 /** The tooth whose page shows `tooth`: itself, the tooth its repository is listed under, or none (excluded). */
@@ -310,13 +259,10 @@ export function related(data: BuildData, tooth: string): RelatedMod {
   return { tooth, name: tooth.split("/").at(-1) ?? tooth, owner: ownerOf(tooth) };
 }
 
-/**
- * The LeviLamina range each version of a mod requires, per variant (from
- * levilauncher.json), for the versions table.
- */
+/** The LeviLamina range each version of a mod requires, per variant, for the versions table. */
 export function leviLaminaRanges(data: BuildData, tooth: string): Record<string, Record<string, string>> {
   const out: Record<string, Record<string, string>> = {};
-  const entry = data.launcher?.packages[tooth];
+  const entry = data.launcher.packages[tooth];
   if (!entry || tooth.toLowerCase() === LEVILAMINA) return out;
   for (const [label, variant] of Object.entries(entry.variants)) {
     for (const [version, { dependencies }] of Object.entries(variant.versions)) {
@@ -329,7 +275,7 @@ export function leviLaminaRanges(data: BuildData, tooth: string): Record<string,
 
 /** Every mod any version of `tooth` depends on (lower-case tooths). */
 export function allDependencies(data: BuildData, tooth: string): string[] {
-  const entry = data.launcher?.packages[tooth];
+  const entry = data.launcher.packages[tooth];
   const deps = new Set<string>();
   for (const variant of Object.values(entry?.variants ?? {})) {
     for (const { dependencies } of Object.values(variant.versions)) {

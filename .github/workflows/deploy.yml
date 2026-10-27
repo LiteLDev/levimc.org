@@ -4,13 +4,10 @@ on:
   push:
     branches:
       - main
-  # LeviMC Mods (/mods/) is a snapshot of the lipr index, so rebuild to pick up new packages and versions. lipr can
-  # also send a `lipr-updated` dispatch.
+  # LeviMC Mods (/mods/) is a snapshot of its repositories' tags (mods/repos.txt), so rebuild to pick up new
+  # versions.
   schedule:
     - cron: "17 * * * *"
-  repository_dispatch:
-    types:
-      - lipr-updated
   workflow_dispatch:
 
 permissions:
@@ -59,10 +56,18 @@ jobs:
       - run: cp -r .kit/publish dist/kit
 
       # LeviMC Mods: its own app in mods/ (pnpm), built with this kit and deployed at /mods/. The token lets its build
-      # read each package repository from GitHub's GraphQL API (renamed repositories, release dates, license).
+      # read each package repository from GitHub's GraphQL API (renamed repositories, stars, release dates, license).
       - uses: pnpm/action-setup@v5
         with:
           package_json_file: mods/package.json
+
+      # What earlier builds read from the mods' repositories (mods/.cache, see mods/src/server/registry.ts), so this one
+      # reads only new tags. Without it, everything is read again (about a minute).
+      - uses: actions/cache/restore@v6
+        with:
+          path: mods/.cache
+          key: mods-registry-${{ github.run_id }}
+          restore-keys: mods-registry-
 
       - working-directory: mods
         run: |
@@ -70,6 +75,12 @@ jobs:
           pnpm build
         env:
           GITHUB_TOKEN: ${{ github.token }}
+
+      # Saved only when it changed (the key is its hash).
+      - uses: actions/cache/save@v6
+        with:
+          path: mods/.cache
+          key: mods-registry-${{ hashFiles('mods/.cache/registry.json') }}
 
       - run: cp -r mods/dist dist/mods
 

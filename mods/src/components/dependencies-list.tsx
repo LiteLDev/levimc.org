@@ -46,11 +46,10 @@ interface DependenciesListProps {
   variants: ManifestVariant[] | null | undefined;
   related: Record<string, RelatedMod>;
   dependents: RelatedMod[];
-  dependentsKnown: boolean;
 }
 
 /** What the selected version needs, and which mods need this one. */
-export function DependenciesList({ selection, variants, related, dependents, dependentsKnown }: DependenciesListProps) {
+export function DependenciesList({ selection, variants, related, dependents }: DependenciesListProps) {
   const { t } = useI18n();
   const variant = variants?.find((v) => v.label === selection.variant);
   const deps = Object.entries(variant?.dependencies ?? {});
@@ -81,22 +80,20 @@ export function DependenciesList({ selection, variants, related, dependents, dep
           <p className="mods-empty-note">{t.depsNone}</p>
         )}
       </section>
-      {dependentsKnown ? (
-        <section aria-labelledby="mods-deps-dependents">
-          <h3 id="mods-deps-dependents" className="mods-section-title">
-            {t.depsRequiredBy(dependents.length)}
-          </h3>
-          {dependents.length ? (
-            <ul className="mods-deps">
-              {dependents.map((d) => (
-                <RelatedCard key={d.tooth} mod={d} notListed={t.depsNotIndexed} />
-              ))}
-            </ul>
-          ) : (
-            <p className="mods-empty-note">{t.depsNoDependents}</p>
-          )}
-        </section>
-      ) : null}
+      <section aria-labelledby="mods-deps-dependents">
+        <h3 id="mods-deps-dependents" className="mods-section-title">
+          {t.depsRequiredBy(dependents.length)}
+        </h3>
+        {dependents.length ? (
+          <ul className="mods-deps">
+            {dependents.map((d) => (
+              <RelatedCard key={d.tooth} mod={d} notListed={t.depsNotIndexed} />
+            ))}
+          </ul>
+        ) : (
+          <p className="mods-empty-note">{t.depsNoDependents}</p>
+        )}
+      </section>
     </div>
   );
 }

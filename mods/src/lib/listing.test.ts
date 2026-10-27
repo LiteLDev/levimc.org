@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { classifyListings, installsMod, manifestOf, type ListingInput } from "./listing.ts";
+import { classifyListings, installsMod, type ListingInput } from "./listing.ts";
 import type { Manifest } from "../types.ts";
 
 const manifest = (dests: string[], deps: Record<string, string> = {}): Manifest => ({
@@ -177,30 +177,4 @@ test("among old names only, the latest version wins", () => {
       "github.com/ZMBlocks/LSE_Waila": { status: "listed" },
     },
   );
-});
-
-test("a repository's tooth.json is read in the current and the older formats", () => {
-  const current = manifestOf({
-    format_version: 3,
-    info: { name: "M", description: "d", tags: ["type:mod", 1] },
-    variants: [{ label: "client", dependencies: { "github.com/LiteLDev/LeviLamina": "1.*" }, assets: [{ type: "zip", placements: [{ dest: "mods/M/" }] }] }],
-  });
-  assert.deepEqual(current, {
-    info: { name: "M", description: "d", tags: ["type:mod"] },
-    variants: [{ label: "client", dependencies: { "github.com/LiteLDev/LeviLamina": "1.*" }, assets: [{ placements: [{ dest: "mods/M/" }] }] }],
-  });
-  // format 2: files for the whole package (Organization) or per platform (lualoader)
-  const whole = manifestOf({ format_version: 2, info: { name: "O" }, files: { place: [{ src: "./*", dest: "plugins/Organization/" }] } });
-  assert.equal(whole && installsMod(whole), true);
-  const program = manifestOf({
-    format_version: 2,
-    info: { name: "lualoader" },
-    platforms: [{ goos: "windows", files: { place: [{ src: "lualoader.exe", dest: "lualoader.exe" }] } }],
-  });
-  assert.equal(program && installsMod(program), false);
-  // format 2 without files (HitokotoWelcome): places nothing
-  const bare = manifestOf({ format_version: 2, info: { name: "H", tags: ["lse"] }, files: {} });
-  assert.equal(bare && installsMod(bare), null);
-  assert.equal(manifestOf("404: Not Found"), null);
-  assert.equal(manifestOf({ variants: [] }), null);
 });

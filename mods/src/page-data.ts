@@ -13,7 +13,7 @@ import type {
   ShowcaseItem,
 } from "./types";
 
-/** A version's manifest info and variants (`null`: lipr has no manifest for it) and READMEs. */
+/** A version's manifest info and variants (`null`: it could not be loaded) and READMEs. */
 export interface ModDetails {
   info: ModInfo | null;
   variants: ManifestVariant[] | null;
@@ -41,7 +41,7 @@ export type PageData = (
       readmeFiles: string[];
       /** GitHub releases by version (empty without GitHub data). */
       releases: Record<string, ReleaseInfo>;
-      /** The LeviLamina range of each version, per variant (empty without levilauncher.json). */
+      /** The LeviLamina range of each version, per variant. */
       llRanges: Record<string, Record<string, string>>;
       /** Mods whose latest version depends on this one. */
       dependents: RelatedMod[];
@@ -49,8 +49,6 @@ export type PageData = (
       related: Record<string, RelatedMod>;
       /** The repository takes issues (an Issues link); false when unknown. */
       hasIssues: boolean;
-      /** levilauncher.json was available ("Required by" is known). */
-      dependentsKnown: boolean;
       /** The repository is listed under another tooth, whose page is the canonical one (an old name). */
       canonicalTooth?: string;
       /** The mod's gallery (the Gallery tab; empty: no tab). */
@@ -104,6 +102,8 @@ export interface PageMeta {
   description: string;
   /** Absolute URL of the page; absent on the 404 page. */
   canonical?: string;
+  /** The page's JSON (`index.json` next to it); absent on the 404 page. */
+  json?: string;
 }
 
 export function pageMeta(data: PageData): PageMeta {
@@ -113,12 +113,14 @@ export function pageMeta(data: PageData): PageMeta {
         title: `${SITE_NAME} — ${SITE_TAGLINE}`,
         description: siteDescription(data.catalog.stats.projects),
         canonical: `${SITE_ORIGIN}${BASE}`,
+        json: `${SITE_ORIGIN}${BASE}index.json`,
       };
     case "mod":
       return {
         title: `${data.entry.name} | ${SITE_NAME}`,
         description: data.mod.info.description || `${data.entry.name} on ${SITE_NAME}`,
         canonical: `${SITE_ORIGIN}${BASE}${data.canonicalTooth ?? data.tooth}/`,
+        json: `${SITE_ORIGIN}${BASE}${data.tooth}/index.json`,
       };
     case "not-found":
       return { title: `Not Found | ${SITE_NAME}`, description: `${SITE_NAME} — ${SITE_TAGLINE}` };
@@ -141,6 +143,9 @@ export function pageHead(data: PageData): string {
   ];
   if (meta.canonical) {
     tags.push(`<link rel="canonical" href="${escapeHtml(meta.canonical)}" />`);
+  }
+  if (meta.json) {
+    tags.push(`<link rel="alternate" type="application/json" href="${escapeHtml(meta.json)}" />`);
   }
   tags.push(
     `<meta property="og:type" content="website" />`,

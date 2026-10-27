@@ -35,7 +35,7 @@ export interface CategoryDef {
   id: string;
   label: Labels;
   icon: SpriteName;
-  /** Raw lipr tags (lower case) that put a mod in this category. */
+  /** Raw manifest tags (lower case) that put a mod in this category. */
   tags: string[];
 }
 

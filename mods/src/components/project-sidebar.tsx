@@ -5,7 +5,7 @@ import { serializeQuery, DEFAULT_STATE } from "../lib/catalog-query";
 import {
   buildModUrl,
   getAllVersions,
-  getModManifestUrl,
+  getManifestUrl,
   getSortedVariants,
   getVersionsForVariant,
   ownerAvatar,
@@ -119,12 +119,9 @@ export function ProjectSidebar({ tooth, entry, mod, repository, selection, varia
           <li>
             <ExternalLink href={`${repository}/releases`}>{t.releases}</ExternalLink>
           </li>
-          {variants ? (
-            // only when lipr has the manifest (it lacks some versions it lists)
-            <li>
-              <ExternalLink href={getModManifestUrl(tooth, selection.version)}>{t.manifest}</ExternalLink>
-            </li>
-          ) : null}
+          <li>
+            <ExternalLink href={getManifestUrl(repository, selection.version)}>{t.manifest}</ExternalLink>
+          </li>
         </ul>
       </Panel>
 

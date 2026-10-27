@@ -226,7 +226,6 @@ export function ModDetail({ data, selection, tab: requestedTab, info: manifestIn
                 variants={variants}
                 related={data.related}
                 dependents={data.dependents}
-                dependentsKnown={data.dependentsKnown}
               />
             </section>
           )}

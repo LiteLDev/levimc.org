@@ -76,6 +76,19 @@ function devServerRender(): Plugin {
             res.end(file.body);
             return;
           }
+          // The JSON is written by prerender.mjs; built on request here.
+          const json = /^\/mods\/(?:(.+)\/)?index\.json$/.exec(url.split("?")[0] ?? "");
+          if (json) {
+            const entry = await server.ssrLoadModule("/src/entry-server.tsx");
+            const body = json[1] ? await entry.modJson(decodeURIComponent(json[1])) : await entry.catalogJson();
+            if (!body) {
+              next();
+              return;
+            }
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.end(JSON.stringify(body));
+            return;
+          }
           const accept = req.headers.accept ?? "";
           if (req.method !== "GET" || !accept.includes("text/html")) {
             next();

@@ -1,5 +1,5 @@
-// Which packages of the lipr index the catalogue lists. lipr is lip's
-// registry, so it also holds what is not a mod: the loader and its runtime,
+// Which packages of the registry the catalogue lists. It has every package
+// lip installs, so it also holds what is not a mod: the loader and its runtime,
 // templates, programs and files that go nowhere the game or a loader loads
 // from, and old addresses of renamed repositories. Each package is
 //
@@ -14,7 +14,7 @@
 // duplicates: a template never stands in for its repository. Only what a
 // manifest places is evidence: a package whose manifest cannot be found, or
 // places nothing (older manifests often list no files), is not judged by it.
-import type { Manifest, ManifestVariant } from "../types.ts";
+import type { Manifest } from "../types.ts";
 import { compareVersions } from "./game-versions.ts";
 
 /** The mod loader: it and everything it depends on are the platform, not mods. */
@@ -59,42 +59,6 @@ export interface ListingInput {
   repo?: { url: string; isTemplate: boolean; latestRelease?: string };
   /** The index's update date, when there is no release date. */
   updated: string;
-}
-
-const isObject = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null;
-const list = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
-const placesOf = (files: unknown) =>
-  list(isObject(files) ? files["place"] : undefined).map((p) => ({ dest: isObject(p) && typeof p["dest"] === "string" ? p["dest"] : "" }));
-const dependenciesOf = (value: unknown) =>
-  isObject(value) ? Object.fromEntries(Object.entries(value).filter((e): e is [string, string] => typeof e[1] === "string")) : {};
-
-/**
- * What the rules read of a `tooth.json` as a repository has it: the current
- * format (variants with asset placements), or the older ones lip migrates
- * (`files.place`, per platform or for the whole package). `null`: not a manifest.
- */
-export function manifestOf(json: unknown): Manifest | null {
-  if (!isObject(json) || !isObject(json["info"])) return null;
-  const info = json["info"];
-  const variants: ManifestVariant[] = Array.isArray(json["variants"])
-    ? json["variants"].filter(isObject).map((v) => ({
-        label: typeof v["label"] === "string" ? v["label"] : "",
-        dependencies: dependenciesOf(v["dependencies"]),
-        assets: list(v["assets"]).filter(isObject).map((a) => ({ placements: list(a["placements"]).filter(isObject).map((p) => ({ dest: typeof p["dest"] === "string" ? p["dest"] : "" })) })),
-      }))
-    : [json, ...list(json["platforms"]).filter(isObject)].map((p) => ({
-        label: "",
-        dependencies: dependenciesOf(json["dependencies"]),
-        assets: [{ placements: placesOf(p["files"]) }],
-      }));
-  return {
-    info: {
-      name: typeof info["name"] === "string" ? info["name"] : "",
-      description: typeof info["description"] === "string" ? info["description"] : "",
-      tags: list(info["tags"]).filter((t): t is string => typeof t === "string"),
-    },
-    variants,
-  };
 }
 
 const normalizeDest = (dest: string) => dest.replace(/\\/g, "/").replace(/^(?:\.\/)+/, "");

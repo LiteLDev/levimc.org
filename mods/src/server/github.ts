@@ -1,12 +1,13 @@
 // What GitHub knows about each mod's repository: where it lives today (a
 // tooth keeps the path it was published under; GitHub redirects renamed and
-// transferred repositories from there), when it was created, its license,
-// its releases and its README files. One GraphQL request per 50 mods.
+// transferred repositories from there), its stars, when it was created and
+// last updated, its license, its releases and its README files. One GraphQL
+// request per 50 mods.
 //
 // Needs GITHUB_TOKEN (GitHub's GraphQL API requires one; the workflow passes
 // its own). Without a token, or if GitHub cannot be reached, the build goes on
-// without this data: links keep the tooth's address, dates come from the
-// index, and the "Newest" sort and the License filter are left out (also when
+// without this data: links keep the tooth's address, there are no stars,
+// dates are when the build first saw a version, and the "Newest" sort and the License filter are left out (also when
 // only some batches could be read).
 import type { RepositoryRenames } from "../lib/markdown";
 import { readmeFiles } from "../lib/readme-language.ts";
@@ -20,6 +21,9 @@ const RELEASES = 100;
 export interface RepoMeta {
   /** Where the repository lives today. */
   url: string;
+  stars: number;
+  /** When anything about the repository last changed (lipr's `updated_at`). */
+  updatedAt: string;
   createdAt?: string;
   /** SPDX id, when GitHub recognises a license. */
   license?: string;
@@ -51,6 +55,8 @@ interface ReleaseConnection {
 
 interface RepositoryNode {
   url: string;
+  stargazerCount: number;
+  updatedAt: string;
   createdAt: string;
   hasIssuesEnabled: boolean;
   isTemplate: boolean;
@@ -99,7 +105,7 @@ let cost = 0;
 async function queryBatch(token: string, tooths: string[]): Promise<Map<string, RepoMeta>> {
   const fields = tooths.map(
     (tooth, i) =>
-      `r${i}: repository(${ownerAndName(tooth)}) { url createdAt hasIssuesEnabled isTemplate owner { __typename } licenseInfo { spdxId } ` +
+      `r${i}: repository(${ownerAndName(tooth)}) { url stargazerCount updatedAt createdAt hasIssuesEnabled isTemplate owner { __typename } licenseInfo { spdxId } ` +
       `releases(first: ${RELEASES}, orderBy: { field: CREATED_AT, direction: DESC }) { ${RELEASE_FIELDS} } ` +
       `defaultBranchRef { target { ... on Commit { tree { entries { name } } } } } }`,
   );
@@ -116,6 +122,8 @@ async function queryBatch(token: string, tooths: string[]): Promise<Map<string, 
     const files = node.defaultBranchRef?.target?.tree?.entries.map((e) => e.name);
     const meta: RepoMeta = {
       url: node.url,
+      stars: node.stargazerCount,
+      updatedAt: node.updatedAt,
       createdAt: node.createdAt,
       ...(spdx ? { license: spdx } : {}),
       releases: {},
@@ -158,7 +166,7 @@ export async function fetchRepoMeta(tooths: string[]): Promise<RepoMetaResult> {
   const token = process.env.GITHUB_TOKEN;
   const github = tooths.filter((t) => t.startsWith(GITHUB_PREFIX) && t.split("/").length === 3);
   if (!token) {
-    console.warn("GITHUB_TOKEN is not set: no GitHub data (links keep the tooths' addresses, dates come from the index)");
+    console.warn("GITHUB_TOKEN is not set: no GitHub data (links keep the tooths' addresses, no stars, dates are when the build first saw a version)");
     return { meta: new Map(), complete: false };
   }
   const meta = new Map<string, RepoMeta>();

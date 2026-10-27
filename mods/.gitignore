@@ -1,2 +1,5 @@
 # levimc-kit, copied from ../kit by `pnpm install` (scripts/fetch-kit.mjs)
 /kit/
+
+# the registry cache (src/server/registry.ts; the Actions cache in CI)
+/.cache/
