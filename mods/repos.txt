@@ -34,6 +34,7 @@ glibcxx/figure_hack
 glibcxx/TimerFix
 GroupMountain/AccessHiddenItem
 GroupMountain/Cleaner
+GroupMountain/DeathMessages
 GroupMountain/FreeCamera
 GroupMountain/FuckNetherHeight
 GroupMountain/GMBlacklist
