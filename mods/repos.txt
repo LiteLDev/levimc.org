@@ -148,6 +148,7 @@ VincentZyuApps/levilamina-plugin-mclistener-ws-server
 wardenre/ModerationX
 wo55555/OptiPiston
 wo55555/Playback
+xianyubb/meshgate-agent
 xianyubb/org_out
 xianyubb/Organization
 xianyubb/Strengthen
