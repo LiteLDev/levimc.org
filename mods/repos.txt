@@ -138,6 +138,7 @@ spygamingog/Animated-Mojang-Android
 superx101/CALL
 SurvivalApparatusCommunication/BedrockBugFixes
 TelluriumDev/BanExplosion
+TelluriumDev/Komomo-Extra
 theaddonn/Do-A-Barrel-Roll-Bedrock
 TheNevinPie/PocketOnPC
 TheNevinPie/Zoomlet
