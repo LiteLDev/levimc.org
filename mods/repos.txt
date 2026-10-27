@@ -46,6 +46,7 @@ GroupMountain/GMWhitelist
 GroupMountain/InventoryCheck
 GroupMountain/ModAPI-Release
 GroupMountain/Phantom
+GroupMountain/thirst
 GroupMountain/ThrowableFireball
 haojie06/CommBridge
 haojie06/LeviSafeZone
