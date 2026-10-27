@@ -143,6 +143,7 @@ TheNevinPie/PocketOnPC
 TheNevinPie/Zoomlet
 Timiya-re/LL3_Mine2
 troveminecraft/ShanHai
+TypiDoyun/typi-plugin
 Unny984/Zoomidy
 VincentZyuApps/levilamina-plugin-mclistener-ws-server
 wardenre/ModerationX
