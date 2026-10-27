@@ -125,6 +125,7 @@ pingguo114514/BetterStop
 pingguo114514/DisconnectScreen
 PuceLi/NameTagPlus
 PuceLi/NoteBot
+PuceLi/PlayerIPregion
 qing85566/ChiyanMap
 quizhizhe/Tooth-LLCheckBag
 seetch/FastReconnect
