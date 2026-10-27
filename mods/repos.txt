@@ -78,6 +78,7 @@ LiteLDev/AlleviatedBackpacks
 LiteLDev/BarelyEnoughItems
 LiteLDev/Bedstones
 LiteLDev/BeetrootSkin
+LiteLDev/CrashLogger
 LiteLDev/iListenAttentively
 LiteLDev/LegacyMoney
 LiteLDev/LegacyRemoteCall
