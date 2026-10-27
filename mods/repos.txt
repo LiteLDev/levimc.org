@@ -72,6 +72,7 @@ LeafKnife/ForbidPlayerSummonWither
 LeafKnife/SignIn
 LeafKnife/Stats
 LeafKnife/ToolStats
+leoweyr/LeviInterface
 lgc-LLDev/FormAPIEx
 lgc-LLDev/NBSPlayer
 LiteLDev/AlleviatedBackpacks
