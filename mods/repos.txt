@@ -89,6 +89,7 @@ LiteLDev/levilamina-mod-template
 LiteLDev/LeviOptimize
 LiteLDev/mimalloc
 LiteLDev/MoreDimensions
+LiteLDev/PreLoader
 LL-LSE-Lab/MelonRind
 loitietu/LOICollectionA
 LordBombardir/LLPlaceholderApi
