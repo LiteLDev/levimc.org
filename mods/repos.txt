@@ -85,6 +85,7 @@ LiteLDev/LegacyScriptEngine
 LiteLDev/LeviAntiCheat
 LiteLDev/LeviHeadlessInput
 LiteLDev/LeviLamina
+LiteLDev/levilamina-loc
 LiteLDev/levilamina-mod-template
 LiteLDev/LeviOptimize
 LiteLDev/mimalloc
