@@ -66,6 +66,7 @@ killcerr/better-ban
 killcerr/MinecartSpeedPlus
 killcerr/rocksdb-storage
 kuangby/FuckPlayerActionsAuthority
+LeafKnife/ChestMenu
 LeafKnife/FixBundleBug
 LeafKnife/ForbidExplosionBreak
 LeafKnife/ForbidPlayerSummonWither
