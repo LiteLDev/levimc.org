@@ -135,6 +135,7 @@ ShrBox/ResourcePackEncryption
 Shulker-Studio/STweaks
 SkyEye-FAST/offer-flowers-faster-bedrock
 spygamingog/Animated-Mojang-Android
+spygamingog/LeviLamroid
 superx101/CALL
 SurvivalApparatusCommunication/BedrockBugFixes
 TelluriumDev/BanExplosion
