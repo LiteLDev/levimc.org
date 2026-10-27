@@ -115,6 +115,7 @@ mrmagic2020/MForceAchievements
 mrmagic2020/MWelcome
 MRUIAW/Animated-Mojang
 MRUIAW/BedrockBoatHUD
+n15421/LL-NatPortFixer
 neverforward/Insight
 Nico6719/YEssential
 odorajbotoj/lualoader
