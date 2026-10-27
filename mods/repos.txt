@@ -47,6 +47,7 @@ GroupMountain/InventoryCheck
 GroupMountain/ModAPI-Release
 GroupMountain/Phantom
 GroupMountain/ThrowableFireball
+GroupMountain/UpdateNotice
 haojie06/CommBridge
 haojie06/LeviSafeZone
 heyhey123-git/plenty-healing
