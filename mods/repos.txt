@@ -62,6 +62,7 @@ HuHoBot/BDSAdapter
 IceBlcokMC/DebugShape
 IceBlcokMC/PLand
 IceBlcokMC/PLand-LegacyRemoteCallApi
+Ieckseyr/HologramLib
 jasmijasmi/VV-toggle
 Kashifro/LL-ModMenu
 killcerr/better-ban
