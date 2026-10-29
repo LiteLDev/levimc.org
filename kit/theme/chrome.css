@@ -327,10 +327,10 @@
     width: min(66rem, calc(100% - 1rem));
     padding: 0;
   }
-  /* four columns: Core · Launchers · Official mods (two columns of its own, so the longest group is the shortest) */
+  /* three columns: Core · Official mods (two columns of its own, so the longest group is the shortest) */
   .kit-proj-groups {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.25rem 0.75rem;
     padding: 0.75rem;
   }
