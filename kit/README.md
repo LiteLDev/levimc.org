@@ -636,8 +636,7 @@ Drop `doxygen-awesome-darkmode-toggle.js` (kit.js owns the theme and keeps `html
 (language and theme menus, GitHub → LeviLamina; its own phone menu off) above Doxygen's layers, then one
 light row (`header#titlearea`) with LeviLamina's logo + name, the docs header's tabs (Home · User Guides ·
 Developer Guides · **API Reference** · Maintainer Guides · Supported Versions, linking into the docs) with API
-Reference current — the Doxygen reference is a page of that tab —
-and Doxygen's search box — no painted title band, no second menubar: Doxygen's Main Page / Related Pages / Classes /
+Reference — the docs tab that is this Doxygen reference — current, and Doxygen's search box — no painted title band, no second menubar: Doxygen's Main Page / Related Pages / Classes /
 Files menubar is hidden from 768px (the tree on the left lists the same pages). From 768px the sections fit like
 the docs header's (kit.js measures them into `html[data-kit-nav-fit]`): one row while they fit, then `search` (the
 search box shrinks to its icon and opens over the row while used), then `tabs` (the sections get their own row
@@ -828,6 +827,13 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.9.1 — 2026-10-29
+
+**API Reference is the Doxygen reference.** LeviLamina's top-level API Reference tab now leads straight to its
+Doxygen reference (`/LeviLamina/api/`, a same-site link in the docs nav); the Doxygen header's current API Reference
+tab links there too, in every language (`DOX.sections`: a `shared` section has one URL for every locale).
+* No API change.
 
 ### 2.9.0 — 2026-10-29
 
