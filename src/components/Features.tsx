@@ -8,10 +8,10 @@ export default function Features({ headingLevel = 2 }: { headingLevel?: 1 | 2 })
   const Sub = headingLevel === 1 ? 'h2' : 'h3';
 
   const features: { title: string; description: string; icon: PixelIconName }[] = [
-    { title: t.features.nativeCpp, description: t.features.nativeCppDesc, icon: 'diamond' },
+    { title: t.features.platforms, description: t.features.platformsDesc, icon: 'monitor' },
+    { title: t.features.oneCommand, description: t.features.oneCommandDesc, icon: 'chest' },
     { title: t.features.multiLang, description: t.features.multiLangDesc, icon: 'bookQuill' },
-    { title: t.features.openSource, description: t.features.openSourceDesc, icon: 'chest' },
-    { title: t.features.community, description: t.features.communityDesc, icon: 'emerald' },
+    { title: t.features.openSource, description: t.features.openSourceDesc, icon: 'emerald' },
   ];
 
   return (

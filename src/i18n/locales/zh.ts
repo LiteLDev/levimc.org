@@ -13,20 +13,52 @@ const zh: typeof en = {
 
   // Hero section
   hero: {
-    badge: "现已推出",
     title1: "随心所欲",
-    title2: "开发模组。",
-    description: "轻量、模块化、多功能的模组加载器，适用于",
-    descriptionHighlight: "Minecraft 基岩版",
-    descriptionEnd: "。使用",
-    descriptionLanguages: "开发，或通过 LegacyScriptEngine 使用",
-    listSeparator: "、",
-    descriptionLSE: "。",
-    getStarted: "快速开始",
-    documentation: "文档",
-    stars: "GitHub 星标",
-    forks: "Forks",
+    title2: "玩转基岩版。",
+    tagline:
+      "面向 Minecraft 基岩版的开源工具：给玩家的启动器、给服主的模组加载器，以及给模组开发者的 API。",
+    eyebrow: "Open source · Bedrock Edition",
     languages: "开发语言",
+  },
+
+  // "我想…"：首页顶部给玩家、服主和开发者的选项卡
+  roles: {
+    label: "我想…",
+    play: "玩游戏",
+    host: "开服",
+    develop: "开发",
+    playDesc:
+      "LeviLauncher 在 Windows 和 Android 上启动 Minecraft 基岩版：多个游戏版本互不干扰，管理存档和资源包，加载模组游玩。",
+    downloadFor: (platform: string) => `下载 ${platform} 版`,
+    otherVersion: (platform: string) => `${platform} 版`,
+    reqWindows: "Windows 10 或 11 · 来自 Microsoft Store 的 Minecraft",
+    reqAndroid: "Android 9 及以上（ARM64）· 来自 Google Play 的 Minecraft 1.21.80 及以上",
+    noVersionHere: "LeviLauncher 支持 Windows 和 Android。",
+    allDownloads: "全部下载与国内镜像",
+    browseMods: "浏览模组",
+    hostDesc:
+      "在 Windows 10、11 或 Windows Server 上用 LeviLamina 运行基岩版专用服务器，每个模组和插件只需一条 lip 命令即可安装。",
+    setupGuide: "开服教程",
+    findMods: "寻找服务器模组",
+    getLip: "获取 lip",
+    latest: "LeviLamina 最新版",
+    developDesc:
+      "用 C++ 基于 LeviLamina 编写原生模组，用 JavaScript、Lua 或 Python 基于 LegacyScriptEngine 编写插件，或用 LeviLauncher 的 Preloader API 编写 Android 原生模组。",
+    firstMod: "编写第一个模组",
+    scripting: "脚本插件",
+    apiReference: "API 参考",
+    androidMods: "Android 模组",
+    copy: "复制命令",
+    copied: "已复制！",
+    terminalInstall: "# 在空文件夹中执行（需已安装 lip）",
+    terminalMods: "# 从 LeviMC Mods 添加模组",
+    terminalRun: "# 启动服务器",
+    launcherFeatures: [
+      { title: "版本隔离", desc: "多个游戏版本，数据各自独立。" },
+      { title: "模组", desc: "加载 LeviMC Mods 上的或你自己的模组。" },
+      { title: "存档与资源包", desc: "导入、导出和备份存档与资源包。" },
+      { title: "账户", desc: "游戏前切换 Xbox 账户。" },
+    ],
   },
 
   // About page
@@ -81,25 +113,23 @@ const zh: typeof en = {
   // Features section
   features: {
     label: "为何选择 LeviMC",
-    title1: "按你的方式",
-    title2: "开发模组。",
+    title1: "一个生态，",
+    title2: "服务整个基岩版。",
     description:
-      "无论你偏好原生 C++ 的性能，还是脚本语言的灵活性，LeviMC 都能满足你。一个为可靠性和开发体验设计的模块化生态。",
-    cta: "准备好构建令人惊叹的项目了吗？",
-    ctaDesc: "几分钟内即可开始使用 LeviLamina。",
-    readDocs: "阅读文档",
+      "玩家、服主和模组开发者共享同一套开源工具、同一个模组目录和同一个社区。",
     // Feature items
-    nativeCpp: "原生 C++ 模组",
-    nativeCppDesc:
-      "使用现代 C++ 编写高性能模组。通过全面的 API 完全访问游戏内部。",
-    multiLang: "多语言支持",
+    platforms: "Windows 与 Android",
+    platformsDesc:
+      "LeviLauncher 在电脑和手机上都能玩；LeviLamina 在 Windows 服务器和客户端上运行模组。",
+    oneCommand: "一条命令安装",
+    oneCommandDesc:
+      "lip 连同依赖一起安装模组，LeviMC Mods 收录每个模组及其安装命令。",
+    multiLang: "你熟悉的语言",
     multiLangDesc:
-      "使用 LegacyScriptEngine，以 JavaScript、Node.js、Lua 或 Python 编写插件。入门门槛更低。",
+      "用现代 C++ 编写原生模组，或通过 LegacyScriptEngine 用 JavaScript、Node.js、Lua、Python 编写插件。",
     openSource: "开源",
     openSourceDesc:
-      "开源部分采用 LGPL-3.0 许可证。社区驱动，欢迎在 GitHub 上贡献。",
-    community: "活跃社区",
-    communityDesc: "在 Discord 获取帮助，阅读文档，加入不断壮大的开发者社区。",
+      "在 GitHub 上开放开发，Discord、Telegram 和 QQ 群里有活跃的社区随时帮忙。",
   },
 
   // Community section

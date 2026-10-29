@@ -82,8 +82,8 @@ export default function CodeCard({ label }: { label: string }) {
   const example = EXAMPLES.find((e) => e.id === active)!;
 
   return (
-    <div className="lm-code">
-      <div className="px-card lm-code-window">
+    <div className="lm-showcase">
+      <div className="px-card lm-showcase-window">
         <HotbarTabs tabs={EXAMPLES.map((e) => ({ id: e.id, label: e.name }))} value={active} onChange={(id) => setActive(id as typeof active)} label={label}>
           <div className="kit-code lm-code-block" data-lang={example.id} data-linenos="" style={PALETTE_VARS}>
             {/* focusable like the kit's docs code blocks, so keyboard users can scroll it sideways on phones
