@@ -1,10 +1,10 @@
 // Progressive enhancement of rendered markdown (event delegation on the [data-doc-content] element):
-// copy buttons, hotbar tabs (WAI-ARIA keyboard pattern; a tab named after the visitor's platform starts selected),
-// client-side navigation for internal links and keyboard access to tables that scroll horizontally.
+// copy buttons, hotbar tabs (WAI-ARIA keyboard pattern; tabs named after a platform form one site-wide group that
+// follows the visitor's platform, see ../shared/platform.ts), client-side navigation for internal links and keyboard access to tables that scroll horizontally.
 import { useEffect, type RefObject } from 'react';
 import { useNavigate } from 'react-router';
 import { internalTarget, isPlainLeftClick } from './components/KitLink';
-import { detectPlatform } from '../shared/platform';
+import { isPlatform, preferredPlatform, storePlatform } from '../shared/platform';
 
 async function copyText(text: string): Promise<boolean> {
   try {
@@ -43,6 +43,23 @@ function selectTab(tab: HTMLElement, focus = false) {
   if (focus) tab.focus();
 }
 
+const PLATFORM_TAB = '[data-kit-tabs] > [role="tablist"] > [role="tab"][data-platform]';
+
+/** Select the tab of `platform` in every platform tab set under `root` (a set without one keeps its tab). */
+function selectPlatform(root: HTMLElement, platform: string) {
+  for (const tab of root.querySelectorAll<HTMLElement>(PLATFORM_TAB)) if (tab.dataset.platform === platform) selectTab(tab);
+}
+
+/** A tab the visitor picked: select it, and when it names a platform remember that and sync the other sets. */
+function chooseTab(root: HTMLElement, tab: HTMLElement, focus = false) {
+  selectTab(tab, focus);
+  const p = tab.dataset.platform;
+  if (tab.closest('[data-kit-tabs]') && isPlatform(p)) {
+    storePlatform(p);
+    selectPlatform(root, p);
+  }
+}
+
 /** Attach interactions to the content element. Re-run when the page changes. */
 export function useContentEnhancements(ref: RefObject<HTMLElement | null>, key: string) {
   const navigate = useNavigate();
@@ -65,7 +82,7 @@ export function useContentEnhancements(ref: RefObject<HTMLElement | null>, key: 
       }
       const tab = target.closest<HTMLElement>('[role="tab"]');
       if (tab && root.contains(tab) && tab.closest('[data-kit-tabs]')) {
-        selectTab(tab);
+        chooseTab(root, tab);
         return;
       }
       const a = target.closest('a');
@@ -90,15 +107,14 @@ export function useContentEnhancements(ref: RefObject<HTMLElement | null>, key: 
       else if (e.key === 'End') n = tabs.length - 1;
       if (n < 0) return;
       e.preventDefault();
-      selectTab(tabs[n]!, true);
+      chooseTab(root, tabs[n]!, true);
     };
     root.addEventListener('click', onClick);
     root.addEventListener('keydown', onKey);
-    // Tabs named after a platform (render.ts: data-platform) show the visitor's one; a #hash naming a tab still wins.
-    const platform = detectPlatform();
-    if (platform) {
-      for (const tab of root.querySelectorAll<HTMLElement>(`[data-kit-tabs] > [role="tablist"] > [role="tab"][data-platform="${platform}"]`)) selectTab(tab);
-    }
+    // Tabs named after a platform (render.ts: data-platform) show ?platform=, the visitor's earlier choice or their
+    // device; a #hash naming a tab still wins (revealHash runs next).
+    const platform = preferredPlatform();
+    if (platform) selectPlatform(root, platform);
     // Open the details/tab that contains the URL hash target.
     const revealHash = () => {
       const id = decodeURIComponent(window.location.hash.slice(1));

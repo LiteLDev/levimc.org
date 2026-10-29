@@ -14,7 +14,7 @@ import { preprocess, escAttr } from './preprocess.ts';
 import { createSlugger, type SlugMode } from './slug.ts';
 import { highlightToHast, type TokenStyles } from './shiki.ts';
 import { HTML_TAGS } from './html-tags.ts';
-import { platformOfLabel } from '../../shared/platform.ts';
+import { isPlatform, platformOfLabel, PLATFORM_NAMES } from '../../shared/platform.ts';
 
 export interface LinkResolution {
   href: string;
@@ -111,8 +111,26 @@ export function splitFrontmatter(src: string): { data: Record<string, unknown>; 
 
 // ------------------------------------------------------------------------------------- mdast helpers
 
+// VitePress <Badge type="tip" text="beta" /> → the kit's badge tones; `platform="android"` (kit) names a platform.
+const BADGE_TONES: Record<string, string> = { info: 'pond', tip: 'grass', warning: 'gold', danger: 'redstone' };
+const PLATFORM_TONES: Record<string, string> = { windows: 'diamond', android: 'grass', ios: 'stone', macos: 'stone', linux: 'gold' };
+
+/** A badge span (data-kit-badge: not part of heading ids / TOC text). */
+export function badgeHtml(text: string, tone: string, platform?: string): string {
+  const cls = tone === 'stone' ? 'kit-badge' : `kit-badge kit-badge-${tone}`;
+  return `<span class="${cls}" data-kit-badge=""${platform ? ` data-platform="${escAttr(platform)}"` : ''}>${text.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</span>`;
+}
+
+function badgeTag(attrs: string): string {
+  const attr = (n: string) => new RegExp(`\\b${n}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`).exec(attrs)?.slice(1).find((x) => x !== undefined);
+  const platform = attr('platform')?.toLowerCase();
+  if (isPlatform(platform)) return badgeHtml(attr('text') ?? PLATFORM_NAMES[platform], PLATFORM_TONES[platform]!, platform);
+  return badgeHtml(attr('text') ?? '', BADGE_TONES[attr('type') ?? 'tip'] ?? 'grass');
+}
+
 /** Escape raw-HTML "tags" that are not HTML (e.g. Array<NBT object>) so they render literally. */
 function escapePseudoTags(value: string, report: (tag: string) => void): string {
+  value = value.replace(/<Badge\b([^<>]*?)\/?>(?:\s*<\/Badge>)?/g, (_all, attrs: string) => badgeTag(attrs));
   return value.replace(/<(\/?)([A-Za-z][A-Za-z0-9-]*)((?:\s[^<>]*)?)(\/?)>/g, (all, _slash: string, name: string) => {
     const n = name.toLowerCase();
     if (HTML_TAGS.has(n) || n.includes('-')) return all;
@@ -166,7 +184,7 @@ function headingText(node: Element | RootContent): string {
   if (node.type === 'text') return node.value;
   if (node.type !== 'element') return '';
   if (node.tagName === 'sup' && node.children.some((c) => isEl(c, 'a') && 'dataFootnoteRef' in c.properties)) return '';
-  if (classes(node).includes('kit-anchor')) return '';
+  if (classes(node).includes('kit-anchor') || 'dataKitBadge' in node.properties) return '';
   return node.children.map((c) => headingText(c as Element)).join('');
 }
 
@@ -416,6 +434,14 @@ export async function renderMarkdown(source: string, o: RenderOptions): Promise<
     node.children.push(h('a', { className: ['kit-anchor'], href: `#${id}`, ariaHidden: 'true', tabIndex: -1 }, [{ type: 'raw', value: PERMALINK_ICON } as unknown as ElementContent]));
     return SKIP;
   });
+
+  // ---- frontmatter `platforms: [android]`: the page is about those platforms only — badges under the title
+  const pagePlatforms = (Array.isArray(frontmatter.platforms) ? frontmatter.platforms : [frontmatter.platforms]).map((x) => String(x ?? '').toLowerCase()).filter(isPlatform);
+  if (pagePlatforms.length) {
+    const row: Element = h('p', { className: ['kit-page-platforms'] }, pagePlatforms.map((p) => ({ type: 'raw', value: badgeHtml(PLATFORM_NAMES[p], PLATFORM_TONES[p]!, p) }) as unknown as ElementContent));
+    const at = tree.children.findIndex((c) => c.type === 'element' && c.tagName === 'h1');
+    tree.children.splice(at + 1, 0, row);
+  }
 
   // ---- links & images
   const anchors: RenderResult['anchors'] = [];

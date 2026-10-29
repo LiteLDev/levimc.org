@@ -335,6 +335,7 @@ export default defineDocsConfig({ … });
 | `header`, `sidebarExpand` | | see [Header](#header-the-docs-own-row) and the table under it |
 | `outDir` | `'dist'` | |
 | `searchExclude` | globs on page keys | |
+| `redirects` | `{ 'old/page': 'new/page' \| 'https://…' }` — a redirect page at each old URL (keeps the `#hash`) | mkdocs-redirects |
 
 `NavEntry` accepts every MkDocs and VitePress form:
 
@@ -351,9 +352,23 @@ export default defineDocsConfig({ … });
 
 Home pages: frontmatter `layout: home` with VitePress `hero` (`name`, `text`, `tagline`, `image`,
 `actions[{ theme: brand|alt, text, link, platform? }]`) and `features[{ title, details, icon?, link? }]`.
-An action with a `platform` (`windows`, `android`, `ios`, `macos`, `linux`) is for that platform: on a visitor's device
-that has actions, they come first as brand buttons and the other platforms' turn alt (the prerendered page keeps the
-frontmatter's order).
+An action with a `platform` (`windows`, `android`, `ios`, `macos`, `linux`) is for that platform: for the visitor's
+platform (see [Content per platform](#content-per-platform)) its actions come first as brand buttons and the other
+platforms' turn alt (the prerendered page keeps the frontmatter's order).
+
+### Content per platform
+
+For a product with versions for several platforms, one guide organised by task (not one guide per platform), as
+Docusaurus (`groupId` tabs), Microsoft Learn (zone pivots) and most multi-platform docs do:
+
+* **Where the platforms differ: tabs named after them** (`=== "Windows"` / `=== "Android"`, any language — the label
+  must name exactly one of Windows, Android, iOS, macOS, Linux). All such tabs form one site-wide group: picking a
+  platform switches every set on the page and is remembered (`localStorage` `levimc_platform`, shared by the docs
+  sites on the origin). The selected platform is `?platform=<name>` in the URL (shareable links), else the visitor's
+  last pick, else their device; a set without that platform keeps its tab, and a `#hash` naming a tab wins.
+* **A section for one platform:** a badge in its heading, `## Accounts <Badge platform="android" />` (not part of
+  the heading id or the TOC). VitePress badges work too: `<Badge type="info|tip|warning|danger" text="…" />`.
+* **A page for one platform:** frontmatter `platforms: [windows]` shows the platform badges under the title.
 `icon` may be a kit sprite name (`grass`, `chest`, `pickaxe`, `map`, `compass`, `emerald`, `diamond`,
 `bookQuill`, `torch`, …) or an emoji. Links in frontmatter are resolved like markdown links.
 
@@ -789,8 +804,8 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   instead of MkDocs' `Observable\<T>`, `\<=1.7.5`; opt back in with `markdown.literalBackslashes: true`).
 * pymdownx extensions that LiteLDev configures but never uses (critic, keys, mark, caret, tilde,
   smartsymbols, emoji, arithmatex, abbr, def_list, attr_list beyond heading ids) are not implemented.
-* VitePress Vue components inside markdown (e.g. `<Badge>`) are not supported (none are used today);
-  unknown tags are escaped and reported.
+* VitePress Vue components inside markdown are not supported, except `<Badge>`; unknown tags are escaped and
+  reported.
 * Search indexes prose and inline code, not fenced code blocks (LeviLamina: 416 KB en / 655 KB zh raw,
   105 KB / 168 KB gzipped; loaded only when search is opened).
 * The theme menu trigger's `aria-label` is the generic "Theme" until hydration (kit.js: until it runs); its
@@ -827,6 +842,19 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.10.0 — 2026-10-29
+
+**Content per platform** (see [Content per platform](#content-per-platform)), for LeviLauncher's one guide for its
+Windows and Android versions:
+* Platform tabs form one site-wide group: a pick switches every platform tab set and is remembered; `?platform=`
+  selects one by URL. Hero actions with `platform` follow the same choice (`preferredPlatform()`).
+* `<Badge platform="android" />` / VitePress `<Badge type text />` in markdown; frontmatter `platforms: [...]` puts
+  the platform badges under the title (`.kit-page-platforms`).
+* New config option `redirects` (old path → new path or URL): a redirect page per old URL.
+* New in `docs/shared/platform.ts`: `PLATFORM_NAMES`, `PLATFORM_STORAGE_KEY`, `PLATFORM_QUERY`, `isPlatform()`,
+  `storedPlatform()`, `storePlatform()`, `preferredPlatform()`.
+* Compatible: sites only rebuild.
 
 ### 2.9.1 — 2026-10-29
 

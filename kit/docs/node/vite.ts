@@ -247,6 +247,21 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
       const b = built;
       for (const f of searchFiles.values()) this.emitFile({ type: 'asset', fileName: f.file, source: f.json });
       this.emitFile({ type: 'asset', fileName: '.nojekyll', source: '' });
+      // moved pages: a redirect page at each old URL
+      const routeFiles = new Set(b.routes.map((r) => r.path));
+      for (const [from, to] of Object.entries(cfg.redirects ?? {})) {
+        const dir = from === '' || from.endsWith('/');
+        const fileName = dir ? `${from}index.html` : cfg.urlStyle === 'directory' ? `${from}/index.html` : `${from}.html`;
+        if (routeFiles.has(from) || routeFiles.has(dir ? from : `${from}.html`)) throw new Error(`redirects: ${from} is a page of the site`);
+        const url = /^[a-z]+:/i.test(to) ? to : `${cfg.hostname ?? ''}${cfg.base}${to}`;
+        const attr = url.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+        const source =
+          `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>Redirecting…</title>\n<meta name="robots" content="noindex">\n` +
+          `<link rel="canonical" href="${attr}">\n<meta http-equiv="refresh" content="0; url=${attr}">\n` +
+          `<script>location.replace(${JSON.stringify(url).replace(/</g, '\\u003c')}+location.hash);</script>\n</head>\n` +
+          `<body><p>This page has moved to <a href="${attr}">${attr}</a>.</p></body>\n</html>\n`;
+        this.emitFile({ type: 'asset', fileName, source });
+      }
       // page module → chunk (+ its static imports) for <link rel=modulepreload> during prerender
       const pages: Record<string, string[]> = {};
       for (const out of Object.values(bundle)) {
