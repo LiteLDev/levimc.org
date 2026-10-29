@@ -65,7 +65,9 @@ repositories of every package lipr had.
   not in `repos.txt`, not a fork and has a version tag with a `tooth.json` lip can read. Merging lists it at the
   next deploy; closing it keeps it out, since a repository that ever had a pull request (branch
   `mods/add/<owner>/<repo>`) is not proposed again. To take a mod off, close its pull request or delete its line.
-  `node scripts/discover.mjs --dry-run` shows what it would propose (needs `GH_TOKEN`).
+  `node scripts/discover.mjs --dry-run` shows what it would propose (needs `GH_TOKEN`). The workflow token's code
+  search limit is shared and often exhausted (HTTP 429): the script waits as GitHub asks for up to ten minutes, then
+  skips the run with a warning. A `MODS_SEARCH_TOKEN` secret (a personal token, no scopes) gives it a limit of its own.
 
 ## Data
 
@@ -199,4 +201,4 @@ levimc.org's `.github/workflows/deploy.yml` builds this app after the site and
 deploys `dist/` as levimc.org's `/mods/` on every push to `main` (a merged
 discovery pull request among them). It also rebuilds every hour, so the site
 picks up new versions.
-`.github/workflows/mods.yml` lints, tests and builds it on pull requests.
+The `mods` job of `.github/workflows/ci.yml` lints, tests and builds it when a change touches `mods/` or `kit/`.

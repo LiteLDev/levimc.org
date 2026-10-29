@@ -1,0 +1,150 @@
+# Checks for the three parts of this repository, each run only when a change touches it:
+# - site: levimc.org itself (type-check, tests, build); on pull requests only, since every push to main is built by
+#   the Pages deploy (deploy.yml) anyway. Link checking needs the kit and mods copied in, so it runs there.
+# - kit: levimc-kit's unit tests, and every demo site type-checked, built and link-checked with the pinned
+#   dependencies (kit/demo/package-lock.json).
+# - mods: LeviMC Mods (mods/): lint, type-check, unit tests and a full build with this checkout's kit.
+# Pull requests the discovery workflow opens (mods-discover.yml) start no workflows of their own.
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # Which parts the change touches (everything when started by hand, or when GitHub cannot list the files).
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      site: ${{ steps.diff.outputs.site }}
+      kit: ${{ steps.diff.outputs.kit }}
+      mods: ${{ steps.diff.outputs.mods }}
+    steps:
+      - id: diff
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          files=ALL
+          if [ "$GITHUB_EVENT_NAME" != workflow_dispatch ]; then
+            # the compare API lists at most 300 files: more counts as everything
+            files=$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE...$HEAD" \
+              --jq 'if (.files | length) >= 300 then "ALL" else .files[].filename end') || files=ALL
+          fi
+          echo "$files"
+          # has [-v] PATTERN: whether a changed file matches (with -v: whether one does not)
+          has() { if [ "$files" = ALL ] || grep -qE "$@" <<<"$files"; then echo true; else echo false; fi; }
+          ci='^\.github/workflows/ci\.yml$'
+          {
+            if [ "$GITHUB_EVENT_NAME" = push ]; then echo site=false; else echo "site=$(has -v '^(mods|kit/demo)/')"; fi
+            echo "kit=$(has "^kit/|$ci")"
+            echo "mods=$(has "^(mods|kit)/|$ci")"
+          } >> "$GITHUB_OUTPUT"
+          cat "$GITHUB_OUTPUT"
+
+  site:
+    needs: changes
+    if: needs.changes.outputs.site == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      # Blog content (Hexo permalinks, slugs, rendering) and the kit's preference tests.
+      - run: npm test
+
+      - run: npm run build
+
+  kit:
+    needs: changes
+    if: needs.changes.outputs.kit == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kit/demo
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: kit/demo/package-lock.json
+
+      - run: npm ci
+
+      # the demo uses its own vendored copy of the kit, exactly like a site
+      - run: npm run vendor
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+      - name: docs demo (MkDocs-style)
+        run: npm run build && npm run linkcheck
+
+      - name: lip demo (VitePress-style, folder locales)
+        run: npm run build:lip && node kit/scripts/linkcheck.mjs dist-lip --base /lip/ --site-origin https://docs.levimc.org
+
+      - name: single-locale docs demo
+        run: npm run build:single && node kit/scripts/linkcheck.mjs dist-single --base /Single/ --site-origin https://docs.levimc.org
+
+      - name: plain app demo (levimc.org / levimc.org/mods shape)
+        run: npm run build:app
+
+  mods:
+    needs: changes
+    if: needs.changes.outputs.mods == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mods
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v5
+        with:
+          package_json_file: mods/package.json
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: mods/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      # The registry cache the Pages deploy saves (see deploy.yml); read only here.
+      - uses: actions/cache/restore@v6
+        with:
+          path: mods/.cache
+          key: mods-registry-${{ github.run_id }}
+          restore-keys: mods-registry-
+
+      - run: pnpm lint
+
+      - run: pnpm typecheck
+
+      - run: pnpm test
+
+      - run: pnpm build
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - run: pnpm linkcheck

@@ -11,7 +11,9 @@
 // through a pull request, so close one rather than reverting it.
 //
 // Needs GH_TOKEN (or GITHUB_TOKEN) with contents and pull-requests write access to GITHUB_REPOSITORY (default
-// LiteLDev/levimc.org), and git for listing tags.
+// LiteLDev/levimc.org), and git for listing tags. SEARCH_TOKEN, when set, is used for the code search alone: the code
+// search allowance of a workflow's GITHUB_TOKEN (10 requests a minute) is shared beyond this workflow and is often used
+// up before the first request, while a personal token has its own.
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { migrateManifest } from "../src/lib/manifest.ts";
@@ -21,6 +23,7 @@ const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
 const max = Number(args.includes("--max") ? args[args.indexOf("--max") + 1] : 20);
 const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN;
+const searchToken = process.env.SEARCH_TOKEN || token;
 const target = process.env.GITHUB_REPOSITORY ?? "LiteLDev/levimc.org";
 const REPOS_PATH = "mods/repos.txt";
 const SEARCH = "format_version path:/ filename:tooth.json";
@@ -31,22 +34,40 @@ if (!token) {
   process.exit(1);
 }
 
-async function api(path, init = {}) {
-  for (let attempt = 1; ; attempt++) {
+class RateLimited extends Error {}
+
+/** How long GitHub asks to wait before the next request, in milliseconds. */
+async function retryDelay(res) {
+  const after = Number(res.headers.get("retry-after"));
+  if (after > 0) return after * 1000;
+  const reset = Number(res.headers.get("x-ratelimit-reset"));
+  if (res.headers.get("x-ratelimit-remaining") === "0" && reset > 0) return Math.max(reset * 1000 - Date.now(), 1000);
+  // {"message":"try again in 33.373457742s", …}
+  const seconds = Number((await res.text().catch(() => "")).match(/try again in ([\d.]+)s/)?.[1]);
+  return seconds > 0 ? seconds * 1000 : 60_000;
+}
+
+async function api(path, init = {}, { auth = token, patience = 3 * 60_000 } = {}) {
+  const giveUp = Date.now() + patience;
+  for (;;) {
     const res = await fetch(`https://api.github.com/${path}`, {
       ...init,
       headers: {
         Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${auth}`,
         "User-Agent": "levimc.org-mods-discover",
         "X-GitHub-Api-Version": "2022-11-28",
         ...init.headers,
       },
     });
-    // code search allows 10 requests a minute
-    if ((res.status === 403 || res.status === 429) && attempt < 4) {
-      console.warn(`${path}: HTTP ${res.status}, again in a minute`);
-      await new Promise((resolve) => setTimeout(resolve, 60_000));
+    // a 403 is a rate limit only when GitHub says so (it also means "not allowed")
+    const limited = res.status === 429 || (res.status === 403 && (res.headers.has("retry-after") || res.headers.get("x-ratelimit-remaining") === "0"));
+    if (limited) {
+      // a little later than asked, and not on the second: others wait for the same reset
+      const wait = (await retryDelay(res)) + 1000 + Math.random() * 4000;
+      if (Date.now() + wait > giveUp) throw new RateLimited(`${init.method ?? "GET"} ${path}: still rate limited (HTTP ${res.status})`);
+      console.warn(`${path}: HTTP ${res.status}, again in ${Math.ceil(wait / 1000)} s`);
+      await new Promise((resolve) => setTimeout(resolve, wait));
       continue;
     }
     if (!res.ok) throw new Error(`${init.method ?? "GET"} ${path}: HTTP ${res.status} ${await res.text()}`);
@@ -58,7 +79,7 @@ async function api(path, init = {}) {
 async function search() {
   const repos = new Map();
   for (let page = 1; page <= 10; page++) {
-    const data = await api(`search/code?q=${encodeURIComponent(SEARCH)}&per_page=100&page=${page}`);
+    const data = await api(`search/code?q=${encodeURIComponent(SEARCH)}&per_page=100&page=${page}`, {}, { auth: searchToken, patience: 10 * 60_000 });
     for (const { repository } of data.items) repos.set(repository.full_name.toLowerCase(), repository);
     if (data.items.length < 100) break;
   }
@@ -158,7 +179,15 @@ async function propose(repository, tag, count, manifest) {
 }
 
 const known = new Set(parseRepoList(readFileSync("repos.txt", "utf8")).map((r) => r.toLowerCase()));
-const found = await search();
+let found;
+try {
+  found = await search();
+} catch (error) {
+  if (!(error instanceof RateLimited)) throw error;
+  // nothing is lost: the next run searches again
+  console.log(`::warning::${error.message}; nothing proposed this run${process.env.SEARCH_TOKEN ? "" : " (set the MODS_SEARCH_TOKEN secret to search with a limit of its own)"}`);
+  process.exit(0);
+}
 const history = await proposed();
 const candidates = found.filter((r) => !r.fork && !known.has(r.full_name.toLowerCase()) && !history.has(`mods/add/${r.full_name.toLowerCase()}`));
 console.log(`search: ${found.length} repositories; ${candidates.length} neither listed nor proposed before`);
