@@ -19,8 +19,8 @@ const ROUTES = ['', 'community/', 'about/', 'support/'];
 const LANG = { en: 'en', zh: 'zh-CN', 'zh-Hant': 'zh-Hant' };
 const H1 = {
   en: { '': 'Mod Bedrock', 'community/': 'Get Involved', 'about/': 'The story of a small team.', 'support/': 'Support LeviMC' },
-  zh: { '': '随心所欲', 'community/': '参与进来', 'about/': '一个无名小团队的故事。', 'support/': '支持 LeviMC' },
-  'zh-Hant': { '': '隨心所欲', 'community/': '參與進來', 'about/': '一個無名小團隊的故事。', 'support/': '支持 LeviMC' },
+  zh: { '': '随心所欲', 'community/': '参与进来', 'about/': '一个小团队的故事。', 'support/': '支持 LeviMC' },
+  'zh-Hant': { '': '隨心所欲', 'community/': '參與進來', 'about/': '一個小團隊的故事。', 'support/': '支持 LeviMC' },
 };
 
 const results = [];
@@ -41,8 +41,8 @@ const assert = (c, msg) => {
 // Use the environment's proxy when there is one (for the live-data checks); loopback always goes direct.
 const proxy = process.env.HTTPS_PROXY || process.env.https_proxy || process.env.HTTP_PROXY || process.env.http_proxy;
 const browser = await chromium.launch(proxy ? { proxy: { server: proxy, bypass: '<-loopback>,localhost,127.0.0.1' } } : {});
-const newContext = async ({ locale, width = 1440, height = 900, scheme = 'light', mobile = false } = {}) => {
-  const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme, isMobile: mobile, hasTouch: mobile, deviceScaleFactor: mobile ? 2 : 1 });
+const newContext = async ({ locale, width = 1440, height = 900, scheme = 'light', mobile = false, userAgent } = {}) => {
+  const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme, isMobile: mobile, hasTouch: mobile, deviceScaleFactor: mobile ? 2 : 1, userAgent });
   // the visitor's cross-site LeviMC language preference (cookie levimc_lang, host-only on 127.0.0.1)
   if (locale) await ctx.addCookies([{ name: 'levimc_lang', value: LANG[locale] ?? locale, url: base }]);
   return ctx;
@@ -273,26 +273,64 @@ await check('no flash of English for a returning Chinese visitor', async () => {
   return `${log.length} DOM mutations observed, English never visible`;
 });
 
-await check('hero code tabs (hotbar): click and arrow keys switch the sample', async () => {
+await check('hero role tabs ("I want to…"): play by default, click, arrow keys and #hash switch the role; remembered', async () => {
   const ctx = await newContext();
   const page = await ctx.newPage();
+  const errs = watch(page);
   await page.goto(base, { waitUntil: 'networkidle' });
-  const tabs = page.locator('[data-kit-hero] [role="tab"]');
+  const tabs = page.locator('.lm-roles [role="tab"]');
+  const panel = page.locator('.lm-roles [role="tabpanel"]');
+  assert((await tabs.count()) === 3, 'expected 3 role tabs');
+  assert((await tabs.nth(0).getAttribute('aria-selected')) === 'true', 'Play is not selected by default');
+  assert((await panel.innerText()).includes('Download for Windows'), 'no Windows download on a desktop');
+  await tabs.nth(1).click();
+  assert((await panel.innerText()).includes('Set up a server'), 'server panel not shown');
+  assert((await page.locator('.kit-hero-aside').innerText()).includes('lip install github.com/LiteLDev/LeviLamina'), 'no lip command beside it');
+  assert(new URL(page.url()).hash === '#host', `hash is ${new URL(page.url()).hash}`);
+  await tabs.nth(1).press('ArrowRight');
+  assert((await tabs.nth(2).getAttribute('aria-selected')) === 'true', 'ArrowRight did not move to Develop');
+  assert((await panel.innerText()).includes('Create your first mod'), 'developer panel not shown');
+  await page.goto(base, { waitUntil: 'networkidle' });
+  assert((await tabs.nth(2).getAttribute('aria-selected')) === 'true', 'the last role was not remembered');
+  await page.goto(base + '#play', { waitUntil: 'networkidle' });
+  assert((await tabs.nth(0).getAttribute('aria-selected')) === 'true', '#play did not select Play');
+  assert(!errs.length, errs.join(' | '));
+  await ctx.close();
+  return 'play → host → develop → (reload) develop → #play';
+});
+
+await check('hero role tabs: an Android phone is offered the Android download first', async () => {
+  const ctx = await newContext({ width: 390, height: 844, mobile: true, userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36' });
+  const page = await ctx.newPage();
+  await page.goto(base + '#play', { waitUntil: 'networkidle' });
+  const first = page.locator('.lm-role-panel .mc-btn').first();
+  assert((await first.innerText()).includes('Download for Android'), `first button: ${await first.innerText()}`);
+  assert((await first.getAttribute('href')) === 'https://github.com/LiteLDev/LeviLaunchroid/releases/latest', 'wrong APK link');
+  await ctx.close();
+  return 'Download for Android';
+});
+
+await check('hero code tabs (hotbar, developers): click and arrow keys switch the sample', async () => {
+  const ctx = await newContext();
+  const page = await ctx.newPage();
+  await page.goto(base + '#develop', { waitUntil: 'networkidle' });
+  const tabs = page.locator('.kit-hero-aside [role="tab"]');
+  const sample = page.locator('.kit-hero-aside [role="tabpanel"]');
   assert((await tabs.count()) === 3, 'expected 3 tabs');
   await tabs.nth(1).click();
   assert((await tabs.nth(1).getAttribute('aria-selected')) === 'true', 'second tab not selected');
-  assert((await page.locator('[data-kit-hero] [role="tabpanel"]').innerText()).includes('mc.listen("onJoin", (player) => {'), 'JS sample not shown');
+  assert((await sample.innerText()).includes('mc.listen("onJoin", (player) => {'), 'JS sample not shown');
   await tabs.nth(1).press('ArrowRight');
   assert((await tabs.nth(2).getAttribute('aria-selected')) === 'true', 'ArrowRight did not move to main.lua');
-  assert((await page.locator('[data-kit-hero] [role="tabpanel"]').innerText()).includes('player:tell("Welcome!")'), 'Lua sample not shown');
+  assert((await sample.innerText()).includes('player:tell("Welcome!")'), 'Lua sample not shown');
   await ctx.close();
   return 'main.cpp → main.js → main.lua';
 });
 
-await check('live data: release badge and project stars fill in after hydration', async () => {
+await check('live data: release badge (server owners) and project stars fill in after hydration', async () => {
   const ctx = await newContext();
   const page = await ctx.newPage();
-  await page.goto(base, { waitUntil: 'networkidle' });
+  await page.goto(base + '#host', { waitUntil: 'networkidle' });
   await page.waitForSelector('.lm-release-version', { timeout: 15000 });
   await page.waitForFunction(() => !document.querySelector('.lm-project-stars .lm-skeleton'), null, { timeout: 15000 });
   const v = (await page.locator('.lm-release-version').innerText()).trim();

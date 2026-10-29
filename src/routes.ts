@@ -45,15 +45,15 @@ export function routeIdOf(pathname: string): RouteId | null {
   return resolveBlogPath(p) ? 'blog' : null;
 }
 
-export const HOME_TITLE = 'LeviMC - Open Source Bedrock Modding Framework';
+export const HOME_TITLE = 'LeviMC - Open-Source Tools for Minecraft Bedrock';
 
 /** <title> and meta description of a page, built from the site's existing copy (and the blog's posts). */
 export function routeMeta(pathname: string, t: Messages): { title: string; description: string } {
-  const hero = `${t.hero.description} ${t.hero.descriptionHighlight}${t.hero.descriptionEnd} C++${t.hero.descriptionLanguages} JavaScript, Lua, Python ${t.hero.descriptionLSE}`;
+  const hero = t.hero.tagline;
   const id = routeIdOf(pathname);
   switch (id) {
     case 'home':
-      return { title: HOME_TITLE, description: hero.replace(/\s+([。，])/g, '$1') };
+      return { title: HOME_TITLE, description: hero };
     case 'community':
       return { title: `${t.nav.community} - LeviMC`, description: t.community.description };
     case 'about':

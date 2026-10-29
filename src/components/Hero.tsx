@@ -1,11 +1,11 @@
-import { PaintedHero, PixelButton } from '../../kit/components';
-import { useLeviLaminaStats } from '../hooks/useExternalData';
+import { PaintedHero } from '../../kit/components';
 import { useI18n } from '../i18n';
-import CodeCard from './CodeCard';
+import { RoleShowcase, RoleTabs, useRole } from './Roles';
 
+/** The home hero: what LeviMC is, then "I want to…" tabs for players, server owners and developers. */
 export default function Hero() {
   const { t } = useI18n();
-  const { version } = useLeviLaminaStats();
+  const [role, setRole] = useRole();
   // The trailing space keeps a word boundary between the two block-level title lines in textContent
   // ("Mod Bedrock your way."); at the end of a line it collapses, so nothing moves.
   const titleName = <>{t.hero.title1} </>;
@@ -13,44 +13,13 @@ export default function Hero() {
   return (
     <PaintedHero
       className="lm-hero"
+      eyebrow={t.hero.eyebrow}
       name={titleName}
       text={t.hero.title2}
-      tagline={
-        <>
-          {t.hero.description} <strong className="lm-hero-strong">{t.hero.descriptionHighlight}</strong>
-          {t.hero.descriptionEnd} <span className="lm-hero-lang">C++</span>
-          {t.hero.descriptionLanguages} <span className="lm-hero-lang">JavaScript</span>
-          {t.hero.listSeparator}
-          <span className="lm-hero-lang">Node.js</span>
-          {t.hero.listSeparator}
-          <span className="lm-hero-lang">Lua</span>
-          {t.hero.listSeparator}
-          <span className="lm-hero-lang">Python</span>
-          {t.hero.descriptionLSE}
-        </>
-      }
-      badge={
-        <>
-          <a href="https://github.com/LiteLDev/LeviLamina/releases/latest" target="_blank" rel="noopener" className="lm-release">
-            <span className="lm-release-dot" aria-hidden="true" />
-            <span>
-              LeviLamina{' '}
-              {version ? <span className="lm-release-version">{version}</span> : <span className="lm-skeleton lm-skeleton-sm lm-release-skeleton" />}{' '}
-              {t.hero.badge}
-            </span>
-          </a>
-        </>
-      }
-      aside={<CodeCard label={t.hero.languages} />}
+      tagline={t.hero.tagline}
+      aside={<RoleShowcase role={role} />}
     >
-      <div className="kit-hero-actions">
-        <PixelButton href="https://docs.levimc.org/LeviLamina/user_guides/install/" variant="primary" size="lg" iconRight="arrowRight">
-          {t.hero.getStarted}
-        </PixelButton>{' '}
-        <PixelButton href="https://docs.levimc.org/LeviLamina/" size="lg">
-          {t.hero.documentation}
-        </PixelButton>
-      </div>
+      <RoleTabs role={role} onChange={setRole} />
     </PaintedHero>
   );
 }

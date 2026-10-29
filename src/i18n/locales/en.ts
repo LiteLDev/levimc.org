@@ -13,20 +13,52 @@ const en = {
 
   // Hero section
   hero: {
-    badge: "available",
     title1: "Mod Bedrock",
     title2: "your way.",
-    description: "A lightweight, modular and versatile mod loader for",
-    descriptionHighlight: "Minecraft Bedrock Edition",
-    descriptionEnd: ". Write mods in",
-    descriptionLanguages: ", or use",
-    listSeparator: ", ",
-    descriptionLSE: " with LegacyScriptEngine.",
-    getStarted: "Get Started",
-    documentation: "Documentation",
-    stars: "GitHub Stars",
-    forks: "Forks",
+    tagline:
+      "Open-source tools for Minecraft Bedrock Edition: a launcher for players, a mod loader for servers, and APIs for mod developers.",
+    eyebrow: "Open source · Bedrock Edition",
     languages: "Languages",
+  },
+
+  // "I want to…": the hero's tabs for players, server owners and developers
+  roles: {
+    label: "I want to…",
+    play: "Play",
+    host: "Run a server",
+    develop: "Develop",
+    playDesc:
+      "LeviLauncher launches Minecraft Bedrock Edition on Windows and Android: keep several game versions side by side, manage worlds and packs, and play with mods.",
+    downloadFor: (platform: string) => `Download for ${platform}`,
+    otherVersion: (platform: string) => `${platform} version`,
+    reqWindows: "Windows 10 or 11 · Minecraft from the Microsoft Store",
+    reqAndroid: "Android 9 or later (ARM64) · Minecraft 1.21.80 or later from Google Play",
+    noVersionHere: "LeviLauncher runs on Windows and Android.",
+    allDownloads: "All downloads & mirrors",
+    browseMods: "Browse mods",
+    hostDesc:
+      "Run Bedrock Dedicated Server with LeviLamina on Windows 10, 11 or Windows Server, then add mods and plugins with one lip command each.",
+    setupGuide: "Set up a server",
+    findMods: "Find server mods",
+    getLip: "Get lip",
+    latest: "Latest LeviLamina",
+    developDesc:
+      "Write native mods in C++ with LeviLamina, plugins in JavaScript, Lua or Python with LegacyScriptEngine, or native Android mods with LeviLauncher's Preloader API.",
+    firstMod: "Create your first mod",
+    scripting: "Script plugins",
+    apiReference: "API reference",
+    androidMods: "Android mods",
+    copy: "Copy commands",
+    copied: "Copied!",
+    terminalInstall: "# in an empty folder, with lip installed",
+    terminalMods: "# add mods from LeviMC Mods",
+    terminalRun: "# start the server",
+    launcherFeatures: [
+      { title: "Version isolation", desc: "Several game versions, each with its own data." },
+      { title: "Mods", desc: "Load mods, from LeviMC Mods or your own." },
+      { title: "Worlds & packs", desc: "Import, export and back up worlds and packs." },
+      { title: "Accounts", desc: "Switch Xbox accounts before you play." },
+    ],
   },
 
   // About page
@@ -81,26 +113,23 @@ const en = {
   // Features section
   features: {
     label: "WHY LEVIMC",
-    title1: "Build mods",
-    title2: "your way.",
+    title1: "One ecosystem",
+    title2: "for all of Bedrock.",
     description:
-      "Whether you prefer native C++ performance or the flexibility of scripting languages, LeviMC has you covered. A modular ecosystem designed for reliability and developer experience.",
-    cta: "Ready to build something amazing?",
-    ctaDesc: "Get started with LeviLamina in minutes.",
-    readDocs: "Read the Docs",
+      "Players, server owners and mod developers share the same open-source tools, the same catalogue of mods and the same community.",
     // Feature items
-    nativeCpp: "Native C++ Mods",
-    nativeCppDesc:
-      "Write high-performance mods with modern C++. Full access to the game's internals via a comprehensive API.",
-    multiLang: "Multi-Language",
+    platforms: "Windows and Android",
+    platformsDesc:
+      "LeviLauncher plays on PCs and phones; LeviLamina runs mods on Windows servers and clients.",
+    oneCommand: "One-command installs",
+    oneCommandDesc:
+      "lip installs a mod with its dependencies, and LeviMC Mods lists every mod with the command to install it.",
+    multiLang: "Your language",
     multiLangDesc:
-      "Use LegacyScriptEngine to write plugins in JavaScript, Node.js, Lua or Python. A lower barrier to entry.",
-    openSource: "Open Source",
+      "Native mods in modern C++, or plugins in JavaScript, Node.js, Lua or Python with LegacyScriptEngine.",
+    openSource: "Open source",
     openSourceDesc:
-      "The open-source parts are LGPL-3.0 licensed. Community-driven. Contribute on GitHub.",
-    community: "Active Community",
-    communityDesc:
-      "Get help on Discord, read the docs, and join a growing ecosystem of developers.",
+      "Developed in the open on GitHub, with an active community on Discord and Telegram to help you along.",
   },
 
   // Community section
