@@ -6,7 +6,7 @@ styled with the shared LeviMC design system, levimc-kit, which lives here in [`k
 **levimc-kit is the one source of the LeviMC chrome** — the bar on top (Home · Projects ▾ · Mods · Blog · Community ·
 About, language · theme · GitHub), the footer, the theme and the docs engine — for every LeviMC site: levimc.org
 (and LeviMC Mods at levimc.org/mods/, see below), docs.levimc.org and the project docs (LeviLamina with its Doxygen API, LegacyScriptEngine, lip,
-LeviLauncher, LeviLauncher for Android). Every deploy publishes it at <https://levimc.org/kit/v2/> (`kit/scripts/publish-kit.mjs`);
+LeviLauncher for Windows and Android). Every deploy publishes it at <https://levimc.org/kit/v2/> (`kit/scripts/publish-kit.mjs`);
 the other sites fetch it when they build (`scripts/fetch-kit.mjs`, run by their package install) and never edit it.
 After a deploy that changed the kit, the `sync` job rebuilds every site (with the `KIT_SYNC_TOKEN` secret: a
 fine-grained token with *Actions: read and write* on those repositories); each site also checks hourly and rebuilds

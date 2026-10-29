@@ -149,8 +149,8 @@ writeFileSync(
 // ---------------------------------------------------------------- 4. Doxygen header/footer templates
 // The API reference of LeviLamina (the only Doxygen site). Its header is the one header of the docs pages: a
 // skip link, the LeviMC bar, then one compact row with the project's logo + name, the same tabs as the docs row
-// (docs.config.ts nav: its sections plus the external LegacyScriptEngine and About links; Developer Guides, which
-// holds the API reference, is the current one) and Doxygen's search box (doxygen-kit.css moves #main-nav's search
+// (docs.config.ts nav: its sections, external links included — none today; API Reference, whose
+// sidebar lists this reference as a page of the site, is the current one) and Doxygen's search box (doxygen-kit.css moves #main-nav's search
 // into that row and hides Doxygen's menubar on wide screens — the tree on the left has the same entries). On
 // phones Doxygen's single menu button opens one panel: the docs sections, Doxygen's menu and the LeviMC links (the
 // bar's menu is off). Labels and URLs follow the visitor's language like the docs (kit.js: data-kit-site-locales/-l10n).
@@ -170,11 +170,10 @@ const DOX = {
   sections: [
     { path: '', label: { en: 'Home', zh: '主页', 'zh-Hant': '主頁' } },
     { path: 'user_guides/install/', label: { en: 'User Guides', zh: '用户指南', 'zh-Hant': '用戶指南' } },
-    { path: 'developer_guides/tutorials/create_your_first_mod/', label: { en: 'Developer Guides', zh: '开发者指南', 'zh-Hant': '開發者指南' }, active: true },
+    { path: 'developer_guides/tutorials/create_your_first_mod/', label: { en: 'Developer Guides', zh: '开发者指南', 'zh-Hant': '開發者指南' } },
+    { path: 'api_reference/', label: { en: 'API Reference', zh: 'API 参考', 'zh-Hant': 'API 參考' }, active: true },
     { path: 'maintainer_guides/cpp_style_guide/', label: { en: 'Maintainer Guides', zh: '维护者指南', 'zh-Hant': '維護者指南' } },
     { path: 'versions/', label: { en: 'Supported Versions', zh: '支持的版本', 'zh-Hant': '支持的版本' } },
-    { url: 'https://docs.levimc.org/LegacyScriptEngine/', label: { en: 'LegacyScriptEngine' } },
-    { url: 'https://levimc.org/about/', label: { en: 'About', zh: '关于我们', 'zh-Hant': '關於我們' } },
   ],
 };
 const doxLocalesAttr = esc(JSON.stringify(DOX.locales.map(({ c, l }) => ({ c, l }))));

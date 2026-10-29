@@ -1,9 +1,10 @@
 // Progressive enhancement of rendered markdown (event delegation on the [data-doc-content] element):
-// copy buttons, hotbar tabs (WAI-ARIA keyboard pattern), client-side navigation for internal links and
-// keyboard access to tables that scroll horizontally.
+// copy buttons, hotbar tabs (WAI-ARIA keyboard pattern; a tab named after the visitor's platform starts selected),
+// client-side navigation for internal links and keyboard access to tables that scroll horizontally.
 import { useEffect, type RefObject } from 'react';
 import { useNavigate } from 'react-router';
 import { internalTarget, isPlainLeftClick } from './components/KitLink';
+import { detectPlatform } from '../shared/platform';
 
 async function copyText(text: string): Promise<boolean> {
   try {
@@ -93,6 +94,11 @@ export function useContentEnhancements(ref: RefObject<HTMLElement | null>, key: 
     };
     root.addEventListener('click', onClick);
     root.addEventListener('keydown', onKey);
+    // Tabs named after a platform (render.ts: data-platform) show the visitor's one; a #hash naming a tab still wins.
+    const platform = detectPlatform();
+    if (platform) {
+      for (const tab of root.querySelectorAll<HTMLElement>(`[data-kit-tabs] > [role="tablist"] > [role="tab"][data-platform="${platform}"]`)) selectTab(tab);
+    }
     // Open the details/tab that contains the URL hash target.
     const revealHash = () => {
       const id = decodeURIComponent(window.location.hash.slice(1));

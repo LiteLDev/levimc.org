@@ -34,7 +34,6 @@ const UPSTREAM = {
   LeviLamina: 'LeviLamina/HEAD/docs/main/contents/logo.svg',
   LegacyScriptEngine: 'LegacyScriptEngine/HEAD/docs/img/logo.png',
   LeviLauncher: 'LeviLauncher/HEAD/docs/public/appicon.png',
-  LeviLaunchroid: 'LeviLaunchroid/HEAD/docs/public/appicon.png',
   BarelyEnoughItems: 'BarelyEnoughItems/HEAD/docs/logo.png',
   AlleviatedBackpacks: 'AlleviatedBackpacks/HEAD/docs/logo.png',
   Bedstones: 'Bedstones/HEAD/docs/logo.png',

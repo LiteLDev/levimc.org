@@ -1,8 +1,8 @@
 # levimc-kit
 
 The shared design system and static docs engine for every LeviMC website — levimc.org (with LeviMC Mods at /mods/) and
-the project docs at `docs.levimc.org/<Project>/` (LeviLamina, LegacyScriptEngine, lip, LeviLauncher,
-LeviLauncher for Android — repository LeviLaunchroid), plus the Doxygen API reference.
+the project docs at `docs.levimc.org/<Project>/` (LeviLamina, LegacyScriptEngine, lip, LeviLauncher — Windows and
+Android in one site), plus the Doxygen API reference.
 
 **Design concept: "Impression, Craft".** Monet's Giverny rendered as if built in Minecraft.
 *Painterly = atmosphere* (impressionist colour fields and brush-dab texture in heroes, backdrops and margins);
@@ -198,7 +198,7 @@ A docs site is the repository's existing markdown plus four small files:
 
 The app sits where the old generator config was; `kit/` sits next to `package.json`.
 
-**VitePress-style repos (lip, LeviLauncher, LeviLaunchroid) — markdown directly in `docs/`:** the app *is*
+**VitePress-style repos (lip, LeviLauncher) — markdown directly in `docs/`:** the app *is*
 `docs/` (it already holds a `package.json`):
 
 ```
@@ -343,12 +343,17 @@ export default defineDocsConfig({ … });
 { 'Install': 'user_guides/install.md' }                   // titled (translated via navTranslations)
 { 'User Guides': [ … ] }                                  // group
 { 'About': 'https://levimc.org/about/' }                  // external
+{ 'Doxygen API': 'https://docs.levimc.org/LeviLamina/api/' } // same site, no docs page (or '/LeviLamina/api/'):
+                                                          // opened in place like a page, no external mark
 { text: 'Guide', link: '/guide/quick-start' }             // VitePress (root-absolute, locale prefix allowed)
 { text: 'Developer', items: [ … ], collapsed: true }      // VitePress group / dropdown
 ```
 
 Home pages: frontmatter `layout: home` with VitePress `hero` (`name`, `text`, `tagline`, `image`,
-`actions[{ theme: brand|alt, text, link }]`) and `features[{ title, details, icon?, link? }]`.
+`actions[{ theme: brand|alt, text, link, platform? }]`) and `features[{ title, details, icon?, link? }]`.
+An action with a `platform` (`windows`, `android`, `ios`, `macos`, `linux`) is for that platform: on a visitor's device
+that has actions, they come first as brand buttons and the other platforms' turn alt (the prerendered page keeps the
+frontmatter's order).
 `icon` may be a kit sprite name (`grass`, `chest`, `pickaxe`, `map`, `compass`, `emerald`, `diamond`,
 `bookQuill`, `torch`, …) or an emoji. Links in frontmatter are resolved like markdown links.
 
@@ -408,7 +413,9 @@ kit transforms → Shiki → HTML). No markdown is parsed in the browser.
 * **MkDocs**: admonitions `!!! type "Title"` (case-insensitive type, optional title, `""` = no title,
   4-space indented bodies with fences/lists/tables/nested admonitions; allowed directly after a paragraph
   line), collapsible `??? type` / `???+ type`, pymdownx tabs `=== "Label"` (consecutive blocks form one
-  set, `===!` starts a new set, `===+` selects), `{#id}` / `{: #id }` heading ids.
+  set, `===!` starts a new set, `===+` selects; a tab whose label names one platform — Windows, Android, iOS, macOS,
+  Linux — starts selected for visitors on that platform), `{#id}` / `{: #id }` heading ids. VitePress sites turn them
+  on with `markdown.containers: { vitepress: true, mkdocs: true }`.
   Types: note abstract(summary, tldr) info(todo) tip(hint, important) success(check, done)
   question(help, faq) warning(caution, attention) failure(fail, missing) danger(error) bug example
   quote(cite); unknown types use the note style.
@@ -584,7 +591,7 @@ Canonical cross-site URLs (exact, no redirect): Home `https://levimc.org/`, Proj
 GitHub organisation) `https://github.com/LiteLDev`, Community `https://levimc.org/community/`, About `https://levimc.org/about/`,
 Mods (LeviMC Mods, id `mods`) `https://levimc.org/mods/`, Blog `https://levimc.org/blog/`, GitHub
 `https://github.com/LiteLDev`,
-Docs `https://docs.levimc.org/{LeviLamina,LegacyScriptEngine,lip,LeviLauncher,LeviLaunchroid}/`,
+Docs `https://docs.levimc.org/{LeviLamina,LegacyScriptEngine,lip,LeviLauncher}/`,
 Discord `https://discord.gg/v5R5P4vRZk`, Telegram `https://t.me/LiteLoader`, X `https://x.com/levimc_org`,
 YouTube `https://www.youtube.com/@LeviLamina`, `mailto:contact@levimc.org`. lip's repository is
 `https://github.com/LiteLDev/lip` (`futrime/lip` redirects).
@@ -627,11 +634,14 @@ HTML_EXTRA_FILES       = kit/static/kit.js
 Drop `doxygen-awesome-darkmode-toggle.js` (kit.js owns the theme and keeps `html.dark-mode` /
 `html.light-mode` in sync for doxygen-awesome v2.4.1). The header is the docs pages' one header: the GlobalBar
 (language and theme menus, GitHub → LeviLamina; its own phone menu off) above Doxygen's layers, then one
-light row (`header#titlearea`) with LeviLamina's logo + name, its docs sections (Home · User Guides · Developer
-Guides · Maintainer Guides · Supported Versions, linking into the docs) plus an active **Doxygen API** tab, and
-Doxygen's search box — no painted title band, no second menubar: Doxygen's Main Page / Related Pages / Classes /
-Files menubar is hidden from 768px (the tree on the left lists the same pages). 768–1199px: the sections get
-their own row under logo + search. Phones: Doxygen's menu button is the only one; it opens one panel with the
+light row (`header#titlearea`) with LeviLamina's logo + name, the docs header's tabs (Home · User Guides ·
+Developer Guides · **API Reference** · Maintainer Guides · Supported Versions, linking into the docs) with API
+Reference current — the Doxygen reference is a page of that tab —
+and Doxygen's search box — no painted title band, no second menubar: Doxygen's Main Page / Related Pages / Classes /
+Files menubar is hidden from 768px (the tree on the left lists the same pages). From 768px the sections fit like
+the docs header's (kit.js measures them into `html[data-kit-nav-fit]`): one row while they fit, then `search` (the
+search box shrinks to its icon and opens over the row while used), then `tabs` (the sections get their own row
+under logo + search). Phones: Doxygen's menu button is the only one; it opens one panel with the
 docs sections, Doxygen's menu and the LeviMC links. The sections are configured in `DOX` in
 `static/build-static.mjs`. Verified with doxygen 1.16.1 + doxygen-awesome-css 2.4.1 in both themes at 1440,
 1024 and 390px (`screens/kit-doxygen-*.png`).
@@ -818,6 +828,42 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.9.0 — 2026-10-29
+
+**One LeviLauncher, for Windows and Android.** LeviLauncher for Android's docs moved into LeviLauncher's
+(`docs.levimc.org/LeviLauncher/android/`), and LeviLauncher is one project for both: `PROJECTS` drops the
+`LeviLaunchroid` entry (the Projects menu, the docs.levimc.org root's cards and levimc.org's project cards show one
+LeviLauncher card), its `projectBlurbs` says "Bedrock launcher for Windows and Android" in every language, and the
+`LeviLaunchroid.webp` logo is gone. docs.levimc.org forwards the old `/LeviLaunchroid/` URLs (liteldev.github.io).
+* Removed: `'LeviLaunchroid'` from `ProjectId`, `DocsProjectId` and `projectBlurbs`.
+
+**Content for the visitor's device** (`docs/shared/platform.ts`: `detectPlatform()`, `platformOfLabel()`):
+* Tabs labelled with one platform name ("Windows", "Android", "iOS", "macOS", "Linux") carry `data-platform`, and the
+  visitor's platform's tab starts selected (a `#hash` naming another tab still wins).
+* Hero actions take `platform`: the visitor's platform's actions come first as brand buttons, other platforms' alt.
+* Both run after hydration: the prerendered page shows the author's default.
+
+### 2.8.1 — 2026-10-29
+
+**The Doxygen header follows LeviLamina's nav.** LeviLamina's docs dropped their LegacyScriptEngine and About tabs
+(the LeviMC bar links both); the Doxygen header drops them too (`DOX.sections`), so its tabs stay the docs header's.
+* No API change.
+
+### 2.8.0 — 2026-10-29
+
+**The API reference is a tab of the docs.** A nav link to this site that is no docs page — e.g. LeviLamina's
+Doxygen output merged into `dist/api/`, written `https://docs.levimc.org/LeviLamina/api/` (own `hostname` + `base`)
+or `/LeviLamina/api/` — is now a link of the site: opened in place like a page, without the external mark or a new
+tab (before, the first form was an external link and the second a build warning). Such links are not part of the
+previous / next page links.
+* The Doxygen header (`static/doxygen/header.html`) is the docs header with LeviLamina's new top-level
+  **API Reference** tab current (between Developer Guides and Maintainer Guides; `DOX.sections`), without the
+  rule between the project name and the tabs.
+* The Doxygen row fits its tabs like the docs header: kit.js measures them into `html[data-kit-nav-fit]` (`search`:
+  Doxygen's search box shrinks to its icon and opens over the row while used; `tabs`: the sections get their own
+  row) instead of the fixed 768–1299px breakpoint.
+* No API change; `NavItem` links without `key` are same-site links that are no docs page.
 
 ### 2.7.2 — 2026-10-27
 
@@ -1134,7 +1180,7 @@ Site-specific notes:
   `kit/static/build-static.mjs` when the top-level nav changes).
 * **LegacyScriptEngine** — drop the patches; the `collapsed: true` marks on API groups are now the default
   (harmless to keep).
-* **lip, LeviLauncher, LeviLaunchroid** — drop the patches; LeviLaunchroid's referrer/remember-locale
+* **lip, LeviLauncher, LeviLaunchroid** (now part of LeviLauncher) — drop the patches; LeviLaunchroid's referrer/remember-locale
   behaviour is replaced as described above.
 * **liteldev.github.io** — the static-page decorations of `scripts/build-site.mjs` are in `kit/static` now.
 
