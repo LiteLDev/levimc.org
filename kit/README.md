@@ -109,7 +109,7 @@ levimc-kit/
 
 ## Distribution: fetched from levimc.org
 
-The kit lives in **LiteLDev/levimc.org** (`kit/`, with its `demo/` and CI in `.github/workflows/kit.yml`); it is the
+The kit lives in **LiteLDev/levimc.org** (`kit/`, with its `demo/` and CI in `.github/workflows/ci.yml`); it is the
 one source of the LeviMC chrome — bar, footer, theme, docs engine, Doxygen header/footer — for every LeviMC site.
 Each levimc.org deploy publishes it next to the site (`scripts/publish-kit.mjs`):
 
@@ -813,7 +813,7 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   sites rebuild with it on their own. Bump `VERSION` and `components/version.ts` together for a release (the tests
   and build-static check they agree) and add a [Changelog](#changelog) entry with migration notes; a change that
   breaks sites gets a new major, published at `kit/v<major>/`.
-* The kit's CI (`.github/workflows/kit.yml` in levimc.org) runs the unit tests and builds, type-checks and
+* The kit's CI (the `kit` job of `.github/workflows/ci.yml` in levimc.org) runs the unit tests and builds, type-checks and
   link-checks every demo; `screens/` is not published. Before merging a chrome change, preview it in the sites with
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 

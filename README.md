@@ -112,7 +112,7 @@ built from the repositories in [`mods/repos.txt`](mods/repos.txt) (their version
 (`pnpm install` copies `../kit`) and Vite `base: '/mods/'`. The deploy builds it after the site and copies
 `mods/dist/` into `dist/mods/`; it also runs every hour, so the catalogue picks up new versions.
 `.github/workflows/mods-discover.yml` opens a pull request for each new mod repository it finds; merging one lists
-it. `.github/workflows/mods.yml` lints, tests and builds it on pull requests.
+it. The `mods` job of `.github/workflows/ci.yml` lints, tests and builds it when a change touches `mods/` or `kit/`.
 
 ```bash
 cd mods
