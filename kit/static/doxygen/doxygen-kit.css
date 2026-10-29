@@ -306,7 +306,7 @@ a.kit-dox-tab.is-active {
 a.kit-dox-tab.is-active {
   font-weight: 600;
 }
-/* external tabs (LegacyScriptEngine, About): the docs row's external mark */
+/* external tabs (a `url` section): the docs row's external mark */
 a.kit-dox-tab,
 a.kit-dox-drawer-link {
   gap: 0.3rem;

@@ -630,8 +630,8 @@ Drop `doxygen-awesome-darkmode-toggle.js` (kit.js owns the theme and keeps `html
 `html.light-mode` in sync for doxygen-awesome v2.4.1). The header is the docs pages' one header: the GlobalBar
 (language and theme menus, GitHub → LeviLamina; its own phone menu off) above Doxygen's layers, then one
 light row (`header#titlearea`) with LeviLamina's logo + name, the docs header's tabs (Home · User Guides ·
-Developer Guides · **API Reference** · Maintainer Guides · Supported Versions, linking into the docs, and the
-external LegacyScriptEngine and About) with API Reference current — the Doxygen reference is a page of that tab —
+Developer Guides · **API Reference** · Maintainer Guides · Supported Versions, linking into the docs) with API
+Reference current — the Doxygen reference is a page of that tab —
 and Doxygen's search box — no painted title band, no second menubar: Doxygen's Main Page / Related Pages / Classes /
 Files menubar is hidden from 768px (the tree on the left lists the same pages). From 768px the sections fit like
 the docs header's (kit.js measures them into `html[data-kit-nav-fit]`): one row while they fit, then `search` (the
@@ -823,6 +823,12 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.8.1 — 2026-10-29
+
+**The Doxygen header follows LeviLamina's nav.** LeviLamina's docs dropped their LegacyScriptEngine and About tabs
+(the LeviMC bar links both); the Doxygen header drops them too (`DOX.sections`), so its tabs stay the docs header's.
+* No API change.
 
 ### 2.8.0 — 2026-10-29
 
