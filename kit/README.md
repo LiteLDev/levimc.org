@@ -642,7 +642,16 @@ the docs header's (kit.js measures them into `html[data-kit-nav-fit]`): one row 
 search box shrinks to its icon and opens over the row while used), then `tabs` (the sections get their own row
 under logo + search). Phones: Doxygen's menu button is the only one; it opens one panel with the
 docs sections, Doxygen's menu and the LeviMC links. The sections are configured in `DOX` in
-`static/build-static.mjs`. Verified with doxygen 1.16.1 + doxygen-awesome-css 2.4.1 in both themes at 1440,
+`static/build-static.mjs`.
+
+Below the header the pages are laid out like the docs pages: the painted backdrop, the page itself scrolling (not
+Doxygen's panes) with the project row sticking under the bar, Doxygen's tree as the docs sidebar (sticky, with the
+current tab's name as its title, the docs' link and current-page styles), the page in the docs' centred 76ch
+column with their headings, Doxygen's page outline as the docs' "On this page" (sticky from 1281px, marking the
+section being read) and the LeviMC footer across the page; Doxygen's breadcrumb bar is off. header.html opens a
+`.kit-dox-page` grid that footer.html closes, so the sticky sidebar and outline end above the footer. kit.js puts
+the two titles into the panes, wraps wide tables so they scroll inside the column, scrolls to anchors of the page
+(navtree.js would scroll its pane) and marks the current outline entry. Verified with doxygen 1.16.1 + doxygen-awesome-css 2.4.1 in both themes at 1440,
 1024 and 390px (`screens/kit-doxygen-*.png`).
 
 ## Verification scripts
@@ -827,6 +836,21 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.10.0 — 2026-10-29
+
+**The Doxygen pages are laid out like the docs pages.** Below the shared header, LeviLamina's API reference now has
+the docs' structure and styles (`static/doxygen/doxygen-kit.css`, `header.html`, `footer.html`, `kit.js`):
+* the painted backdrop; the page scrolls instead of Doxygen's panes, with the project row sticky under the bar;
+* Doxygen's tree as the docs sidebar: sticky, titled with the current tab (API Reference / API 参考 / API 參考),
+  the docs' link, hover and current-page styles, no splitter or sync button;
+* the page in the docs' centred reading column with their h1 / h2; wide declaration tables wrap or scroll inside
+  the column; rules stay in the column;
+* Doxygen's page outline as the docs' "On this page" (localized title, the docs' list style, the section being
+  read marked while scrolling), shown from 1281px like the docs;
+* the LeviMC footer across the page in its own colours; Doxygen's breadcrumb bar is off.
+* `data-kit-l10n` also localizes texts that are no link (kit.js leaves their `href` alone).
+* No API change.
 
 ### 2.9.1 — 2026-10-29
 

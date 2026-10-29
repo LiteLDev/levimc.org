@@ -163,7 +163,8 @@
         var x = loc ? m[loc.c] : null;
         var v = x ? (hrefOnly ? [null, x] : x) : d;
         if (v[0] !== null) txt.textContent = v[0];
-        a.setAttribute('href', v[1]);
+        // texts that are no link (the Doxygen pane titles) carry no url
+        if (v[1]) a.setAttribute('href', v[1]);
         if (x && !hrefOnly) a.setAttribute('lang', loc.l);
         else a.removeAttribute('lang');
       }
@@ -355,6 +356,74 @@
     }
     if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', dfit);
     siteFit = dfit;
+
+    // The docs layout (doxygen-kit.css): the header holds the titles of the sidebar (the current tab's name) and of
+    // Doxygen's page-outline panel ("On this page"), which go over the tree and the page-outline list
+    var dtitles = document.querySelector('.kit-dox-pane-titles');
+    if (dtitles) {
+      var dtree = document.getElementById('nav-tree');
+      var doutline = document.getElementById('page-nav-tree');
+      var heads = dtitles.children;
+      if (dtree && heads[0]) dtree.insertBefore(heads[0], dtree.firstChild);
+      if (doutline && heads[0]) doutline.insertBefore(heads[0], doutline.firstChild);
+      dtitles.parentNode.removeChild(dtitles);
+    }
+    // wide tables scroll inside the reading column instead of running under the page-outline list
+    each('#doc-content :is(table.memberdecls, table.fieldtable, table.doxtable, table.markdownTable, table.directory, table.params)', function (tb) {
+      if (tb.parentNode.classList.contains('kit-dox-table-wrap')) return;
+      var wrap = document.createElement('div');
+      wrap.className = 'kit-dox-table-wrap';
+      tb.parentNode.insertBefore(wrap, tb);
+      wrap.appendChild(tb);
+    });
+    // The page scrolls, not Doxygen's content pane: links to an anchor of this page scroll the page (navtree.js
+    // would scroll the pane, which no longer scrolls), and the page-outline list marks the section being read, like the docs.
+    var dtoc = function () {
+      var links = document.querySelectorAll('#page-nav .page-outline a[href^="#"]');
+      if (!links.length) return;
+      // the section under the header is current; at the end of the page, the last one that is in view
+      var atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+      var line = atEnd ? window.innerHeight - 1 : dtop.getBoundingClientRect().bottom + 24;
+      var cur = links[0];
+      for (var ti = 0; ti < links.length; ti++) {
+        var t = document.getElementById(decodeURIComponent(links[ti].getAttribute('href').slice(1)));
+        if (t && t.getBoundingClientRect().top <= line) cur = links[ti];
+      }
+      for (var tj = 0; tj < links.length; tj++) links[tj].classList.toggle('is-active', links[tj] === cur);
+    };
+    var dtocQueued = false;
+    window.addEventListener(
+      'scroll',
+      function () {
+        if (dtocQueued) return;
+        dtocQueued = true;
+        requestAnimationFrame(function () {
+          dtocQueued = false;
+          dtoc();
+        });
+      },
+      { passive: true },
+    );
+    // navtree.js builds the page-outline list when the document is ready
+    window.addEventListener('load', dtoc);
+    document.addEventListener(
+      'click',
+      function (e) {
+        var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+        if (!a || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        if (!a.closest('#page-nav, #nav-tree, #doc-content')) return;
+        var u = new URL(a.href, location.href);
+        if (!u.hash || u.pathname !== location.pathname || u.search !== location.search) return;
+        var t = document.getElementById(decodeURIComponent(u.hash.slice(1)));
+        if (!t) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (location.hash !== u.hash) history.pushState(null, '', u.hash);
+        t.scrollIntoView();
+        dtoc();
+      },
+      true,
+    );
   }
 
   // footer year follows the reader's clock (the snippet carries the year it was built in)

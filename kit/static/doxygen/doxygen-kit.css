@@ -686,28 +686,375 @@ html.dark-mode summary:focus-visible {
 .kit-gbar .kit-menu-panel a:is(:link, :visited, :hover, :focus, :active) {
   color: var(--color-ink) !important;
 }
-.kit-footer a:is(:link, :visited, :active, :focus) {
-  color: #e0d3bc !important;
-  font-weight: 400;
+/* the footer's own colours (kit chrome.css: --kf-*) */
+.kit-footer a:is(:link, :visited, :hover, :focus, :active) {
+  color: var(--kf-ink) !important;
+  font-weight: inherit;
+  text-decoration: none !important;
 }
-.kit-footer a:hover {
-  color: #ffffff !important;
-}
-.kit-footer a.kit-footer-logo:is(:link, :visited, :hover) {
-  color: #ffffff !important;
-}
-.kit-footer a.kit-footer-social-link:is(:link, :visited, :hover, :focus, :active) {
-  color: #eadfcb !important;
-  background: rgb(0 0 0 / 0.18);
+.kit-footer a.kit-footer-social-link:is(:link, :visited, :focus, :active) {
+  background: var(--kf-tile);
 }
 .kit-footer a.kit-footer-social-link:hover {
-  color: #ffffff !important;
-  background: rgb(93 161 48 / 0.35);
+  background: var(--kf-tile-hover);
 }
 .kit-menu-panel a.kit-proj-all:hover,
 .kit-dox-drawer a.kit-proj-all:hover {
   color: var(--color-primary-strong) !important;
 }
-.kit-footer a.kit-footer-support:is(:link, :visited, :active, :focus) {
-  color: #eadfcb !important;
+/* ------------------------------------------------------------------ the docs page layout
+   The API pages are laid out like the docs pages (kit/docs/app/docs.css, "doc layout"): the painted backdrop under
+   everything (header.html), the page itself scrolls — not Doxygen's panes — with the project row sticking under the
+   LeviMC bar, the tree as the docs sidebar (sticky, its own scroll, the current tab's name as its title), the page
+   in a centred reading column, Doxygen's page outline as the docs' "On this page" (sticky, from 1281px) and the
+   LeviMC footer across the page. navtree.js still sizes its panes for in-pane scrolling: the !important rules below
+   undo that, and kit.js scrolls to anchors and marks the current outline entry instead. */
+html,
+body {
+  background: var(--page-background-color);
+}
+.kit-dox-page {
+  --kit-dox-main: calc(90rem - 3rem - var(--spacing-sidebar) - 3rem);
+}
+#top,
+#side-nav,
+#container,
+.kit-dox-footer {
+  position: relative;
+  z-index: 1;
+}
+#top {
+  background: color-mix(in srgb, var(--page-background-color) 90%, transparent);
+  -webkit-backdrop-filter: saturate(1.2) blur(14px);
+  backdrop-filter: saturate(1.2) blur(14px);
+}
+#top,
+#nav-tree {
+  border-right: 0;
+}
+/* Doxygen's breadcrumb bar under the panes: the docs pages have none (the tree shows where the page is) */
+#nav-path {
+  display: none;
+}
+#doc-content {
+  height: auto !important;
+  overflow: visible !important;
+  margin-left: 0 !important;
+  background: none;
+}
+#container {
+  overflow: visible;
+}
+#doc-content [id] {
+  scroll-margin-top: calc(var(--spacing-header) + 1rem);
+}
+@media screen and (min-width: 768px) {
+  .kit-dox-page {
+    display: grid;
+    grid-template-columns: minmax(1.5rem, 1fr) var(--spacing-sidebar) 3rem minmax(0, var(--kit-dox-main)) minmax(1.5rem, 1fr);
+    align-items: start;
+  }
+  .kit-dox-page > * {
+    grid-column: 1 / -1;
+  }
+  #top {
+    position: sticky;
+    top: calc(-1 * var(--spacing-globalbar));
+    z-index: 100;
+  }
+  #side-nav {
+    grid-column: 2;
+    position: sticky !important;
+    top: var(--spacing-header);
+    left: auto;
+    width: auto !important;
+    height: calc(100dvh - var(--spacing-header)) !important;
+    min-width: 0;
+    max-width: none;
+    margin-left: -0.75rem;
+    padding: 0;
+    overflow: hidden;
+  }
+  #side-nav > #splitbar {
+    display: none !important;
+  }
+  #container {
+    grid-column: 4;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0 3rem;
+    min-width: 0;
+  }
+  #container:has(> #page-nav) {
+    grid-template-columns: minmax(0, 1fr) var(--spacing-toc) !important;
+  }
+}
+@media screen and (min-width: 768px) and (max-width: 960px) {
+  .kit-dox-page {
+    grid-template-columns: 1rem 15rem 1.5rem minmax(0, 1fr) 1rem;
+  }
+}
+
+/* the sidebar: the docs sidebar's title, links and current-page mark */
+#nav-tree {
+  height: 100% !important;
+  padding: 2rem 0.5rem 4rem 0;
+  background: none;
+  overscroll-behavior: contain;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.25rem, #000 calc(100% - 3rem), transparent);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 1.25rem, #000 calc(100% - 3rem), transparent);
+}
+/* the titles wait in the header until kit.js moves them into the panes */
+.kit-dox-pane-titles {
+  display: none;
+}
+.kit-dox-sb-title {
+  margin: 0 0 0.75rem 0.75rem;
+  font-family: var(--font-family);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+#nav-tree .item {
+  display: flex;
+  align-items: center;
+  height: auto;
+  min-height: 2rem;
+  line-height: 1.4;
+  overflow: visible;
+  white-space: normal;
+}
+#nav-tree .item > a:first-child,
+#nav-tree .item > .arrow {
+  flex: none;
+}
+#nav-tree .label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+#nav-tree .label a {
+  display: block;
+  padding: 0.375rem 0.75rem 0.375rem 0.25rem;
+  overflow-wrap: anywhere;
+  color: var(--color-muted) !important;
+  text-decoration: none;
+}
+#nav-tree .item:hover {
+  background: color-mix(in srgb, var(--color-ink) 5%, transparent);
+}
+#nav-tree .item:hover .label a {
+  color: var(--color-ink) !important;
+}
+#nav-tree .selected {
+  font-weight: 600;
+  background: var(--color-primary-soft) !important;
+  box-shadow: inset 3px 0 0 0 var(--color-primary);
+}
+#nav-tree .selected::after {
+  display: none;
+}
+#nav-tree .selected .label a,
+#nav-tree .selected:hover .label a {
+  color: var(--color-primary-strong) !important;
+}
+.dark #nav-tree .selected .label a {
+  color: var(--color-primary) !important;
+}
+#nav-tree span.arrowhead {
+  border-color: var(--color-muted);
+}
+#nav-sync {
+  display: none;
+}
+
+/* the page: a centred reading column with the docs' headings */
+#doc-content {
+  padding: 2.5rem 0 4.5rem;
+}
+#doc-content > div.header,
+#doc-content > div.contents {
+  max-width: var(--spacing-measure);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0;
+  padding-right: 0;
+}
+#doc-content > div.header {
+  margin-bottom: 0;
+  border-bottom: 0;
+  background: none;
+}
+div.header .title,
+div.headertitle .title {
+  margin: 0 0 1.5rem;
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.6rem + 1.4vw, 2.625rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+div.headertitle {
+  padding: 0;
+}
+div.contents h2,
+h2.groupheader {
+  margin: 3rem 0 1rem;
+  padding: 1.5rem 0 0;
+  font-family: var(--font-family);
+  font-size: 1.5rem;
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
+  color: var(--page-foreground-color);
+  border-top: 1px solid var(--color-line);
+  border-bottom: 0;
+  box-shadow: none;
+}
+
+/* "On this page": Doxygen's page outline as the docs' table of contents */
+#page-nav {
+  position: sticky !important;
+  top: var(--spacing-header);
+  align-self: start;
+  width: auto !important;
+  height: auto !important;
+  max-height: calc(100dvh - var(--spacing-header));
+  padding: 2.75rem 0 2rem;
+  overflow-y: auto;
+  background: none;
+  border: 0;
+}
+#page-nav-resize-handle {
+  display: none !important;
+}
+#page-nav-tree {
+  display: block;
+}
+#page-nav #page-nav-tree #page-nav-contents {
+  position: static;
+  height: auto;
+  overflow: visible;
+}
+.kit-dox-toc-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  font-family: var(--font-family);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--page-foreground-color);
+}
+.kit-dox-toc-title::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--color-primary);
+  box-shadow: 2px 2px 0 0 color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+#page-nav:not(:has(.page-outline li)) .kit-dox-toc-title {
+  display: none;
+}
+#page-nav ul.page-outline {
+  margin: 0;
+  padding: 0;
+  border-left: 2px solid var(--color-line);
+}
+#page-nav ul.page-outline li {
+  margin: 0;
+}
+#page-nav ul.page-outline .item {
+  display: flex;
+}
+#page-nav ul.page-outline .vis {
+  background: none;
+}
+#page-nav ul.page-outline .vis::after {
+  display: none;
+}
+#page-nav ul.page-outline .arrow {
+  flex: none;
+  width: 0;
+  height: auto;
+}
+#page-nav ul.page-outline li a,
+#page-nav ul.page-outline li.vis ~ * a,
+#page-nav ul.page-outline li.vis:not(.vis ~ .vis) a {
+  display: block;
+  margin-left: -2px;
+  padding: 0.28rem 0 0.28rem 0.875rem;
+  overflow-wrap: anywhere;
+  font-size: 0.8125rem !important;
+  line-height: 1.45;
+  color: var(--color-muted) !important;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+}
+#page-nav ul.page-outline li a:hover {
+  color: var(--color-ink) !important;
+}
+#page-nav ul.page-outline li a.is-active {
+  font-weight: 600;
+  color: var(--color-primary-strong) !important;
+  border-left-color: var(--color-primary);
+}
+.dark #page-nav ul.page-outline li a.is-active {
+  color: var(--color-primary) !important;
+}
+@media screen and (max-width: 1280px) {
+  #page-nav {
+    display: none !important;
+  }
+  #container:has(> #page-nav) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+/* the reading column never grows past its track: wide tables scroll inside it (kit.js wraps them), like the docs'
+   tables (.kit-table-wrap) */
+#doc-content {
+  min-width: 0;
+}
+.kit-dox-table-wrap {
+  max-width: 100%;
+  margin: 0 -4px;
+  padding: 0 4px 8px;
+  overflow-x: auto;
+}
+.kit-dox-table-wrap > table {
+  margin-top: 2px;
+}
+/* declarations wrap inside the column rather than run past it */
+div.contents table.memberdecls {
+  width: 100%;
+  table-layout: auto;
+}
+@media screen and (min-width: 768px) {
+  div.contents :is(td.memItemLeft, td.memTemplItemLeft) {
+    width: 35%;
+  }
+  div.contents :is(td.memItemLeft, td.memTemplItemLeft, td.memItemRight, td.memTemplItemRight, td.memTemplParams) {
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+}
+/* phones: the docs' 1rem gutter */
+@media screen and (max-width: 767px) {
+  #doc-content {
+    padding: 1.5rem 1rem 3rem;
+  }
+}
+/* rules stay in the column (doxygen-awesome stretches them across the page with shadows) */
+.contents hr {
+  margin: 2.5rem 0;
+  background: var(--color-line);
+  box-shadow: none;
 }
