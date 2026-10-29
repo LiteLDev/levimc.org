@@ -576,7 +576,7 @@ All components are SSR-safe and render identical markup on server and client.
 
 | Component | Purpose / key props |
 |---|---|
-| `GlobalBar` | the bar at the top of every LeviMC site — identical everywhere: the LeviMC mark (`BrandMark`), tabs **Home · Projects ▾ · Mods · Blog · Community · About** (`globalNav()`), then **language menu · theme menu · GitHub** (→ LiteLDev); below 960px the tabs fold into one menu (≤ 400px the triggers lose their chevrons). **Projects ▾** is a mega menu of `PROJECTS` (`projects.ts`) in four columns — Core · Launchers · Official mods (two columns) — hung from the bar's content box so it never leaves the window: each row is one link to the project's home page (`projectHome()`: its LeviMC Mods page, else its docs, else its repository); the GitHub organisation at the bottom; on phones it is a collapsed section of the menu. Props: `current` (`'home'\|'projects'\|'mods'\|'blog'\|'community'\|'about'`), `currentProject` (docs: marks the project and the Projects tab), `locale`, `strings`, `languages` (`{ options, current, onSelect?, linkComponent? }`; the options are the site's locales, named the kit's way — `uiLocaleName`; omitted → the 9 chrome languages, stored as the preference, then `onLanguageChange` or a reload), `siteOrigin` + `linkComponent` + `isAppPath` (same-site links through the router), `menu` (false when the site's own drawer carries the links, see `GlobalNavList`), `sticky`. `github`, `brandIcon` and `currentDocs` are deprecated (ignored / alias). A labelled region; `<details>` menus work without JS. No props to hide, add or reorder tabs or controls |
+| `GlobalBar` | the bar at the top of every LeviMC site — identical everywhere: the LeviMC mark (`BrandMark`), tabs **Home · Projects ▾ · Mods · Blog · Community · About** (`globalNav()`), then **language menu · theme menu · GitHub** (→ LiteLDev); below 960px the tabs fold into one menu (≤ 400px the triggers lose their chevrons). **Projects ▾** is a mega menu of `PROJECTS` (`projects.ts`) in three columns — Core · Official mods (two columns) — hung from the bar's content box so it never leaves the window: each row is one link to the project's home page (`projectHome()`: its LeviMC Mods page, else its docs, else its repository); the GitHub organisation at the bottom; on phones it is a collapsed section of the menu. Props: `current` (`'home'\|'projects'\|'mods'\|'blog'\|'community'\|'about'`), `currentProject` (docs: marks the project and the Projects tab), `locale`, `strings`, `languages` (`{ options, current, onSelect?, linkComponent? }`; the options are the site's locales, named the kit's way — `uiLocaleName`; omitted → the 9 chrome languages, stored as the preference, then `onLanguageChange` or a reload), `siteOrigin` + `linkComponent` + `isAppPath` (same-site links through the router), `menu` (false when the site's own drawer carries the links, see `GlobalNavList`), `sticky`. `github`, `brandIcon` and `currentDocs` are deprecated (ignored / alias). A labelled region; `<details>` menus work without JS. No props to hide, add or reorder tabs or controls |
 | `GlobalNavList` | the bar's tabs + the Projects menu as a vertical list (the bar's phone menu; the "LeviMC" part of the docs drawer) |
 | `ThemeSwitcher` | the theme menu: **Auto** (default; follows `prefers-color-scheme` live) / Light / Dark. Trigger sprite + name and the checked item come from `html[data-theme-pref]` via CSS (right before hydration and on static pages); the choice is the cross-site `levimc_theme` cookie. `ThemeToggle` is a deprecated alias |
 | `LocaleSwitcher` | `options[{ code, label, short?, lang, href? }]` (`href` → links to the equivalent page; none → buttons), `current`, `onSelect(code, option)`, `persist` (default: store `lang` as the cross-site `levimc_lang`; a modified click on a link opens it elsewhere and stores nothing), `linkComponent`, `showLabel` |
@@ -657,7 +657,16 @@ the docs header's (kit.js measures them into `html[data-kit-nav-fit]`): one row 
 search box shrinks to its icon and opens over the row while used), then `tabs` (the sections get their own row
 under logo + search). Phones: Doxygen's menu button is the only one; it opens one panel with the
 docs sections, Doxygen's menu and the LeviMC links. The sections are configured in `DOX` in
-`static/build-static.mjs`. Verified with doxygen 1.16.1 + doxygen-awesome-css 2.4.1 in both themes at 1440,
+`static/build-static.mjs`.
+
+Below the header the pages are laid out like the docs pages: the painted backdrop, the page itself scrolling (not
+Doxygen's panes) with the project row sticking under the bar, Doxygen's tree as the docs sidebar (sticky, with the
+current tab's name as its title, the docs' link and current-page styles), the page in the docs' centred 76ch
+column with their headings, Doxygen's page outline as the docs' "On this page" (sticky from 1281px, marking the
+section being read) and the LeviMC footer across the page; Doxygen's breadcrumb bar is off. header.html opens a
+`.kit-dox-page` grid that footer.html closes, so the sticky sidebar and outline end above the footer. kit.js puts
+the two titles into the panes, wraps wide tables so they scroll inside the column, scrolls to anchors of the page
+(navtree.js would scroll its pane) and marks the current outline entry. Verified with doxygen 1.16.1 + doxygen-awesome-css 2.4.1 in both themes at 1440,
 1024 and 390px (`screens/kit-doxygen-*.png`).
 
 ## Verification scripts
@@ -843,7 +852,7 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 ## Changelog
 
-### 2.10.0 — 2026-10-29
+### 2.12.0 — 2026-10-29
 
 **Content per platform** (see [Content per platform](#content-per-platform)), for LeviLauncher's one guide for its
 Windows and Android versions:
@@ -855,6 +864,28 @@ Windows and Android versions:
 * New in `docs/shared/platform.ts`: `PLATFORM_NAMES`, `PLATFORM_STORAGE_KEY`, `PLATFORM_QUERY`, `isPlatform()`,
   `storedPlatform()`, `storePlatform()`, `preferredPlatform()`.
 * Compatible: sites only rebuild.
+
+### 2.11.0 — 2026-10-29
+
+**LeviLauncher is in Core.** The Projects menu has two groups: Core (LeviLamina, LegacyScriptEngine, LeviStone, lip,
+LeviLauncher) and Official mods, in three columns (`chrome.css`).
+* `ProjectGroupId` drops `'launchers'`; `PROJECT_GROUPS` is `['core', 'mods']`; `UiStrings.projectGroups` drops
+  `launchers`.
+
+### 2.10.0 — 2026-10-29
+
+**The Doxygen pages are laid out like the docs pages.** Below the shared header, LeviLamina's API reference now has
+the docs' structure and styles (`static/doxygen/doxygen-kit.css`, `header.html`, `footer.html`, `kit.js`):
+* the painted backdrop; the page scrolls instead of Doxygen's panes, with the project row sticky under the bar;
+* Doxygen's tree as the docs sidebar: sticky, titled with the current tab (API Reference / API 参考 / API 參考),
+  the docs' link, hover and current-page styles, no splitter or sync button;
+* the page in the docs' centred reading column with their h1 / h2; wide declaration tables wrap or scroll inside
+  the column; rules stay in the column;
+* Doxygen's page outline as the docs' "On this page" (localized title, the docs' list style, the section being
+  read marked while scrolling), shown from 1281px like the docs;
+* the LeviMC footer across the page in its own colours; Doxygen's breadcrumb bar is off.
+* `data-kit-l10n` also localizes texts that are no link (kit.js leaves their `href` alone).
+* No API change.
 
 ### 2.9.1 — 2026-10-29
 

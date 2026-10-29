@@ -132,7 +132,7 @@ const en: UiStrings = {
     BeetrootSkin: 'Hunger and saturation at a glance',
     LeviHeadlessInput: 'Scripted client input for mod tests',
   },
-  projectGroups: { core: 'Core', launchers: 'Launchers', mods: 'Official mods' },
+  projectGroups: { core: 'Core', mods: 'Official mods' },
   allRepositories: 'All repositories on GitHub',
 };
 
@@ -199,7 +199,7 @@ const zhCN: UiStrings = {
     BeetrootSkin: '一眼看清饥饿值与饱和度',
     LeviHeadlessInput: '用脚本驱动客户端，测试模组',
   },
-  projectGroups: { core: '核心', launchers: '启动器', mods: '官方模组' },
+  projectGroups: { core: '核心', mods: '官方模组' },
   allRepositories: '在 GitHub 上查看全部仓库',
 };
 
@@ -265,7 +265,7 @@ const zhHK: UiStrings = {
     BeetrootSkin: '一眼看清飢餓值與飽和度',
     LeviHeadlessInput: '以腳本驅動用戶端，測試模組',
   },
-  projectGroups: { core: '核心', launchers: '啟動器', mods: '官方模組' },
+  projectGroups: { core: '核心', mods: '官方模組' },
   allRepositories: '在 GitHub 上查看全部儲存庫',
 };
 
@@ -332,7 +332,7 @@ const es: UiStrings = {
     BeetrootSkin: 'Hambre y saturación de un vistazo',
     LeviHeadlessInput: 'Entrada por script para probar mods',
   },
-  projectGroups: { core: 'Núcleo', launchers: 'Lanzadores', mods: 'Mods oficiales' },
+  projectGroups: { core: 'Núcleo', mods: 'Mods oficiales' },
   allRepositories: 'Todos los repositorios en GitHub',
 };
 
@@ -399,7 +399,7 @@ const ru: UiStrings = {
     BeetrootSkin: 'Голод и насыщение с первого взгляда',
     LeviHeadlessInput: 'Скриптовый ввод для тестов модов',
   },
-  projectGroups: { core: 'Ядро', launchers: 'Лаунчеры', mods: 'Официальные моды' },
+  projectGroups: { core: 'Ядро', mods: 'Официальные моды' },
   allRepositories: 'Все репозитории на GitHub',
 };
 
@@ -466,7 +466,7 @@ const de: UiStrings = {
     BeetrootSkin: 'Hunger und Sättigung auf einen Blick',
     LeviHeadlessInput: 'Skriptgesteuerte Eingaben für Mod-Tests',
   },
-  projectGroups: { core: 'Kern', launchers: 'Launcher', mods: 'Offizielle Mods' },
+  projectGroups: { core: 'Kern', mods: 'Offizielle Mods' },
   allRepositories: 'Alle Repositorys auf GitHub',
 };
 
@@ -533,7 +533,7 @@ const ja: UiStrings = {
     BeetrootSkin: '満腹度と隠し満腹度をひと目で',
     LeviHeadlessInput: 'スクリプトでクライアントを操作して MOD をテスト',
   },
-  projectGroups: { core: 'コア', launchers: 'ランチャー', mods: '公式 MOD' },
+  projectGroups: { core: 'コア', mods: '公式 MOD' },
   allRepositories: 'GitHub のすべてのリポジトリ',
 };
 
@@ -600,7 +600,7 @@ const ko: UiStrings = {
     BeetrootSkin: '배고픔과 포화도를 한눈에',
     LeviHeadlessInput: '스크립트로 클라이언트를 조작해 모드 테스트',
   },
-  projectGroups: { core: '핵심', launchers: '런처', mods: '공식 모드' },
+  projectGroups: { core: '핵심', mods: '공식 모드' },
   allRepositories: 'GitHub의 모든 저장소',
 };
 
@@ -667,7 +667,7 @@ const fr: UiStrings = {
     BeetrootSkin: 'Faim et saturation en un coup d’œil',
     LeviHeadlessInput: 'Entrées scriptées pour tester les mods',
   },
-  projectGroups: { core: 'Noyau', launchers: 'Lanceurs', mods: 'Mods officiels' },
+  projectGroups: { core: 'Noyau', mods: 'Mods officiels' },
   allRepositories: 'Tous les dépôts sur GitHub',
 };
 
