@@ -43,6 +43,13 @@
     line-height: 1.15;
     letter-spacing: -0.02em;
   }
+  /* frontmatter `platforms`: the platforms a page is about, right under its title */
+  .kit-prose .kit-page-platforms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin: -0.75rem 0 1.5rem;
+  }
   .kit-prose h2 {
     margin: 3rem 0 1rem;
     padding-top: 1.5rem;

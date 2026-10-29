@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { HeroData, PageData, RouteMeta } from '../../shared/types';
-import { detectPlatform, type DevicePlatform } from '../../shared/platform';
+import { preferredPlatform, type DevicePlatform } from '../../shared/platform';
 import { langOf, site } from '../data';
 import { KitLink } from '../components/KitLink';
 import { useContentEnhancements } from '../enhance';
@@ -26,9 +26,9 @@ export function HomeLayout({ route, page }: { route: RouteMeta; page: PageData; 
   useContentEnhancements(contentRef, route.page);
   const hero = page.hero ?? {};
   const features = page.features ?? [];
-  // prerendered with the author's order; the visitor's platform is known only in the browser
+  // prerendered with the author's order; the visitor's platform (?platform=, earlier choice, device) only in the browser
   const [platform, setPlatform] = useState<DevicePlatform>();
-  useEffect(() => setPlatform(detectPlatform()), []);
+  useEffect(() => setPlatform(preferredPlatform()), []);
   return (
     <main id="kit-main" className="kit-home" tabIndex={-1}>
       <PaintedHero

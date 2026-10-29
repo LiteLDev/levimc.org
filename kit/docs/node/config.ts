@@ -158,6 +158,12 @@ export interface DocsConfig {
   outDir?: string;
   /** Exclude pages from the search index (globs on page keys). */
   searchExclude?: string[];
+  /**
+   * Pages that moved: old path (relative to base, as the old URL spelled it: 'old/page' for 'old/page.html' or a
+   * clean URL, 'old/dir/' for a directory) → new path relative to base, or an absolute URL. Each old URL gets a
+   * redirect page (canonical, meta refresh, location.replace keeping the #hash).
+   */
+  redirects?: Record<string, string>;
 }
 
 export function defineDocsConfig(config: DocsConfig): DocsConfig {
