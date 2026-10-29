@@ -36,15 +36,15 @@ if (!token) {
 
 class RateLimited extends Error {}
 
-/** How long GitHub asks to wait before the next request, in milliseconds. */
+/** How long GitHub asks to wait before the next request (milliseconds), and what said so. */
 async function retryDelay(res) {
   const after = Number(res.headers.get("retry-after"));
-  if (after > 0) return after * 1000;
+  if (after > 0) return [after * 1000, "retry-after"];
   const reset = Number(res.headers.get("x-ratelimit-reset"));
-  if (res.headers.get("x-ratelimit-remaining") === "0" && reset > 0) return Math.max(reset * 1000 - Date.now(), 1000);
+  if (res.headers.get("x-ratelimit-remaining") === "0" && reset > 0) return [Math.max(reset * 1000 - Date.now(), 1000), "x-ratelimit-reset"];
   // {"message":"try again in 33.373457742s", …}
   const seconds = Number((await res.text().catch(() => "")).match(/try again in ([\d.]+)s/)?.[1]);
-  return seconds > 0 ? seconds * 1000 : 60_000;
+  return seconds > 0 ? [seconds * 1000, "message"] : [60_000, "default"];
 }
 
 async function api(path, init = {}, { auth = token, patience = 3 * 60_000 } = {}) {
@@ -63,10 +63,13 @@ async function api(path, init = {}, { auth = token, patience = 3 * 60_000 } = {}
     // a 403 is a rate limit only when GitHub says so (it also means "not allowed")
     const limited = res.status === 429 || (res.status === 403 && (res.headers.has("retry-after") || res.headers.get("x-ratelimit-remaining") === "0"));
     if (limited) {
-      // a little later than asked, and not on the second: others wait for the same reset
-      const wait = (await retryDelay(res)) + 1000 + Math.random() * 4000;
-      if (Date.now() + wait > giveUp) throw new RateLimited(`${init.method ?? "GET"} ${path}: still rate limited (HTTP ${res.status})`);
-      console.warn(`${path}: HTTP ${res.status}, again in ${Math.ceil(wait / 1000)} s`);
+      const left = giveUp - Date.now();
+      if (left <= 0) throw new RateLimited(`${init.method ?? "GET"} ${path}: still rate limited (HTTP ${res.status})`);
+      // a little later than asked, and not on the second: others wait for the same reset. A wait beyond the patience
+      // left is still tried once at its end: the shared limit sometimes frees up sooner than it says.
+      const [asked, source] = await retryDelay(res);
+      const wait = Math.min(asked + 1000 + Math.random() * 4000, left);
+      console.warn(`${path}: HTTP ${res.status} (${source} asks ${Math.ceil(asked / 1000)} s), again in ${Math.ceil(wait / 1000)} s`);
       await new Promise((resolve) => setTimeout(resolve, wait));
       continue;
     }
