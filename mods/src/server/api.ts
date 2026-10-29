@@ -2,6 +2,8 @@
 // (the listing as `/mods/` shows it, unfiltered and in the default order) and
 // `/mods/<tooth>/index.json` (the mod page, every version included — the page
 // loads another version's manifest from it). Only the server bundle imports this.
+// Also lipr's indexes under `/mods/lipr/`, which LiteLDev/lipr serves at
+// lipr.levimc.org for lip and older LeviLaunchers (see `liprFiles`).
 import { BASE } from "../base-path";
 import { DEFAULT_STATE, runQuery } from "../lib/catalog-query";
 import { compareVersions } from "../lib/game-versions";
@@ -110,6 +112,49 @@ export async function modJson(tooth: string): Promise<ModJson | null> {
   };
 }
 
+const sortedKeys = <T>(record: Record<string, T>) => Object.fromEntries(Object.keys(record).sort().map((key) => [key, record[key]!]));
+
+/**
+ * lipr's two indexes, as its `generate-indexes.py` wrote them: `index.json`
+ * (lip's: each variant's versions) and `levilauncher.json` (LeviLauncher's:
+ * each version's dependencies too), plus `sources.json`, where each version's
+ * `tooth.json` is (lipr serves it, migrated, at `packages/<tooth>@<version>/`).
+ * Every package of the registry is in them, listed on the site or not.
+ */
+export async function liprFiles(): Promise<Map<string, string>> {
+  const { index, launcher, origins } = await loadBuildData();
+  const root = { format_version: index.format_version, format_uuid: index.format_uuid };
+  const tooths = Object.keys(index.packages).sort();
+  const meta = (tooth: string) => {
+    const { stargazer_count, updated_at, info } = index.packages[tooth]!;
+    return { stargazer_count, updated_at, info: { name: info.name, description: info.description, tags: info.tags, avatar_url: info.avatar_url ?? "" } };
+  };
+  const lip = Object.fromEntries(tooths.map((tooth) => [tooth, { ...meta(tooth), variants: index.packages[tooth]!.variants }]));
+  const levilauncher = Object.fromEntries(
+    tooths.map((tooth) => {
+      const variants = launcher.packages[tooth]?.variants ?? {};
+      return [
+        tooth,
+        {
+          ...meta(tooth),
+          variants: Object.fromEntries(
+            Object.entries(variants).map(([label, { versions }]) => [
+              label,
+              { versions: Object.fromEntries(Object.entries(versions).map(([version, { dependencies }]) => [version, { dependencies: sortedKeys(dependencies ?? {}) }])) },
+            ]),
+          ),
+        },
+      ];
+    }),
+  );
+  const sources = Object.fromEntries(tooths.map((tooth) => [tooth, Object.fromEntries(origins.get(tooth) ?? [])]));
+  return new Map([
+    ["lipr/index.json", JSON.stringify({ ...root, packages: lip })],
+    ["lipr/levilauncher.json", JSON.stringify({ ...root, packages: levilauncher })],
+    ["lipr/sources.json", JSON.stringify({ packages: sources })],
+  ]);
+}
+
 /** Every JSON file, by its path under `/mods/`. */
 export async function jsonFiles(): Promise<Map<string, string>> {
   const files = new Map<string, string>([[CATALOG_JSON.slice(BASE.length), JSON.stringify(await catalogJson())]]);
@@ -119,5 +164,6 @@ export async function jsonFiles(): Promise<Map<string, string>> {
     const json = await modJson(tooth);
     if (json) files.set(modJsonPath(tooth).slice(BASE.length), JSON.stringify(json));
   }
+  for (const [path, body] of await liprFiles()) files.set(path, body);
   return files;
 }

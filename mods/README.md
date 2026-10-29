@@ -36,6 +36,10 @@ built with Vite `base: '/mods/'`: every page and file is under `/mods/`.
   gallery, dependencies and dependents — with every version included (its manifest info, each
   variant's platform, dependencies, LeviLamina range and install command, its release). The
   shapes are `CatalogJson` and `ModJson` in `src/types.ts`; `src/server/api.ts` writes them.
+- **lipr**: `/mods/lipr/index.json` and `/mods/lipr/levilauncher.json` are lipr's two indexes, in lipr's format, with
+  every package of the registry; `/mods/lipr/sources.json` says where each version's `tooth.json` is (repository,
+  tag, commit). [LiteLDev/lipr](https://github.com/LiteLDev/lipr) builds lipr.levimc.org from them, for lip and
+  older LeviLaunchers, and stores nothing itself.
 - Pages hydrate into a single-page app: following a link fetches the target's
   prerendered HTML and reads its embedded data, so a page looks the same
   however it was reached.
