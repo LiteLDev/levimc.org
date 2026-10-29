@@ -37,7 +37,11 @@ export interface HeroData {
   text?: string;
   tagline?: string;
   image?: { src: string; alt?: string; width?: number; height?: number };
-  actions?: { theme?: 'brand' | 'alt'; text: string; link: string; external?: boolean }[];
+  /**
+   * `platform` (windows, android, ios, macos, linux): the action is for that platform. When the visitor is on one of
+   * the actions' platforms, its actions come first as brand buttons and the other platforms' turn alt.
+   */
+  actions?: { theme?: 'brand' | 'alt'; text: string; link: string; external?: boolean; platform?: string }[];
 }
 
 export interface FeatureData {

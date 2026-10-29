@@ -48,7 +48,7 @@ const en = {
     badgeWhy: "Why",
     members: {
       "OEOTYAN": { role: "Team Lead", bio: "Leads the LeviMC project, and ensures the project stays on course. Maintainer of LeviLamina." },
-      "dreamguxiang": { role: "Author of Launcher", bio: "Author of LeviLauncher and LeviLauncher for Android. Developer of LeviLamina." },
+      "dreamguxiang": { role: "Author of Launcher", bio: "Author of LeviLauncher (Windows and Android). Developer of LeviLamina." },
       "KawaiiNahida": { role: "Maintainer of Header Generator", bio: "Maintains the header generation system, ensuring efficient and accurate header files. Author of LeviAntiCheat." },
       "RimuruChan": { role: "Maintainer of Header Generator", bio: "Maintains the header generation system, ensuring efficient and accurate header files." },
       "Dofes": { role: "Author of LeviOptimize", bio: "Creates and maintains LeviOptimize, a performance optimization mod for LeviLamina servers and clients. Developer of LeviLamina and LegacyScriptEngine." },
@@ -169,8 +169,7 @@ const en = {
     legacyscriptengine:
       "Run LLSE plugins written in JavaScript, Node.js, Lua or Python on LeviLamina.",
     lip: "A general package installer: install mods and their dependencies with one command.",
-    levilaunchroid: "A launcher for Minecraft Bedrock Edition on Android.",
-    levilauncher: "A launcher for Minecraft Bedrock Edition (GDK / UWP) on Windows.",
+    levilauncher: "A launcher for Minecraft Bedrock Edition on Windows (GDK / UWP) and Android.",
     levioptimize: "Performance optimization mod for LeviLamina servers and clients.",
     levianticheat: "Anti-cheating solution for LeviLamina servers.",
     moredimensions:

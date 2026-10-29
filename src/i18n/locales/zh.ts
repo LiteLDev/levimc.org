@@ -48,7 +48,7 @@ const zh: typeof en = {
     badgeWhy: "缘由",
     members: {
       "OEOTYAN": { role: "团队负责人", bio: "领导 LeviMC 项目，把握项目方向。LeviLamina 维护者。" },
-      "dreamguxiang": { role: "启动器作者", bio: "LeviLauncher 与 LeviLauncher for Android 的作者，LeviLamina 开发者。" },
+      "dreamguxiang": { role: "启动器作者", bio: "LeviLauncher（Windows 版与 Android 版）的作者，LeviLamina 开发者。" },
       "KawaiiNahida": { role: "头文件生成器维护者", bio: "维护头文件生成系统，确保头文件高效准确。LeviAntiCheat 作者。" },
       "RimuruChan": { role: "头文件生成器维护者", bio: "维护头文件生成系统，确保头文件高效准确。" },
       "Dofes": { role: "LeviOptimize 作者", bio: "开发并维护 LeviOptimize——为 LeviLamina 服务器和客户端提供性能优化的模组。LeviLamina 与 LegacyScriptEngine 开发者。" },
@@ -160,8 +160,7 @@ const zh: typeof en = {
     levilamina: "轻量、模块化、多功能的 Minecraft 基岩版模组加载器。",
     legacyscriptengine: "在 LeviLamina 上运行以 JavaScript、Node.js、Lua 或 Python 编写的 LLSE 插件。",
     lip: "通用包安装器：一条命令安装模组及其依赖。",
-    levilaunchroid: "适用于 Android 的 Minecraft 基岩版启动器。",
-    levilauncher: "适用于 Windows 的 Minecraft 基岩版（GDK / UWP）启动器。",
+    levilauncher: "适用于 Windows（GDK / UWP）与 Android 的 Minecraft 基岩版启动器。",
     levioptimize: "为 LeviLamina 服务器和客户端提供性能优化的模组。",
     levianticheat: "为 LeviLamina 服务器提供反作弊解决方案。",
     moredimensions: "为 Minecraft 基岩版添加自定义维度的 API。",
