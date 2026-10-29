@@ -60,6 +60,16 @@ export interface Registry {
   manifests: Map<string, Map<string, RegistryManifest>>;
   /** Tooth → the repository (`owner/repo`) it was read from. */
   sources: Map<string, string>;
+  /** Tooth → version → the repository, tag and commit its manifest was read at. */
+  origins: Map<string, Map<string, ManifestOrigin>>;
+}
+
+/** Where a version's manifest was read: lipr serves the `tooth.json` there (see `server/api.ts`). */
+export interface ManifestOrigin {
+  repo: string;
+  tag: string;
+  /** The commit (or tag object) the tag pointed to. */
+  sha: string;
 }
 
 function readCache(): RegistryCache {
@@ -206,10 +216,11 @@ const tightRange = (range: string) => range.trim().replace(/(>=|<=|>|<|=|\^|~)\s
 function fileManifests(read: Map<string, Map<string, CachedTag>>, repos: string[], own: (repo: string, tooth: string) => boolean) {
   const manifests = new Map<string, Map<string, RegistryManifest>>();
   const sources = new Map<string, string>();
+  const origins = new Map<string, Map<string, ManifestOrigin>>();
   const seen = new Map<string, string>();
   const repaired = { tooth: 0, version: 0 };
   for (const repo of repos) {
-    for (const [tag, { manifest, seen: date }] of read.get(repo) ?? []) {
+    for (const [tag, { sha, manifest, seen: date }] of read.get(repo) ?? []) {
       if (!manifest) continue;
       const version = tag.slice(1);
       // the repository's own address as GitHub spells it (one tooth, not one per spelling)
@@ -225,17 +236,21 @@ function fileManifests(read: Map<string, Map<string, CachedTag>>, repos: string[
       if (!manifests.has(tooth)) manifests.set(tooth, new Map());
       // two repositories with one tooth (a release repository and a renamed one): the first has the version
       const versions = manifests.get(tooth)!;
-      if (!versions.has(version)) versions.set(version, { ...manifest, tooth, version, variants });
+      if (!versions.has(version)) {
+        versions.set(version, { ...manifest, tooth, version, variants });
+        if (!origins.has(tooth)) origins.set(tooth, new Map());
+        origins.get(tooth)!.set(version, { repo, tag, sha });
+      }
       if (!seen.get(tooth) || date > seen.get(tooth)!) seen.set(tooth, date);
     }
   }
   console.log(`registry: filed ${repaired.tooth} manifests under their repository's address, ${repaired.version} under their tag's version`);
-  return { manifests, sources, seen };
+  return { manifests, sources, origins, seen };
 }
 
 /** Assembles lipr's two indexes from the manifests (`generate-indexes.py`). */
 function assemble(filed: ReturnType<typeof fileManifests>): Registry {
-  const { manifests, sources, seen } = filed;
+  const { manifests, sources, origins, seen } = filed;
   const index: ModIndex = { format_version: 3, format_uuid: "289f771f-2c9a-4d73-9f3f-8492495a924d", packages: {} };
   const launcher: LauncherIndex = { packages: {} };
   for (const tooth of [...manifests.keys()].sort()) {
@@ -261,7 +276,7 @@ function assemble(filed: ReturnType<typeof fileManifests>): Registry {
     };
     launcher.packages[tooth] = { variants: Object.fromEntries(ordered.map((label) => [label, launcherVariants[label]!])) };
   }
-  return { index, launcher, manifests, sources };
+  return { index, launcher, manifests, sources, origins };
 }
 
 /** The registry, read from the repositories in repos.txt (and the cache). */

@@ -13,7 +13,7 @@ import { getAllVersions, getDefaultSelection, getSortedVariants, ownerOf } from 
 import type { Catalog, CatalogEntry, Manifest, ModIndex, RawModEntry, RelatedMod } from "../types";
 import { fetchRepoMeta, repositoryRenames, type RepoMeta } from "./github";
 import { checkIcons } from "./icons";
-import { loadRegistry } from "./registry";
+import { loadRegistry, type ManifestOrigin } from "./registry";
 
 const DESCRIPTION_MAX = 200;
 const LEVILAMINA = "github.com/liteldev/levilamina";
@@ -32,6 +32,8 @@ export interface BuildData {
   manifests: Map<string, Manifest | null>;
   /** Every version's manifest, by tooth and version. */
   versions: Map<string, Map<string, RegistryManifest>>;
+  /** Where each version's manifest was read, by tooth and version. */
+  origins: Map<string, Map<string, ManifestOrigin>>;
   launcher: LauncherIndex;
   /** Lower-case tooth → the mods whose latest version depends on it. */
   dependents: Map<string, string[]>;
@@ -89,7 +91,7 @@ function rankRow(e: Omit<CatalogEntry, "rank">, repo: RepoMeta | undefined, with
 }
 
 async function build(): Promise<BuildData> {
-  const { index, launcher, manifests: versions } = await loadRegistry();
+  const { index, launcher, manifests: versions, origins } = await loadRegistry();
   const tooths = Object.keys(index.packages);
   const canonical = new Map(tooths.map((t) => [t.toLowerCase(), t]));
 
@@ -218,6 +220,7 @@ async function build(): Promise<BuildData> {
     renames,
     manifests,
     versions,
+    origins,
     launcher,
     dependents,
     canonical,
