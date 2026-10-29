@@ -38,3 +38,6 @@ jobs:
       - run: node scripts/discover.mjs ${{ inputs.dry-run && '--dry-run' || '' }}
         env:
           GH_TOKEN: ${{ github.token }}
+          # Optional: a personal token (no scopes needed, public code search only). The workflow token's code search
+          # limit is shared beyond this workflow and often answers the first request with HTTP 429.
+          SEARCH_TOKEN: ${{ secrets.MODS_SEARCH_TOKEN }}
