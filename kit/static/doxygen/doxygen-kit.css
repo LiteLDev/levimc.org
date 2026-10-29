@@ -249,8 +249,6 @@ a.kit-dox-brand:is(:link, :visited, :hover, :focus, :active) {
   margin-right: 0.5rem;
   color: var(--page-foreground-color) !important;
   text-decoration: none !important;
-  /* a short rule between the project and its sections */
-  background: linear-gradient(var(--separator-color), var(--separator-color)) right center / 1px 1.25rem no-repeat;
 }
 .kit-dox-logo {
   flex: none;
@@ -412,37 +410,62 @@ a.kit-dox-drawer-link.is-active {
     padding: 0;
   }
 }
-/* too narrow for brand + sections + search in one row: the sections get their own row below (like the docs
-   header's tabs row; Doxygen keeps its menu button off until 768px, so on the narrowest of these widths the
-   tabs wrap onto a second line instead of being clipped) */
-@media screen and (min-width: 768px) and (max-width: 1299px) {
-  /* the sections row takes the full width (as on the docs pages); the search sits at the right of the brand row */
-  #top {
+/* Fitting the sections like the docs header (html[data-kit-nav-fit], measured by kit.js whenever the row's width
+   changes; the same states, tried in order until the sections fit): "search" — Doxygen's search box shrinks to its
+   icon and opens over the row while it is used; "tabs" — the sections get their own row below brand + search
+   (Doxygen keeps its menu button off until 768px, so on the narrowest of these widths the tabs wrap onto a second
+   line instead of being clipped). */
+@media screen and (min-width: 768px) {
+  :root[data-kit-nav-fit="search"] #main-nav {
     position: relative;
   }
-  #titlearea.kit-dox-row {
+  :root[data-kit-nav-fit="search"] #main-nav:not(:focus-within, :has(.MSearchBoxActive)) #MSearchBox {
+    width: 36px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  :root[data-kit-nav-fit="search"] #main-nav:not(:focus-within, :has(.MSearchBoxActive)) #MSearchField {
+    width: 0;
+    padding: 0;
+  }
+  :root[data-kit-nav-fit="search"] #main-nav:not(:focus-within, :has(.MSearchBoxActive)) :is(#MSearchBox .right, #MSearchClose) {
+    display: none;
+  }
+  /* in use: the full box over the end of the row (the sections keep their place) */
+  :root[data-kit-nav-fit="search"] #main-nav:is(:focus-within, :has(.MSearchBoxActive)) #main-menu {
+    position: absolute;
+    top: 50%;
+    right: 1.5rem;
+    transform: translateY(-50%);
+    background: var(--page-background-color);
+    box-shadow: -1rem 0 0.75rem var(--page-background-color);
+  }
+  /* the sections row takes the full width (as on the docs pages); the search sits at the right of the brand row */
+  :root[data-kit-nav-fit="tabs"] #top {
+    position: relative;
+  }
+  :root[data-kit-nav-fit="tabs"] #titlearea.kit-dox-row {
     flex: 1 1 100%;
     flex-wrap: wrap;
     height: auto;
   }
-  #main-nav {
+  :root[data-kit-nav-fit="tabs"] #main-nav {
     position: absolute;
     top: var(--spacing-globalbar);
     right: 0;
   }
-  a.kit-dox-brand:is(:link, :visited, :hover, :focus, :active) {
+  :root[data-kit-nav-fit="tabs"] a.kit-dox-brand:is(:link, :visited, :hover, :focus, :active) {
     height: var(--spacing-header);
-    background: none;
   }
-  .kit-dox-tabs {
+  :root[data-kit-nav-fit="tabs"] .kit-dox-tabs {
     flex: 0 0 100%;
     margin-left: -0.75rem;
   }
-  .kit-dox-tabs > ul {
+  :root[data-kit-nav-fit="tabs"] .kit-dox-tabs > ul {
     flex-wrap: wrap;
     height: auto;
   }
-  .kit-dox-tabs li {
+  :root[data-kit-nav-fit="tabs"] .kit-dox-tabs li {
     height: 2.75rem;
   }
 }
@@ -464,7 +487,6 @@ a.kit-dox-drawer-link.is-active {
   a.kit-dox-brand:is(:link, :visited, :hover, :focus, :active) {
     padding-right: 0;
     margin-right: 0;
-    background: none;
   }
   .kit-dox-tabs {
     display: none;

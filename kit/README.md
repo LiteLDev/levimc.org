@@ -343,6 +343,8 @@ export default defineDocsConfig({ … });
 { 'Install': 'user_guides/install.md' }                   // titled (translated via navTranslations)
 { 'User Guides': [ … ] }                                  // group
 { 'About': 'https://levimc.org/about/' }                  // external
+{ 'Doxygen API': 'https://docs.levimc.org/LeviLamina/api/' } // same site, no docs page (or '/LeviLamina/api/'):
+                                                          // opened in place like a page, no external mark
 { text: 'Guide', link: '/guide/quick-start' }             // VitePress (root-absolute, locale prefix allowed)
 { text: 'Developer', items: [ … ], collapsed: true }      // VitePress group / dropdown
 ```
@@ -627,11 +629,14 @@ HTML_EXTRA_FILES       = kit/static/kit.js
 Drop `doxygen-awesome-darkmode-toggle.js` (kit.js owns the theme and keeps `html.dark-mode` /
 `html.light-mode` in sync for doxygen-awesome v2.4.1). The header is the docs pages' one header: the GlobalBar
 (language and theme menus, GitHub → LeviLamina; its own phone menu off) above Doxygen's layers, then one
-light row (`header#titlearea`) with LeviLamina's logo + name, its docs sections (Home · User Guides · Developer
-Guides · Maintainer Guides · Supported Versions, linking into the docs) plus an active **Doxygen API** tab, and
-Doxygen's search box — no painted title band, no second menubar: Doxygen's Main Page / Related Pages / Classes /
-Files menubar is hidden from 768px (the tree on the left lists the same pages). 768–1199px: the sections get
-their own row under logo + search. Phones: Doxygen's menu button is the only one; it opens one panel with the
+light row (`header#titlearea`) with LeviLamina's logo + name, the docs header's tabs (Home · User Guides ·
+Developer Guides · **API Reference** · Maintainer Guides · Supported Versions, linking into the docs, and the
+external LegacyScriptEngine and About) with API Reference current — the Doxygen reference is a page of that tab —
+and Doxygen's search box — no painted title band, no second menubar: Doxygen's Main Page / Related Pages / Classes /
+Files menubar is hidden from 768px (the tree on the left lists the same pages). From 768px the sections fit like
+the docs header's (kit.js measures them into `html[data-kit-nav-fit]`): one row while they fit, then `search` (the
+search box shrinks to its icon and opens over the row while used), then `tabs` (the sections get their own row
+under logo + search). Phones: Doxygen's menu button is the only one; it opens one panel with the
 docs sections, Doxygen's menu and the LeviMC links. The sections are configured in `DOX` in
 `static/build-static.mjs`. Verified with doxygen 1.16.1 + doxygen-awesome-css 2.4.1 in both themes at 1440,
 1024 and 390px (`screens/kit-doxygen-*.png`).
@@ -818,6 +823,21 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.8.0 — 2026-10-29
+
+**The API reference is a tab of the docs.** A nav link to this site that is no docs page — e.g. LeviLamina's
+Doxygen output merged into `dist/api/`, written `https://docs.levimc.org/LeviLamina/api/` (own `hostname` + `base`)
+or `/LeviLamina/api/` — is now a link of the site: opened in place like a page, without the external mark or a new
+tab (before, the first form was an external link and the second a build warning). Such links are not part of the
+previous / next page links.
+* The Doxygen header (`static/doxygen/header.html`) is the docs header with LeviLamina's new top-level
+  **API Reference** tab current (between Developer Guides and Maintainer Guides; `DOX.sections`), without the
+  rule between the project name and the tabs.
+* The Doxygen row fits its tabs like the docs header: kit.js measures them into `html[data-kit-nav-fit]` (`search`:
+  Doxygen's search box shrinks to its icon and opens over the row while used; `tabs`: the sections get their own
+  row) instead of the fixed 768–1299px breakpoint.
+* No API change; `NavItem` links without `key` are same-site links that are no docs page.
 
 ### 2.7.2 — 2026-10-27
 
