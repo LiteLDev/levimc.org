@@ -1,5 +1,6 @@
-import { useRef } from 'react';
-import type { PageData, RouteMeta } from '../../shared/types';
+import { useEffect, useRef, useState } from 'react';
+import type { HeroData, PageData, RouteMeta } from '../../shared/types';
+import { detectPlatform, type DevicePlatform } from '../../shared/platform';
 import { langOf, site } from '../data';
 import { KitLink } from '../components/KitLink';
 import { useContentEnhancements } from '../enhance';
@@ -10,11 +11,24 @@ import type { UiStrings } from '../../../components/i18n';
 
 const FEATURE_ICONS: PixelIconName[] = ['map', 'chest', 'emerald', 'pickaxe', 'compass', 'diamond', 'bookQuill', 'torch', 'grass'];
 
+type HeroActions = NonNullable<HeroData['actions']>;
+
+/** The hero actions for a visitor on `platform`: its actions first and brand, other platforms' alt (see HeroData). */
+function actionsForPlatform(actions: HeroActions, platform: DevicePlatform | undefined): HeroActions {
+  if (!platform || !actions.some((a) => a.platform?.toLowerCase() === platform)) return actions;
+  const mine = actions.filter((a) => a.platform?.toLowerCase() === platform).map((a) => ({ ...a, theme: 'brand' as const }));
+  const rest = actions.filter((a) => a.platform?.toLowerCase() !== platform).map((a) => (a.platform ? { ...a, theme: 'alt' as const } : a));
+  return [...mine, ...rest];
+}
+
 export function HomeLayout({ route, page }: { route: RouteMeta; page: PageData; t: UiStrings }) {
   const contentRef = useRef<HTMLDivElement>(null);
   useContentEnhancements(contentRef, route.page);
   const hero = page.hero ?? {};
   const features = page.features ?? [];
+  // prerendered with the author's order; the visitor's platform is known only in the browser
+  const [platform, setPlatform] = useState<DevicePlatform>();
+  useEffect(() => setPlatform(detectPlatform()), []);
   return (
     <main id="kit-main" className="kit-home" tabIndex={-1}>
       <PaintedHero
@@ -23,7 +37,7 @@ export function HomeLayout({ route, page }: { route: RouteMeta; page: PageData; 
         text={hero.text}
         tagline={hero.tagline}
         image={hero.image ? { src: hero.image.src, alt: hero.image.alt ?? '' } : undefined}
-        actions={hero.actions ?? []}
+        actions={actionsForPlatform(hero.actions ?? [], platform)}
         linkComponent={KitLink}
       />
       {features.length ? (

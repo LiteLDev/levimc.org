@@ -14,6 +14,7 @@ import { preprocess, escAttr } from './preprocess.ts';
 import { createSlugger, type SlugMode } from './slug.ts';
 import { highlightToHast, type TokenStyles } from './shiki.ts';
 import { HTML_TAGS } from './html-tags.ts';
+import { platformOfLabel } from '../../shared/platform.ts';
 
 export interface LinkResolution {
   href: string;
@@ -327,6 +328,8 @@ export async function renderMarkdown(source: string, o: RenderOptions): Promise<
                   ariaSelected: n === sel ? 'true' : 'false',
                   ariaControls: [`${id}-p${n + 1}`],
                   tabIndex: n === sel ? 0 : -1,
+                  // a tab named after a platform ("Windows", "Android") is selected for visitors on it (enhance.ts)
+                  ...(platformOfLabel(t.label) ? { dataPlatform: platformOfLabel(t.label) } : {}),
                 },
                 [text(t.label)],
               ),

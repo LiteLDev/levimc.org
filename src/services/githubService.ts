@@ -66,7 +66,6 @@ const FALLBACK_DATA: Record<string, Partial<RepoInfo>> = {
   // refreshed 2026-10-18 (GitHub API)
   'levilamina': { stars: 1695, forks: 129, language: 'C++' },
   'legacyscriptengine': { stars: 114, forks: 17, language: 'C++' },
-  'levilaunchroid': { stars: 627, forks: 153, language: 'Java' },
   'levilauncher': { stars: 429, forks: 87, language: 'TypeScript' },
   'levioptimize': { stars: 66, forks: 5, language: 'C++' },
   'levianticheat': { stars: 46, forks: 1, language: 'C++' },

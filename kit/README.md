@@ -1,8 +1,8 @@
 # levimc-kit
 
 The shared design system and static docs engine for every LeviMC website — levimc.org (with LeviMC Mods at /mods/) and
-the project docs at `docs.levimc.org/<Project>/` (LeviLamina, LegacyScriptEngine, lip, LeviLauncher,
-LeviLauncher for Android — repository LeviLaunchroid), plus the Doxygen API reference.
+the project docs at `docs.levimc.org/<Project>/` (LeviLamina, LegacyScriptEngine, lip, LeviLauncher — Windows and
+Android in one site), plus the Doxygen API reference.
 
 **Design concept: "Impression, Craft".** Monet's Giverny rendered as if built in Minecraft.
 *Painterly = atmosphere* (impressionist colour fields and brush-dab texture in heroes, backdrops and margins);
@@ -198,7 +198,7 @@ A docs site is the repository's existing markdown plus four small files:
 
 The app sits where the old generator config was; `kit/` sits next to `package.json`.
 
-**VitePress-style repos (lip, LeviLauncher, LeviLaunchroid) — markdown directly in `docs/`:** the app *is*
+**VitePress-style repos (lip, LeviLauncher) — markdown directly in `docs/`:** the app *is*
 `docs/` (it already holds a `package.json`):
 
 ```
@@ -350,7 +350,10 @@ export default defineDocsConfig({ … });
 ```
 
 Home pages: frontmatter `layout: home` with VitePress `hero` (`name`, `text`, `tagline`, `image`,
-`actions[{ theme: brand|alt, text, link }]`) and `features[{ title, details, icon?, link? }]`.
+`actions[{ theme: brand|alt, text, link, platform? }]`) and `features[{ title, details, icon?, link? }]`.
+An action with a `platform` (`windows`, `android`, `ios`, `macos`, `linux`) is for that platform: on a visitor's device
+that has actions, they come first as brand buttons and the other platforms' turn alt (the prerendered page keeps the
+frontmatter's order).
 `icon` may be a kit sprite name (`grass`, `chest`, `pickaxe`, `map`, `compass`, `emerald`, `diamond`,
 `bookQuill`, `torch`, …) or an emoji. Links in frontmatter are resolved like markdown links.
 
@@ -410,7 +413,9 @@ kit transforms → Shiki → HTML). No markdown is parsed in the browser.
 * **MkDocs**: admonitions `!!! type "Title"` (case-insensitive type, optional title, `""` = no title,
   4-space indented bodies with fences/lists/tables/nested admonitions; allowed directly after a paragraph
   line), collapsible `??? type` / `???+ type`, pymdownx tabs `=== "Label"` (consecutive blocks form one
-  set, `===!` starts a new set, `===+` selects), `{#id}` / `{: #id }` heading ids.
+  set, `===!` starts a new set, `===+` selects; a tab whose label names one platform — Windows, Android, iOS, macOS,
+  Linux — starts selected for visitors on that platform), `{#id}` / `{: #id }` heading ids. VitePress sites turn them
+  on with `markdown.containers: { vitepress: true, mkdocs: true }`.
   Types: note abstract(summary, tldr) info(todo) tip(hint, important) success(check, done)
   question(help, faq) warning(caution, attention) failure(fail, missing) danger(error) bug example
   quote(cite); unknown types use the note style.
@@ -586,7 +591,7 @@ Canonical cross-site URLs (exact, no redirect): Home `https://levimc.org/`, Proj
 GitHub organisation) `https://github.com/LiteLDev`, Community `https://levimc.org/community/`, About `https://levimc.org/about/`,
 Mods (LeviMC Mods, id `mods`) `https://levimc.org/mods/`, Blog `https://levimc.org/blog/`, GitHub
 `https://github.com/LiteLDev`,
-Docs `https://docs.levimc.org/{LeviLamina,LegacyScriptEngine,lip,LeviLauncher,LeviLaunchroid}/`,
+Docs `https://docs.levimc.org/{LeviLamina,LegacyScriptEngine,lip,LeviLauncher}/`,
 Discord `https://discord.gg/v5R5P4vRZk`, Telegram `https://t.me/LiteLoader`, X `https://x.com/levimc_org`,
 YouTube `https://www.youtube.com/@LeviLamina`, `mailto:contact@levimc.org`. lip's repository is
 `https://github.com/LiteLDev/lip` (`futrime/lip` redirects).
@@ -823,6 +828,21 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.9.0 — 2026-10-29
+
+**One LeviLauncher, for Windows and Android.** LeviLauncher for Android's docs moved into LeviLauncher's
+(`docs.levimc.org/LeviLauncher/android/`), and LeviLauncher is one project for both: `PROJECTS` drops the
+`LeviLaunchroid` entry (the Projects menu, the docs.levimc.org root's cards and levimc.org's project cards show one
+LeviLauncher card), its `projectBlurbs` says "Bedrock launcher for Windows and Android" in every language, and the
+`LeviLaunchroid.webp` logo is gone. docs.levimc.org forwards the old `/LeviLaunchroid/` URLs (liteldev.github.io).
+* Removed: `'LeviLaunchroid'` from `ProjectId`, `DocsProjectId` and `projectBlurbs`.
+
+**Content for the visitor's device** (`docs/shared/platform.ts`: `detectPlatform()`, `platformOfLabel()`):
+* Tabs labelled with one platform name ("Windows", "Android", "iOS", "macOS", "Linux") carry `data-platform`, and the
+  visitor's platform's tab starts selected (a `#hash` naming another tab still wins).
+* Hero actions take `platform`: the visitor's platform's actions come first as brand buttons, other platforms' alt.
+* Both run after hydration: the prerendered page shows the author's default.
 
 ### 2.8.1 — 2026-10-29
 
@@ -1160,7 +1180,7 @@ Site-specific notes:
   `kit/static/build-static.mjs` when the top-level nav changes).
 * **LegacyScriptEngine** — drop the patches; the `collapsed: true` marks on API groups are now the default
   (harmless to keep).
-* **lip, LeviLauncher, LeviLaunchroid** — drop the patches; LeviLaunchroid's referrer/remember-locale
+* **lip, LeviLauncher, LeviLaunchroid** (now part of LeviLauncher) — drop the patches; LeviLaunchroid's referrer/remember-locale
   behaviour is replaced as described above.
 * **liteldev.github.io** — the static-page decorations of `scripts/build-site.mjs` are in `kit/static` now.
 

@@ -20,7 +20,6 @@ const DEFAULT_URLS = [
   'https://docs.levimc.org/LegacyScriptEngine/',
   'https://docs.levimc.org/lip/',
   'https://docs.levimc.org/LeviLauncher/',
-  'https://docs.levimc.org/LeviLaunchroid/',
 ];
 const urls = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const list = urls.length ? urls : DEFAULT_URLS;

@@ -34,7 +34,6 @@ export type ProjectId =
   | 'LeviStone'
   | 'lip'
   | 'LeviLauncher'
-  | 'LeviLaunchroid'
   | 'LeviOptimize'
   | 'LeviAntiCheat'
   | 'MoreDimensions'
@@ -81,15 +80,6 @@ export const PROJECTS: readonly Project[] = [
   { id: 'LeviStone', name: 'LeviStone', group: 'core', repo: 'https://github.com/LiteLDev/LeviStone', logo: logo('LeviStone'), icon: 'emerald' },
   { id: 'lip', name: 'lip', group: 'core', repo: 'https://github.com/LiteLDev/lip', docs: 'https://docs.levimc.org/lip/', logo: logo('lip'), icon: 'chest' },
   { id: 'LeviLauncher', name: 'LeviLauncher', group: 'launchers', repo: 'https://github.com/LiteLDev/LeviLauncher', docs: 'https://docs.levimc.org/LeviLauncher/', logo: logo('LeviLauncher'), icon: 'map' },
-  {
-    id: 'LeviLaunchroid',
-    name: 'LeviLauncher for Android',
-    group: 'launchers',
-    repo: 'https://github.com/LiteLDev/LeviLaunchroid',
-    docs: 'https://docs.levimc.org/LeviLaunchroid/',
-    logo: logo('LeviLaunchroid'),
-    icon: 'pickaxe',
-  },
   { id: 'LeviOptimize', name: 'LeviOptimize', group: 'mods', repo: 'https://github.com/LiteLDev/LeviOptimize', mod: modPage('LeviOptimize'), logo: logo('LeviOptimize'), icon: 'potion' },
   { id: 'LeviAntiCheat', name: 'LeviAntiCheat', group: 'mods', repo: 'https://github.com/LiteLDev/LeviAntiCheat', mod: modPage('LeviAntiCheat'), logo: logo('LeviAntiCheat'), icon: 'torch' },
   { id: 'MoreDimensions', name: 'MoreDimensions', group: 'mods', repo: 'https://github.com/LiteLDev/MoreDimensions', mod: modPage('MoreDimensions'), logo: logo('MoreDimensions'), icon: 'compass' },
@@ -108,7 +98,7 @@ export function projectHome(p: Project): string {
 export const PROJECT_GROUPS: readonly ProjectGroupId[] = ['core', 'launchers', 'mods'];
 
 /** The projects that have a documentation site (docs.levimc.org/<id>/). */
-export type DocsProjectId = 'LeviLamina' | 'LegacyScriptEngine' | 'lip' | 'LeviLauncher' | 'LeviLaunchroid';
+export type DocsProjectId = 'LeviLamina' | 'LegacyScriptEngine' | 'lip' | 'LeviLauncher';
 
 export interface DocsProject {
   id: DocsProjectId;
