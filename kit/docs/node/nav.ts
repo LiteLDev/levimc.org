@@ -9,7 +9,7 @@ import type { NavItem, SidebarData } from '../shared/types.ts';
 
 type Node =
   | { kind: 'page'; key: string; locale?: string; text?: string; external?: false }
-  | { kind: 'link'; text: string; href: string }
+  | { kind: 'link'; text: string; href: string; internal?: boolean }
   | { kind: 'group'; text: string; children: Node[]; collapsed?: boolean };
 
 const isExternal = (s: string) => /^[a-z][a-z0-9+.-]*:|^\/\//i.test(s);
@@ -29,14 +29,18 @@ export function parseNav(entries: NavEntry[], scan: ContentScan, cfg: ResolvedCo
   const out: Node[] = [];
   const asTarget = (text: string | undefined, link: string): Node | null => {
     if (isExternal(link)) {
-      // own-site absolute URL pointing into this build → internal page
+      // own-site absolute URL pointing into this build → internal page, or a same-site link (below)
       if (cfg.hostname && link.startsWith(cfg.hostname + cfg.base)) {
         const t = findSourceForNav(scan, cfg, link.slice(cfg.hostname.length));
         if (t) return { kind: 'page', key: t.key, locale: t.locale, text };
+        return { kind: 'link', text: text ?? link, href: link.slice(cfg.hostname.length + cfg.base.length), internal: true };
       }
       return { kind: 'link', text: text ?? link, href: link };
     }
     const t = findSourceForNav(scan, cfg, link);
+    // a root-absolute path under base that is no page of the docs (e.g. the Doxygen output merged into dist/api/):
+    // a link of this site, opened in place like a page
+    if (!t && link.startsWith(cfg.base)) return { kind: 'link', text: text ?? link, href: link.slice(cfg.base.length), internal: true };
     if (!t) {
       warn(`nav: cannot resolve '${link}'`);
       return null;
@@ -110,7 +114,7 @@ export function buildNavigation({ cfg, scan, titles, warn }: NavBuildInput): Nav
   const materialize = (nodes: Node[], code: string): NavItem[] =>
     nodes
       .map((n): NavItem | null => {
-        if (n.kind === 'link') return { text: tr(code, n.text), link: n.href, external: true };
+        if (n.kind === 'link') return n.internal ? { text: tr(code, n.text), link: n.href } : { text: tr(code, n.text), link: n.href, external: true };
         if (n.kind === 'page') {
           const r = routeOf(n.key, n.locale, code);
           if (!r) return null;
@@ -133,7 +137,7 @@ export function buildNavigation({ cfg, scan, titles, warn }: NavBuildInput): Nav
   };
   const flatten = (items: NavItem[], acc: NavItem[] = []): NavItem[] => {
     for (const it of items) {
-      if (it.link && !it.external && !acc.some((a) => a.link === it.link)) acc.push(it);
+      if (it.link && it.key && !acc.some((a) => a.link === it.link)) acc.push(it);
       if (it.items) flatten(it.items, acc);
     }
     return acc;

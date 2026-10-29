@@ -133,6 +133,7 @@
   // A project's own row on its Doxygen pages (static/doxygen/header.html): its section tabs follow the
   // preference too, mapped to the project's locales (<… data-kit-site-locales='[{"c":"zh","l":"zh"}]'>; each
   // <a data-kit-l10n='{"zh":["用户指南","/LeviLamina/zh/…"]}'> carries its other-locale label and URL).
+  var siteFit = null; // the Doxygen row's fit (below), re-run when its labels change
   function localizeSite(pref) {
     each('[data-kit-site-locales]', function (row) {
       var L;
@@ -167,6 +168,7 @@
         else a.removeAttribute('lang');
       }
     });
+    if (siteFit) siteFit();
   }
   function applyLanguagePref() {
     var p = rp('lang');
@@ -326,6 +328,33 @@
       });
       mo.observe(dtop, { childList: true });
     }
+    // the sections fit like the docs header's (doxygen-kit.css): on wide screens the first of the docs' states
+    // ("search": icon-only search, then "tabs": the sections on their own row) with which they are not cut off;
+    // re-measured when the page or Doxygen's search box (inserted by menu.js) changes width, when the web fonts
+    // load and when the labels change language
+    var dtabs = drow.querySelector('.kit-dox-tabs > ul');
+    var dfit = function () {
+      if (!dtabs) return;
+      root.removeAttribute('data-kit-nav-fit');
+      var steps = ['search', 'tabs'];
+      for (var fi = 0; fi < steps.length; fi++) {
+        if (dtabs.scrollWidth <= dtabs.clientWidth) return;
+        root.setAttribute('data-kit-nav-fit', steps[fi]);
+      }
+    };
+    dfit();
+    if (dtabs && window.ResizeObserver) {
+      var dro = new ResizeObserver(dfit);
+      dro.observe(dtop);
+      var observeSearch = function () {
+        var dnav = document.getElementById('main-nav');
+        if (dnav) dro.observe(dnav);
+        return !!dnav;
+      };
+      if (!observeSearch()) document.addEventListener('DOMContentLoaded', observeSearch);
+    }
+    if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', dfit);
+    siteFit = dfit;
   }
 
   // footer year follows the reader's clock (the snippet carries the year it was built in)
