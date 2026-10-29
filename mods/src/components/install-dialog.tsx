@@ -92,6 +92,12 @@ export function InstallDialog({ open, onClose, name, tooth, mod, repository, sel
         </div>
         <p className="mods-dialog-hint">{t.installHint}</p>
         <InstallCommand tooth={tooth} variant={variant} version={shownVersion} />
+        <p className="mods-dialog-hint">
+          {t.clientHint}{" "}
+          <a href={t.clientHintUrl} target="_blank" rel="noopener noreferrer">
+            LeviLauncher
+          </a>
+        </p>
         <a className="mc-btn mods-dialog-download" href={getReleaseUrl(repository, releases[shownVersion])} target="_blank" rel="noopener noreferrer">
           <BrandIcon name="github" size={16} />
           {t.downloadFromGitHub}
