@@ -38,7 +38,6 @@ const UPSTREAM = {
   AlleviatedBackpacks: 'AlleviatedBackpacks/HEAD/docs/logo.png',
   Bedstones: 'Bedstones/HEAD/docs/logo.png',
   BeetrootSkin: 'BeetrootSkin/HEAD/docs/logo.png',
-  BeDD: 'BeDD/HEAD/docs/public/logo.png',
 };
 /** Pixel art upstream (LegacyScriptEngine's hammer): scaled without smoothing. */
 const CRISP = new Set(['LegacyScriptEngine']);
@@ -236,6 +235,55 @@ const DESIGNS = {
       px.outline('#1f3315');
     },
     sparkles: [[4, 6, '#fff7d6'], [27, 4, '#e8f5c8'], [28, 18, '#ffffff'], [3, 20, '#cfe7b4']],
+  },
+
+  // Be.D.D. is named after the H.D.D. of Zenless Zone Zero, which explores the Hollows on a wall of CRT TVs: a stack
+  // of three, the top one with rabbit ears and the H.D.D.'s glowing path arrow, the others showing a grass block and the leaf.
+  BeDD: {
+    scene: 'dusk',
+    seed: 2087,
+    sunX: 0.2,
+    draw(px) {
+      const shell = ['#7d6a4c', '#a48d64', '#c8b287', '#e4d3a8'];
+      const glow = ['#123238', '#1a4a50', '#226068'];
+      /** A CRT TV: casing (x, y, w, h), a rounded screen on the left, two knobs and a grille on the right. */
+      const tv = (x, y, w, h) => {
+        px.fill((cx, cy) => cx > x && cx < x + w && cy > y && cy < y + h, (cx, cy) => ramp(shell, light(cx, cy, x + w / 2, y + h / 2, w / 1.6)));
+        const sx0 = x + 1, sx1 = x + w - 4, sy0 = y + 1, sy1 = y + h - 2;
+        for (let sy = sy0; sy <= sy1; sy++)
+          for (let sx = sx0; sx <= sx1; sx++) {
+            const corner = (sx === sx0 || sx === sx1) && (sy === sy0 || sy === sy1);
+            px.set(sx, sy, corner ? '#3b3225' : (sy - sy0) % 2 ? glow[0] : glow[1]);
+          }
+        // the curved glass catches the dusk light in its upper left
+        px.set(sx0 + 1, sy0, glow[2]);
+        px.set(sx0, sy0 + 1, glow[2]);
+        px.set(x + w - 2, y + 2, '#e07a5f');
+        px.set(x + w - 2, y + 4, '#5d4a35');
+        for (let gy = y + 6; gy < y + h - 1; gy += 2) px.set(x + w - 2, gy, '#5d4a35');
+        // feet
+        px.set(x + 1, y + h, '#3b3225');
+        px.set(x + w - 2, y + h, '#3b3225');
+        return [sx0, sy0, sx1, sy1];
+      };
+      // rabbit ears
+      px.line(13, 6, 9, 1, '#5d4a35');
+      px.line(18, 6, 23, 2, '#5d4a35');
+      px.set(9, 1, '#f4dc98');
+      px.set(23, 2, '#f4dc98');
+      const [ax, ay] = tv(8, 6, 16, 10);
+      tv(2, 16, 14, 11);
+      tv(16, 16, 14, 11);
+      // the H.D.D.'s arrow, glowing cyan with an orange tip (a path marker of the Hollow map)
+      px.stamp(['...l...', '...cl..', 'lllccl.', 'ccccccc', 'cccccc.', '...cc..', '...c...'], ax + 2, ay + 1, { c: '#6fe0d2', l: '#b8f4ea' });
+      px.set(ax + 10, ay + 6, '#f0a04b');
+      // a grass block
+      px.stamp(['.gggg.', 'gGggGg', 'dgDdgd', 'dDddDd', 'ddDddd', '.dddd.'], 4, 18, { g: '#8dc06a', G: '#5f9a5a', d: '#9a6b3f', D: '#7a5230' });
+      // the LeviMC leaf
+      leaf(px, 22, 21.6, 6.4, 4, -40, GREEN, { midrib: false });
+      px.outline('#141b26');
+    },
+    sparkles: [[3, 5, '#9fe8de'], [27, 6, '#ffd08a'], [29, 13, '#6fe0d2'], [5, 12, '#ffe2b0']],
   },
 
   // Performance: a gauge with its needle deep in the fast end, the leaf where the scale starts.
