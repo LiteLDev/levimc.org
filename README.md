@@ -126,7 +126,7 @@ The two apps share the origin: their bar and footer links into the other one are
 ## LeviChan
 
 A small LeviChan head peeks over the top edge of the home hero's showcase card (`src/levichan/LeviChanPeek.tsx`).
-Clicking it offers to open her 3D space; nothing of it is downloaded before that (the runtime is its own chunk,
+Clicking it opens her 3D space at once; nothing of it is downloaded before that (the runtime is its own chunk,
 `import('./levichan/space')`, and the model and motions are fetched from `public/levichan/` as they are needed:
 the model ~7 MB, each motion a few KB, on first use).
 
@@ -139,9 +139,13 @@ the model ~7 MB, each motion a few KB, on first use).
 - `src/levichan/brain.ts` — what she does: the visitor never picks a motion; each one answers something they do
   (pat her head, poke her, press and hold, double-click her skirt, circle her with the cursor, click the floor three
   times, scroll hard, linger on a link, copy text, switch language or theme, come back to the tab, the Konami code
-  or typing "levi"...), and she idles, fidgets and decides where to look in between.
+  or typing "levi"...), and she idles and decides where to look in between. Every 5-11 s she does something on her
+  own from most of the 30 clips (fidgets mostly; now and then a twirl, a heart, a curtsy, a little dance), waves when
+  the cursor comes back to her and shows off her dress when it rests on it.
 - `public/levichan/` — her assets, made by `node scripts/levichan-assets.mjs --pmx <LeviChan out/pmx> --motions
-  <LeviChan web motions>` from a LeviChan build. `public/levichan/NOTICE` holds the third-party model data's terms.
+  <LeviChan web motions>` from a LeviChan build: the model from the round 11 branches merged together, the clips from
+  `tools/web_clips.py` on `r11/web-motions` (`blender -b out/levi.blend -P tools/motion_vmd.py -- --extra-clips
+  web_clips --clips <the 31 clips> --out out/web_vmd`, and `blender -b -P tools/web_clips.py -- out/web_vmd/clips.json`). `public/levichan/NOTICE` holds the third-party model data's terms.
 
 ## License
 

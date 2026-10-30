@@ -240,10 +240,6 @@ const zhHant: typeof en = {
   // LeviChan：首頁卡片後探出頭的頭像，以及她的 3D 空間
   levichan: {
     avatar: "誰在那兒？",
-    peekTitle: "LeviChan",
-    peekText: "把整個網站摺疊進 3D 空間，和 LeviChan 見個面。她會留意你的一舉一動——多試試吧。",
-    enter: (size: string) => `進入 3D 空間（${size}）`,
-    notNow: "下次再說",
     loading: "正在召喚 LeviChan…",
     loadFailed: "LeviChan 載入失敗。",
     menuTitle: "LeviChan",

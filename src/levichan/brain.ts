@@ -15,18 +15,42 @@ const enum Prio {
   Farewell = 4,
 }
 
-/** Ambient fidgets and their weights (night adds yawns). */
+/** What she does on her own, and how often (night adds yawns): small fidgets mostly, now and then a bigger,
+ * happier one — a twirl, a heart for the viewer, a little dance. */
 const AMBIENT: [string, number][] = [
-  ['look_around', 3],
-  ['stretch', 1.5],
-  ['hair_tuck', 2],
-  ['heel_rock', 2],
+  ['look_around', 2.5],
+  ['hair_tuck', 2.5],
+  ['heel_rock', 2.5],
+  ['hum_sway', 2.5],
   ['kick_pebble', 1.5],
-  ['hum_sway', 2],
   ['check_shoe', 1.2],
-  ['yawn', 0.6],
+  ['stretch', 1.2],
+  ['curtsy', 1],
+  ['twirl', 1],
+  ['heart', 0.9],
+  ['wave_hello', 0.8],
+  ['thumbs_up', 0.6],
+  ['jump_happy', 0.5],
+  ['clap_cheer', 0.5],
+  ['yawn', 0.5],
   ['sneeze', 0.25],
+  ['idol_dance', 0.2],
 ];
+/** Fidgets that face the viewer (she looks at the camera through them). */
+const TO_VIEWER = new Set(['wave_hello', 'wave_bye', 'welcome_back', 'bow', 'curtsy', 'heart', 'thumbs_up', 'twirl']);
+/** Her face between clips: a soft smile, and every few seconds one of these for a moment. */
+const IDLE_FACE: Record<string, number> = { にこり: 0.3, 口角上げ: 0.2 };
+const FACES: [Record<string, number>, number][] = [
+  [{ にこり: 0.75, 口角上げ: 0.3 }, 3],
+  [{ ω: 0.6, なごみ: 0.4 }, 2],
+  [{ 照れ: 0.35, にこり: 0.6 }, 1.5],
+  [{ なごみ: 0.6, 口角上げ: 0.4 }, 1.5],
+  [{ はぅ: 0.4, う: 0.3 }, 1],
+  [{ ウィンク: 1, にこり: 0.6 }, 0.5],
+  [{ 真面目: 0.3, う: 0.25 }, 0.7],
+];
+/** Seconds between fidgets while the visitor is around. */
+const AMBIENT_GAP: [number, number] = [5, 11];
 const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
 
 const now = () => performance.now();
@@ -42,8 +66,12 @@ const pick = <T,>(items: [T, number][]) => {
 export class Brain {
   private prio = 0;
   private last: string | null = null;
+  /** the fidgets she did last, so she doesn't repeat herself */
+  private recent: string[] = [];
   private lastInput = now();
-  private nextAmbient = now() + 12000;
+  private nextAmbient = now() + 7000;
+  private nextFace = now() + 3000;
+  private faceUntil = 0;
   private sat = false;
   private greeted = false;
   private cooldown = new Map<string, number>();
@@ -55,6 +83,9 @@ export class Brain {
   private glanceAt: 'viewer' | 'none' = 'none';
   private pointer = { x: -1, y: -1, t: 0, speed: 0 };
   private overFace = 0;
+  private overBody = 0;
+  /** since when the cursor has been far from her (0: it is near) */
+  private awaySince = now();
   private lookAtLink: { el: HTMLElement; since: number } | null = null;
   private readingUntil = 0;
 
@@ -100,6 +131,7 @@ export class Brain {
     if (opts.cooldown) this.cooldown.set(name, now() + opts.cooldown);
     this.prio = prio;
     this.last = name;
+    this.recent = [name, ...this.recent.filter((n) => n !== name)].slice(0, 4);
     if (opts.say) this.space.say(opts.say);
     if (opts.mood) {
       Object.assign(this.levi.mood, opts.mood);
@@ -110,9 +142,14 @@ export class Brain {
     }
     void this.levi.play(name).then(() => {
       if (this.levi.current === null) this.prio = 0;
-      this.nextAmbient = Math.max(this.nextAmbient, now() + 6000 + Math.random() * 8000);
+      this.nextAmbient = Math.max(this.nextAmbient, now() + this.ambientGap());
     });
     return true;
+  }
+
+  private ambientGap() {
+    const [a, b] = AMBIENT_GAP;
+    return (a + Math.random() * (b - a)) * 1000;
   }
 
   private input() {
@@ -138,9 +175,11 @@ export class Brain {
       if (!this.sat && tNow - this.lastInput > 45000) {
         this.sat = this.act('sit_rest', Prio.Ambient);
       } else if (tNow > this.nextAmbient) {
-        const pool = AMBIENT.filter(([n]) => n !== this.last).map(([n, w]) => [n, n === 'yawn' && this.isNight() ? w * 5 : w] as [string, number]);
-        this.act(pick(pool), Prio.Ambient);
-        this.nextAmbient = tNow + 9000 + Math.random() * 13000;
+        const pool = AMBIENT.filter(([n]) => !this.recent.includes(n)).map(([n, w]) => [n, n === 'yawn' && this.isNight() ? w * 5 : w] as [string, number]);
+        const name = pick(pool);
+        if (TO_VIEWER.has(name)) this.glance('viewer', 2500);
+        this.act(name, Prio.Ambient);
+        this.nextAmbient = tNow + this.ambientGap();
       }
     }
 
@@ -162,6 +201,23 @@ export class Brain {
     if (this.overFace && tNow - this.overFace > 3000) {
       this.overFace = 0;
       this.act('shy_cover', Prio.Touch, { cooldown: 15000, mood: { 照れ: 1 }, moodMs: 4500 });
+    }
+    // her face between clips: a soft smile, a passing expression now and then (a bigger smile when watched)
+    if (tNow > this.nextFace) {
+      const f = pick(FACES);
+      this.levi.idleMood = { ...IDLE_FACE, ...f };
+      this.faceUntil = tNow + 1200 + Math.random() * 1800;
+      this.nextFace = tNow + 3500 + Math.random() * 4500;
+    } else if (this.faceUntil && tNow > this.faceUntil) {
+      this.faceUntil = 0;
+      this.levi.idleMood = this.interest > 0.5 ? { ...IDLE_FACE, にこり: 0.55 } : { ...IDLE_FACE };
+    }
+
+    // the cursor resting on her dress: she shows it off
+    if (this.overBody && tNow - this.overBody > 2000 && !this.levi.current) {
+      this.overBody = Infinity;
+      this.glance('viewer', 3000);
+      this.act(Math.random() < 0.5 ? 'twirl' : 'curtsy', Prio.Touch, { cooldown: 12000, mood: { にこり: 0.9 }, moodMs: 3500 });
     }
     this.updateGaze(tNow);
   }
@@ -186,7 +242,7 @@ export class Brain {
     const cur = levi.current;
     if (mode === 'never') {
       target = null;
-    } else if (cur === 'wave_hello' || cur === 'wave_bye' || cur === 'welcome_back' || cur === 'bow' || cur === 'curtsy') {
+    } else if (cur && TO_VIEWER.has(cur)) {
       target = this.space.cameraPos();
       w = 0.9;
     } else if ((cur === 'point_left' || cur === 'point_right') && this.lookAtLink) {
@@ -236,10 +292,23 @@ export class Brain {
       const near = Math.max(0, 1 - dist / (innerHeight * 0.6));
       this.interest = Math.min(1, this.interest + Math.min(p.speed, 2500) / 2500 * (onPanel ? 0.01 : 0.03 + 0.05 * near));
       this.trackCircle(e.clientX, e.clientY, tNow);
+      // the cursor comes over to her after a while away: she waves at it
+      if (near > 0.55) {
+        if (this.awaySince && tNow - this.awaySince > 12000 && !this.levi.current) {
+          this.glance('viewer', 2500);
+          this.act('wave_hello', Prio.Page, { cooldown: 25000, mood: { にこり: 0.8 } });
+        }
+        this.awaySince = 0;
+      } else if (near < 0.15 && !this.awaySince) {
+        this.awaySince = tNow;
+      }
     }
     const face = hit?.region === 'face' || hit?.region === 'head';
     if (face && !this.overFace) this.overFace = tNow;
     if (!face) this.overFace = 0;
+    const body = !!hit && !face;
+    if (body && !this.overBody) this.overBody = tNow;
+    if (!body) this.overBody = 0;
     if (hit) this.interest = 1;
   }
 

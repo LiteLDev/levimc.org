@@ -1678,35 +1678,16 @@
 }
 .lc-peek-head:hover,
 .lc-peek-head:focus-visible,
-.lc-peek[data-open] .lc-peek-head {
+.lc-peek[data-busy] .lc-peek-head {
   height: 2.35rem;
+}
+.lc-peek[data-busy] .lc-peek-head {
+  cursor: progress;
 }
 .lc-peek-head:focus-visible {
   outline: 2px solid var(--color-accent, currentColor);
   outline-offset: 2px;
   border-radius: 6px;
-}
-.lc-peek-menu {
-  position: absolute;
-  z-index: 20;
-  right: -0.5rem;
-  bottom: 2.75rem;
-  width: min(19rem, 80vw);
-  padding: 0.875rem 1rem;
-  border-radius: 10px;
-  background: var(--color-surface, #fffdf6);
-  border: 1px solid var(--color-border, rgba(0, 0, 0, 0.12));
-  box-shadow: var(--shadow-float, 0 12px 40px rgba(0, 0, 0, 0.2));
-  font-size: 0.875rem;
-}
-.lc-peek-menu p {
-  margin: 0.375rem 0 0.75rem;
-  opacity: 0.8;
-}
-.lc-peek-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
 }
 @media (prefers-reduced-motion: reduce) {
   .lc-peek-head {

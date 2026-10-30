@@ -1,8 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useI18n } from '../i18n';
-
-/** Download of the 3D space (model, textures, the first motions, the runtime), for the menu. */
-const DOWNLOAD = '≈ 9 MB';
 
 let entering = false;
 async function openSpace(strings: Parameters<typeof import('./space').enter>[0]['strings'], instant: boolean) {
@@ -19,54 +16,27 @@ async function openSpace(strings: Parameters<typeof import('./space').enter>[0][
 
 /**
  * LeviChan peeking from behind the hero's showcase card: only the top of her head shows, until hovered. A click
- * opens a small menu; entering the 3D space downloads everything it needs then (nothing before).
+ * on her opens the 3D space at once (its download starts then, nothing before).
  */
 export default function LeviChanPeek() {
   const { t } = useI18n();
   const s = t.levichan;
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: PointerEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
-    window.addEventListener('pointerdown', close);
-    window.addEventListener('keydown', esc);
-    return () => {
-      window.removeEventListener('pointerdown', close);
-      window.removeEventListener('keydown', esc);
-    };
-  }, [open]);
+  const [busy, setBusy] = useState(false);
 
   return (
-    <div className="lc-peek" ref={ref} data-open={open || undefined}>
-      <button type="button" className="lc-peek-head" aria-label={s.avatar} title={s.avatar} aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+    <div className="lc-peek" data-busy={busy || undefined}>
+      <button
+        type="button"
+        className="lc-peek-head"
+        aria-label={s.avatar}
+        title={s.avatar}
+        onClick={() => {
+          setBusy(true);
+          void openSpace(s, false).finally(() => setBusy(false));
+        }}
+      >
         <img src="/levichan/avatar.png" alt="" width={64} height={64} draggable={false} loading="lazy" decoding="async" />
       </button>
-      {open ? (
-        <div className="lc-peek-menu" role="dialog" aria-label={s.peekTitle}>
-          <strong>{s.peekTitle}</strong>
-          <p>{s.peekText}</p>
-          <div className="lc-peek-actions">
-            <button
-              type="button"
-              className="mc-btn mc-btn-primary"
-              onClick={() => {
-                setOpen(false);
-                void openSpace(s, false);
-              }}
-            >
-              {s.enter(DOWNLOAD)}
-            </button>
-            <button type="button" className="mc-btn mc-btn-ghost" onClick={() => setOpen(false)}>
-              {s.notNow}
-            </button>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
