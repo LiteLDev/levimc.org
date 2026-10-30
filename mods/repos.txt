@@ -87,6 +87,7 @@ LiteLDev/iListenAttentively
 LiteLDev/LegacyMoney
 LiteLDev/LegacyRemoteCall
 LiteLDev/LegacyScriptEngine
+LiteLDev/Lepton
 LiteLDev/LeviAntiCheat
 LiteLDev/LeviLamina
 LiteLDev/levilamina-mod-template
