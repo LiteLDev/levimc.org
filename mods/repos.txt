@@ -79,6 +79,7 @@ lgc-LLDev/FormAPIEx
 lgc-LLDev/NBSPlayer
 LiteLDev/AlleviatedBackpacks
 LiteLDev/BarelyEnoughItems
+LiteLDev/BeDD
 LiteLDev/Bedstones
 LiteLDev/BeetrootSkin
 LiteLDev/Complementaries
@@ -87,7 +88,6 @@ LiteLDev/LegacyMoney
 LiteLDev/LegacyRemoteCall
 LiteLDev/LegacyScriptEngine
 LiteLDev/LeviAntiCheat
-LiteLDev/LeviHeadlessInput
 LiteLDev/LeviLamina
 LiteLDev/levilamina-mod-template
 LiteLDev/LeviOptimize

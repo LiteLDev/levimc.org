@@ -852,6 +852,14 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 ## Changelog
 
+### 2.13.0 — 2026-10-30
+
+**Be.D.D. is in Core.** LeviHeadlessInput is now Be.D.D. (Bedrock Deep Dive, `LiteLDev/BeDD`) and moves from
+Official mods to Core, after LeviLauncher; it still leads to its LeviMC Mods page.
+* `ProjectId` `'LeviHeadlessInput'` → `'BeDD'` (`projectBlurbs.BeDD`); its logo is `https://levimc.org/logos/BeDD.webp`.
+* `Project.mod` is no longer only for the Official mods: a Core project installed as a mod has one too.
+* Compatible: sites only rebuild.
+
 ### 2.12.0 — 2026-10-29
 
 **Content per platform** (see [Content per platform](#content-per-platform)), for LeviLauncher's one guide for its

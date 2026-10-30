@@ -212,7 +212,7 @@ const en = {
       "Waystones for Minecraft Bedrock Edition: build waystones and travel between them.",
     beetrootskin:
       "AppleSkin for Minecraft Bedrock Edition: see the hunger and saturation a food restores.",
-    leviheadlessinput:
+    bedd:
       "Drive a LeviLamina client from test scripts without touching the real mouse or keyboard, several games at once.",
   },
   // Blog (levimc.org/blog/) — the chrome around the posts; the posts themselves are in Chinese

@@ -199,7 +199,7 @@ const zhHant: typeof en = {
     alleviatedbackpacks: "Minecraft 基岩版的 Sophisticated Backpacks：可以安裝升級的背包。",
     bedstones: "Minecraft 基岩版的 Waystones：建造傳送石，在它們之間傳送。",
     beetrootskin: "Minecraft 基岩版的 AppleSkin：檢視食物能恢復多少飢餓值與飽和度。",
-    leviheadlessinput: "用測試腳本驅動 LeviLamina 用戶端，不佔用真實的滑鼠和鍵盤，還能同時執行多個遊戲。",
+    bedd: "用測試腳本驅動 LeviLamina 用戶端，不佔用真實的滑鼠和鍵盤，還能同時執行多個遊戲。",
   },
   // 網誌
   blog: {
