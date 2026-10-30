@@ -128,5 +128,6 @@ jobs:
           LegacyScriptEngine build_docs.yml
           lip build-docs.yml
           LeviLauncher docs.yml
+          BeDD docs.yml
           EOF
           exit $status
