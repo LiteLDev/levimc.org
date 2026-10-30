@@ -2,11 +2,6 @@
 export interface LeviChanStrings {
   /** the avatar's tooltip / label */
   avatar: string;
-  peekTitle: string;
-  peekText: string;
-  /** the button that opens the 3D space; `size` is the download, e.g. "7 MB" */
-  enter: (size: string) => string;
-  notNow: string;
   loading: string;
   loadFailed: string;
   menuTitle: string;

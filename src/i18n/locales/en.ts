@@ -255,10 +255,6 @@ const en = {
   // LeviChan: the avatar peeking from behind the hero card, and her 3D space
   levichan: {
     avatar: "Who's there?",
-    peekTitle: "LeviChan",
-    peekText: "Fold this site into a 3D space and meet LeviChan. She notices what you do — try a few things.",
-    enter: (size: string) => `Enter the 3D space (${size})`,
-    notNow: "Not now",
     loading: "Summoning LeviChan…",
     loadFailed: "LeviChan could not be loaded.",
     menuTitle: "LeviChan",

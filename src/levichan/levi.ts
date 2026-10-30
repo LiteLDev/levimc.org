@@ -89,7 +89,9 @@ async function fetchBytes(url: string, onBytes?: (n: number) => void): Promise<U
     onBytes?.(value.length);
   }
   let blob = new Blob(chunks as BlobPart[]);
-  if (url.endsWith('.gz')) {
+  // a server that sends Content-Encoding: gzip (Vite's dev server) has inflated it already: look for gzip's magic
+  const magic = new Uint8Array(await blob.slice(0, 2).arrayBuffer());
+  if (url.endsWith('.gz') && magic[0] === 0x1f && magic[1] === 0x8b) {
     stream = blob.stream().pipeThrough(new DecompressionStream('gzip'));
     blob = await new Response(stream).blob();
   }
@@ -156,6 +158,8 @@ export class Levi {
   private blinkT = -1;
   /** extra expression set by the brain (morph -> weight), eased */
   mood: Record<string, number> = {};
+  /** her face between clips (the brain's small expressions); a clip's own face keys replace it */
+  idleMood: Record<string, number> = {};
   private moodNow: Record<string, number> = {};
   private lastTime = performance.now();
 
@@ -441,6 +445,7 @@ export class Levi {
       }
     }
     for (const [k, v] of Object.entries(this.mood)) want[k] = Math.max(want[k] ?? 0, v);
+    if (!p?.info.face?.length) for (const [k, v] of Object.entries(this.idleMood)) want[k] = Math.max(want[k] ?? 0, v);
     // ease every expression we ever touched toward its target
     for (const k of new Set([...Object.keys(want), ...Object.keys(this.moodNow)])) {
       const cur = this.moodNow[k] ?? 0;
