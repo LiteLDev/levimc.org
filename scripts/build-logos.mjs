@@ -200,6 +200,44 @@ const DESIGNS = {
     sparkles: [[5, 6, '#ffffff'], [27, 7, '#f6d8de'], [3, 17, '#fff7f0']],
   },
 
+  // bedboo (mineflayer for Bedrock): a clump of Minecraft bamboo — three jointed stalks, blades at the joints.
+  bedboo: {
+    scene: 'pond',
+    seed: 2026,
+    draw(px, rnd) {
+      const [dark, mid, lit, tip] = ['#4b7a28', '#6f9f34', '#97c249', '#c3df78'];
+      const node = ['#2f5a1c', '#3b6a22', '#467a29'];
+      /** A blade from (x, y), rising one cell every two to the side `dir`: a lit upper edge, a shaded lower one. */
+      const blade = (x, y, dir, len) => {
+        for (let i = 0; i < len; i++) {
+          const bx = x + dir * i, by = y - Math.floor(i / 2);
+          px.set(bx, by, i === len - 1 ? GREEN[0] : GREEN[1]);
+          if (i < len - 1) px.set(bx, by + 1, i < len - 2 ? GREEN[2] : GREEN[1]);
+        }
+      };
+      // [left column, top, joints, blades: [joint, dir, length]]
+      const stalks = [
+        [7, 10, [15, 21], [[15, -1, 5]]],
+        [14, 4, [10, 16, 22], [[10, 1, 6], [16, -1, 4]]],
+        [21, 8, [13, 19], [[13, 1, 5]]],
+      ];
+      for (const [x, top, joints, blades] of stalks) {
+        for (let y = top; y <= 26; y++) {
+          const j = joints.includes(y);
+          px.set(x, y, j ? node[2] : rnd() < 0.12 ? tip : lit);
+          px.set(x + 1, y, j ? node[1] : mid);
+          px.set(x + 2, y, j ? node[0] : dark);
+        }
+        // the shoot: a narrower, paler tip
+        px.set(x + 1, top - 1, tip);
+        px.set(x + 1, top - 2, GREEN[0]);
+        for (const [y, dir, len] of blades) blade(dir > 0 ? x + 3 : x - 1, y - 1, dir, len);
+      }
+      px.outline('#1f3315');
+    },
+    sparkles: [[4, 6, '#fff7d6'], [27, 4, '#e8f5c8'], [28, 18, '#ffffff'], [3, 20, '#cfe7b4']],
+  },
+
   // Performance: a gauge with its needle deep in the fast end, the leaf where the scale starts.
   LeviOptimize: {
     scene: 'dusk',

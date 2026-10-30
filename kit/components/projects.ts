@@ -35,6 +35,7 @@ export type ProjectId =
   | 'lip'
   | 'LeviLauncher'
   | 'BeDD'
+  | 'bedboo'
   | 'LeviOptimize'
   | 'LeviAntiCheat'
   | 'MoreDimensions'
@@ -81,6 +82,7 @@ export const PROJECTS: readonly Project[] = [
   { id: 'lip', name: 'lip', group: 'core', repo: 'https://github.com/LiteLDev/lip', docs: 'https://docs.levimc.org/lip/', logo: logo('lip'), icon: 'chest' },
   { id: 'LeviLauncher', name: 'LeviLauncher', group: 'core', repo: 'https://github.com/LiteLDev/LeviLauncher', docs: 'https://docs.levimc.org/LeviLauncher/', logo: logo('LeviLauncher'), icon: 'map' },
   { id: 'BeDD', name: 'Be.D.D.', group: 'core', repo: 'https://github.com/LiteLDev/BeDD', mod: modPage('BeDD'), logo: logo('BeDD'), icon: 'monitor' },
+  { id: 'bedboo', name: 'bedboo', group: 'core', repo: 'https://github.com/LiteLDev/bedboo', logo: logo('bedboo'), icon: 'pickaxe' },
   { id: 'LeviOptimize', name: 'LeviOptimize', group: 'mods', repo: 'https://github.com/LiteLDev/LeviOptimize', mod: modPage('LeviOptimize'), logo: logo('LeviOptimize'), icon: 'potion' },
   { id: 'LeviAntiCheat', name: 'LeviAntiCheat', group: 'mods', repo: 'https://github.com/LiteLDev/LeviAntiCheat', mod: modPage('LeviAntiCheat'), logo: logo('LeviAntiCheat'), icon: 'torch' },
   { id: 'MoreDimensions', name: 'MoreDimensions', group: 'mods', repo: 'https://github.com/LiteLDev/MoreDimensions', mod: modPage('MoreDimensions'), logo: logo('MoreDimensions'), icon: 'compass' },
