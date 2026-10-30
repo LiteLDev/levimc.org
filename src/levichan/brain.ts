@@ -5,6 +5,8 @@
 import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { HitRegion, Levi } from './levi';
 import type { Space } from './space';
+import type { Box, Cube } from './diorama';
+import type { Mover } from './mover';
 import type { LeviChanStrings } from './strings';
 
 /** How much a motion matters: a higher one may cut a lower one, never the reverse. */
@@ -15,29 +17,25 @@ const enum Prio {
   Farewell = 4,
 }
 
-/** What she does on her own, and how often (night adds yawns): small fidgets mostly, now and then a bigger,
- * happier one — a twirl, a heart for the viewer, a little dance. */
-const AMBIENT: [string, number][] = [
-  ['look_around', 2.5],
-  ['hair_tuck', 2.5],
-  ['heel_rock', 2.5],
-  ['hum_sway', 2.5],
-  ['kick_pebble', 1.5],
-  ['check_shoe', 1.2],
-  ['stretch', 1.2],
-  ['curtsy', 1],
-  ['twirl', 1],
-  ['heart', 0.9],
-  ['wave_hello', 0.8],
-  ['thumbs_up', 0.6],
-  ['jump_happy', 0.5],
-  ['clap_cheer', 0.5],
-  ['yawn', 0.5],
-  ['sneeze', 0.25],
-  ['idol_dance', 0.2],
-];
+/** What she does on her own: every clip the manifest marks 'ambient' or 'both', equally likely, except these
+ * (0: never on her own; the long dances are rare treats). Night makes yawns likelier. */
+const AMBIENT_WEIGHT: Record<string, number> = {
+  sit_rest: 0,
+  mining_swing: 0,
+  idol_dance: 0.25,
+  long_dance: 0.12,
+  idol_poses: 0.4,
+  wake_up: 0.35,
+  yawn: 0.5,
+  sneeze: 0.25,
+  balance_wobble: 0.3,
+};
 /** Fidgets that face the viewer (she looks at the camera through them). */
-const TO_VIEWER = new Set(['wave_hello', 'wave_bye', 'welcome_back', 'bow', 'curtsy', 'heart', 'thumbs_up', 'twirl']);
+const TO_VIEWER = new Set([
+  'wave_hello', 'wave_bye', 'welcome_back', 'bow', 'curtsy', 'heart', 'thumbs_up', 'twirl', 'peace_wink', 'blow_kiss',
+  'cat_paws', 'bunny_ears', 'idol_poses', 'ganbare', 'ehehe', 'finger_twiddle', 'smell_flower', 'self_hug',
+  'hands_behind_sway', 'skirt_spin', 'idol_dance', 'long_dance', 'jump_happy',
+]);
 /** Her face between clips: a soft smile, and every few seconds one of these for a moment. */
 const IDLE_FACE: Record<string, number> = { にこり: 0.3, 口角上げ: 0.2 };
 const FACES: [Record<string, number>, number][] = [
@@ -106,13 +104,20 @@ export class Brain {
   constructor(
     private readonly space: Space,
     private readonly levi: Levi,
+    private mover: Mover,
     t: LeviChanStrings,
   ) {
     this.t = t;
     this.tick = () => this.update();
     levi.scene.onBeforeRenderObservable.add(this.tick);
     // the clips she reaches for first; the rest load when first needed
-    levi.preload(['wave_hello', 'poke_startle', 'head_pat', 'look_around', 'wave_bye']);
+    levi.preload(['wave_hello', 'poke_startle', 'head_pat', 'look_around', 'wave_bye', 'walk', 'run', 'climb_up', 'jump_down']);
+    this.setMover(mover);
+  }
+
+  setMover(m: Mover) {
+    this.mover = m;
+    m.onLand = (speed, box) => this.landed(speed, box);
   }
 
   dispose() {
@@ -124,6 +129,13 @@ export class Brain {
   private act(name: string, prio: Prio, opts: { cooldown?: number; say?: string; mood?: Record<string, number>; moodMs?: number } = {}) {
     if (this.disposed || !this.levi.clips[name]) return false;
     if (!this.space.introDone && prio < Prio.Farewell) return false;
+    // on the move: only a touch (or the farewell) stops her; never while she climbs, is carried or falls
+    const mv = this.mover.mode;
+    if (mv === 'carried' || mv === 'fall' || (mv === 'clip' && prio < Prio.Farewell)) return false;
+    if (mv === 'path') {
+      if (prio < Prio.Touch) return false;
+      this.mover.stop();
+    }
     if (this.levi.current && this.prio > prio) return false;
     if (this.levi.current === name && prio < Prio.Touch) return false;
     const until = this.cooldown.get(name) ?? 0;
@@ -131,7 +143,7 @@ export class Brain {
     if (opts.cooldown) this.cooldown.set(name, now() + opts.cooldown);
     this.prio = prio;
     this.last = name;
-    this.recent = [name, ...this.recent.filter((n) => n !== name)].slice(0, 4);
+    this.recent = [name, ...this.recent.filter((n) => n !== name)].slice(0, 10);
     if (opts.say) this.space.say(opts.say);
     if (opts.mood) {
       Object.assign(this.levi.mood, opts.mood);
@@ -145,6 +157,21 @@ export class Brain {
       this.nextAmbient = Math.max(this.nextAmbient, now() + this.ambientGap());
     });
     return true;
+  }
+
+  private ambientPool(): [string, number][] {
+    const out: [string, number][] = [];
+    for (const [n, c] of Object.entries(this.levi.clips)) {
+      if (c.kind !== 'ambient' && c.kind !== 'both') continue;
+      const w = (AMBIENT_WEIGHT[n] ?? 1) * (n === 'yawn' && this.isNight() ? 5 : 1);
+      if (w > 0 && !this.recent.includes(n)) out.push([n, w]);
+    }
+    return out;
+  }
+  /** One of several clips that answer the same thing (the ones this build has). */
+  private any(...names: string[]) {
+    const have = names.filter((n) => this.levi.clips[n] && !this.recent.slice(0, 2).includes(n));
+    return have.length ? have[Math.floor(Math.random() * have.length)]! : names[0]!;
   }
 
   private ambientGap() {
@@ -170,16 +197,37 @@ export class Brain {
     if (tNow - this.pointer.t > 120) this.pointer.speed *= 0.9;
     this.interest = Math.max(0, this.interest - 0.06 / 60);
 
-    // left alone: she sits down for a rest; otherwise fidgets now and then
-    if (!this.space.quiet && !this.levi.current && this.greeted) {
+    // the visitor scrolled away from her: she runs to where they are looking
+    const mv = this.mover;
+    if (this.greeted && mv.mode === 'stand' && !this.levi.current && !this.space.inView(mv.u, mv.v, 40)) {
+      const c = this.space.viewCentre();
+      const spot = this.space.freeSpot(c.u + (Math.random() - 0.5) * this.space.W * 0.4, c.v);
+      mv.goTo(spot.u, spot.v, 'run', () => this.act('wave_hello', Prio.Page, { cooldown: 8000, mood: { にこり: 0.8 } }));
+      this.nextAmbient = Math.max(this.nextAmbient, tNow + 4000);
+    }
+    // left alone: she sits down for a rest; otherwise she does something on her own now and then: a fidget, a
+    // little walk, a climb onto a block, hiding behind one
+    if (!this.space.quiet && !this.levi.current && this.greeted && mv.mode === 'stand') {
       if (!this.sat && tNow - this.lastInput > 45000) {
         this.sat = this.act('sit_rest', Prio.Ambient);
       } else if (tNow > this.nextAmbient) {
-        const pool = AMBIENT.filter(([n]) => !this.recent.includes(n)).map(([n, w]) => [n, n === 'yawn' && this.isNight() ? w * 5 : w] as [string, number]);
-        const name = pick(pool);
-        if (TO_VIEWER.has(name)) this.glance('viewer', 2500);
-        this.act(name, Prio.Ambient);
         this.nextAmbient = tNow + this.ambientGap();
+        if (Math.random() < 0.45) this.wander();
+        else {
+          const pool = this.ambientPool();
+          const name = pool.length ? pick(pool) : 'look_around';
+          if (TO_VIEWER.has(name)) this.glance('viewer', 2500);
+          this.act(name, Prio.Ambient);
+        }
+      }
+    }
+    // a thrown cube coming down near her
+    for (const c of this.space.world.cubes) {
+      if (c.hitAt && tNow - c.thrownAt < 3000 && Math.hypot(c.u - mv.u, c.v - mv.v) < this.space.herPx * 0.45 && !c.held) {
+        c.hitAt = 0;
+        c.thrownAt = 0;
+        this.glance('viewer', 1500);
+        this.act('poke_startle', Prio.Touch, { cooldown: 4000, mood: { びっくり: 1, 瞳小: 0.7 }, moodMs: 1400 });
       }
     }
 
@@ -217,7 +265,7 @@ export class Brain {
     if (this.overBody && tNow - this.overBody > 2000 && !this.levi.current) {
       this.overBody = Infinity;
       this.glance('viewer', 3000);
-      this.act(Math.random() < 0.5 ? 'twirl' : 'curtsy', Prio.Touch, { cooldown: 12000, mood: { にこり: 0.9 }, moodMs: 3500 });
+      this.act(this.any('twirl', 'curtsy', 'skirt_spin'), Prio.Touch, { cooldown: 12000, mood: { にこり: 0.9 }, moodMs: 3500 });
     }
     this.updateGaze(tNow);
   }
@@ -296,7 +344,7 @@ export class Brain {
       if (near > 0.55) {
         if (this.awaySince && tNow - this.awaySince > 12000 && !this.levi.current) {
           this.glance('viewer', 2500);
-          this.act('wave_hello', Prio.Page, { cooldown: 25000, mood: { にこり: 0.8 } });
+          this.act(this.any('wave_hello', 'wave_hello', 'peace_wink', 'blow_kiss'), Prio.Page, { cooldown: 25000, mood: { にこり: 0.8 } });
         }
         this.awaySince = 0;
       } else if (near < 0.15 && !this.awaySince) {
@@ -387,9 +435,9 @@ export class Brain {
   private clicked(region: HitRegion) {
     if (this.levi.current === 'annoyed_stomp') return;
     if (region === 'head') {
-      this.act('head_pat', Prio.Touch, { cooldown: 1500, say: this.t.say.pat, mood: { 照れ: 1, にこり: 0.6 }, moodMs: 4000 });
+      this.act(this.any('head_pat', 'head_pat', 'ehehe', 'finger_twiddle', 'self_hug'), Prio.Touch, { cooldown: 1500, say: this.t.say.pat, mood: { 照れ: 1, にこり: 0.6 }, moodMs: 4000 });
     } else {
-      this.act('poke_startle', Prio.Touch, { cooldown: 900, mood: { びっくり: 1, 瞳小: 0.6 }, moodMs: 1200 });
+      this.act(this.any('poke_startle', 'poke_startle', 'ehehe'), Prio.Touch, { cooldown: 900, mood: { びっくり: 1, 瞳小: 0.6 }, moodMs: 1200 });
     }
   }
 
@@ -397,27 +445,144 @@ export class Brain {
     clearTimeout(this.clickTimer);
     if (this.clicks.length > 2 || this.levi.current === 'annoyed_stomp') return; // mashing, not a double click
     this.input();
-    if (hit.region === 'skirt' || hit.region === 'leg' || hit.region === 'body') this.act('twirl', Prio.Touch, { mood: { 笑い: 0.8 }, moodMs: 3000 });
-    else this.act('head_pat', Prio.Touch, { mood: { 照れ: 1 }, moodMs: 3000 });
+    this.glance('viewer', 3000);
+    if (hit.region === 'skirt' || hit.region === 'leg' || hit.region === 'body') this.act(this.any('twirl', 'skirt_spin', 'curtsy'), Prio.Touch, { mood: { 笑い: 0.8 }, moodMs: 3000 });
+    else this.act(this.any('peace_wink', 'blow_kiss', 'cat_paws', 'bunny_ears'), Prio.Touch, { mood: { 照れ: 0.6 }, moodMs: 3000 });
   }
 
-  /** Clicks on the empty floor: three quick ones and she mines it. */
-  floorDown(e: PointerEvent) {
+  /** A click on the ground: she goes there (running if it is far); three quick clicks on one spot and she mines it. */
+  groundClick(u: number, v: number, x: number, y: number) {
     this.input();
     const tNow = now();
-    this.floorClicks = this.floorClicks.filter((c) => tNow - c < 2500);
+    this.floorClicks = this.floorClicks.filter((c) => tNow - c < 1200);
     this.floorClicks.push(tNow);
     const dark = document.documentElement.classList.contains('dark');
-    this.space.burst(e.clientX, e.clientY, dark ? ['#4f9640', '#6c442c', '#7fd4a4'] : ['#5fa94a', '#8a5a3b', '#98674a'], 6);
-    if (this.floorClicks.length >= 3) {
-      this.floorClicks = [];
-      if (this.act('mining_swing', Prio.Page, { cooldown: 6000, mood: { キリッ: 0.8 }, moodMs: 4000 })) {
-        const f = this.space.feetScreen();
+    this.space.burst(x, y, dark ? ['#4f9640', '#6c442c', '#7fd4a4'] : ['#5fa94a', '#8a5a3b', '#98674a'], 5);
+    const mv = this.mover;
+    if (mv.mode === 'carried' || mv.mode === 'fall' || mv.mode === 'clip') return;
+    if (this.levi.current) this.levi.stop();
+    const mine = this.floorClicks.length >= 3;
+    if (mine) this.floorClicks = [];
+    const far = Math.hypot(u - mv.u, v - mv.v) > this.space.herPx * 2.2;
+    const spot = this.space.freeSpot(u, v + this.space.herPx * 0.12);
+    mv.goTo(spot.u, spot.v, far ? 'run' : 'walk', () => {
+      mv.look(u, v);
+      if (!mine) return;
+      if (this.act('mining_swing', Prio.Page, { cooldown: 4000, mood: { キリッ: 0.8 }, moodMs: 4000 })) {
         // the blocks she breaks: bits at her feet on each swing
-        if (f) for (const ms of [1300, 2500, 3700]) setTimeout(() => this.space.burst(f.x - 40, f.y, ['#7e7e7e', '#9b9b9b', '#5fa94a', '#8a5a3b'], 12), ms);
+        for (const ms of [1300, 2500, 3700]) {
+          setTimeout(() => {
+            const f = this.space.feetScreen();
+            if (f) this.space.burst(f.x - 30, f.y, ['#7e7e7e', '#9b9b9b', '#5fa94a', '#8a5a3b'], 12);
+          }, ms);
+        }
         setTimeout(() => this.space.say(this.t.say.mined), 4200);
       }
+    });
+    this.nextAmbient = Math.max(this.nextAmbient, tNow + 6000);
+  }
+
+  /** On her own: a walk somewhere in view, a block to climb, a block to hide behind, or down from the block. */
+  private wander() {
+    const sp = this.space;
+    const mv = this.mover;
+    const m = sp.world.m;
+    if (mv.on) {
+      if (Math.random() < 0.6) {
+        const c = sp.viewCentre();
+        const spot = sp.freeSpot(c.u + (Math.random() - 0.5) * sp.W * 0.5, c.v + (Math.random() - 0.3) * sp.H * 0.3);
+        mv.goTo(spot.u, spot.v, 'walk', () => this.afterWalk());
+      } else {
+        this.act(this.any('hum_sway', 'peek_afar', 'heel_rock', 'wave_hello', 'daydream'), Prio.Ambient);
+      }
+      return;
     }
+    const visible = (b: Box) => sp.inView(b.u + b.w / 2, b.v + b.d / 2, 80);
+    const near = (b: Box) => Math.hypot(b.u + b.w / 2 - mv.u, b.v + b.d / 2 - mv.v);
+    const boxes = sp.world.boxes(0.1 * m).filter(visible);
+    // the climb clip is made for a block about 0.5 m high
+    const climbable = boxes.filter((b) => Math.abs(b.h - 0.5 * m) < 0.1 * m && b.w >= 0.6 * m && b.d >= 0.6 * m).sort((a, b) => near(a) - near(b));
+    const tall = boxes.filter((b) => b.h >= 0.42 * m && b.w >= 0.6 * m).sort((a, b) => near(a) - near(b));
+    const r = Math.random();
+    if (r < 0.35 && climbable.length) {
+      const b = climbable[Math.floor(Math.random() * Math.min(3, climbable.length))]!;
+      mv.climb(b, () => {
+        this.glance('viewer', 2500);
+        this.act(this.any('jump_happy', 'twirl', 'heart', 'idol_poses', 'peek_afar', 'cat_paws', 'wave_hello'), Prio.Ambient, { mood: { 笑い: 0.8 }, moodMs: 2500 });
+      });
+    } else if (r < 0.55 && tall.length) {
+      const b = tall[Math.floor(Math.random() * Math.min(2, tall.length))]!;
+      // behind it: on its far side from the camera (smaller v), a little inside its width
+      const u = b.u + b.w * (0.25 + Math.random() * 0.5);
+      const v = b.v - mv.r * 1.5;
+      if (v < mv.r) return this.walkAbout();
+      mv.goTo(u, v, 'tiptoe', () => this.hide(b));
+    } else {
+      this.walkAbout();
+    }
+  }
+  private walkAbout() {
+    const sp = this.space;
+    const mv = this.mover;
+    const p = sp.pagePoint(sp.W * (0.12 + Math.random() * 0.76), sp.H * (0.45 + Math.random() * 0.45), 0);
+    if (!p) return;
+    const spot = sp.freeSpot(p.u, p.v);
+    const gait = Math.random() < 0.15 ? 'skip' : Math.random() < 0.15 ? 'run' : 'walk';
+    mv.goTo(spot.u, spot.v, gait, () => this.afterWalk());
+  }
+  private afterWalk() {
+    if (Math.random() < 0.5) {
+      this.glance('viewer', 2000);
+      this.act(this.any('look_around', 'hair_tuck', 'hair_twirl', 'heel_rock', 'hands_behind_sway', 'curtsy'), Prio.Ambient);
+    }
+  }
+  /** Crouched behind a block, peeking out now and then; out again after a while or when the cursor comes. */
+  private hidingUntil = 0;
+  private hide(b: Box) {
+    this.mover.look(this.mover.u, this.mover.v + 100);
+    this.hidingUntil = now() + 9000 + Math.random() * 6000;
+    const peek = () => {
+      if (now() > this.hidingUntil || this.mover.mode !== 'stand') {
+        // out from behind it, toward the viewer
+        const sp = this.space;
+        const spot = sp.freeSpot(this.mover.u + (this.mover.u < b.u + b.w / 2 ? -1 : 1) * b.w * 0.5, b.v + b.d + this.mover.r * 2);
+        this.mover.goTo(spot.u, spot.v, 'skip', () => {
+          this.glance('viewer', 2500);
+          this.act('jump_happy', Prio.Ambient, { mood: { 笑い: 1 }, moodMs: 2500 });
+        });
+        return;
+      }
+      const name = this.levi.clips.hide_crouch ? pick([['hide_crouch', 2], ['peek_left', 1], ['peek_right', 1]] as [string, number][]) : 'shy_cover';
+      this.glance(name.startsWith('peek') ? 'viewer' : 'none', 2000);
+      this.act(name, Prio.Ambient, { mood: name.startsWith('peek') ? { にやり: 0.6 } : { はぅ: 0.4 }, moodMs: 2500 });
+      const info = this.levi.clips[name];
+      setTimeout(peek, info ? (info.frames / 30) * 1000 + 200 : 3000);
+    };
+    peek();
+  }
+
+  /** Picked up by the cursor: a startled face, legs dangling. */
+  pickedUp() {
+    this.input();
+    this.levi.stop();
+    Object.assign(this.levi.mood, { びっくり: 0.9, 汗: 0.8, はぅ: 0.5 });
+    this.space.say(this.t.say.stop, 1200);
+  }
+  /** She landed (dropped, or off a block). */
+  private landed(speed: number, box: Box | null) {
+    for (const k of ['びっくり', '汗', 'はぅ']) delete this.levi.mood[k];
+    const m = this.space.world.m;
+    if (speed > 2.5 * m) {
+      const f = this.space.feetScreen();
+      if (f) this.space.burst(f.x, f.y, ['#ffffff', '#cfe6dc', '#7fd4a4'], 8);
+      this.act(this.levi.clips.fall_land ? 'fall_land' : 'dizzy', Prio.Touch, { mood: { 困る: 0.8, 涙: 0.4 }, moodMs: 2500 });
+    }
+    void box;
+  }
+  cubeThrown(c: Cube) {
+    this.input();
+    this.glance('none', 800);
+    void c;
   }
 
   zoomed(f: number) {
@@ -458,7 +623,7 @@ export class Brain {
 
   copied() {
     this.input();
-    this.act('thumbs_up', Prio.Page, { cooldown: 5000, say: this.t.say.copied, mood: { ウィンク: 1, にこり: 0.6 }, moodMs: 1800 });
+    this.act(this.any('thumbs_up', 'ganbare'), Prio.Page, { cooldown: 5000, say: this.t.say.copied, mood: { にこり: 0.6 }, moodMs: 1800 });
   }
 
   languageChanged() {
@@ -494,7 +659,7 @@ export class Brain {
     if (konami || typed.endsWith('levi')) {
       this.keys = [];
       this.glance('viewer', 4000);
-      this.act('idol_dance', Prio.Touch, { mood: { 笑い: 0.8 }, moodMs: 9000 });
+      this.act(this.any('idol_dance', 'long_dance', 'idol_poses'), Prio.Touch, { mood: { 笑い: 0.8 }, moodMs: 9000 });
     }
   }
 

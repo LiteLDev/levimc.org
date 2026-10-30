@@ -128,24 +128,35 @@ The two apps share the origin: their bar and footer links into the other one are
 A small LeviChan head peeks over the top edge of the home hero's showcase card (`src/levichan/LeviChanPeek.tsx`).
 Clicking it opens her 3D space at once; nothing of it is downloaded before that (the runtime is its own chunk,
 `import('./levichan/space')`, and the model and motions are fetched from `public/levichan/` as they are needed:
-the model ~7 MB, each motion a few KB, on first use).
+the model ~9 MB, each motion a few KB, on first use).
 
-- `src/levichan/space.ts` — the space: the page (`#root`) becomes a panel in a CSS 3D scene (it scrolls, links and
-  menus work as usual; it turns toward the visitor while they read), with a floor, sky and floating blocks; her
-  WebGL canvas is drawn over it with a camera matched to the CSS perspective. The menu (her avatar, bottom left, or
-  a right click on her): whether she watches the cursor, fewer fidgets, face the page, leave.
+- `src/levichan/space.ts` — the space: the camera swoops in and the page lies down as the ground of a diorama under a
+  tilted camera (it stays the live page: links, menus and text work; the wheel and Page Up / Down move the camera
+  along it; it tilts up toward the visitor while they read). Her WebGL canvas is drawn over it with a camera matched
+  to the CSS perspective. Drag the empty ground to look around, drag a cube to throw it, drag her to pick her up.
+  The menu (her avatar, bottom left, or a right click on her): whether she watches the cursor, fewer fidgets, face
+  the page, leave (the page sinks back and the camera returns to the flat page, exactly as it was).
+- `src/levichan/diorama.ts` — the page's components (cards, buttons, the bar, pictures, headings, text) rise out of it
+  on springs, in a wave from where she was peeking, as blocks with sides and cast shadows; only inline styles are
+  added, and put back on leaving. Loose Minecraft cubes fall in with simple physics (gravity, bounces, landing on
+  blocks, pushing each other).
+- `src/levichan/mover.ts` — where she is on the page and how she gets around: walking, running, skipping and tiptoeing
+  along paths around the blocks (A* on a grid), climbing onto the low ones and hopping down, hiding behind the tall
+  ones (they really hide her: depth-only boxes in her scene), being carried and falling with gravity.
 - `src/levichan/levi.ts` — her runtime: the PMX on babylon-mmd (WASM, Bullet physics), cel shading as in the
-  LeviChan repository's renders, clips crossfaded over a looping idle, gaze, blinks and expressions, a hit test.
+  LeviChan repository's renders, clips crossfaded over a looping base (idle, or a walk / run cycle), gaze, blinks and
+  expressions, a hit test.
 - `src/levichan/brain.ts` — what she does: the visitor never picks a motion; each one answers something they do
-  (pat her head, poke her, press and hold, double-click her skirt, circle her with the cursor, click the floor three
-  times, scroll hard, linger on a link, copy text, switch language or theme, come back to the tab, the Konami code
-  or typing "levi"...), and she idles and decides where to look in between. Every 5-11 s she does something on her
-  own from most of the 30 clips (fidgets mostly; now and then a twirl, a heart, a curtsy, a little dance), waves when
-  the cursor comes back to her and shows off her dress when it rests on it.
+  (click the page and she goes there, three quick clicks and she mines it; pat her head, poke her, press and hold,
+  double-click her skirt, circle her with the cursor, pick her up and drop her, throw a cube at her, scroll hard,
+  linger on a link, copy text, switch language or theme, come back to the tab, the Konami code or typing "levi"...).
+  Every 5-11 s she does something on her own: a fidget or a happy clip, a walk, a climb onto a block, hiding behind one
+  and peeking out; she runs after the view when the visitor scrolls away, waves when the cursor comes back to her and
+  shows off her dress when it rests on it.
 - `public/levichan/` — her assets, made by `node scripts/levichan-assets.mjs --pmx <LeviChan out/pmx> --motions
   <LeviChan web motions>` from a LeviChan build: the model from the round 11 branches merged together, the clips from
   `tools/web_clips.py` on `r11/web-motions` (`blender -b out/levi.blend -P tools/motion_vmd.py -- --extra-clips
-  web_clips --clips <the 31 clips> --out out/web_vmd`, and `blender -b -P tools/web_clips.py -- out/web_vmd/clips.json`). `public/levichan/NOTICE` holds the third-party model data's terms.
+  web_clips --clips <every web clip> --out out/web_vmd`, and `blender -b -P tools/web_clips.py -- out/web_vmd/clips.json`). `public/levichan/NOTICE` holds the third-party model data's terms.
 
 ## License
 

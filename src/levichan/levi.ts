@@ -17,6 +17,8 @@ import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { MmdStandardMaterialBuilder } from 'babylon-mmd/esm/Loader/mmdStandardMaterialBuilder';
 import type { MmdStandardMaterial } from 'babylon-mmd/esm/Loader/mmdStandardMaterial';
 import { VmdLoader } from 'babylon-mmd/esm/Loader/vmdLoader';
@@ -48,6 +50,13 @@ export interface ClipInfo {
   look?: boolean;
   /** expression keys [frame, PMX morph name, weight], linear between keys of one morph */
   face?: [number, string, number][];
+  /** 'ambient' (she does it on her own), 'reaction', 'both' or 'locomotion' */
+  kind?: string;
+  desc?: string;
+  /** locomotion loops: metres travelled per cycle */
+  stride?: number;
+  /** clips that end somewhere else (climbing up, jumping down): where her centre ends, metres */
+  root_end?: [number, number, number];
 }
 export interface Manifest {
   fps: number;
@@ -139,8 +148,9 @@ export class Levi {
   private manifest!: Manifest;
   private readonly anims = new Map<string, Promise<MmdAnimation>>();
   private comp = new MmdCompositeAnimation('levichan');
-  private idleSpans: MmdAnimationSpan[] = [];
-  private idleFrames = 120;
+  /** looping bases under the clips (idle, walk, run...), crossfaded by weight */
+  private bases: { name: string; frames: number; spans: MmdAnimationSpan[]; w: number; target: number }[] = [];
+  private baseName = 'idle';
   private playing: Playing | null = null;
   private bones = new Map<string, BoneRef>();
   private outlineMats: MmdStandardMaterial[] = [];
@@ -235,11 +245,10 @@ export class Levi {
     const bones = this.model.runtimeBones;
     for (let i = 0; i < bones.length; i++) this.bones.set(bones[i]!.name, { linked: bones[i]!.linkedBone, index: i });
 
-    // the clip player: one composite animation whose spans are the idle loop and the current clip
-    const idleInfo = this.manifest.clips.idle;
-    if (idleInfo) this.idleFrames = idleInfo.frames;
+    // the clip player: one composite animation whose spans are the looping base (idle...) and the current clip
     const idle = await this.anim('idle');
-    this.ensureIdle(idle, 0);
+    this.bases.push({ name: 'idle', frames: this.manifest.clips.idle?.frames ?? 120, spans: [], w: 1, target: 1 });
+    this.ensureBase(this.bases[0]!, idle);
     const handle = this.model.createRuntimeAnimation(this.comp);
     this.model.setRuntimeAnimation(handle);
     this.runtime.setManualAnimationDuration(1e9);
@@ -317,20 +326,44 @@ export class Levi {
     return this.runtime.currentFrameTime;
   }
 
-  /** Keep idle spans back to back from `from` to well past now. */
-  private ensureIdle(idle: MmdAnimation, from: number) {
-    const L = this.idleFrames;
-    let end = this.idleSpans.length ? this.idleSpans[this.idleSpans.length - 1]!.offset + L : from;
-    while (end < (this.runtime ? this.now : 0) + 2 * L) {
-      const s = new MmdAnimationSpan(idle, 0, L, end, 1);
+  /** Keep a base loop's spans back to back from now to well past it. */
+  private ensureBase(b: { frames: number; spans: MmdAnimationSpan[]; w: number }, anim: MmdAnimation) {
+    const L = b.frames;
+    const now = this.runtime ? this.now : 0;
+    let end = b.spans.length ? b.spans[b.spans.length - 1]!.offset + L : now;
+    while (end < now + 2 * L) {
+      const s = new MmdAnimationSpan(anim, 0, L, end, Math.max(1e-4, b.w));
       this.comp.addSpan(s);
-      this.idleSpans.push(s);
+      b.spans.push(s);
       end += L;
     }
-    // drop idle spans that are over
-    while (this.idleSpans.length > 1 && this.idleSpans[0]!.offset + L < (this.runtime ? this.now : 0) - 1) {
-      this.comp.removeSpan(this.idleSpans.shift()!);
+    // drop spans that are over
+    while (b.spans.length > 1 && b.spans[0]!.offset + L < now - 1) this.comp.removeSpan(b.spans.shift()!);
+  }
+
+  /** The loop she does when no clip plays: 'idle', or a locomotion loop ('walk', 'run'...); crossfades. */
+  setBase(name: string) {
+    if (!this.manifest.clips[name]) name = 'idle';
+    if (name === this.baseName) return;
+    this.baseName = name;
+    let b = this.bases.find((x) => x.name === name);
+    if (!b) {
+      b = { name, frames: this.manifest.clips[name]!.frames, spans: [], w: 0, target: 1 };
+      this.bases.push(b);
+      const bb = b;
+      void this.anim(name).then((a) => {
+        if (this.bases.includes(bb)) this.ensureBase(bb, a);
+      });
     }
+    for (const x of this.bases) x.target = x === b ? 1 : 0;
+  }
+  get baseLoop(): string {
+    return this.baseName;
+  }
+  /** The current clip: its time (frames), length and blend weight. */
+  clipState(): { name: string; t: number; frames: number; weight: number; info: ClipInfo } | null {
+    const p = this.playing;
+    return p ? { name: p.name, t: this.now - p.start, frames: p.frames, weight: p.span.weight, info: p.info } : null;
   }
 
   get current(): string | null {
@@ -380,7 +413,7 @@ export class Levi {
           return;
         }
         p.span.weight = w0 * smooth(k);
-        this.setIdleWeight(1 - this.weightOfPlaying() - p.span.weight);
+        this.fading = p.span.weight;
       };
       this.scene.onBeforeRenderObservable.add(fade);
     } else {
@@ -389,32 +422,74 @@ export class Levi {
     p.resolve();
   }
 
-  private weightOfPlaying() {
-    return this.playing ? this.playing.span.weight : 0;
-  }
-  private setIdleWeight(w: number) {
-    const v = Math.max(1e-4, w);
-    for (const s of this.idleSpans) s.weight = v;
-  }
+  /** weight of a clip still fading out after it was cut */
+  private fading = 0;
 
   private beforeRender() {
     const nowMs = performance.now();
     const dt = Math.min(0.1, (nowMs - this.lastTime) / 1000);
     this.lastTime = nowMs;
     const p = this.playing;
+    let clipW = 0;
     if (p) {
       const t = this.now - p.start;
       const a = smooth(Math.min(t / FADE, (p.frames - t) / FADE));
       p.span.weight = Math.max(1e-4, a);
-      this.setIdleWeight(1 - a);
+      clipW = a;
       if (t >= p.frames) this.finish(p, false);
-    } else if (!this.comp.spans.some((s) => !this.idleSpans.includes(s))) {
-      this.setIdleWeight(1);
     }
-    const idle = this.anims.get('idle');
-    if (idle) void idle.then((a) => this.ensureIdle(a, this.now));
+    if (!this.comp.spans.some((s) => s.weight > 1e-3 && !this.bases.some((b) => b.spans.includes(s)))) this.fading = 0;
+    clipW = Math.max(clipW, this.fading);
+    // base loops: ease toward their targets (about a third of a second), share what the clip leaves
+    const k = Math.min(1, dt * 6);
+    let sum = 0;
+    for (const b of this.bases) {
+      b.w += (b.target - b.w) * k;
+      if (b.target === 0 && b.w < 0.01) b.w = 0;
+      sum += b.w;
+    }
+    for (const b of [...this.bases]) {
+      if (b.w === 0 && b.name !== this.baseName) {
+        for (const s of b.spans) this.comp.removeSpan(s);
+        this.bases.splice(this.bases.indexOf(b), 1);
+        continue;
+      }
+      const w = sum > 0 ? (b.w / sum) * (1 - clipW) : 0;
+      for (const s of b.spans) s.weight = Math.max(1e-4, w);
+      const a = this.anims.get(b.name);
+      if (a) void a.then((an) => this.bases.includes(b) && this.ensureBase(b, an));
+    }
     this.updateFace(dt);
     this.updateOutline();
+  }
+
+  // ------------------------------------------------------------------ occluders
+  /** Invisible boxes that only write depth: the page's blocks in front of her hide her (the page draws them, under
+   * this canvas). Rendering group 0, before her (group 1, with no depth clear between the two). */
+  private occluders: Mesh[] = [];
+  private occMat: StandardMaterial | null = null;
+  setOccluders(boxes: Matrix[]) {
+    if (!this.occMat) {
+      this.occMat = new StandardMaterial('lc-occ', this.scene);
+      this.occMat.disableColorWrite = true;
+      this.occMat.disableLighting = true;
+      this.scene.setRenderingAutoClearDepthStencil(1, false, false, false);
+      for (const m of this.mesh.getChildMeshes()) m.renderingGroupId = 1;
+      this.mesh.renderingGroupId = 1;
+    }
+    while (this.occluders.length < boxes.length) {
+      const b = CreateBox('lc-occ', { size: 1 }, this.scene);
+      b.material = this.occMat;
+      b.renderingGroupId = 0;
+      b.isPickable = false;
+      b.rotationQuaternion = Quaternion.Identity();
+      this.occluders.push(b);
+    }
+    this.occluders.forEach((o, i) => {
+      const m = boxes[i];
+      o.setEnabled(!!m);
+      if (m) m.decompose(o.scaling, o.rotationQuaternion!, o.position);
+    });
   }
 
   // ------------------------------------------------------------------ face: blinks and expressions
@@ -516,11 +591,12 @@ export class Levi {
     this.yaw += this.yawV * dt;
     this.pitch += this.pitchV * dt;
     if (!Number.isFinite(this.yaw + this.pitch + this.yawV + this.pitchV)) this.yaw = this.pitch = this.yawV = this.pitchV = 0;
-    // yaw about +Y, then pitch: up is -X turn for a figure facing -Z in a left-handed frame
-    const q = Quaternion.RotationYawPitchRoll(this.yaw, -this.pitch, 0);
+    // yaw about +Y; pitch about X with up positive in babylon-mmd's bone frames (checked against the cursor on
+    // screen: -pitch tipped her head down when the cursor was above her)
+    const q = Quaternion.RotationYawPitchRoll(this.yaw, this.pitch, 0);
     this.turnBone('首', Quaternion.Slerp(Quaternion.Identity(), q, NECK_SHARE));
     this.turnBone('頭', Quaternion.Slerp(Quaternion.Identity(), q, 1 - NECK_SHARE));
-    this.turnBone('両目', Quaternion.RotationYawPitchRoll(this.yaw * 0.2, -this.pitch * 0.2, 0));
+    this.turnBone('両目', Quaternion.RotationYawPitchRoll(this.yaw * 0.2, this.pitch * 0.2, 0));
   }
 
   /** What the animation left on each gaze bone, and what we wrote over it: a clip that does not key a bone leaves
