@@ -1,6 +1,7 @@
 import { PaintedHero } from '../../kit/components';
 import { useI18n } from '../i18n';
 import { RoleShowcase, RoleTabs, useRole } from './Roles';
+import LeviChanPeek from '../levichan/LeviChanPeek';
 
 /** The home hero: what LeviMC is, then "I want to…" tabs for players, server owners and developers. */
 export default function Hero() {
@@ -17,7 +18,12 @@ export default function Hero() {
       name={titleName}
       text={t.hero.title2}
       tagline={t.hero.tagline}
-      aside={<RoleShowcase role={role} />}
+      aside={
+        <div className="lc-peek-anchor">
+          <LeviChanPeek />
+          <RoleShowcase role={role} />
+        </div>
+      }
     >
       <RoleTabs role={role} onChange={setRole} />
     </PaintedHero>

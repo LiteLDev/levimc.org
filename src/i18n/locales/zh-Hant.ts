@@ -236,6 +236,36 @@ const zhHant: typeof en = {
     date: (iso: string) => `${iso.slice(0, 4)} 年 ${Number(iso.slice(5, 7))} 月 ${Number(iso.slice(8, 10))} 日`,
     monthName: (m: string) => `${Number(m)} 月`,
   },
+
+  // LeviChan：首頁卡片後探出頭的頭像，以及她的 3D 空間
+  levichan: {
+    avatar: "誰在那兒？",
+    peekTitle: "LeviChan",
+    peekText: "把整個網站摺疊進 3D 空間，和 LeviChan 見個面。她會留意你的一舉一動——多試試吧。",
+    enter: (size: string) => `進入 3D 空間（${size}）`,
+    notNow: "下次再說",
+    loading: "正在召喚 LeviChan…",
+    loadFailed: "LeviChan 載入失敗。",
+    menuTitle: "LeviChan",
+    hint: "她會對你的舉動作出反應：摸頭、戳戳、繞圈、捲動、複製、走開一會兒……網頁照常瀏覽。",
+    lookLabel: "看向滑鼠",
+    look: { auto: "隨她心情", always: "一直看", never: "不看" },
+    quiet: "少些小動作",
+    flat: "網頁正對我",
+    exit: "離開 3D 空間",
+    say: {
+      hello: "你好呀！",
+      bye: "掰掰～",
+      welcomeBack: "歡迎回來！",
+      copied: "收到！",
+      dizzy: "暈了暈了…",
+      stop: "喂！別戳啦！",
+      pat: "嘿嘿…",
+      mined: "+1 方塊！",
+      yawn: "哈啊——",
+      look: "看這裡！",
+    },
+  },
 };
 
 export default zhHant;

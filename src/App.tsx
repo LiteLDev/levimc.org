@@ -13,12 +13,14 @@ import { resolveBlogPath } from './blog/data';
 import { I18nProvider, useI18n, kitLocale } from './i18n';
 import { markHydrated } from './hooks/useExternalData';
 import { canonicalPath, pathOf, routeIdOf, routeMeta } from './routes';
+import { useLeviChanRestore } from './levichan/LeviChanPeek';
 
 function Shell() {
   const { t, locale } = useI18n();
   const { pathname } = useLocation();
   const routeId = routeIdOf(pathname);
   const ui = uiStrings(kitLocale[locale]);
+  useLeviChanRestore();
 
   // Keep the tab title in sync with the page and language.
   useEffect(() => {
