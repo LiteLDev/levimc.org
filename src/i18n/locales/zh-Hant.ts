@@ -243,7 +243,7 @@ const zhHant: typeof en = {
     loading: "正在召喚 LeviChan…",
     loadFailed: "LeviChan 載入失敗。",
     menuTitle: "LeviChan",
-    hint: "她會對你的舉動作出反應：摸頭、戳戳、繞圈、捲動、複製、走開一會兒……網頁照常瀏覽。",
+    hint: "她現在住在網頁上：點哪裡她就走過去；拖起她、丟方塊、摸頭、戳戳、捲走……連結和文字照常可用。",
     lookLabel: "看向滑鼠",
     look: { auto: "隨她心情", always: "一直看", never: "不看" },
     quiet: "少些小動作",
