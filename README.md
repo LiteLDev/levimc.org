@@ -123,6 +123,26 @@ pnpm dev        # http://localhost:5173/mods/
 The two apps share the origin: their bar and footer links into the other one are ordinary links (`isAppPath`).
 `robots.txt` lists the mods sitemap.
 
+## LeviChan
+
+A small LeviChan head peeks over the top edge of the home hero's showcase card (`src/levichan/LeviChanPeek.tsx`).
+Clicking it offers to open her 3D space; nothing of it is downloaded before that (the runtime is its own chunk,
+`import('./levichan/space')`, and the model and motions are fetched from `public/levichan/` as they are needed:
+the model ~7 MB, each motion a few KB, on first use).
+
+- `src/levichan/space.ts` — the space: the page (`#root`) becomes a panel in a CSS 3D scene (it scrolls, links and
+  menus work as usual; it turns toward the visitor while they read), with a floor, sky and floating blocks; her
+  WebGL canvas is drawn over it with a camera matched to the CSS perspective. The menu (her avatar, bottom left, or
+  a right click on her): whether she watches the cursor, fewer fidgets, face the page, leave.
+- `src/levichan/levi.ts` — her runtime: the PMX on babylon-mmd (WASM, Bullet physics), cel shading as in the
+  LeviChan repository's renders, clips crossfaded over a looping idle, gaze, blinks and expressions, a hit test.
+- `src/levichan/brain.ts` — what she does: the visitor never picks a motion; each one answers something they do
+  (pat her head, poke her, press and hold, double-click her skirt, circle her with the cursor, click the floor three
+  times, scroll hard, linger on a link, copy text, switch language or theme, come back to the tab, the Konami code
+  or typing "levi"...), and she idles, fidgets and decides where to look in between.
+- `public/levichan/` — her assets, made by `node scripts/levichan-assets.mjs --pmx <LeviChan out/pmx> --motions
+  <LeviChan web motions>` from a LeviChan build. `public/levichan/NOTICE` holds the third-party model data's terms.
+
 ## License
 
 MIT

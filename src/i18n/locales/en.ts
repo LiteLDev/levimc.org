@@ -251,6 +251,36 @@ const en = {
     date: (iso: string) => `${MONTHS_EN[Number(iso.slice(5, 7)) - 1]} ${Number(iso.slice(8, 10))}, ${iso.slice(0, 4)}`,
     monthName: (m: string) => MONTHS_EN[Number(m) - 1]!,
   },
+
+  // LeviChan: the avatar peeking from behind the hero card, and her 3D space
+  levichan: {
+    avatar: "Who's there?",
+    peekTitle: "LeviChan",
+    peekText: "Fold this site into a 3D space and meet LeviChan. She notices what you do — try a few things.",
+    enter: (size: string) => `Enter the 3D space (${size})`,
+    notNow: "Not now",
+    loading: "Summoning LeviChan…",
+    loadFailed: "LeviChan could not be loaded.",
+    menuTitle: "LeviChan",
+    hint: "She reacts to what you do: pat, poke, circle, scroll, copy, wander off… The page works as usual.",
+    lookLabel: "Watch the cursor",
+    look: { auto: "Her choice", always: "Always", never: "Never" },
+    quiet: "Fewer fidgets",
+    flat: "Face the page",
+    exit: "Leave the 3D space",
+    say: {
+      hello: "Hi!",
+      bye: "Bye-bye!",
+      welcomeBack: "Welcome back!",
+      copied: "Got it!",
+      dizzy: "@_@",
+      stop: "Hey! Stop it!",
+      pat: "Ehehe…",
+      mined: "+1 block!",
+      yawn: "Fwaaah…",
+      look: "Look!",
+    },
+  },
 };
 
 export default en;

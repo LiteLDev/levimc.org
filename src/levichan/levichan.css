@@ -1,0 +1,339 @@
+/* LeviChan's 3D space (loaded with it, on demand). The page (#root) becomes a panel in a CSS 3D scene; her
+   WebGL canvas is drawn over it with a camera that matches the CSS perspective exactly. */
+html.lc-3d,
+html.lc-3d body {
+  overflow: hidden !important;
+  height: 100%;
+  overscroll-behavior: none;
+}
+html.lc-3d body {
+  background: var(--lc-sky-0) !important;
+}
+
+html.lc-3d {
+  --lc-sky-0: #dfeee6;
+  --lc-sky-1: #f6f1e4;
+  --lc-sky-2: #cfe6dc;
+  --lc-grid: rgba(54, 120, 86, 0.22);
+  --lc-grid-strong: rgba(54, 120, 86, 0.42);
+  --lc-floor: rgba(236, 244, 236, 0.85);
+  --lc-glow: #7fd4a4;
+  --lc-ui-bg: rgba(255, 253, 246, 0.94);
+  --lc-ui-fg: #1d3328;
+  --lc-ui-line: rgba(29, 51, 40, 0.14);
+}
+html.lc-3d.dark {
+  --lc-sky-0: #08131c;
+  --lc-sky-1: #0f2230;
+  --lc-sky-2: #13324a;
+  --lc-grid: rgba(127, 212, 164, 0.16);
+  --lc-grid-strong: rgba(127, 212, 164, 0.36);
+  --lc-floor: rgba(14, 30, 40, 0.88);
+  --lc-glow: #7fd4a4;
+  --lc-ui-bg: rgba(16, 30, 40, 0.94);
+  --lc-ui-fg: #e3efe8;
+  --lc-ui-line: rgba(227, 239, 232, 0.16);
+}
+
+.lc-layer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  transform-origin: 50% 50%;
+  backface-visibility: visible;
+  will-change: transform;
+}
+
+#lc-sky {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: auto;
+  background:
+    radial-gradient(1200px 600px at 75% 15%, color-mix(in srgb, var(--lc-glow) 22%, transparent), transparent 70%),
+    radial-gradient(900px 500px at 10% 90%, color-mix(in srgb, var(--lc-glow) 14%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--lc-sky-2), var(--lc-sky-1) 55%, var(--lc-sky-0));
+  opacity: 0;
+}
+#lc-stars {
+  position: absolute;
+  inset: -10%;
+  background-image:
+    radial-gradient(1.5px 1.5px at 20% 30%, currentColor 50%, transparent 51%),
+    radial-gradient(1px 1px at 70% 20%, currentColor 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 40% 70%, currentColor 50%, transparent 51%),
+    radial-gradient(1px 1px at 85% 60%, currentColor 50%, transparent 51%),
+    radial-gradient(1px 1px at 55% 45%, currentColor 50%, transparent 51%);
+  background-size: 340px 340px, 290px 290px, 410px 410px, 230px 230px, 520px 520px;
+  color: color-mix(in srgb, var(--lc-glow) 70%, white);
+  opacity: 0.35;
+  animation: lc-drift 120s linear infinite;
+}
+html.lc-3d.dark #lc-stars {
+  color: #fff;
+  opacity: 0.7;
+}
+@keyframes lc-drift {
+  to {
+    transform: translate3d(-340px, 120px, 0);
+  }
+}
+
+#lc-floor {
+  z-index: 0;
+  pointer-events: auto;
+  background:
+    radial-gradient(closest-side, transparent 0 0, var(--lc-floor) 0%, transparent 100%),
+    repeating-linear-gradient(0deg, var(--lc-grid) 0 2px, transparent 2px 64px),
+    repeating-linear-gradient(90deg, var(--lc-grid) 0 2px, transparent 2px 64px);
+  -webkit-mask-image: radial-gradient(closest-side, #000 35%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 35%, transparent 100%);
+}
+#lc-ring {
+  z-index: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 3px var(--lc-glow),
+    0 0 40px 10px color-mix(in srgb, var(--lc-glow) 60%, transparent),
+    inset 0 0 40px 10px color-mix(in srgb, var(--lc-glow) 50%, transparent);
+  opacity: 0;
+}
+#lc-shadow {
+  z-index: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(10, 30, 20, 0.32), transparent);
+}
+
+.lc-cube {
+  z-index: 0;
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+.lc-cube > i {
+  position: absolute;
+  inset: 0;
+  image-rendering: pixelated;
+  background-size: 100% 100%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+html.lc-3d #root {
+  position: fixed !important;
+  z-index: 1;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border-radius: 14px;
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.28),
+    0 0 0 1px var(--lc-ui-line);
+  background: var(--lc-page-bg, #f7f3e8);
+  transform-origin: 50% 50%;
+  will-change: transform;
+  contain: paint;
+}
+
+.lc-clone {
+  position: fixed;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  z-index: 2;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  background: var(--lc-page-bg, #f7f3e8);
+}
+/* the snapshot does not scroll: its sticky bar stays at the top of the page */
+.lc-clone .kit-gbar-sticky {
+  position: relative !important;
+}
+.lc-clone-half {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  backface-visibility: hidden;
+  background: var(--lc-page-bg, #f7f3e8);
+}
+.lc-clone-back {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  backface-visibility: hidden;
+  background:
+    repeating-linear-gradient(45deg, color-mix(in srgb, var(--lc-glow) 30%, transparent) 0 12px, transparent 12px 24px),
+    linear-gradient(160deg, var(--lc-sky-2), var(--lc-sky-0));
+}
+
+#lc-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 3;
+  pointer-events: none;
+  touch-action: none;
+  outline: none;
+}
+#lc-canvas.lc-hot {
+  pointer-events: auto;
+  cursor: grab;
+}
+#lc-canvas.lc-hot.lc-face {
+  cursor: pointer;
+}
+
+.lc-ui {
+  position: fixed;
+  z-index: 6;
+  color: var(--lc-ui-fg);
+  font: 13px/1.45 var(--kit-font-sans, system-ui, sans-serif);
+}
+#lc-load {
+  left: 50%;
+  bottom: 9vh;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--lc-ui-bg);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--lc-ui-line);
+  transition: opacity 0.4s;
+  white-space: nowrap;
+}
+#lc-load b {
+  display: inline-block;
+  width: 120px;
+  height: 6px;
+  margin-left: 10px;
+  border-radius: 3px;
+  background: var(--lc-ui-line);
+  vertical-align: middle;
+  overflow: hidden;
+}
+#lc-load b > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--lc-glow);
+  transition: width 0.2s;
+}
+
+#lc-fab {
+  left: 14px;
+  bottom: 14px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--lc-glow);
+  background: var(--lc-ui-bg);
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s;
+}
+#lc-fab:hover {
+  transform: scale(1.08);
+}
+#lc-fab img,
+.lc-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 18%;
+  display: block;
+}
+
+#lc-menu {
+  min-width: 220px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--lc-ui-bg);
+  border: 1px solid var(--lc-ui-line);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(8px);
+}
+#lc-menu[hidden] {
+  display: none;
+}
+#lc-menu h4 {
+  margin: 2px 6px 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+#lc-menu p {
+  margin: 0 6px 8px;
+  opacity: 0.7;
+  font-size: 12px;
+  max-width: 240px;
+}
+#lc-menu .lc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px;
+  border-radius: 8px;
+}
+#lc-menu .lc-seg {
+  display: inline-flex;
+  border: 1px solid var(--lc-ui-line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+#lc-menu .lc-seg button,
+#lc-menu button.lc-item {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+#lc-menu .lc-seg button[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--lc-glow) 35%, transparent);
+}
+#lc-menu button.lc-item {
+  width: 100%;
+  text-align: left;
+  padding: 7px 6px;
+  border-radius: 8px;
+}
+#lc-menu button.lc-item:hover,
+#lc-menu .lc-row:hover {
+  background: color-mix(in srgb, var(--lc-glow) 14%, transparent);
+}
+#lc-menu input[type='checkbox'] {
+  accent-color: var(--lc-glow);
+}
+
+.lc-bit {
+  position: fixed;
+  z-index: 4;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
+.lc-bubble {
+  z-index: 5;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: var(--lc-ui-bg);
+  border: 1px solid var(--lc-ui-line);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+  pointer-events: none;
+  font-size: 14px;
+  white-space: nowrap;
+  transform: translate(-50%, -100%);
+  transition: opacity 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #lc-stars {
+    animation: none;
+  }
+}
