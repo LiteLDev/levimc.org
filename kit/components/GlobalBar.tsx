@@ -117,6 +117,7 @@ function ProjectItem({ p, t, current, ctx }: { p: Project; t: UiStrings; current
             {t.projectBlurbs[p.id]}
           </span>
         </span>
+        <PixelIcon name="arrowRight" className="kit-proj-go" />
       </BarLink>
     </li>
   );
@@ -127,18 +128,22 @@ function ProjectsPanel({ t, currentProject, ctx }: { t: UiStrings; currentProjec
   return (
     <div className="kit-proj">
       <div className="kit-proj-groups">
-        {PROJECT_GROUPS.map((g) => (
-          <div key={g} className={`kit-proj-group kit-proj-group-${g}`}>
-            <p className="kit-proj-heading" aria-hidden="true" data-kit-t={`projectGroups.${g}`}>
-              {t.projectGroups[g]}
-            </p>
-            <ul aria-label={t.projectGroups[g]} data-kit-t-aria={`projectGroups.${g}`}>
-              {PROJECTS.filter((p) => p.group === g).map((p) => (
-                <ProjectItem key={p.id} p={p} t={t} current={p.id === currentProject} ctx={ctx} />
-              ))}
-            </ul>
-          </div>
-        ))}
+        {PROJECT_GROUPS.map((g) => {
+          const projects = PROJECTS.filter((p) => p.group === g);
+          return (
+            <div key={g} className={`kit-proj-group kit-proj-group-${g}`}>
+              <p className="kit-proj-heading" aria-hidden="true">
+                <span data-kit-t={`projectGroups.${g}`}>{t.projectGroups[g]}</span>
+                <span className="kit-proj-count">{projects.length}</span>
+              </p>
+              <ul aria-label={t.projectGroups[g]} data-kit-t-aria={`projectGroups.${g}`}>
+                {projects.map((p) => (
+                  <ProjectItem key={p.id} p={p} t={t} current={p.id === currentProject} ctx={ctx} />
+                ))}
+              </ul>
+            </div>
+          );
+        })}
       </div>
       <a className="kit-proj-all" href={LINKS.github}>
         <BrandIcon name="github" size={14} />

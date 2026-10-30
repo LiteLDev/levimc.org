@@ -28,6 +28,7 @@ const TAGS: Record<string, string> = {
   Bedstones: 'Functionality',
   BeetrootSkin: 'Client',
   BeDD: 'Testing',
+  bedboo: 'Bot Library',
 };
 
 // GitHub repositories of the projects: stars, language and description are fetched from the GitHub API

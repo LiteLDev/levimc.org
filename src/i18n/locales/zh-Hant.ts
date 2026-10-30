@@ -200,6 +200,7 @@ const zhHant: typeof en = {
     bedstones: "Minecraft 基岩版的 Waystones：建造傳送石，在它們之間傳送。",
     beetrootskin: "Minecraft 基岩版的 AppleSkin：檢視食物能恢復多少飢餓值與飽和度。",
     bedd: "用測試腳本驅動 LeviLamina 用戶端，不佔用真實的滑鼠和鍵盤，還能同時執行多個遊戲。",
+    bedboo: "Minecraft 基岩版的 Mineflayer：讓 mineflayer 機械人和它的外掛直接連上基岩版專用伺服器（BDS）。",
   },
   // 網誌
   blog: {

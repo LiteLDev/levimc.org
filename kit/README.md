@@ -576,7 +576,7 @@ All components are SSR-safe and render identical markup on server and client.
 
 | Component | Purpose / key props |
 |---|---|
-| `GlobalBar` | the bar at the top of every LeviMC site — identical everywhere: the LeviMC mark (`BrandMark`), tabs **Home · Projects ▾ · Mods · Blog · Community · About** (`globalNav()`), then **language menu · theme menu · GitHub** (→ LiteLDev); below 960px the tabs fold into one menu (≤ 400px the triggers lose their chevrons). **Projects ▾** is a mega menu of `PROJECTS` (`projects.ts`) in three columns — Core · Official mods (two columns) — hung from the bar's content box so it never leaves the window: each row is one link to the project's home page (`projectHome()`: its LeviMC Mods page, else its docs, else its repository); the GitHub organisation at the bottom; on phones it is a collapsed section of the menu. Props: `current` (`'home'\|'projects'\|'mods'\|'blog'\|'community'\|'about'`), `currentProject` (docs: marks the project and the Projects tab), `locale`, `strings`, `languages` (`{ options, current, onSelect?, linkComponent? }`; the options are the site's locales, named the kit's way — `uiLocaleName`; omitted → the 9 chrome languages, stored as the preference, then `onLanguageChange` or a reload), `siteOrigin` + `linkComponent` + `isAppPath` (same-site links through the router), `menu` (false when the site's own drawer carries the links, see `GlobalNavList`), `sticky`. `github`, `brandIcon` and `currentDocs` are deprecated (ignored / alias). A labelled region; `<details>` menus work without JS. No props to hide, add or reorder tabs or controls |
+| `GlobalBar` | the bar at the top of every LeviMC site — identical everywhere: the LeviMC mark (`BrandMark`), tabs **Home · Projects ▾ · Mods · Blog · Community · About** (`globalNav()`), then **language menu · theme menu · GitHub** (→ LiteLDev); below 960px the tabs fold into one menu (≤ 400px the triggers lose their chevrons). **Projects ▾** is a mega menu of `PROJECTS` (`projects.ts`) in two groups of two columns each — Core (on a faint wash of the primary) · Official mods, a hairline between them, each headed by its name and project count — hung from the bar's content box so it never leaves the window: each row is one link to the project's home page (`projectHome()`: its LeviMC Mods page, else its docs, else its repository); the GitHub organisation at the bottom; on phones it is a collapsed section of the menu. Props: `current` (`'home'\|'projects'\|'mods'\|'blog'\|'community'\|'about'`), `currentProject` (docs: marks the project and the Projects tab), `locale`, `strings`, `languages` (`{ options, current, onSelect?, linkComponent? }`; the options are the site's locales, named the kit's way — `uiLocaleName`; omitted → the 9 chrome languages, stored as the preference, then `onLanguageChange` or a reload), `siteOrigin` + `linkComponent` + `isAppPath` (same-site links through the router), `menu` (false when the site's own drawer carries the links, see `GlobalNavList`), `sticky`. `github`, `brandIcon` and `currentDocs` are deprecated (ignored / alias). A labelled region; `<details>` menus work without JS. No props to hide, add or reorder tabs or controls |
 | `GlobalNavList` | the bar's tabs + the Projects menu as a vertical list (the bar's phone menu; the "LeviMC" part of the docs drawer) |
 | `ThemeSwitcher` | the theme menu: **Auto** (default; follows `prefers-color-scheme` live) / Light / Dark. Trigger sprite + name and the checked item come from `html[data-theme-pref]` via CSS (right before hydration and on static pages); the choice is the cross-site `levimc_theme` cookie. `ThemeToggle` is a deprecated alias |
 | `LocaleSwitcher` | `options[{ code, label, short?, lang, href? }]` (`href` → links to the equivalent page; none → buttons), `current`, `onSelect(code, option)`, `persist` (default: store `lang` as the cross-site `levimc_lang`; a modified click on a link opens it elsewhere and stores nothing), `linkComponent`, `showLabel` |
@@ -851,6 +851,19 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.14.0 — 2026-10-30
+
+**bedboo is in Core, and the Projects menu is rebalanced.** `LiteLDev/bedboo` (mineflayer for Bedrock) joins Core
+after Be.D.D.; it has no docs or LeviMC Mods page, so it leads to its repository.
+* `ProjectId` `'bedboo'` (`projectBlurbs.bedboo` in every chrome language); its logo, in the kit's style, is
+  `https://levimc.org/logos/bedboo.webp`.
+* Projects menu: Core and Official mods side by side, two columns each (they were one and two), so neither group is
+  much longer than the other; a hairline between the groups, Core on a faint primary wash. Headings get a pixel marker
+  and the group's project count (`.kit-proj-count`; the name is now a `<span data-kit-t>` inside
+  `.kit-proj-heading`). Every logo sits on the same framed linen tile (`.kit-proj-slot`, 40px), rows lift it and show
+  an arrow on hover (`.kit-proj-go`), blurbs stop at three lines. Below 1180px each group folds into one column.
+* Compatible: sites only rebuild.
 
 ### 2.13.0 — 2026-10-30
 

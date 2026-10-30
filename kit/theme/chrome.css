@@ -324,34 +324,69 @@
   .kit-gbar-projects .kit-menu-panel {
     left: 0.5rem;
     right: auto;
-    width: min(66rem, calc(100% - 1rem));
+    width: min(68rem, calc(100% - 1rem));
+    max-height: min(80vh, 40rem);
     padding: 0;
   }
-  /* three columns: Core · Official mods (two columns of its own, so the longest group is the shortest) */
+  /* two groups side by side, two columns each (Core · Official mods), a hairline between them; Core sits on a
+     faint wash of the primary, so the platform reads apart from the mods built on it */
   .kit-proj-groups {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.25rem 0.75rem;
-    padding: 0.75rem;
-  }
-  .kit-proj-group-mods {
-    grid-column: span 2;
-  }
-  .kit-proj-group-mods > ul {
-    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 0.75rem;
-    align-content: start;
+  }
+  .kit-proj-group {
+    min-width: 0;
+    padding: 0.875rem 0.75rem 0.625rem;
+  }
+  .kit-proj-group + .kit-proj-group {
+    border-left: 1px solid var(--color-line);
+  }
+  .kit-proj-group-core {
+    background: linear-gradient(170deg, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 75%);
   }
   .kit-proj-heading {
-    margin: 0.25rem 0.5rem 0.375rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0.5rem 0.5rem;
     font-size: 0.6875rem;
     font-weight: 650;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-muted);
   }
+  /* a pixel marker before the name (grass for Core, gold for the mods), a hairline after the count */
+  .kit-proj-heading::before {
+    content: "";
+    flex: none;
+    width: 6px;
+    height: 6px;
+    background: var(--color-mc-grass);
+    box-shadow: 0 -2px 0 0 #8fd45e inset;
+  }
+  .kit-proj-group-mods .kit-proj-heading::before {
+    background: var(--color-mc-gold);
+    box-shadow: 0 -2px 0 0 #f6dd7c inset;
+  }
+  .kit-proj-heading::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--color-line);
+  }
+  .kit-proj-count {
+    padding: 0.1875rem 0.375rem;
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    line-height: 1;
+    background: color-mix(in srgb, var(--color-ink) 6%, transparent);
+  }
   .kit-proj-group > ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.125rem 0.5rem;
+    align-content: start;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -359,16 +394,18 @@
   .kit-proj-item {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    padding: 0.125rem 0;
   }
   .kit-proj-main {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.5rem;
+    height: 100%;
+    padding: 0.5rem 1.5rem 0.5rem 0.5rem;
     color: var(--color-ink);
     text-decoration: none;
     line-height: 1.3;
+    transition: background-color 0.12s;
   }
   .kit-proj-main:hover {
     background: color-mix(in srgb, var(--color-ink) 6%, transparent);
@@ -377,12 +414,22 @@
     background: var(--color-primary-soft);
     box-shadow: inset 3px 0 0 0 var(--color-primary);
   }
+  /* every logo on the same framed tile: painted ones fill it, transparent ones sit on linen */
   .kit-proj-slot {
-    width: 2.25rem;
-    height: 2.25rem;
+    --px-border: var(--color-line);
+    width: 2.5rem;
+    height: 2.5rem;
     flex: none;
-    align-self: flex-start;
     overflow: hidden;
+    background: var(--color-linen);
+    transition: transform 0.16s var(--ease-pixel), box-shadow 0.16s;
+  }
+  .dark .kit-proj-slot {
+    background: var(--color-surface-2);
+  }
+  .kit-proj-main:hover .kit-proj-slot {
+    --px-border: var(--color-line-strong);
+    transform: translateY(-2px);
   }
   /* the project's logo fills its slot (painted ones edge to edge; transparent ones show the slot behind) */
   .kit-proj-logo {
@@ -395,11 +442,18 @@
     flex-direction: column;
     gap: 0.2rem;
     min-width: 0;
-    overflow-wrap: anywhere;
   }
   .kit-proj-name {
     font-size: 0.875rem;
     font-weight: 650;
+    overflow-wrap: anywhere;
+    transition: color 0.12s;
+  }
+  .kit-proj-main:hover .kit-proj-name {
+    color: var(--color-primary-strong);
+  }
+  .dark .kit-proj-main:hover .kit-proj-name {
+    color: var(--color-primary);
   }
   .kit-proj-repo-mark {
     display: inline-block;
@@ -407,9 +461,33 @@
     vertical-align: -0.0625rem;
     color: var(--color-muted);
   }
+  /* at most three lines, so a long blurb never stretches its row much past the others */
   .kit-proj-blurb {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
     font-size: 0.75rem;
     color: var(--color-muted);
+  }
+  /* the arrow slides in on hover */
+  .kit-proj-go {
+    position: absolute;
+    right: 0.375rem;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    color: var(--color-primary-strong);
+    opacity: 0;
+    transform: translate(-4px, -50%);
+    transition: opacity 0.12s, transform 0.16s var(--ease-pixel);
+  }
+  .dark .kit-proj-go {
+    color: var(--color-primary);
+  }
+  :is(.kit-proj-main:hover, .kit-proj-main:focus-visible) .kit-proj-go {
+    opacity: 1;
+    transform: translate(0, -50%);
   }
   .kit-proj-all {
     display: flex;
@@ -431,10 +509,20 @@
   }
   .kit-proj-all > svg:last-child {
     margin-left: auto;
+    transition: transform 0.16s var(--ease-pixel);
+  }
+  .kit-proj-all:hover > svg:last-child {
+    transform: translateX(3px);
   }
   :is(.kit-proj-main, .kit-proj-all):focus-visible {
     outline: var(--px) solid var(--color-focus);
     outline-offset: calc(var(--px) * -1);
+  }
+  /* narrow windows that still show the bar's tabs: each group in one column */
+  @media (max-width: 1180px) {
+    .kit-gbar-projects .kit-proj-group > ul {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
   /* right-hand controls: language · theme · GitHub (· menu on phones) — the same on every site */
   .kit-gbar-end {
@@ -511,14 +599,24 @@
   }
   /* phones: the Projects menu inside the bar's menu (or a docs drawer) — one column */
   .kit-gbar-list .kit-proj-groups {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     padding: 0 0.25rem;
   }
-  .kit-gbar-list .kit-proj-group-mods {
-    grid-column: auto;
+  .kit-gbar-list .kit-proj-group {
+    padding: 0.5rem 0 0.25rem;
+    background: none;
   }
-  .kit-gbar-list .kit-proj-group-mods > ul {
-    grid-template-columns: 1fr;
+  .kit-gbar-list .kit-proj-group + .kit-proj-group {
+    border-left: 0;
+  }
+  .kit-gbar-list .kit-proj-group > ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .kit-gbar-list .kit-proj-go {
+    display: none;
+  }
+  .kit-gbar-list .kit-proj-main {
+    padding-right: 0.5rem;
   }
   .kit-gbar-list .kit-proj-all {
     margin: 0.25rem 0 0.5rem;
