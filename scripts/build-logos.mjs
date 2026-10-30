@@ -38,7 +38,7 @@ const UPSTREAM = {
   AlleviatedBackpacks: 'AlleviatedBackpacks/HEAD/docs/logo.png',
   Bedstones: 'Bedstones/HEAD/docs/logo.png',
   BeetrootSkin: 'BeetrootSkin/HEAD/docs/logo.png',
-  BeDD: 'BeDD/HEAD/docs/logo.png',
+  BeDD: 'BeDD/HEAD/docs/public/logo.png',
 };
 /** Pixel art upstream (LegacyScriptEngine's hammer): scaled without smoothing. */
 const CRISP = new Set(['LegacyScriptEngine']);

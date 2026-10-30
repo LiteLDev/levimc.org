@@ -2,7 +2,7 @@
 
 The shared design system and static docs engine for every LeviMC website — levimc.org (with LeviMC Mods at /mods/) and
 the project docs at `docs.levimc.org/<Project>/` (LeviLamina, LegacyScriptEngine, lip, LeviLauncher — Windows and
-Android in one site), plus the Doxygen API reference.
+Android in one site — and Be.D.D.), plus the Doxygen API reference.
 
 **Design concept: "Impression, Craft".** Monet's Giverny rendered as if built in Minecraft.
 *Painterly = atmosphere* (impressionist colour fields and brush-dab texture in heroes, backdrops and margins);
@@ -606,7 +606,7 @@ Canonical cross-site URLs (exact, no redirect): Home `https://levimc.org/`, Proj
 GitHub organisation) `https://github.com/LiteLDev`, Community `https://levimc.org/community/`, About `https://levimc.org/about/`,
 Mods (LeviMC Mods, id `mods`) `https://levimc.org/mods/`, Blog `https://levimc.org/blog/`, GitHub
 `https://github.com/LiteLDev`,
-Docs `https://docs.levimc.org/{LeviLamina,LegacyScriptEngine,lip,LeviLauncher}/`,
+Docs `https://docs.levimc.org/{LeviLamina,LegacyScriptEngine,lip,LeviLauncher,BeDD}/`,
 Discord `https://discord.gg/v5R5P4vRZk`, Telegram `https://t.me/LiteLoader`, X `https://x.com/levimc_org`,
 YouTube `https://www.youtube.com/@LeviLamina`, `mailto:contact@levimc.org`. lip's repository is
 `https://github.com/LiteLDev/lip` (`futrime/lip` redirects).
@@ -851,6 +851,14 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.15.0 — 2026-10-30
+
+**Be.D.D. has its own docs and is no longer a mod.** Be.D.D. is a standalone testing toolkit now, documented at
+`https://docs.levimc.org/BeDD/`, and has left LeviMC Mods: its Projects menu row and project card lead to its docs.
+* `PROJECTS`: `BeDD` has `docs` instead of `mod`; `DocsProjectId` includes `'BeDD'`, so `DOCS_PROJECTS` (the
+  docs.levimc.org root's cards) lists it after LeviLauncher.
+* Compatible: sites only rebuild.
 
 ### 2.14.0 — 2026-10-30
 

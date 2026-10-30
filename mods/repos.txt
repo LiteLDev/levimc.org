@@ -79,7 +79,6 @@ lgc-LLDev/FormAPIEx
 lgc-LLDev/NBSPlayer
 LiteLDev/AlleviatedBackpacks
 LiteLDev/BarelyEnoughItems
-LiteLDev/BeDD
 LiteLDev/Bedstones
 LiteLDev/BeetrootSkin
 LiteLDev/Complementaries
