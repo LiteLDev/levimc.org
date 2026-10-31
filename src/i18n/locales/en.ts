@@ -258,7 +258,7 @@ const en = {
     loading: "Summoning LeviChan…",
     loadFailed: "LeviChan could not be loaded.",
     menuTitle: "LeviChan",
-    hint: "She lives on the page now: click somewhere and she goes there; drag her, throw a cube, pat or poke her, scroll away… Links and text work as usual.",
+    hint: "The page came apart and she lives on its pieces: click a piece and she makes her way there (hopping, climbing); double-click a small one and she carries it somewhere else; drag her, throw a cube, pat or poke her, scroll away… Links and text work as usual.",
     lookLabel: "Watch the cursor",
     look: { auto: "Her choice", always: "Always", never: "Never" },
     quiet: "Fewer fidgets",
