@@ -167,6 +167,14 @@ the model ~9 MB, each motion a few KB, on first use).
   tidying a small block away somewhere else; she makes her way after the view when the visitor flies off elsewhere
   (or reaches up and pouts if she cannot get there), waves when the cursor comes back to her and
   shows off her dress when it rests on it.
+- `src/levichan/story/` — the story that runs in the space, a small galgame ("The Page Apart"): she speaks through a
+  dialogue box and acts each line out; chapters send the visitor to do things in the world (fly the camera, take her
+  to the marked keystone blocks, fix the blocks a bug got into, throw cubes, find a glowing cube at the edge of the
+  world and drag it back to her...), and some steps are real-time waits (8, 15 and 5 minutes) that keep running
+  while the page is closed. Everything the visitor does to her and to the world moves a 71-dimension hidden state
+  (`state.ts`); the choices and that state pick one of ten endings (two happy, two bad, the rest her own). The story
+  and the endings seen are kept in localStorage (`levichan:story`, `levichan:endings`), so a reload carries on
+  mid-sentence; the menu can start it over. The script (`script.ts`) is in Chinese and English.
 - `public/levichan/` — her assets, made by `node scripts/levichan-assets.mjs --pmx <LeviChan out/pmx> --motions
   <LeviChan web motions>` from a LeviChan build: the model from the round 11 branches merged together, the clips from
   `tools/web_clips.py` on `r11/web-motions` (`blender -b out/levi.blend -P tools/motion_vmd.py -- --extra-clips

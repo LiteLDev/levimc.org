@@ -200,7 +200,8 @@ export class Brain {
 
     // the visitor flew the camera away from her: she makes her way to where they are looking (hopping, climbing...)
     const mv = this.mover;
-    if (this.greeted && !mv.busy && !this.levi.current && this.space.lookingAway && tNow > this.followAt && !this.space.inView(mv.u, mv.v, mv.h + 0.7, 40)) {
+    const story = this.space.story?.busy;
+    if (this.greeted && !story && !mv.busy && !this.levi.current && this.space.lookingAway && tNow > this.followAt && !this.space.inView(mv.u, mv.v, mv.h + 0.7, 40)) {
       this.followAt = tNow + 5000;
       const goal = this.space.viewGoal();
       if (goal) mv.goTo(goal, 'run', (reached) => (reached ? this.act('wave_hello', Prio.Page, { cooldown: 8000, mood: { にこり: 0.8 } }) : this.cantReach()));
@@ -208,7 +209,7 @@ export class Brain {
     }
     // left alone: she sits down for a rest; otherwise she does something on her own now and then: a fidget, a
     // little walk, a climb onto a block, hiding behind one
-    if (!this.space.quiet && !this.levi.current && this.greeted && !mv.busy) {
+    if (!this.space.quiet && !story && !this.levi.current && this.greeted && !mv.busy) {
       if (!this.sat && tNow - this.lastInput > 45000) {
         this.sat = this.act('sit_rest', Prio.Ambient);
       } else if (tNow > this.nextAmbient) {
@@ -227,6 +228,7 @@ export class Brain {
       if (c.hitAt && tNow - c.thrownAt < 3000 && Math.hypot(c.u - mv.u, c.v - mv.v, c.h - mv.h - 0.5) < 0.7 && !c.held) {
         c.hitAt = 0;
         c.thrownAt = 0;
+        this.space.story?.note('cubeHit');
         this.glance('viewer', 1500);
         this.act('poke_startle', Prio.Touch, { cooldown: 4000, mood: { びっくり: 1, 瞳小: 0.7 }, moodMs: 1400 });
       }
@@ -249,6 +251,7 @@ export class Brain {
     // her cursor face-time: a few seconds of hovering her face makes her shy
     if (this.overFace && tNow - this.overFace > 3000) {
       this.overFace = 0;
+      this.space.story?.note('stare');
       this.act('shy_cover', Prio.Touch, { cooldown: 15000, mood: { 照れ: 1 }, moodMs: 4500 });
     }
     // her face between clips: a soft smile, a passing expression now and then (a bigger smile when watched)
@@ -389,6 +392,7 @@ export class Brain {
       }
       if (Math.abs(c.sum) > 4 * Math.PI) {
         c.sum = 0;
+        this.space.story?.note('dizzy');
         this.act('dizzy', Prio.Touch, { cooldown: 12000, say: this.t.say.dizzy, mood: { はぅ: 0.8, 汗: 1 }, moodMs: 5000 });
       }
     }
@@ -415,6 +419,7 @@ export class Brain {
     if (!hit && moved > 30) return;
     if (held > 600) {
       // a long press: crouch, spring, jump
+      this.space.story?.note('press');
       this.act('jump_happy', Prio.Touch, { mood: { 笑い: 0.9 }, moodMs: 2600 });
       return;
     }
@@ -434,6 +439,7 @@ export class Brain {
   }
 
   private clicked(region: HitRegion) {
+    this.space.story?.note(region === 'head' ? 'pat' : 'poke');
     if (this.levi.current === 'annoyed_stomp') return;
     if (region === 'head') {
       this.act(this.any('head_pat', 'head_pat', 'ehehe', 'finger_twiddle', 'self_hug'), Prio.Touch, { cooldown: 1500, say: this.t.say.pat, mood: { 照れ: 1, にこり: 0.6 }, moodMs: 4000 });
@@ -446,6 +452,7 @@ export class Brain {
     clearTimeout(this.clickTimer);
     if (this.clicks.length > 2 || this.levi.current === 'annoyed_stomp') return; // mashing, not a double click
     this.input();
+    this.space.story?.note('kiss');
     this.glance('viewer', 3000);
     if (hit.region === 'skirt' || hit.region === 'leg' || hit.region === 'body') this.act(this.any('twirl', 'skirt_spin', 'curtsy'), Prio.Touch, { mood: { 笑い: 0.8 }, moodMs: 3000 });
     else this.act(this.any('peace_wink', 'blow_kiss', 'cat_paws', 'bunny_ears'), Prio.Touch, { mood: { 照れ: 0.6 }, moodMs: 3000 });
@@ -459,6 +466,7 @@ export class Brain {
     this.floorClicks.push(tNow);
     const dark = document.documentElement.classList.contains('dark');
     this.space.burst(x, y, dark ? ['#4f9640', '#6c442c', '#7fd4a4'] : ['#5fa94a', '#8a5a3b', '#98674a'], 5);
+    this.space.story?.note('ground');
     if (!this.free()) return;
     const mv = this.mover;
     const mine = this.floorClicks.length >= 3;
@@ -469,6 +477,7 @@ export class Brain {
       mv.face(0);
       if (!mine) return;
       if (this.act('mining_swing', Prio.Page, { cooldown: 4000, mood: { キリッ: 0.8 }, moodMs: 4000 })) {
+        this.space.story?.note('mine');
         // the blocks she breaks: bits at her feet on each swing
         for (const ms of [1300, 2500, 3700]) {
           setTimeout(() => {
@@ -496,6 +505,7 @@ export class Brain {
   pieceClick(p: Piece, hit: PieceHit, x: number, y: number) {
     this.input();
     this.space.burst(x, y, ['#7fd4a4', '#ffffff', '#cfe6dc'], 4);
+    this.space.story?.note('piece', { kind: p.kind, piece: p });
     if (!this.free()) return;
     const mv = this.mover;
     const label = (hit.spot?.el.innerText || hit.spot?.el.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim();
@@ -505,7 +515,10 @@ export class Brain {
     type Plan = { top: boolean; clip: string; fx: [Fx, number][]; say?: string; mood?: Record<string, number> };
     const onTop = hit.top || p.kind === 'bar' || p.kind === 'title';
     let plan: Plan;
-    if (hit.spot && !hit.top) {
+    if (this.space.story?.isCorrupt(p)) {
+      // a block the bug got into: she whacks it right
+      plan = { top: false, clip: 'mining_swing', fx: [['press', 1300], ['press', 2500], ['press', 3700]], mood: { キリッ: 1 } };
+    } else if (hit.spot && !hit.top) {
       plan = { top: false, clip: hit.h - mv.h > 1.3 ? 'look_up_reach' : 'clap_cheer', fx: [['press', 500], ['press', 1500]], say: label ? short(label, 24) : undefined, mood: { にこり: 0.8 } };
     } else if (p.kind === 'button') {
       plan = onTop
@@ -543,6 +556,7 @@ export class Brain {
       const go = () => {
         const clip = this.levi.clips[plan.clip] ? plan.clip : 'thumbs_up';
         if (!this.act(clip, Prio.Page, { say: plan.say, mood: plan.mood, moodMs: 3000 })) return;
+        this.space.story?.note('play', { kind: p.kind, piece: p });
         if (plan.top) this.glance('viewer', 2500);
         for (const [fx, ms] of plan.fx) setTimeout(() => this.space.world.play(p, fx, fx === 'press' ? hit.spot : null), ms);
       };
@@ -552,8 +566,24 @@ export class Brain {
     this.nextAmbient = Math.max(this.nextAmbient, now() + 8000);
   }
 
+  /** The story has her act a line out: a clip (cutting whatever she was doing) and a face for a while. */
+  perform(name: string | null, mood: Record<string, number>, glance: boolean) {
+    if (glance) this.glance('viewer', 3000);
+    const keys = Object.keys(mood);
+    if (keys.length) {
+      Object.assign(this.levi.mood, mood);
+      setTimeout(() => {
+        for (const k of keys) delete this.levi.mood[k];
+      }, 3500);
+    }
+    if (!name || !this.levi.clips[name]) return;
+    if (this.mover.mode === 'path') this.mover.stop();
+    this.act(name, Prio.Touch);
+  }
+
   /** Somewhere she cannot get to: she reaches up for it and pouts. */
   private cantReach() {
+    this.space.story?.note('unreach');
     this.mover.face(0);
     this.act(this.levi.clips.look_up_reach ? 'look_up_reach' : 'shy_cover', Prio.Page, { cooldown: 3000, mood: { 困る: 0.6 }, moodMs: 2500 });
   }
@@ -571,6 +601,7 @@ export class Brain {
     }
     const ok = mv.moveBlock(p, (moved) => {
       if (!moved) return this.cantReach();
+      this.space.story?.note('carry', { kind: p.kind, piece: p });
       this.glance('viewer', 2500);
       this.act(this.any('thumbs_up', 'ganbare', 'peace_wink', 'clap_cheer'), Prio.Page, { mood: { 笑い: 0.8 }, moodMs: 2500 });
     });
@@ -617,6 +648,7 @@ export class Brain {
   /** Picked up by the cursor: a startled face, legs dangling. */
   pickedUp() {
     this.input();
+    this.space.story?.note('pickup');
     this.levi.stop();
     Object.assign(this.levi.mood, { びっくり: 0.9, 汗: 0.8, はぅ: 0.5 });
     this.space.say(this.t.say.stop, 1200);
@@ -624,6 +656,7 @@ export class Brain {
   /** She landed (dropped, or off a block). */
   private landed(speed: number, box: Piece | null) {
     for (const k of ['びっくり', '汗', 'はぅ']) delete this.levi.mood[k];
+    if (speed > 1) this.space.story?.note('land', { speed });
     if (box && !box.fx) this.space.world.play(box, 'dip');
     if (speed > 2.5) {
       const f = this.space.feetScreen();
@@ -633,6 +666,7 @@ export class Brain {
   }
   cubeThrown(c: Cube) {
     this.input();
+    this.space.story?.note('throw');
     this.glance('none', 800);
     void c;
   }
@@ -663,15 +697,18 @@ export class Brain {
   }
 
   languageChanged() {
+    this.space.story?.note('lang');
     this.act('bow', Prio.Page, { cooldown: 4000, mood: { にこり: 0.7 } });
   }
 
   themeChanged(dark: boolean) {
+    this.space.story?.note('theme');
     if (dark) this.act('yawn', Prio.Page, { cooldown: 5000, say: this.t.say.yawn });
     else this.act('stretch', Prio.Page, { cooldown: 5000, mood: { にこり: 0.5 } });
   }
 
   visibility(visible: boolean) {
+    this.space.story?.note(visible ? 'visible' : 'hidden');
     if (!visible) {
       this.hiddenAt = now();
       return;
@@ -694,6 +731,7 @@ export class Brain {
     const konami = KONAMI.every((k, i) => this.keys[i] === k);
     if (konami || typed.endsWith('levi')) {
       this.keys = [];
+      this.space.story?.note('dance');
       this.glance('viewer', 4000);
       this.act(this.any('idol_dance', 'long_dance', 'idol_poses'), Prio.Touch, { mood: { 笑い: 0.8 }, moodMs: 9000 });
     }
