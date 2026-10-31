@@ -1,168 +1,39 @@
-/* LeviChan's 3D space (loaded with it, on demand). The page (#root) lies down as the ground of a CSS 3D diorama whose
-   components come apart into blocks hanging in the sky; her WebGL canvas is drawn over it with a camera that matches
-   the CSS perspective. */
+/* LeviChan's 3D space (loaded with it, on demand): the world is drawn by three.js on #lc-three, her WebGL canvas
+   over it with a camera matched to it; the page stays as it was underneath. */
 html.lc-3d,
 html.lc-3d body {
   overflow: hidden !important;
-  height: 100%;
   overscroll-behavior: none;
-}
-html.lc-3d body {
-  background: var(--lc-sky-0) !important;
 }
 
 html.lc-3d {
-  --lc-sky-0: #dfeee6;
-  --lc-sky-1: #f6f1e4;
-  --lc-sky-2: #cfe6dc;
-  --lc-grid: rgba(54, 120, 86, 0.22);
-  --lc-grid-strong: rgba(54, 120, 86, 0.42);
-  --lc-floor: rgba(236, 244, 236, 0.85);
   --lc-glow: #7fd4a4;
   --lc-ui-bg: rgba(255, 253, 246, 0.94);
   --lc-ui-fg: #1d3328;
   --lc-ui-line: rgba(29, 51, 40, 0.14);
 }
 html.lc-3d.dark {
-  --lc-sky-0: #08131c;
-  --lc-sky-1: #0f2230;
-  --lc-sky-2: #13324a;
-  --lc-grid: rgba(127, 212, 164, 0.16);
-  --lc-grid-strong: rgba(127, 212, 164, 0.36);
-  --lc-floor: rgba(14, 30, 40, 0.88);
-  --lc-glow: #7fd4a4;
   --lc-ui-bg: rgba(16, 30, 40, 0.94);
   --lc-ui-fg: #e3efe8;
   --lc-ui-line: rgba(227, 239, 232, 0.16);
 }
 
-html.lc-3d #root {
-  position: fixed !important;
-  z-index: 1;
-  overflow: visible !important;
-  transform-origin: 50% 50%;
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-html.lc-3d body {
-  perspective: none;
-}
-
-#lc-world {
-  position: absolute;
-  left: 0;
-  top: 0;
-  pointer-events: none;
-  transform-style: preserve-3d;
-}
-#lc-world > * {
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-/* the ground, far below at the page's bottom: a lit grid */
-#lc-ground {
-  pointer-events: auto;
-  transform-origin: 50% 0;
-  background:
-    radial-gradient(closest-side, transparent 55%, var(--lc-sky-0)),
-    repeating-linear-gradient(0deg, var(--lc-grid) 0 1px, transparent 1px 64px),
-    repeating-linear-gradient(90deg, var(--lc-grid) 0 1px, transparent 1px 64px),
-    var(--lc-floor);
-  opacity: 0;
-}
-/* each component's box: it moves with the component (the front); a body just behind it, back, top, bottom, sides */
-.lc-shell {
-  pointer-events: none;
-  transform-style: preserve-3d;
-  transform-origin: 50% 50%;
-}
-.lc-shell > i {
-  position: absolute;
+#lc-three {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2147483000;
+  touch-action: none;
+  outline: none;
   display: block;
-  pointer-events: auto;
-  backface-visibility: visible;
-  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.1);
 }
-.lc-shell > .lc-panel,
-.lc-shell > .lc-back {
-  inset: 0;
-  box-shadow: none;
-}
-.lc-shell > .lc-top,
-.lc-shell > .lc-bottom {
-  left: 0;
-  width: 100%;
-  transform-origin: 50% 0;
-  transform: rotateX(-90deg);
-}
-.lc-shell > .lc-top {
-  top: 0;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 0 0 0.5px rgba(0, 0, 0, 0.1);
-}
-.lc-shell > .lc-bottom {
-  top: 100%;
-}
-.lc-shell > .lc-left,
-.lc-shell > .lc-right {
-  top: 0;
-  height: 100%;
-  transform-origin: 0 50%;
-  transform: rotateY(90deg);
-}
-.lc-shell > .lc-left {
-  left: 0;
-}
-.lc-shell > .lc-right {
-  left: 100%;
-}
-#lc-ripple {
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 1;
-  box-shadow:
-    0 0 0 3px var(--lc-glow),
-    0 0 60px 20px color-mix(in srgb, var(--lc-glow) 55%, transparent),
-    inset 0 0 60px 16px color-mix(in srgb, var(--lc-glow) 45%, transparent);
-}
-#lc-ring {
-  border-radius: 50%;
-  pointer-events: none;
-  box-shadow:
-    0 0 0 3px var(--lc-glow),
-    0 0 40px 10px color-mix(in srgb, var(--lc-glow) 60%, transparent),
-    inset 0 0 40px 10px color-mix(in srgb, var(--lc-glow) 50%, transparent);
-  opacity: 0;
-}
-#lc-shadow {
-  border-radius: 50%;
-  pointer-events: none;
-  background: radial-gradient(closest-side, rgba(10, 30, 20, 0.38), transparent);
-}
-
-.lc-cube {
-  pointer-events: auto;
-  cursor: grab;
-  transform-style: preserve-3d;
-}
-.lc-cube:active {
-  cursor: grabbing;
-}
-.lc-cube > i {
-  position: absolute;
-  inset: 0;
-  image-rendering: pixelated;
-  background-size: 100% 100%;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
-  backface-visibility: hidden;
-}
-
 #lc-canvas {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 3;
+  z-index: 2147483001;
   pointer-events: none;
   touch-action: none;
   outline: none;
@@ -177,7 +48,7 @@ html.lc-3d body {
 
 .lc-ui {
   position: fixed;
-  z-index: 6;
+  z-index: 2147483003;
   color: var(--lc-ui-fg);
   font: 13px/1.45 var(--kit-font-sans, system-ui, sans-serif);
 }
@@ -302,7 +173,7 @@ html.lc-3d body {
 
 .lc-bit {
   position: fixed;
-  z-index: 4;
+  z-index: 2147483002;
   width: 8px;
   height: 8px;
   pointer-events: none;
@@ -310,7 +181,7 @@ html.lc-3d body {
 }
 
 .lc-bubble {
-  z-index: 5;
+  z-index: 2147483003;
   padding: 4px 10px;
   border-radius: 10px;
   background: var(--lc-ui-bg);
@@ -323,8 +194,3 @@ html.lc-3d body {
   transition: opacity 0.3s;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  #lc-stars {
-    animation: none;
-  }
-}

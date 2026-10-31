@@ -473,6 +473,8 @@ export class Levi {
       this.occMat = new StandardMaterial('lc-occ', this.scene);
       this.occMat.disableColorWrite = true;
       this.occMat.disableLighting = true;
+      // the world mirrors her space (three is right-handed): its boxes come out inside out, so both sides write depth
+      this.occMat.backFaceCulling = false;
       this.scene.setRenderingAutoClearDepthStencil(1, false, false, false);
       for (const m of this.mesh.getChildMeshes()) m.renderingGroupId = 1;
       this.mesh.renderingGroupId = 1;

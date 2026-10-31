@@ -1,11 +1,11 @@
 // What LeviChan does, and when. The visitor never picks a motion: each one answers something they did (or
 // didn't do) — a pat, a poke, circling her with the cursor, scrolling hard, copying text, coming back to the
-// tab, clicking the floor... — and in between she idles, fidgets, and decides for herself whether to watch
-// the cursor, glance at the viewer or mind her own business.
+// tab, clicking the floor, sending her to a block to play with it... — and in between she idles, fidgets, and
+// decides for herself whether to watch the cursor, glance at the viewer or mind her own business.
 import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { HitRegion, Levi } from './levi';
-import type { Space } from './space';
-import type { Cube, Piece } from './diorama';
+import type { PieceHit, Space } from './space';
+import type { Cube, Fx, Piece } from './diorama';
 import type { Goal, Mover } from './mover';
 import type { LeviChanStrings } from './strings';
 
@@ -84,7 +84,7 @@ export class Brain {
   private overBody = 0;
   /** since when the cursor has been far from her (0: it is near) */
   private awaySince = now();
-  private lookAtLink: { el: HTMLElement; since: number } | null = null;
+  private lookAtLink: { el: HTMLElement; since: number; at: { u: number; v: number; h: number } } | null = null;
   private readingUntil = 0;
 
   // circling her with the cursor
@@ -198,9 +198,9 @@ export class Brain {
     if (tNow - this.pointer.t > 120) this.pointer.speed *= 0.9;
     this.interest = Math.max(0, this.interest - 0.06 / 60);
 
-    // the visitor scrolled away from her: she makes her way to where they are looking (hopping, climbing...)
+    // the visitor flew the camera away from her: she makes her way to where they are looking (hopping, climbing...)
     const mv = this.mover;
-    if (this.greeted && !mv.busy && !this.levi.current && this.space.lookingAway && tNow > this.followAt && !this.space.inView(mv.u, mv.v, mv.h + 0.7 * this.space.world.m, 40)) {
+    if (this.greeted && !mv.busy && !this.levi.current && this.space.lookingAway && tNow > this.followAt && !this.space.inView(mv.u, mv.v, mv.h + 0.7, 40)) {
       this.followAt = tNow + 5000;
       const goal = this.space.viewGoal();
       if (goal) mv.goTo(goal, 'run', (reached) => (reached ? this.act('wave_hello', Prio.Page, { cooldown: 8000, mood: { にこり: 0.8 } }) : this.cantReach()));
@@ -224,7 +224,7 @@ export class Brain {
     }
     // a thrown cube coming down near her
     for (const c of this.space.world.cubes) {
-      if (c.hitAt && tNow - c.thrownAt < 3000 && Math.hypot(c.u - mv.u, c.v - mv.v, c.h - mv.h - 0.5 * this.space.world.m) < this.space.herPx * 0.5 && !c.held) {
+      if (c.hitAt && tNow - c.thrownAt < 3000 && Math.hypot(c.u - mv.u, c.v - mv.v, c.h - mv.h - 0.5) < 0.7 && !c.held) {
         c.hitAt = 0;
         c.thrownAt = 0;
         this.glance('viewer', 1500);
@@ -239,9 +239,9 @@ export class Brain {
       if (/\/support\/?$/.test(new URL(href || location.href, location.href).pathname) && href) {
         this.act('heart', Prio.Page, { cooldown: 30000, mood: { にこり: 0.8 } });
       } else {
-        const r = ln.el.getBoundingClientRect();
+        const at = this.space.screenOf(ln.at.u, ln.at.v, ln.at.h);
         const me = this.space.headScreen();
-        if (me) this.act(r.left + r.width / 2 < me.x ? 'point_right' : 'point_left', Prio.Page, { cooldown: 14000 });
+        if (me && at) this.act(at.x < me.x ? 'point_right' : 'point_left', Prio.Page, { cooldown: 14000 });
       }
       ln.since = Infinity;
     }
@@ -295,8 +295,8 @@ export class Brain {
       target = this.space.cameraPos();
       w = 0.9;
     } else if ((cur === 'point_left' || cur === 'point_right') && this.lookAtLink) {
-      const r = this.lookAtLink.el.getBoundingClientRect();
-      target = this.space.screenPoint(r.left + r.width / 2, r.top + r.height / 2);
+      const at = this.lookAtLink.at;
+      target = this.space.toBabylon(at.u, at.v, at.h);
       w = 0.8;
     } else if (mode === 'always') {
       target = cursor;
@@ -451,23 +451,19 @@ export class Brain {
     else this.act(this.any('peace_wink', 'blow_kiss', 'cat_paws', 'bunny_ears'), Prio.Touch, { mood: { 照れ: 0.6 }, moodMs: 3000 });
   }
 
-  /** A click on a block (or the ground): she makes her way onto it, hopping and climbing as she must; three quick
-   * clicks on one spot and she mines it. */
-  groundClick(goal: Goal, x: number, y: number, h: number) {
+  /** A click on the ground: she makes her way there; three quick clicks on one spot and she mines it. */
+  groundClick(goal: Goal, x: number, y: number) {
     this.input();
     const tNow = now();
     this.floorClicks = this.floorClicks.filter((c) => tNow - c < 1200);
     this.floorClicks.push(tNow);
     const dark = document.documentElement.classList.contains('dark');
     this.space.burst(x, y, dark ? ['#4f9640', '#6c442c', '#7fd4a4'] : ['#5fa94a', '#8a5a3b', '#98674a'], 5);
+    if (!this.free()) return;
     const mv = this.mover;
-    if (mv.mode === 'carried' || mv.mode === 'fall' || mv.mode === 'clip' || mv.mode === 'hop' || mv.mode === 'wall' || mv.carrying) return;
-    if (this.levi.current) this.levi.stop();
     const mine = this.floorClicks.length >= 3;
     if (mine) this.floorClicks = [];
-    const m = this.space.world.m;
-    const far = Math.abs(goal.u - mv.u) > 3 * m || goal.block !== mv.on;
-    void h;
+    const far = Math.hypot(goal.u - mv.u, goal.v - mv.v) > 3 || goal.block !== mv.on;
     mv.goTo(goal, far ? 'run' : 'walk', (reached) => {
       if (!reached) return this.cantReach();
       mv.face(0);
@@ -484,6 +480,76 @@ export class Brain {
       }
     });
     this.nextAmbient = Math.max(this.nextAmbient, tNow + 6000);
+  }
+
+  /** Free to be sent somewhere (not carried, falling, climbing or carrying)? Stops what she is playing. */
+  private free() {
+    const mv = this.mover;
+    if (mv.mode === 'carried' || mv.mode === 'fall' || mv.mode === 'clip' || mv.mode === 'hop' || mv.mode === 'wall' || mv.carrying) return false;
+    if (this.levi.current) this.levi.stop();
+    return true;
+  }
+
+  /** A click on a block: she makes her way to it (onto its top, or up to the face that was clicked) and plays with
+   * it, each kind its own way, and the block answers: it presses in, bounces, spins, flips, glows... Links and
+   * controls only light up: nothing navigates from here. */
+  pieceClick(p: Piece, hit: PieceHit, x: number, y: number) {
+    this.input();
+    this.space.burst(x, y, ['#7fd4a4', '#ffffff', '#cfe6dc'], 4);
+    if (!this.free()) return;
+    const mv = this.mover;
+    const label = (hit.spot?.el.innerText || hit.spot?.el.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim();
+    const words = (p.el.innerText || '').replace(/\s+/g, ' ').trim();
+    const short = (t: string, n: number) => (t.length > n ? t.slice(0, n) + '…' : t);
+    // what she does there, and how the block answers (an animation, ms into her clip)
+    type Plan = { top: boolean; clip: string; fx: [Fx, number][]; say?: string; mood?: Record<string, number> };
+    const onTop = hit.top || p.kind === 'bar' || p.kind === 'title';
+    let plan: Plan;
+    if (hit.spot && !hit.top) {
+      plan = { top: false, clip: hit.h - mv.h > 1.3 ? 'look_up_reach' : 'clap_cheer', fx: [['press', 500], ['press', 1500]], say: label ? short(label, 24) : undefined, mood: { にこり: 0.8 } };
+    } else if (p.kind === 'button') {
+      plan = onTop
+        ? { top: true, clip: 'jump_happy', fx: [['press', 700], ['press', 2000]], mood: { 笑い: 0.8 } }
+        : { top: false, clip: 'mining_swing', fx: [['press', 1300], ['press', 2500], ['press', 3700]], mood: { キリッ: 0.7 } };
+    } else if (p.kind === 'title') {
+      plan = { top: true, clip: this.any('idol_poses', 'jump_happy'), fx: [['bounce', 200], ['glow', 1600]], mood: { 笑い: 0.8 } };
+    } else if (p.kind === 'heading') {
+      plan = onTop ? { top: true, clip: this.any('hum_sway', 'heel_rock'), fx: [['wobble', 300], ['wobble', 2200]] } : { top: false, clip: 'peek_afar', fx: [['glow', 800]], say: short(words, 18) };
+    } else if (p.kind === 'text') {
+      plan = onTop ? { top: true, clip: 'heel_rock', fx: [['glow', 400]] } : { top: false, clip: 'daydream', fx: [['glow', 300]], say: short(words, 18) };
+    } else if (p.kind === 'media') {
+      plan = onTop ? { top: true, clip: 'twirl', fx: [['wobble', 400]] } : { top: false, clip: 'clap_cheer', fx: [['spin', 700]], mood: { 笑い: 0.8 } };
+    } else if (p.kind === 'bar') {
+      plan = { top: true, clip: this.any('skirt_spin', 'twirl'), fx: [['wobble', 300], ['glow', 900]] };
+    } else {
+      plan = onTop ? { top: true, clip: 'sit_rest', fx: [['dip', 600]] } : { top: false, clip: 'twirl', fx: [['flip', 500]], mood: { にこり: 0.8 } };
+    }
+    // where she stands: on its top (where it was clicked), or in front of the face that was clicked
+    let goal: Goal;
+    if (plan.top) {
+      goal = hit.top ? { u: hit.u, v: hit.v, block: p } : { u: p.u + p.w / 2, v: p.z - p.d / 2, block: p };
+    } else {
+      const n = Math.hypot(hit.nu, hit.nv) || 1;
+      const gu = hit.u + (hit.nu / n) * 0.6;
+      const gv = hit.v + (hit.nv / n) * 0.6;
+      const floor = this.space.world.supportAt(gu, gv, Math.min(hit.h, p.h0 + 0.5));
+      goal = { u: gu, v: gv, block: floor.block };
+    }
+    const far = Math.hypot(goal.u - mv.u, goal.v - mv.v) > 3 || goal.block !== mv.on;
+    mv.goTo(goal, far ? 'run' : 'walk', (reached) => {
+      if (!reached) return this.cantReach();
+      if (plan.top) mv.face(0);
+      else mv.look(hit.u, hit.v);
+      const go = () => {
+        const clip = this.levi.clips[plan.clip] ? plan.clip : 'thumbs_up';
+        if (!this.act(clip, Prio.Page, { say: plan.say, mood: plan.mood, moodMs: 3000 })) return;
+        if (plan.top) this.glance('viewer', 2500);
+        for (const [fx, ms] of plan.fx) setTimeout(() => this.space.world.play(p, fx, fx === 'press' ? hit.spot : null), ms);
+      };
+      // a moment to turn to it first
+      setTimeout(go, plan.top ? 0 : 350);
+    });
+    this.nextAmbient = Math.max(this.nextAmbient, now() + 8000);
   }
 
   /** Somewhere she cannot get to: she reaches up for it and pouts. */
@@ -517,14 +583,13 @@ export class Brain {
   private wander() {
     const sp = this.space;
     const mv = this.mover;
-    const m = sp.world.m;
     const r = Math.random();
     if (r < 0.3) {
       // a block she could carry, near her
-      const lanes = mv.lanes();
+      const areas = mv.areas();
       const near = sp.world
         .blocks()
-        .filter((p) => mv.canLift(p) && sp.inView(p.u + p.w / 2, p.z, p.h0, 80) && Math.hypot(p.u + p.w / 2 - mv.u, p.h0 - mv.h) < 6 * m && mv.liftSpot(p, lanes))
+        .filter((p) => mv.canLift(p) && sp.inView(p.u + p.w / 2, p.z - p.d / 2, p.h0, 80) && Math.hypot(p.u + p.w / 2 - mv.u, p.z - p.d / 2 - mv.v, p.h0 - mv.h) < 6 && mv.liftSpot(p, areas))
         .sort(() => Math.random() - 0.5);
       const p = near[0];
       if (p && mv.moveBlock(p, (moved) => moved && this.afterWalk())) return;
@@ -537,7 +602,9 @@ export class Brain {
       }
     }
     const gait = Math.random() < 0.15 ? 'skip' : Math.random() < 0.15 ? 'tiptoe' : 'walk';
-    mv.walkTo(mv.u + (Math.random() - 0.5) * 4 * m, gait, () => this.afterWalk());
+    const a = Math.random() * Math.PI * 2;
+    const d = 1 + Math.random() * 2;
+    mv.walkTo(mv.u + Math.cos(a) * d, mv.v + Math.sin(a) * d, gait, () => this.afterWalk());
   }
   private afterWalk() {
     this.mover.face(0);
@@ -557,13 +624,12 @@ export class Brain {
   /** She landed (dropped, or off a block). */
   private landed(speed: number, box: Piece | null) {
     for (const k of ['びっくり', '汗', 'はぅ']) delete this.levi.mood[k];
-    const m = this.space.world.m;
-    if (speed > 2.5 * m) {
+    if (box && !box.fx) this.space.world.play(box, 'dip');
+    if (speed > 2.5) {
       const f = this.space.feetScreen();
       if (f) this.space.burst(f.x, f.y, ['#ffffff', '#cfe6dc', '#7fd4a4'], 8);
       this.act(this.levi.clips.fall_land ? 'fall_land' : 'dizzy', Prio.Touch, { mood: { 困る: 0.8, 涙: 0.4 }, moodMs: 2500 });
     }
-    void box;
   }
   cubeThrown(c: Cube) {
     this.input();
@@ -577,39 +643,23 @@ export class Brain {
   }
 
   // ------------------------------------------------------------------ the page
-  scrolled(v: number, atEnd: boolean) {
+  /** The visitor flies the camera about. */
+  cameraMoved() {
     this.input();
-    this.readingUntil = now() + 1500;
-    if (Math.abs(v) > 6) this.act('balance_wobble', Prio.Page, { cooldown: 15000, mood: { 汗: 0.8, はぅ: 0.5 }, moodMs: 3000 });
-    if (atEnd && !this.bottomSeen.has(location.pathname)) {
-      this.bottomSeen.add(location.pathname);
-      this.glance('viewer', 3000);
-      this.act('wave_bye', Prio.Page, { cooldown: 20000, say: this.t.say.bye, mood: { にこり: 0.8 } });
-    }
   }
 
-  hoverLink(el: HTMLElement | null) {
-    if (!el) {
+  /** The cursor rests on a link or control (on a block, at `at`). */
+  hoverLink(el: HTMLElement | null, at: { u: number; v: number; h: number } | null) {
+    if (!el || !at) {
       this.lookAtLink = null;
       return;
     }
-    if (this.lookAtLink?.el !== el) this.lookAtLink = { el, since: now() };
-  }
-
-  clickedLink(a: HTMLAnchorElement) {
-    const href = a.getAttribute('href') || '';
-    if (/\/support\/?$/.test(href)) this.act('heart', Prio.Page, { cooldown: 20000, mood: { にこり: 1 } });
-    else if (a.closest('.lm-grid-4') || /github\.com\/LiteLDev\/?$/.test(href)) this.act('clap_cheer', Prio.Page, { cooldown: 8000, mood: { 笑い: 0.9 } });
+    if (this.lookAtLink?.el !== el) this.lookAtLink = { el, since: now(), at: { u: at.u, v: at.v, h: at.h } };
   }
 
   navigated(path: string) {
     if (/^\/(about|support)\//.test(path)) this.act('curtsy', Prio.Page, { cooldown: 10000, mood: { にこり: 0.8 } });
     else this.act('look_around', Prio.Page, { cooldown: 10000 });
-  }
-
-  copied() {
-    this.input();
-    this.act(this.any('thumbs_up', 'ganbare'), Prio.Page, { cooldown: 5000, say: this.t.say.copied, mood: { にこり: 0.6 }, moodMs: 1800 });
   }
 
   languageChanged() {
