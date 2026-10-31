@@ -12,6 +12,7 @@ CodeOfCraft/WorldDL
 CoozillaX/PlayerBridge
 copper-lamp/BSChat
 copper-lamp/Dear-OreUI
+copper-lamp/LitematicaBE
 CoralFans-Dev/CFSP
 CoralFans-Dev/CoralFans
 CoralFans-Dev/CoralMap
