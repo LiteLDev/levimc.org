@@ -1,14 +1,15 @@
-// The 3D space: the page lies down as the ground of a diorama (./diorama) whose components rise out of it as blocks,
-// seen by a tilted camera; LeviChan lives on it (WebGL, with a camera matched to the CSS perspective), walks, climbs
-// and hides among the blocks (./mover), and a small brain (./brain) turns what the visitor does into what she does.
-// Everything here is loaded on demand, when the peeking avatar is clicked (./LeviChanPeek).
+// The 3D space: the page comes apart into blocks hanging in the sky as a staircase (./diorama), seen by a camera at
+// her eye level that keeps her in view; LeviChan lives on it (WebGL, with a camera matched to the CSS perspective),
+// walks the ledges, hops, climbs, scales the blocks and carries them about (./mover), and a small brain (./brain)
+// turns what the visitor does into what she does. Everything here is loaded on demand, when the peeking avatar is
+// clicked (./LeviChanPeek).
 import css from './levichan.css?inline';
 import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Ray } from '@babylonjs/core/Culling/ray.pure';
 import { Levi, MMD_SCALE, type HitRegion } from './levi';
 import { Brain } from './brain';
-import { Diorama, type Cube } from './diorama';
-import { Mover } from './mover';
+import { Diorama, rng, type Cube, type Piece } from './diorama';
+import { Mover, type Goal } from './mover';
 import type { LeviChanStrings } from './strings';
 
 export interface EnterOptions {
@@ -35,10 +36,6 @@ const INTERACTIVE = 'a, button, input, select, textarea, summary, label, details
  * layout is CSS's column-major one. */
 const m3d = (m: Matrix) => `matrix3d(${Array.from(m.m, (v) => +v.toFixed(6)).join(',')})`;
 
-/** A tiny seeded RNG, so the cubes' pixel textures are the same on every visit. */
-function rng(seed: number) {
-  return () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
-}
 function pixelTexture(kind: 'grass' | 'dirt' | 'leaf' | 'log' | 'stone' | 'side', seed: number) {
   const c = document.createElement('canvas');
   c.width = c.height = 16;
@@ -71,15 +68,23 @@ function pixelTexture(kind: 'grass' | 'dirt' | 'leaf' | 'log' | 'stone' | 'side'
   return c.toDataURL();
 }
 
-/** The camera over the page: the page point it looks at, the tilt of the page away from the screen, a turn about
- * the page's normal, and how far back it sits. All zero (and the target at the viewport's centre): the flat page. */
+/** The camera: the point it looks at (the page's CSS space: X right, Y down, Z toward the viewer), its turn about
+ * the vertical and its pitch (negative: looking down), and how far back it sits. Looking at the viewport's centre
+ * with all else zero: the flat page. */
 interface Cam {
-  tu: number;
-  tv: number;
-  tilt: number;
-  turn: number;
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  pitch: number;
   back: number;
-  drop: number;
+}
+/** a hit of a ray on the world: the point, and the block (null: the ground) */
+interface Hit {
+  u: number;
+  v: number;
+  h: number;
+  block: Piece | null;
 }
 
 class Space {
@@ -109,34 +114,35 @@ class Space {
   W = 0;
   H = 0;
   P = 1000;
-  /** her height on the page (px) */
+  /** her height on screen (px), and so the world's scale */
   herPx = 240;
 
-  // the camera: where it is, where it goes, and what the visitor adds (drag, pointer parallax, reading)
-  private cam: Cam = { tu: 0, tv: 0, tilt: 0, turn: 0, back: 0, drop: 0 };
-  private scrollTarget = 0;
-  private orbitTurn = 0;
-  private orbitTilt = 0;
+  // the camera: where it is, and what the visitor adds (drag, pointer parallax, scrolling)
+  private cam: Cam = { x: 0, y: 0, z: 0, yaw: 0, pitch: 0, back: 0 };
+  /** the height the camera looks at (world h) while the visitor scrolls; it follows her otherwise */
+  private lookH = 0;
+  private follow = { x: 0, z: 0 };
+  private manualUntil = 0;
+  private orbitYaw = 0;
+  private orbitPitch = 0;
   private mx = 0;
   private parallax = 0;
-  /** reading focus: the page tilts toward the viewer while they read */
-  private read = 0;
-  private readTarget = 0;
-  private overPanelSince = 0;
-  private offPanelSince = 0;
+  private shake = 0;
   flat = false;
   look: LookMode = 'auto';
   quiet = false;
   private intro = 0;
   private introStart = 0;
-  private introDur = 3000;
+  private introDur = 3200;
   private outro = -1;
   private leviReveal = 0;
   private leviRevealStart = -1;
+  /** she is placed once the blocks have landed */
+  private placed = false;
   private PV = Matrix.Identity();
   private PVinv = Matrix.Identity();
   private lastFrame = performance.now();
-  private origin = { u: 0, v: 0 };
+  private origin = { x: 0, y: 0 };
 
   constructor(opts: EnterOptions) {
     this.t = opts.strings;
@@ -169,10 +175,10 @@ class Space {
     this.W = document.documentElement.clientWidth;
     this.H = innerHeight;
     this.P = Math.max(1200, Math.hypot(this.W, this.H) * 1.15);
-    this.herPx = Math.round(Math.min(420, Math.max(160, Math.min(this.H * 0.42, this.W * 0.5))));
+    this.herPx = Math.round(Math.min(380, Math.max(160, Math.min(this.H * 0.4, this.W * 0.5))));
     this.savedScroll = window.scrollY;
     const peek = document.querySelector('.lc-peek-head')?.getBoundingClientRect();
-    this.origin = peek ? { u: peek.left + peek.width / 2, v: peek.top + window.scrollY + peek.height } : { u: this.W * 0.7, v: this.savedScroll + this.H * 0.5 };
+    this.origin = peek ? { x: peek.left + peek.width / 2, y: peek.top + window.scrollY + peek.height } : { x: this.W * 0.7, y: this.savedScroll + this.H * 0.5 };
 
     this.style = document.createElement('style');
     this.style.textContent = css;
@@ -199,7 +205,7 @@ class Space {
     this.menu.setAttribute('role', 'dialog');
     this.menu.setAttribute('aria-label', this.t.menuTitle);
 
-    // the page becomes the diorama's ground: a fixed box as tall as the page, centred on the viewport
+    // the page becomes a fixed box as tall as itself, centred on the viewport; its components come apart from there
     this.world = new Diorama(this.root, this.herPx);
     this.savedRootStyle = this.root.getAttribute('style');
     const Hp = Math.max(this.root.scrollHeight, document.documentElement.scrollHeight);
@@ -214,13 +220,13 @@ class Space {
     this.ring = this.addWorld('lc-ring');
     this.shadow = this.addWorld('lc-shadow');
     this.ripple = this.addWorld('lc-ripple');
-    this.makeCubes();
 
-    this.cam = { tu: this.W / 2, tv: this.savedScroll + this.H / 2, tilt: 0, turn: 0, back: 0, drop: 0 };
-    this.scrollTarget = this.cam.tv;
+    this.cam = { x: this.W / 2, y: this.savedScroll + this.H / 2, z: 0, yaw: 0, pitch: 0, back: 0 };
+    this.lookH = this.world.Hp - this.cam.y;
+    this.follow = { x: this.W / 2, z: 0 };
     this.introStart = performance.now();
     if (instant || reduced()) this.introDur = 1;
-    this.world.rise(this.introStart + (instant ? -1e5 : 0));
+    this.world.explode(this.introStart + (instant ? -1e5 : 0));
 
     this.bindEvents();
     this.loop();
@@ -249,11 +255,8 @@ class Space {
     this.loadEl.style.opacity = '0';
     setTimeout(() => this.loadEl.remove(), 500);
     this.levi.engine.setHardwareScalingLevel(1 / Math.min(devicePixelRatio || 1, 1.5));
+    this.levi.preload(['hop', 'climb_up', 'wall_climb', 'lift_up', 'carry_idle', 'carry_walk', 'put_down', 'fall_land']);
     this.mover = new Mover(this.world, this.levi);
-    // she arrives on the ground in front of where her head was peeking, facing the viewer
-    const spawn = this.freeSpot(Math.max(this.W * 0.25, Math.min(this.W * 0.75, this.origin.u)), this.origin.v + this.herPx * 0.6);
-    this.mover.place(spawn.u, spawn.v);
-    this.leviRevealStart = performance.now() + Math.max(0, this.introDur - (performance.now() - this.introStart)) * 0.55;
     this.brain = new Brain(this, this.levi, this.mover, this.t);
     if (new URLSearchParams(location.search).has('lcdebug')) (window as unknown as { __levichan: unknown }).__levichan = this;
     this.levi.engine.runRenderLoop(() => {
@@ -277,20 +280,34 @@ class Space {
     return el;
   }
 
-  /** A free spot on the ground near a page point (not inside a block), preferring the side toward the camera. */
-  freeSpot(u: number, v: number) {
-    const r = this.herPx * 0.16;
-    const order = [2, 1, 3, 0, 4, 7, 5, 6];
-    for (let ring = 0; ring < 16; ring++) {
-      for (const a of order) {
-        const ang = (a / 8) * Math.PI * 2;
-        const pu = u + Math.cos(ang) * ring * r;
-        const pv = v + Math.sin(ang) * ring * r;
-        if (pu < r || pu > this.W - r || pv < r || pv > this.world.Hp - r) continue;
-        if (this.world.supportAt(pu, pv, Infinity, r).h < 2) return { u: pu, v: pv };
+  /** The ledge nearest a page point (page px), to set her down on. */
+  private spotNear(x: number, y: number) {
+    const mv = this.mover!;
+    const h = this.world.Hp - y;
+    let best: { u: number; v: number; h: number; block: Piece | null } | null = null;
+    let bd = Infinity;
+    for (const l of mv.lanes()) {
+      if (l.b - l.a < mv.r) continue;
+      const u = Math.max(l.a, Math.min(l.b, x));
+      // below the point rather than above it; on a block rather than the ground far down
+      const d = Math.abs(u - x) + Math.abs(l.h - h) * (l.h > h ? 2.5 : 1) + (l.block ? 0 : this.H);
+      if (d < bd) {
+        bd = d;
+        best = { u, v: l.v, h: l.h, block: l.block };
       }
     }
-    return { u, v };
+    return best ?? { u: x, v: 0.55 * this.world.m, h: 0, block: null };
+  }
+
+  /** Once the blocks have landed: set her down on a ledge where her head was peeking, and drop the cubes in. */
+  private placeHer() {
+    const mv = this.mover!;
+    const spot = this.spotNear(Math.max(this.W * 0.2, Math.min(this.W * 0.8, this.origin.x)), this.origin.y);
+    mv.place(spot.u, spot.v, spot.h, spot.block);
+    this.lookH = spot.h + 0.8 * this.world.m;
+    this.leviRevealStart = performance.now();
+    this.placed = true;
+    this.makeCubes();
   }
 
   private makeCubes() {
@@ -303,7 +320,9 @@ class Space {
     ];
     const r = rng(7);
     const size = Math.round(this.herPx * 0.2);
-    // fewer of them on a narrow screen
+    const mv = this.mover!;
+    // onto the ledges in view
+    const lanes = mv.lanes().filter((l) => l.block && l.b - l.a > size && this.inView((l.a + l.b) / 2, l.v, l.h, 40));
     kinds.slice(0, this.W < 700 ? 3 : kinds.length).forEach(([top, side], i) => {
       const el = document.createElement('div');
       el.className = 'lc-cube';
@@ -319,38 +338,76 @@ class Space {
         [`rotateY(-90deg) translateZ(${half}px) rotateZ(-90deg)`, tex(side, 4)],
       ];
       el.innerHTML = faces.map(([f, u]) => `<i style="transform:${f};background-image:url(${u})"></i>`).join('');
-      // they fall in from above, spread over the view
-      const u = this.W * (0.12 + 0.76 * r());
-      const v = this.savedScroll + this.H * (0.25 + 0.6 * r());
-      const spot = this.world.supportAt(u, v);
-      const c = this.world.addCube(el, size, u, v, spot.h + 900 + i * 260);
+      const l = lanes.length ? lanes[Math.floor(r() * lanes.length)]! : null;
+      const u = l ? l.a + (l.b - l.a) * r() : this.W * (0.15 + 0.7 * r());
+      const v = l ? l.v + (r() - 0.5) * 0.2 * this.world.m : 0.55 * this.world.m;
+      const c = this.world.addCube(el, size, u, v, (l?.h ?? 0) + this.H * 0.9 + i * 220);
       c.spin = (r() - 0.5) * 220;
-      el.style.opacity = '0';
     });
   }
 
   // ------------------------------------------------------------------ the camera
-  /** Page-local (u, v, h) -> CSS view space (x right, y down, z toward the viewer, origin at the viewport centre). */
+  /** The page's CSS space -> view space (x right, y down, z toward the viewer, origin at the viewport centre). */
   private viewMatrix(c: Cam) {
-    return Matrix.Translation(-c.tu, -c.tv, 0)
-      .multiply(Matrix.RotationZ(c.turn))
-      .multiply(Matrix.RotationX(c.tilt))
-      .multiply(Matrix.Translation(0, c.drop, -c.back));
+    return Matrix.Translation(-c.x, -c.y, -c.z)
+      .multiply(Matrix.RotationY(c.yaw))
+      .multiply(Matrix.RotationX(c.pitch))
+      .multiply(Matrix.Translation(0, 0, -c.back));
+  }
+  /** world (u, v, h) -> the page's CSS space */
+  private get W2C() {
+    return Matrix.FromValues(1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, this.world.Hp, 0, 1);
   }
 
-  /** The page point under a screen point, on the plane at height h. */
-  pagePoint(x: number, y: number, h = 0): { u: number; v: number } | null {
+  /** The ray through a screen point, in world coordinates. */
+  rayWorld(x: number, y: number) {
     const O = Vector3.TransformCoordinates(new Vector3(0, 0, this.P), this.PVinv);
     const Q = Vector3.TransformCoordinates(new Vector3(x - this.W / 2, y - this.H / 2, 0), this.PVinv);
-    const D = Q.subtract(O);
-    if (Math.abs(D.z) < 1e-6) return null;
-    const t = (h - O.z) / D.z;
-    if (t <= 0) return null;
-    return { u: O.x + D.x * t, v: O.y + D.y * t };
+    const Hp = this.world.Hp;
+    const o = { u: O.x, v: O.z, h: Hp - O.y };
+    const q = { u: Q.x, v: Q.z, h: Hp - Q.y };
+    return { o, d: { u: q.u - o.u, v: q.v - o.v, h: q.h - o.h } };
   }
-  /** Screen point of a page point. */
+  /** Where a screen point's ray meets the vertical plane v (facing the viewer). */
+  onPlaneV(x: number, y: number, v: number) {
+    const { o, d } = this.rayWorld(x, y);
+    if (Math.abs(d.v) < 1e-6) return null;
+    const t = (v - o.v) / d.v;
+    return t > 0 ? { u: o.u + d.u * t, h: o.h + d.h * t } : null;
+  }
+  /** The first block (or the ground) a screen point's ray meets. */
+  pick(x: number, y: number): Hit | null {
+    const { o, d } = this.rayWorld(x, y);
+    let best: Hit | null = null;
+    let bt = Infinity;
+    for (const b of this.world.blocks()) {
+      // slabs: u, v, h
+      let t0 = 0;
+      let t1 = Infinity;
+      const slab = (o0: number, d0: number, lo: number, hi: number) => {
+        if (Math.abs(d0) < 1e-9) return o0 >= lo && o0 <= hi;
+        let a = (lo - o0) / d0;
+        let c = (hi - o0) / d0;
+        if (a > c) [a, c] = [c, a];
+        t0 = Math.max(t0, a);
+        t1 = Math.min(t1, c);
+        return t0 <= t1;
+      };
+      if (!slab(o.u, d.u, b.u, b.u + b.w) || !slab(o.v, d.v, b.z - b.d, b.z) || !slab(o.h, d.h, b.h0, b.h1)) continue;
+      if (t0 < bt) {
+        bt = t0;
+        best = { u: o.u + d.u * t0, v: o.v + d.v * t0, h: o.h + d.h * t0, block: b };
+      }
+    }
+    if (d.h < 0) {
+      const t = -o.h / d.h;
+      if (t < bt) best = { u: o.u + d.u * t, v: o.v + d.v * t, h: 0, block: null };
+    }
+    return best;
+  }
+  /** Screen point of a world point. */
   screenOf(u: number, v: number, h = 0) {
-    const p = Vector3.TransformCoordinates(new Vector3(u, v, h), this.PV);
+    const p = Vector3.TransformCoordinates(new Vector3(u, this.world.Hp - h, v), this.PV);
     const k = this.P / Math.max(1, this.P - p.z);
     return { x: this.W / 2 + p.x * k, y: this.H / 2 + p.y * k };
   }
@@ -362,76 +419,78 @@ class Space {
     const dt = Math.min(0.05, (now - this.lastFrame) / 1000);
     this.lastFrame = now;
     this.intro = clamp01((now - this.introStart) / this.introDur);
+    const m = this.world.m;
 
-    // the camera's travel: flat page (k = 0) -> the diorama (k = 1); the outro runs it back once she is gone
-    let k = easeInOut(clamp01(this.intro * 1.15));
+    // the camera's travel: the flat page (k = 0) -> at her eye level (k = 1); the outro runs it back once she is gone
+    let k = easeInOut(clamp01(this.intro * 1.1));
     if (this.outro >= 0) {
-      const o = clamp01((now - this.outro - 500) / 1500);
+      const o = clamp01((now - this.outro - 500) / 1700);
       k = 1 - easeInOut(o);
       if (o >= 1 && this.world.flat) {
         this.teardown();
         return;
       }
     }
+    if (this.mover && !this.placed && this.world.pieces.every((p) => p.t >= 1) && this.outro < 0) this.placeHer();
 
-    // reading focus: flatter after the pointer has rested on the page a moment, back after it left a while
-    if (this.flat) this.readTarget = 1;
-    else if (this.overPanelSince && now - this.overPanelSince > 900) this.readTarget = 1;
-    else if (this.offPanelSince && now - this.offPanelSince > 1200) this.readTarget = 0;
-    this.read += (this.readTarget - this.read) * Math.min(1, dt * 2.5);
-    this.parallax += (this.mx * 3 * DEG - this.parallax) * Math.min(1, dt * 2);
+    this.parallax += (this.mx * 5 * DEG - this.parallax) * Math.min(1, dt * 2);
     if (!this.dragging) {
-      this.orbitTurn *= 1 - Math.min(1, dt * 0.35);
-      this.orbitTilt *= 1 - Math.min(1, dt * 0.35);
+      this.orbitYaw *= 1 - Math.min(1, dt * 0.35);
+      this.orbitPitch *= 1 - Math.min(1, dt * 0.35);
     }
-    // scrolling glides; leaving, the camera comes back to a scroll position the flat page can show
-    const maxV = Math.max(this.H / 2, this.world.Hp - this.H * 0.35);
-    this.scrollTarget = Math.max(this.H * 0.35, Math.min(maxV, this.scrollTarget));
-    const tv = this.outro >= 0 ? Math.max(this.H / 2, Math.min(this.world.Hp - this.H / 2, this.scrollTarget)) : this.scrollTarget;
-
+    // what it looks at: her (a little ahead of her, toward the page's middle), or where the visitor scrolled to
+    const mv = this.placed ? this.mover : null;
+    const Hp = this.world.Hp;
+    if (mv && now > this.manualUntil) this.lookH += (mv.h + 0.8 * m - this.lookH) * Math.min(1, dt * 2.5);
+    this.lookH = Math.max(this.H * 0.3, Math.min(Hp - this.H * 0.3, this.lookH));
+    const tx = mv ? lerp(this.W / 2, mv.u, 0.55) : this.W / 2;
+    const tz = mv ? mv.v : 0;
     const c = this.cam;
-    c.tv += (tv - c.tv) * Math.min(1, dt * 6);
-    c.tu = this.W / 2;
-    // on the way in (and out) the camera swoops: it swings round and pulls back further, then settles
+    const ease = Math.min(1, dt * 3);
+    this.follow.x += (tx - this.follow.x) * ease;
+    this.follow.z += (tz - this.follow.z) * ease;
+    const flatY = this.outro >= 0 ? Math.max(this.H / 2, Math.min(Hp - this.H / 2, Hp - this.lookH)) : this.savedScroll + this.H / 2;
+    c.x = lerp(this.W / 2, this.follow.x, k);
+    c.y = lerp(flatY, Hp - this.lookH, k);
+    c.z = this.follow.z * k;
+    // on the way in (and out) the camera swoops round and pulls back, then settles at her eye level
     const swoop = Math.sin(Math.PI * k);
-    c.tilt = (lerp(40, 20, this.read) * DEG + this.orbitTilt) * k + swoop * 10 * DEG;
-    c.turn = (this.parallax * (1 - this.read * 0.7) + this.orbitTurn) * k - swoop * 24 * DEG;
-    c.back = lerp(this.herPx * 1.1, this.herPx * 0.5, this.read) * k + swoop * this.herPx * 1.2;
-    c.drop = this.H * 0.06 * k;
-    this.PV = this.viewMatrix(c);
+    const read = this.flat ? 1 : 0;
+    c.yaw = ((-12 * (1 - read)) * DEG + this.parallax + this.orbitYaw) * k + swoop * 26 * DEG;
+    c.pitch = ((-7 * (1 - read)) * DEG + this.orbitPitch) * k - swoop * 8 * DEG;
+    c.back = this.herPx * 0.5 * k + swoop * this.herPx * 1.6;
+    this.shake *= Math.max(0, 1 - dt * 8);
+    this.PV = this.viewMatrix(c).multiply(Matrix.Translation(0, Math.sin(now / 30) * this.shake, 0));
     this.PVinv = this.PV.clone().invert();
-    this.root.style.transform = `perspective(${this.P}px) ` + m3d(Matrix.Translation(this.W / 2, this.world.Hp / 2, 0).multiply(this.PV));
+    this.root.style.transform = `perspective(${this.P}px) ` + m3d(Matrix.Translation(this.W / 2, Hp / 2, 0).multiply(this.PV));
 
     this.sky.style.opacity = String(clamp01(k * 1.4));
     this.world.ground.style.opacity = String(clamp01(k * 2));
-    this.world.update(now, dt);
+    // what comes within a third of the perspective distance of the camera is hidden (CSS 3D breaks up past it)
+    this.world.update(now, dt, k > 0.5 ? c.z + c.back + this.P * 0.6 : Infinity);
     this.mover?.update(dt, this.world.cubes);
-    const cubesIn = clamp01((now - this.introStart - 900) / 300);
-    for (const cube of this.world.cubes) cube.el.style.opacity = String(this.outro >= 0 ? k : cubesIn);
 
-    // the first ripple: a ring of light spreading over the ground from where she was peeking
-    const rp = clamp01((now - this.introStart - 150) / 1600);
+    // the first ripple: a ring of light spreading over the page from where she was peeking, as it comes apart
+    const rp = clamp01((now - this.introStart - 100) / 1400);
     const R = rp * Math.max(this.W, this.H) * 1.6;
     const rs = this.ripple.style;
     rs.width = rs.height = `${R * 2}px`;
-    rs.left = `${this.origin.u - R}px`;
-    rs.top = `${this.origin.v - R}px`;
+    rs.transform = `translate3d(${(this.origin.x - R).toFixed(1)}px, ${(this.origin.y - R).toFixed(1)}px, 2px)`;
     rs.opacity = String(this.outro >= 0 ? 0 : (1 - rp) * 0.9);
 
-    // her ring (spawn portal) and contact shadow
+    // her ring (where she appears) and contact shadow, flat on what is under her
     const reveal = this.leviRevealStart < 0 ? 0 : clamp01((now - this.leviRevealStart) / 1100);
     this.leviReveal = this.outro >= 0 ? Math.min(this.leviReveal, 1 - clamp01((now - this.outro) / 600)) : reveal;
-    const mv = this.mover;
     if (mv) {
       const sup = this.world.supportAt(mv.u, mv.v, mv.h + 2);
       const above = mv.h - sup.h;
-      const size = this.herPx * 0.5 * (1 + above / this.herPx);
+      const size = this.herPx * 0.45 * (1 + above / this.herPx);
       for (const [el, sz, op, h] of [
-        [this.ring, this.herPx * 0.8, Math.sin(Math.PI * clamp01(this.leviReveal * 1.1)) * 0.9, sup.h + 0.6],
-        [this.shadow, size, this.leviReveal * k * Math.max(0.25, 1 - above / this.herPx), sup.h + 0.4],
+        [this.ring, this.herPx * 0.8, Math.sin(Math.PI * clamp01(this.leviReveal * 1.1)) * 0.9, sup.h + 1.5],
+        [this.shadow, size, this.leviReveal * k * Math.max(0.25, 1 - above / this.herPx), sup.h + 1],
       ] as const) {
         el.style.width = el.style.height = `${sz}px`;
-        el.style.transform = `translate3d(${(mv.u - sz / 2).toFixed(1)}px, ${(mv.v - sz / 2).toFixed(1)}px, ${h.toFixed(1)}px)`;
+        el.style.transform = `translate3d(${(mv.u - sz / 2).toFixed(1)}px, ${(Hp - h - sz / 2).toFixed(1)}px, ${mv.v.toFixed(1)}px) rotateX(90deg)`;
         el.style.opacity = String(op);
       }
     }
@@ -442,8 +501,8 @@ class Space {
     }
   };
 
-  /** Her model (MMD units: x her left, y up, z away from the viewer) -> page-local: B2P lays it on the page, then
-   * her heading and spot. */
+  /** Her model (MMD units: x her left, y up, z away from the viewer) -> world: B2P stands her up in the world's
+   * axes, then her heading and spot. */
   private herToPage = Matrix.Identity();
   private get k() {
     return this.world.m / MMD_SCALE;
@@ -454,7 +513,7 @@ class Space {
     const k = this.k;
     const B2P = Matrix.FromValues(k, 0, 0, 0, 0, 0, k, 0, 0, -k, 0, 0, 0, 0, 0, 1);
     this.herToPage = B2P.multiply(Matrix.RotationZ(-mv.heading)).multiply(Matrix.Translation(mv.u, mv.v, mv.h));
-    const toView = this.herToPage.multiply(this.PV);
+    const toView = this.herToPage.multiply(this.W2C).multiply(this.PV);
     // the WebGL camera: the CSS viewer at (0, 0, P) looking down -z, carried into her space
     const S = Matrix.Scaling(1 / k, -1 / k, -1 / k);
     const Vb = toView.multiply(S);
@@ -463,11 +522,15 @@ class Space {
     // the blocks (and cubes) in front of her hide her
     const inv = this.herToPage.clone().invert();
     const occ: Matrix[] = [];
-    for (const b of this.world.boxes(3)) occ.push(Matrix.Scaling(b.w, b.d, b.h).multiply(Matrix.Translation(b.u + b.w / 2, b.v + b.d / 2, b.h / 2)).multiply(inv));
-    for (const c of this.world.cubes) occ.push(Matrix.Scaling(c.s, c.s, c.s).multiply(Matrix.Translation(c.u, c.v, c.h + c.s / 2)).multiply(inv));
+    const box = (u: number, w: number, v: number, d: number, h: number, hh: number) =>
+      occ.push(Matrix.Scaling(w, d, hh).multiply(Matrix.Translation(u + w / 2, v - d / 2, h + hh / 2)).multiply(inv));
+    for (const b of this.world.blocks()) box(b.u, b.w, b.z, b.d, b.h0, b.h1 - b.h0);
+    const held = mv.carrying;
+    if (held) box(held.u, held.w, held.z, held.d, held.h0, held.h1 - held.h0);
+    for (const c of this.world.cubes) box(c.u - c.s / 2, c.s, c.v + c.s / 2, c.s, c.h, c.s);
     levi.setOccluders(occ);
   }
-  /** A page point in her Babylon space (for gaze). */
+  /** A world point in her Babylon space (for gaze). */
   toBabylon(u: number, v: number, h: number) {
     return Vector3.TransformCoordinates(new Vector3(u, v, h), this.herToPage.clone().invert());
   }
@@ -478,7 +541,7 @@ class Space {
     this.outro = performance.now();
     this.brain?.farewell();
     this.menu.hidden = true;
-    setTimeout(() => this.world.sink(performance.now()), 450);
+    setTimeout(() => this.world.implode(performance.now()), 450);
     try {
       sessionStorage.removeItem(STORE);
     } catch {
@@ -494,7 +557,7 @@ class Space {
     this.levi?.dispose();
     this.levi = null;
     for (const el of this.els) el.remove();
-    const scroll = this.cam.tv - this.H / 2;
+    const scroll = this.cam.y - this.H / 2;
     this.world.restore();
     this.style.remove();
     this.html.classList.remove('lc-3d');
@@ -506,7 +569,7 @@ class Space {
     this.onExit?.();
   }
 
-  /** Rebuild the diorama for a new page (a route change), keeping her on it. */
+  /** Take a new page apart (a route change, a resize); she lands on it again. */
   private rebuild() {
     const cubes = this.world.cubes;
     this.world.restore();
@@ -516,31 +579,30 @@ class Space {
     s.height = `${Hp}px`;
     s.top = `${(this.H - Hp) / 2}px`;
     this.world = new Diorama(this.root, this.herPx);
-    this.world.build({ u: this.W / 2, v: this.H * 0.4 });
+    this.world.build({ x: this.W / 2, y: this.H * 0.4 });
     this.world.world.append(this.ring, this.shadow, this.ripple);
-    for (const c of cubes) {
-      c.v = Math.min(c.v, Hp - c.s);
-      c.h += 300;
-      this.world.cubes.push(c);
-      this.world.world.appendChild(c.el);
-    }
-    this.world.rise(performance.now());
-    this.scrollTarget = this.H / 2;
+    for (const c of cubes) c.el.remove();
+    this.world.explode(performance.now());
+    this.lookH = Hp - this.H / 2;
+    this.manualUntil = 0;
+    this.introStart = performance.now() - this.introDur;
     if (this.mover && this.levi) {
       const old = this.mover;
       this.mover = new Mover(this.world, this.levi);
-      const spot = this.freeSpot(Math.min(old.u, this.W - 40), Math.min(old.v, Hp - 40));
-      this.mover.place(spot.u, spot.v);
+      this.mover.place(old.u, 0.55 * this.world.m, Hp + this.H, null);
       this.mover.heading = old.heading;
       this.mover.onLand = old.onLand;
       this.brain?.setMover(this.mover);
+      this.leviRevealStart = -1;
+      this.leviReveal = 0;
+      this.placed = false;
     }
   }
 
   // ------------------------------------------------------------------ input
   private dragging = false;
-  private dragStart: { x: number; y: number; turn: number; tilt: number } | null = null;
-  private held: { cube: Cube; last: { u: number; v: number; t: number }; vu: number; vv: number } | null = null;
+  private dragStart: { x: number; y: number; yaw: number; pitch: number } | null = null;
+  private held: { cube: Cube; last: { u: number; h: number; t: number }; vu: number; vh: number } | null = null;
   private carrying: { x: number; y: number; started: boolean } | null = null;
   private pageDown: { x: number; y: number } | null = null;
   private unbinders: (() => void)[] = [];
@@ -564,18 +626,20 @@ class Space {
     const r = this.ray(x, y);
     return r && this.levi && this.leviReveal > 0.9 ? this.levi.hit(r) : null;
   }
-  /** Is an event target part of the page (not the ground, cubes or our UI)? */
+  /** Is an event target part of the page (not the sky, ground, cubes or our UI)? */
   overPanel(target: EventTarget | null) {
     return target instanceof Node && this.root.contains(target) && !this.world.world.contains(target);
   }
-  private onGround(target: EventTarget | null) {
-    return target === this.sky || target === this.world.ground || (target as HTMLElement)?.id === 'lc-stars';
+  private onSky(target: EventTarget | null) {
+    return target === this.sky || target === this.world.ground || (target as HTMLElement)?.id === 'lc-stars' || target === document.body || target === this.html;
   }
 
   private bindEvents() {
     this.on(window, 'resize', () => {
       this.W = document.documentElement.clientWidth;
       this.H = innerHeight;
+      this.P = Math.max(1200, Math.hypot(this.W, this.H) * 1.15);
+      this.herPx = Math.round(Math.min(380, Math.max(160, Math.min(this.H * 0.4, this.W * 0.5))));
       this.root.style.width = `${this.W}px`;
       this.levi?.engine.resize();
       this.rebuild();
@@ -583,26 +647,17 @@ class Space {
     this.on(window, 'pointermove', (e: PointerEvent) => {
       this.mx = (e.clientX / innerWidth) * 2 - 1;
       const onPanel = this.overPanel(e.target);
-      const now = performance.now();
-      if (onPanel) {
-        if (!this.overPanelSince) this.overPanelSince = now;
-        this.offPanelSince = 0;
-      } else {
-        if (!this.offPanelSince) this.offPanelSince = now;
-        this.overPanelSince = 0;
-      }
       if (this.held) {
         const c = this.held.cube;
-        const p = this.pagePoint(e.clientX, e.clientY, c.s * 1.2);
+        const p = this.onPlaneV(e.clientX, e.clientY, c.v);
         if (p) {
           const t = performance.now();
           const dtt = Math.max(1, t - this.held.last.t) / 1000;
           this.held.vu = this.held.vu * 0.5 + ((p.u - this.held.last.u) / dtt) * 0.5;
-          this.held.vv = this.held.vv * 0.5 + ((p.v - this.held.last.v) / dtt) * 0.5;
+          this.held.vh = this.held.vh * 0.5 + ((p.h - this.held.last.h) / dtt) * 0.5;
           this.held.last = { ...p, t };
           c.u = p.u;
-          c.v = p.v;
-          c.h = this.world.supportAt(p.u, p.v).h + c.s * 1.2;
+          c.h = Math.max(this.world.supportAt(p.u, c.v).h, p.h - c.s / 2);
         }
         return;
       }
@@ -613,15 +668,15 @@ class Space {
           this.brain?.pickedUp();
         }
         if (this.carrying.started) {
-          // she hangs from the cursor by her head: her feet are about her height below it on screen
-          const p = this.pagePoint(e.clientX, e.clientY + this.herPx * 0.6, 0);
-          if (p) this.mover.carryTo(p.u, p.v);
+          // she hangs from the cursor by her head: her feet are most of her height below it
+          const p = this.onPlaneV(e.clientX, e.clientY, this.mover.v);
+          if (p) this.mover.carryTo(p.u, p.h - 1.3 * this.world.m);
           return;
         }
       }
       if (this.dragging && this.dragStart) {
-        this.orbitTurn = Math.max(-40 * DEG, Math.min(40 * DEG, this.dragStart.turn + ((e.clientX - this.dragStart.x) / innerWidth) * 90 * DEG));
-        this.orbitTilt = Math.max(-25 * DEG, Math.min(25 * DEG, this.dragStart.tilt + ((e.clientY - this.dragStart.y) / innerHeight) * 50 * DEG));
+        this.orbitYaw = Math.max(-45 * DEG, Math.min(45 * DEG, this.dragStart.yaw + ((e.clientX - this.dragStart.x) / innerWidth) * 90 * DEG));
+        this.orbitPitch = Math.max(-25 * DEG, Math.min(20 * DEG, this.dragStart.pitch - ((e.clientY - this.dragStart.y) / innerHeight) * 50 * DEG));
       }
       const hit = this.hitAt(e.clientX, e.clientY);
       this.canvas.classList.toggle('lc-hot', !!hit && this.outro < 0);
@@ -641,28 +696,29 @@ class Space {
       if (cube) {
         cube.held = true;
         cube.vu = cube.vv = cube.vh = 0;
-        this.held = { cube, last: { u: cube.u, v: cube.v, t: performance.now() }, vu: 0, vv: 0 };
+        this.held = { cube, last: { u: cube.u, h: cube.h, t: performance.now() }, vu: 0, vh: 0 };
         return;
       }
-      if (this.onGround(e.target)) {
+      const t = e.target as HTMLElement;
+      if (this.onSky(t)) {
         this.dragging = true;
-        this.dragStart = { x: e.clientX, y: e.clientY, turn: this.orbitTurn, tilt: this.orbitTilt };
-      } else if (this.overPanel(e.target) && !(e.target as HTMLElement).closest?.(INTERACTIVE)) {
-        // the page itself is the ground too: a plain click on it (not a link, a button, a field) sends her there
+        this.dragStart = { x: e.clientX, y: e.clientY, yaw: this.orbitYaw, pitch: this.orbitPitch };
+      } else if ((this.overPanel(t) || t?.closest?.('.lc-shell')) && !t.closest?.(INTERACTIVE)) {
+        // a plain click on a component (not a link, a button, a field) sends her onto it
         this.pageDown = { x: e.clientX, y: e.clientY };
       }
     });
     this.on(window, 'pointerup', (e: PointerEvent) => {
       if (this.held) {
-        const { cube, vu, vv } = this.held;
+        const { cube, vu, vh } = this.held;
         cube.held = false;
-        // a throw: the cursor's speed, capped, and a little loft
-        const sp = Math.hypot(vu, vv);
+        // a throw: the cursor's speed, capped, and a little toss toward the page
+        const sp = Math.hypot(vu, vh);
         const cap = 9 * this.world.m;
         const f = sp > cap ? cap / sp : 1;
         cube.vu = vu * f;
-        cube.vv = vv * f;
-        cube.vh = Math.min(sp * f * 0.25, 3 * this.world.m);
+        cube.vh = vh * f;
+        cube.vv = -Math.min(sp * f * 0.15, 1.5 * this.world.m);
         cube.spin = (Math.random() - 0.5) * sp * 0.4;
         cube.thrownAt = performance.now();
         cube.hitAt = 0;
@@ -681,24 +737,32 @@ class Space {
       const wasDrag = this.dragging && this.dragStart && Math.hypot(e.clientX - this.dragStart.x, e.clientY - this.dragStart.y) > 6;
       const pd = this.pageDown;
       this.pageDown = null;
-      const fromGround = this.dragging || (!!pd && Math.hypot(e.clientX - pd.x, e.clientY - pd.y) < 6 && !String(getSelection() ?? '').trim());
+      const clicked = (this.dragging && !wasDrag) || (!!pd && Math.hypot(e.clientX - pd.x, e.clientY - pd.y) < 6 && !String(getSelection() ?? '').trim());
       this.dragging = false;
       const hit = this.hitAt(e.clientX, e.clientY);
       this.brain?.pointerUp(e, hit, !!wasDrag);
-      if (fromGround && !wasDrag && !hit) {
-        const p = this.pagePoint(e.clientX, e.clientY, 0);
-        if (p) this.brain?.groundClick(p.u, p.v, e.clientX, e.clientY);
+      if (clicked && !hit) {
+        const p = this.pick(e.clientX, e.clientY);
+        if (p) this.brain?.groundClick({ u: p.u, block: p.block }, e.clientX, e.clientY, p.h);
       }
     });
-    this.on(this.canvas, 'dblclick', (e: MouseEvent) => {
+    this.on(window, 'dblclick', (e: MouseEvent) => {
       const hit = this.hitAt(e.clientX, e.clientY);
-      if (hit) this.brain?.doubleClick(hit);
+      if (hit) return this.brain?.doubleClick(hit);
+      const t = e.target as HTMLElement;
+      if (t?.closest?.(INTERACTIVE) || !(this.overPanel(t) || t?.closest?.('.lc-shell'))) return;
+      // a double click on a component: she fetches it and moves it somewhere else
+      const p = this.pick(e.clientX, e.clientY)?.block ?? this.world.pieceOf(t);
+      if (p) {
+        getSelection()?.removeAllRanges();
+        this.brain?.fetchBlock(p);
+      }
     });
     this.on(this.canvas, 'contextmenu', (e: MouseEvent) => {
       e.preventDefault();
       this.toggleMenu(e.clientX, e.clientY, 'below');
     });
-    // the page scrolls by moving the camera along it
+    // scrolling moves the camera up and down the staircase (back to her a while after)
     let lastV = performance.now();
     this.on(window, 'wheel', (e: WheelEvent) => {
       if (this.menu.contains(e.target as Node)) return;
@@ -706,11 +770,11 @@ class Space {
       if (inner && inner.scrollHeight > inner.clientHeight) return;
       e.preventDefault();
       const dy = e.deltaMode === 1 ? e.deltaY * 32 : e.deltaMode === 2 ? e.deltaY * this.H : e.deltaY;
-      this.scrollTarget += dy;
+      this.scrollBy(dy);
       const now = performance.now();
       const v = dy / Math.max(8, now - lastV);
       lastV = now;
-      this.brain?.scrolled(v, this.scrollTarget >= this.world.Hp - this.H * 0.4);
+      this.brain?.scrolled(v, this.lookH <= this.H * 0.31);
     }, { passive: false });
     this.on(window, 'keydown', (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !this.menu.hidden) this.menu.hidden = true;
@@ -720,7 +784,7 @@ class Space {
         const page = this.H * 0.8;
         const d = ({ PageDown: page, PageUp: -page, ' ': e.shiftKey ? -page : page, Home: -1e9, End: 1e9 } as Record<string, number>)[e.key];
         if (d !== undefined) {
-          this.scrollTarget += d;
+          this.scrollBy(d);
           if (e.key === ' ') e.preventDefault();
         }
       }
@@ -745,7 +809,7 @@ class Space {
     });
     mo.observe(this.html, { attributes: true, attributeFilter: ['lang', 'class'] });
     this.unbinders.push(() => mo.disconnect());
-    // route changes (react-router pushes history entries): a new page rises, and she is told
+    // route changes (react-router pushes history entries): the new page comes apart, and she is told
     let path = location.pathname;
     const iv = setInterval(() => {
       if (location.pathname !== path && this.outro < 0) {
@@ -756,6 +820,15 @@ class Space {
       }
     }, 250);
     this.unbinders.push(() => clearInterval(iv));
+  }
+
+  private scrollBy(dy: number) {
+    this.lookH = Math.max(this.H * 0.3, Math.min(this.world.Hp - this.H * 0.3, this.lookH - dy));
+    this.manualUntil = performance.now() + 7000;
+  }
+  /** The visitor is looking somewhere else than at her (they scrolled away). */
+  get lookingAway() {
+    return performance.now() < this.manualUntil;
   }
 
   /** The point the cursor is at, on a plane through her head facing the camera (Babylon). */
@@ -773,10 +846,10 @@ class Space {
     const t = Vector3.Dot(plane.subtract(r.origin), n) / denom;
     return r.origin.add(r.direction.scale(Math.max(1, t)));
   }
-  /** A screen point pushed back onto the page (for looking at links): the page point under it. */
+  /** A screen point pushed back onto the world (for looking at links): what is under it. */
   screenPoint(x: number, y: number): Vector3 | null {
-    const p = this.pagePoint(x, y, 0);
-    return p ? this.toBabylon(p.u, p.v, 0) : null;
+    const p = this.pick(x, y);
+    return p ? this.toBabylon(p.u, p.v, p.h) : null;
   }
   cameraPos() {
     return this.levi?.camera.position.clone() ?? null;
@@ -790,22 +863,33 @@ class Space {
     const mv = this.mover;
     return mv ? this.screenOf(mv.u, mv.v, mv.h) : null;
   }
-  /** Is a page spot on screen (with a margin)? */
-  inView(u: number, v: number, margin = 60) {
-    const s = this.screenOf(u, v, 0);
+  /** Is a world spot on screen (with a margin)? */
+  inView(u: number, v: number, h: number, margin = 60) {
+    const s = this.screenOf(u, v, h);
     return s.x > margin && s.x < this.W - margin && s.y > margin * 2 && s.y < this.H - margin;
   }
-  /** A page point near the middle of the view. */
-  viewCentre() {
-    return this.pagePoint(this.W / 2, this.H * 0.62, 0) ?? { u: this.W / 2, v: this.cam.tv };
+  /** A ledge near the middle of the view (where she goes when the visitor looks elsewhere). */
+  viewGoal(): Goal | null {
+    for (const [fx, fy] of [[0.5, 0.62], [0.35, 0.6], [0.65, 0.6], [0.5, 0.45], [0.5, 0.8]] as const) {
+      const p = this.pick(this.W * fx, this.H * fy);
+      if (p?.block) return { u: p.u, block: p.block };
+    }
+    return null;
   }
-  /** Kick the block she stands on (a stomp). */
+  /** A random ledge in view (somewhere for her to go). */
+  randomGoal(): Goal | null {
+    for (let i = 0; i < 8; i++) {
+      const p = this.pick(this.W * (0.1 + Math.random() * 0.8), this.H * (0.2 + Math.random() * 0.7));
+      if (p?.block && p.block !== this.mover?.on) return { u: p.u, block: p.block };
+    }
+    return null;
+  }
+  /** A little jolt (a stomp). */
   bump(v: number) {
-    const mv = this.mover;
-    if (mv?.on) this.world.bump(mv.on, -v * 40);
+    this.shake = Math.max(this.shake, v * 3);
   }
   get introDone() {
-    return this.intro >= 1 && this.leviReveal >= 1;
+    return this.placed && this.leviReveal >= 1;
   }
 
   /** Little pixel bits flying from a screen point (mining, landing). */
@@ -885,7 +969,6 @@ class Space {
     });
     this.menu.querySelector<HTMLInputElement>('[data-flat]')!.addEventListener('change', (e) => {
       this.flat = (e.target as HTMLInputElement).checked;
-      if (!this.flat) this.readTarget = 0;
       this.savePrefs();
     });
     this.menu.querySelector<HTMLButtonElement>('[data-exit]')!.addEventListener('click', () => this.exit());

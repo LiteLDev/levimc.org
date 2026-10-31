@@ -6882,6 +6882,352 @@
      0
     ]
    ]
+  },
+  "hop": {
+   "frames": 44,
+   "loop": false,
+   "look": false,
+   "kind": "locomotion",
+   "desc": "An in-place jump: crouch, spring off the toes, legs tucked in the air over frames air[0]..air[1] (the runtime moves the root along its arc there), a soft landing and up again.",
+   "air": [
+    13,
+    26
+   ],
+   "face": [
+    [
+     2,
+     "キリッ",
+     0
+    ],
+    [
+     6,
+     "キリッ",
+     0.6
+    ],
+    [
+     12,
+     "キリッ",
+     0.6
+    ],
+    [
+     16,
+     "キリッ",
+     0
+    ],
+    [
+     12,
+     "ワ",
+     0
+    ],
+    [
+     16,
+     "ワ",
+     0.7
+    ],
+    [
+     24,
+     "ワ",
+     0.7
+    ],
+    [
+     28,
+     "ワ",
+     0
+    ],
+    [
+     26,
+     "笑い",
+     0
+    ],
+    [
+     32,
+     "笑い",
+     0.8
+    ],
+    [
+     36,
+     "笑い",
+     0.8
+    ],
+    [
+     42,
+     "笑い",
+     0
+    ]
+   ]
+  },
+  "wall_climb": {
+   "frames": 40,
+   "loop": true,
+   "look": false,
+   "kind": "locomotion",
+   "desc": "Climbing a wall in front of her, in place, one cycle (both hands): the runtime lifts the root by stride m a cycle.",
+   "stride": 0.4,
+   "face": [
+    [
+     0,
+     "う",
+     0.5
+    ],
+    [
+     40,
+     "う",
+     0.5
+    ],
+    [
+     0,
+     "キリッ",
+     0.5
+    ],
+    [
+     40,
+     "キリッ",
+     0.5
+    ]
+   ]
+  },
+  "lift_up": {
+   "frames": 56,
+   "loop": false,
+   "look": false,
+   "kind": "locomotion",
+   "desc": "Squats, grabs something on the floor in front of her (frame 24) and lifts it over her head (frame 44); ends holding it there, in carry_idle.",
+   "ends_in": "carry_idle",
+   "grab": 24,
+   "up": 44,
+   "face": [
+    [
+     16,
+     "う",
+     0
+    ],
+    [
+     22,
+     "う",
+     0.6
+    ],
+    [
+     34,
+     "う",
+     0.6
+    ],
+    [
+     40,
+     "う",
+     0
+    ],
+    [
+     30,
+     "キリッ",
+     0
+    ],
+    [
+     36,
+     "キリッ",
+     0.6
+    ],
+    [
+     44,
+     "キリッ",
+     0.6
+    ],
+    [
+     50,
+     "キリッ",
+     0
+    ],
+    [
+     4,
+     "真面目",
+     0
+    ],
+    [
+     10,
+     "真面目",
+     0.6
+    ],
+    [
+     24,
+     "真面目",
+     0.6
+    ],
+    [
+     30,
+     "真面目",
+     0
+    ],
+    [
+     42,
+     "笑い",
+     0
+    ],
+    [
+     45,
+     "笑い",
+     0.6
+    ],
+    [
+     53,
+     "笑い",
+     0.6
+    ],
+    [
+     56,
+     "笑い",
+     0
+    ]
+   ]
+  },
+  "carry_idle": {
+   "frames": 60,
+   "loop": true,
+   "look": false,
+   "kind": "locomotion",
+   "desc": "Holding something over her head, swaying a little.",
+   "face": [
+    [
+     0,
+     "ω",
+     0.4
+    ],
+    [
+     60,
+     "ω",
+     0.4
+    ],
+    [
+     0,
+     "笑い",
+     0.5
+    ],
+    [
+     60,
+     "笑い",
+     0.5
+    ]
+   ]
+  },
+  "carry_walk": {
+   "frames": 32,
+   "loop": true,
+   "look": false,
+   "kind": "locomotion",
+   "desc": "Walking in place with something held over her head.",
+   "stride": 0.54,
+   "face": [
+    [
+     0,
+     "ω",
+     0.5
+    ],
+    [
+     32,
+     "ω",
+     0.5
+    ],
+    [
+     0,
+     "にこり",
+     0.6
+    ],
+    [
+     32,
+     "にこり",
+     0.6
+    ]
+   ]
+  },
+  "put_down": {
+   "frames": 60,
+   "loop": false,
+   "look": false,
+   "kind": "locomotion",
+   "desc": "From holding something over her head (carry_idle), sets it down on the floor in front of her (down at frame 24, let go at 30) and stands up.",
+   "starts_in": "carry_idle",
+   "down": 24,
+   "release": 30,
+   "face": [
+    [
+     34,
+     "ω",
+     0
+    ],
+    [
+     40,
+     "ω",
+     0.6
+    ],
+    [
+     50,
+     "ω",
+     0.6
+    ],
+    [
+     56,
+     "ω",
+     0
+    ],
+    [
+     2,
+     "う",
+     0
+    ],
+    [
+     8,
+     "う",
+     0.6
+    ],
+    [
+     24,
+     "う",
+     0.6
+    ],
+    [
+     30,
+     "う",
+     0
+    ],
+    [
+     24,
+     "にこり",
+     0
+    ],
+    [
+     30,
+     "にこり",
+     0.8
+    ],
+    [
+     52,
+     "にこり",
+     0.8
+    ],
+    [
+     58,
+     "にこり",
+     0
+    ],
+    [
+     6,
+     "真面目",
+     0
+    ],
+    [
+     12,
+     "真面目",
+     0.5
+    ],
+    [
+     24,
+     "真面目",
+     0.5
+    ],
+    [
+     30,
+     "真面目",
+     0
+    ]
+   ]
   }
  },
  "model": {

@@ -1,47 +1,56 @@
-// The page as a diorama: the live page lies down as the ground of the 3D space and each of its components (cards,
-// buttons, headings, pictures, the bar...) rises out of it as a block with real sides, on its own spring. The
-// components stay the page's own elements (links, menus and text work as usual); only inline styles are added,
-// and all of them are put back when the space closes. Blocks she can stand on, climb and hide behind, and a few
-// loose Minecraft cubes with simple physics, live here too.
+// The page taken apart: each of its components (cards, buttons, headings, text, pictures, the bar...) flies out of
+// the page and becomes a block of its own, standing upright in 3D space with real depth. Up the page the blocks
+// step back, like a staircase hanging in the sky, so the top of each block is a ledge in front of the one above:
+// she walks along those ledges, hops and climbs between them, scales the blocks' faces and carries the small ones
+// about. The components stay the page's own elements (links, menus and text work as usual); only inline styles are
+// added, and all of them are put back when the space closes. A few loose Minecraft cubes with simple physics live
+// here too.
 //
-// Page-local coordinates: u right and v down the page (layout px from the page's top-left), h up from it.
+// World coordinates (page px): u right (the page's x), v toward the viewer (0: the page's plane), h up from the
+// page's bottom. The page's own CSS space (X right, Y down, Z toward the viewer) is X = u, Y = Hp - h, Z = v.
 
-export interface Box {
+/** A block: u..u+w across, h0..h1 up, its front face at v = z and its back at z - d. */
+export interface Block {
   u: number;
-  v: number;
   w: number;
+  h0: number;
+  h1: number;
+  z: number;
   d: number;
-  h: number;
 }
 
 type Kind = 'card' | 'bar' | 'button' | 'media' | 'title' | 'heading' | 'text';
 
-interface Comp extends Box {
+export interface Piece extends Block {
   el: HTMLElement;
   kind: Kind;
-  /** the height it rises to */
-  target: number;
-  vel: number;
-  /** seconds after the start of the rise when it starts */
+  /** its spot on the flat page (layout px) */
+  x: number;
+  y: number;
+  pw: number;
+  ph: number;
+  /** the box around it: a body panel, back, top, bottom, sides (the element is the front) */
+  shell: HTMLElement;
+  faces: HTMLElement[];
+  /** how far out of the page it is (0: flat, 1: in its 3D spot), and the flight there */
+  t: number;
   delay: number;
-  sides: HTMLElement[];
-  shadow: HTMLElement | null;
+  axis: [number, number, number];
+  spin: number;
+  pop: number;
+  /** she is carrying it (its spot is set each frame) */
+  held: boolean;
   saved: string | null;
+  drawn: string;
 }
 
-/** Heights (page px per metre of hers: see Diorama.m) */
-const HEIGHT_M: Record<Kind, number> = {
-  card: 0.36,
-  bar: 0.16,
-  button: 0.12,
-  media: 0.16,
-  title: 0.22,
-  heading: 0.14,
-  text: 0.06,
-};
 const TEXT_TAGS = new Set(['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LI', 'BLOCKQUOTE', 'PRE', 'TABLE', 'FIGCAPTION', 'LABEL', 'DT', 'DD']);
 const MEDIA_TAGS = new Set(['IMG', 'SVG', 'VIDEO', 'CANVAS', 'PICTURE', 'IFRAME']);
+/** seconds a block takes to fly out to its spot */
+const FLIGHT = 1.35;
 const smooth = (x: number) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
+/** an ease that overshoots a little and settles */
+const outBack = (x: number) => (x <= 0 ? 0 : x >= 1 ? 1 : 1 + 2.2 * Math.pow(x - 1, 3) + 1.2 * Math.pow(x - 1, 2));
 
 function parseColor(c: string): [number, number, number, number] | null {
   const m = /rgba?\(([^)]+)\)/.exec(c);
@@ -52,7 +61,12 @@ function parseColor(c: string): [number, number, number, number] | null {
 const shade = (c: [number, number, number, number], k: number, a = 1) =>
   `rgba(${Math.round(c[0] * k)},${Math.round(c[1] * k)},${Math.round(c[2] * k)},${a})`;
 
-/** A loose cube on the page: falls, bounces, can be thrown. */
+/** A tiny seeded RNG, so the layout (and the cubes' textures) are the same on every visit. */
+export function rng(seed: number) {
+  return () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+}
+
+/** A loose cube: falls, bounces, can be thrown. (u, v) is its centre, h its bottom. */
 export interface Cube {
   el: HTMLElement;
   s: number;
@@ -73,16 +87,21 @@ export interface Cube {
 export class Diorama {
   readonly world: HTMLElement;
   readonly ground: HTMLElement;
-  comps: Comp[] = [];
+  pieces: Piece[] = [];
   cubes: Cube[] = [];
   /** page px per metre of hers (her height is 1.45 m) */
   readonly m: number;
   W = 0;
   Hp = 0;
+  /** bumped whenever a block moves for good (her paths are planned again) */
+  version = 0;
+  /** how far each step of the staircase sets back, and how deep it may get before it starts over */
+  readonly step: number;
+  readonly zMax: number;
   private readonly ancestors = new Map<HTMLElement, string | null>();
   private readonly hidden: [HTMLElement, string | null][] = [];
   private t0 = 0;
-  private sinking = -1;
+  private leaving = -1;
   /** the page's own background (the body's is the sky while the space is open) */
   private readonly pageBg: [number, number, number, number];
 
@@ -91,6 +110,8 @@ export class Diorama {
     herPx: number,
   ) {
     this.m = herPx / 1.45;
+    this.step = 0.55 * this.m;
+    this.zMax = 7 * this.m;
     this.pageBg = parseColor(getComputedStyle(document.documentElement).getPropertyValue('--lc-page-bg')) ?? [247, 243, 232, 1];
     this.world = document.createElement('div');
     this.world.id = 'lc-world';
@@ -99,52 +120,53 @@ export class Diorama {
     this.world.appendChild(this.ground);
   }
 
-  /** Measure the page, pick its components and build the blocks (all flat until rise()). */
-  build(origin: { u: number; v: number }) {
+  /** Measure the page, pick its components, work out where each goes and build their boxes (all flat until
+   * explode()). `origin` (page px) is where the flight starts. */
+  build(origin: { x: number; y: number }) {
     this.W = this.root.clientWidth;
     this.Hp = this.root.scrollHeight;
     this.world.style.width = `${this.W}px`;
     this.world.style.height = `${this.Hp}px`;
     this.root.appendChild(this.world);
-    // the page's own fixed backdrop would ride along as a band at the top: our ground replaces it
-    for (const el of this.root.querySelectorAll<HTMLElement>('.kit-backdrop, .kit-skip-link')) {
+    // the ground: far down at the page's bottom, from behind the staircase out toward the viewer
+    const g = this.ground.style;
+    g.width = `${this.W * 3}px`;
+    g.height = `${this.zMax + 8 * this.m}px`;
+    g.transform = `translate3d(${-this.W}px, ${this.Hp}px, ${(-this.zMax - 2 * this.m).toFixed(0)}px) rotateX(90deg)`;
+    // the page's own fixed backdrop would ride along as a band at the top
+    for (const el of this.root.querySelectorAll<HTMLElement>('.kit-backdrop, .kit-skip-link, .lc-peek')) {
       this.hidden.push([el, el.getAttribute('style')]);
       el.style.visibility = 'hidden';
     }
     const picked: [HTMLElement, Kind][] = [];
     this.pick(this.root, picked);
-    let maxD = 1;
-    for (const [el] of picked) {
-      const r = this.rect(el);
-      maxD = Math.max(maxD, Math.hypot(r.u + r.w / 2 - origin.u, r.v + r.d / 2 - origin.v));
-    }
-    for (const [el, kind] of picked) this.addComp(el, kind, origin, maxD);
+    for (const [el, kind] of picked) this.addPiece(el, kind);
+    this.layout(origin);
   }
 
-  /** Layout rect of an element in page-local px (offset chain: transforms don't change it). */
-  rect(el: HTMLElement): { u: number; v: number; w: number; d: number } {
-    let u = 0;
-    let v = 0;
+  /** Layout rect of an element in page px (offset chain: transforms don't change it). */
+  rect(el: HTMLElement): { x: number; y: number; w: number; h: number } {
+    if (!(el instanceof HTMLElement) || el.offsetParent === null) {
+      const r = (el as Element).getBoundingClientRect();
+      const rr = this.root.getBoundingClientRect();
+      return { x: r.left - rr.left, y: r.top - rr.top, w: r.width, h: r.height };
+    }
+    let x = 0;
+    let y = 0;
     let e: HTMLElement | null = el;
     while (e && e !== this.root) {
-      u += e.offsetLeft;
-      v += e.offsetTop;
+      x += e.offsetLeft;
+      y += e.offsetTop;
       const p = e.offsetParent as HTMLElement | null;
       // the parent's border sits between the two offsets
       if (p && p !== this.root) {
         const cs = getComputedStyle(p);
-        u += parseFloat(cs.borderLeftWidth) || 0;
-        v += parseFloat(cs.borderTopWidth) || 0;
+        x += parseFloat(cs.borderLeftWidth) || 0;
+        y += parseFloat(cs.borderTopWidth) || 0;
       }
       e = p;
     }
-    // SVG and other non-HTML elements have no offset*: fall back on their box relative to their parent
-    if (!(el instanceof HTMLElement) || el.offsetParent === null) {
-      const r = (el as Element).getBoundingClientRect();
-      const rr = this.root.getBoundingClientRect();
-      return { u: r.left - rr.left, v: r.top - rr.top, w: r.width, d: r.height };
-    }
-    return { u, v, w: el.offsetWidth, d: el.offsetHeight };
+    return { x, y, w: el.offsetWidth, h: el.offsetHeight };
   }
 
   /** Walk the page and choose its components: boxes with a visible surface, media, text blocks and controls.
@@ -162,8 +184,13 @@ export class Diorama {
         out.push([c, kind]);
         continue;
       }
-      // decorative absolute layers (the hero's painting) stay on the ground as they are
-      if ((cs.position === 'absolute' || cs.position === 'fixed') && !c.querySelector('a, button, h1, h2, h3, p')) continue;
+      // decorative absolute layers (the hero's painting) fade away with the page's backgrounds
+      if ((cs.position === 'absolute' || cs.position === 'fixed') && !c.querySelector('a, button, h1, h2, h3, p')) {
+        this.hidden.push([c, c.getAttribute('style')]);
+        c.style.transition = 'opacity 0.8s';
+        c.style.opacity = '0';
+        continue;
+      }
       if (this.flattens(cs)) {
         out.push([c, 'card']);
         continue;
@@ -196,7 +223,8 @@ export class Diorama {
     return cs.filter !== 'none' || cs.clipPath !== 'none' || (cs.maskImage && cs.maskImage !== 'none') || cs.mixBlendMode !== 'normal';
   }
 
-  /** Let a component's ancestors carry 3D (preserve-3d, nothing that flattens). */
+  /** Let a component's ancestors carry 3D (preserve-3d, nothing that flattens) and drop their backgrounds: the
+   * sections dissolve and only the components are left, in the sky. */
   private open3d(el: HTMLElement) {
     for (let a = el.parentElement; a && a !== this.root.parentElement; a = a.parentElement) {
       if (this.ancestors.has(a)) continue;
@@ -208,133 +236,210 @@ export class Diorama {
       if (cs.contain !== 'none') a.style.contain = 'none';
       if (cs.isolation === 'isolate') a.style.isolation = 'auto';
       if (cs.position === 'sticky' || cs.position === 'fixed') a.style.position = 'relative';
+      // the sections stay on the page's plane, in front of every block set back from it: clicks go through them
+      a.style.pointerEvents = 'none';
+      if (a !== this.root) {
+        a.style.transition = 'background-color 0.9s, border-color 0.9s, box-shadow 0.9s';
+        a.style.backgroundColor = 'transparent';
+        a.style.backgroundImage = 'none';
+        a.style.borderColor = 'transparent';
+        a.style.boxShadow = 'none';
+      }
     }
   }
 
-  private addComp(el: HTMLElement, kind: Kind, origin: { u: number; v: number }, maxD: number) {
+  private addPiece(el: HTMLElement, kind: Kind) {
     const saved = el.getAttribute('style');
     this.open3d(el);
     // a sticky element measures where it is stuck: unstick it first
     const pos = getComputedStyle(el).position;
     if (pos === 'sticky' || pos === 'fixed') el.style.position = 'relative';
     const r = this.rect(el);
-    // the big cards (the hero's showcase, the community cards) stand 0.5 m: something to climb and to hide behind
-    const target = Math.round(kind === 'card' && r.w * r.d > 80000 ? 0.5 * this.m : HEIGHT_M[kind] * this.m);
-    const dist = Math.hypot(r.u + r.w / 2 - origin.u, r.v + r.d / 2 - origin.v) / maxD;
-    const c: Comp = { el, kind, ...r, h: 0, target, vel: 0, delay: 0.25 + dist * 1.1 + Math.random() * 0.08, sides: [], shadow: null, saved };
     const cs = getComputedStyle(el);
-    el.style.transformStyle = 'flat';
     el.style.willChange = 'transform';
-    let bg = parseColor(cs.backgroundColor);
-    if (!bg || bg[3] < 0.3) bg = this.pageBg;
-    const radius = parseFloat(cs.borderTopLeftRadius) || 0;
-    const solid = kind === 'card' || kind === 'bar' || kind === 'button' || kind === 'media';
-    if (solid) {
-      // a block needs a lid: a see-through card would show its own inner walls
-      const own = parseColor(cs.backgroundColor);
-      if (kind !== 'media' && (!own || own[3] < 0.6)) el.style.backgroundColor = shade(bg, 1, 1);
-      // four sides, standing on the ground along the edges (sized each frame while rising)
-      const tones = [0.8, 0.6, 0.7, 0.7];
-      for (let i = 0; i < 4; i++) {
-        const s = document.createElement('div');
-        s.className = 'lc-side';
-        s.style.background = `linear-gradient(${i < 2 ? 0 : 90}deg, ${shade(bg, tones[i]! * 0.84)}, ${shade(bg, tones[i]!)})`;
-        if (radius) s.style.borderRadius = `${Math.min(radius, 6)}px`;
-        this.world.appendChild(s);
-        c.sides.push(s);
+    el.style.transformOrigin = '50% 50%';
+    el.style.pointerEvents = 'auto';
+    const own = parseColor(cs.backgroundColor);
+    const bg = own && own[3] > 0.3 ? own : this.pageBg;
+    const radius = Math.min(parseFloat(cs.borderTopLeftRadius) || 0, r.w / 2, r.h / 2);
+    // the box, in a shell that moves with the element: a body panel just behind it (a see-through component gets a
+    // body), the back, top, bottom and sides
+    const shell = document.createElement('div');
+    shell.className = 'lc-shell';
+    const s = shell.style;
+    s.left = `${r.x}px`;
+    s.top = `${r.y}px`;
+    s.width = `${r.w}px`;
+    s.height = `${r.h}px`;
+    s.display = 'none';
+    const faces: HTMLElement[] = [];
+    const face = (cls: string, color: string) => {
+      const f = document.createElement('i');
+      f.className = cls;
+      f.style.background = color;
+      shell.appendChild(f);
+      faces.push(f);
+      return f;
+    };
+    const glass = kind === 'text' || kind === 'heading' || kind === 'title';
+    const panel = face('lc-panel', shade(bg, 1, glass ? 0.9 : 1));
+    const back = face('lc-back', shade(bg, 0.62));
+    if (radius) panel.style.borderRadius = back.style.borderRadius = `${radius}px`;
+    face('lc-top', `linear-gradient(${shade(bg, 0.84)}, ${shade(bg, 0.98)})`);
+    face('lc-bottom', shade(bg, 0.5));
+    face('lc-left', `linear-gradient(90deg, ${shade(bg, 0.6)}, ${shade(bg, 0.74)})`);
+    face('lc-right', `linear-gradient(90deg, ${shade(bg, 0.74)}, ${shade(bg, 0.6)})`);
+    this.world.appendChild(shell);
+    this.pieces.push({
+      el,
+      kind,
+      x: r.x,
+      y: r.y,
+      pw: r.w,
+      ph: r.h,
+      u: r.x,
+      w: r.w,
+      h0: this.Hp - r.y - r.h,
+      h1: this.Hp - r.y,
+      z: 0,
+      d: 0,
+      shell,
+      faces,
+      t: 0,
+      delay: 0,
+      axis: [0, 1, 0],
+      spin: 0,
+      pop: 0,
+      held: false,
+      saved,
+      drawn: '',
+    });
+  }
+
+  /** Where each block goes: up the page they step back, each a ledge's depth behind any block it hangs over
+   * (closer than her height above it), so she has room on every ledge; a staircase that gets too deep starts over. */
+  private layout(origin: { x: number; y: number }) {
+    const r = rng(11);
+    const S = this.step;
+    const room = 1.6 * this.m;
+    const order = [...this.pieces].sort((a, b) => a.h0 - b.h0);
+    const done: Piece[] = [];
+    let far = 1;
+    for (const p of this.pieces) far = Math.max(far, Math.hypot(p.x + p.pw / 2 - origin.x, p.y + p.ph / 2 - origin.y));
+    for (const b of order) {
+      let z = (r() - 0.5) * 0.18 * this.m;
+      for (const a of done) {
+        const over = Math.min(a.u + a.w, b.u + b.w) - Math.max(a.u, b.u);
+        if (a.h1 <= b.h0 + 6 && b.h0 - a.h1 < room && over > -0.25 * this.m) z = Math.min(z, a.z - S);
       }
-      const sh = document.createElement('div');
-      sh.className = 'lc-cast';
-      if (radius) sh.style.borderRadius = `${radius}px`;
-      this.world.appendChild(sh);
-      c.shadow = sh;
+      if (z < -this.zMax) z = (r() - 0.5) * 0.18 * this.m;
+      b.z = Math.round(z);
+      b.d = Math.round(S * (b.kind === 'text' || b.kind === 'heading' ? 1.15 : 1.3));
+      // the flight: later the further from where it starts, a tumble about a random axis, a leap toward the viewer
+      const dist = Math.hypot(b.x + b.pw / 2 - origin.x, b.y + b.ph / 2 - origin.y) / far;
+      b.delay = 0.15 + dist * 1.0 + r() * 0.12;
+      const ax = r() - 0.5;
+      const ay = r() - 0.5;
+      const n = Math.hypot(ax, ay, 0.2) || 1;
+      b.axis = [+(ax / n).toFixed(3), +(ay / n).toFixed(3), +(0.2 / n).toFixed(3)];
+      b.spin = (r() < 0.5 ? -1 : 1) * (200 + r() * 200);
+      b.pop = (0.8 + r() * 1.4) * this.m;
+      done.push(b);
     }
-    this.comps.push(c);
   }
 
-  /** Start the rise (each block after its delay, from the origin outward). */
-  rise(now: number) {
+  /** Start the flight out of the page (at `now`; long ago: already there). */
+  explode(now: number) {
     this.t0 = now;
-    this.sinking = -1;
+    this.leaving = -1;
   }
-  /** Sink everything back into the page (the far ones first). */
-  sink(now: number) {
-    this.sinking = now;
-    const maxDelay = Math.max(...this.comps.map((c) => c.delay), 0);
-    for (const c of this.comps) c.delay = (maxDelay - c.delay) * 0.45;
+  /** Back into the page (the far ones first). */
+  implode(now: number) {
+    this.leaving = now;
+    const maxDelay = Math.max(...this.pieces.map((p) => p.delay), 0);
+    for (const p of this.pieces) p.delay = (maxDelay - p.delay) * 0.5;
   }
-  /** Flat again (sinking done)? */
+  /** All back in the page? */
   get flat() {
-    return this.sinking >= 0 && this.comps.every((c) => c.h < 0.5 && Math.abs(c.vel) < 5);
+    return this.leaving >= 0 && this.pieces.every((p) => p.t <= 0);
   }
 
-  /** Give a block a kick (she landed on it, a cube hit it). */
-  bump(c: Box, v: number) {
-    const cc = c as Comp;
-    if (this.comps.includes(cc)) cc.vel += v;
-  }
-
-  update(now: number, dt: number) {
-    const t = (now - (this.sinking >= 0 ? this.sinking : this.t0)) / 1000;
-    for (const c of this.comps) {
-      const goal = this.sinking >= 0 ? (t > c.delay ? 0 : c.target) : t > c.delay ? c.target : 0;
-      // a lively spring: a little overshoot on the way up, settles quickly
-      const k = this.sinking >= 0 ? 160 : 120;
-      const damp = this.sinking >= 0 ? 22 : 11;
-      c.vel += (k * (goal - c.h) - damp * c.vel) * dt;
-      c.h += c.vel * dt;
-      if (this.sinking >= 0 && goal === 0 && c.h < 0) {
-        c.h = 0;
-        c.vel = 0;
-      }
-      this.draw(c, now);
+  /** Advance the flights and draw; blocks nearer than `nearV` (too close to the camera, or past it) are hidden. */
+  update(now: number, dt: number, nearV = Infinity) {
+    const s = (now - (this.leaving >= 0 ? this.leaving : this.t0)) / 1000;
+    for (const p of this.pieces) {
+      const k = Math.max(0, Math.min(1, (s - p.delay) / FLIGHT));
+      p.t = this.leaving >= 0 ? Math.min(p.t, 1 - k) : k;
+      this.draw(p, p.z > nearV && !p.held);
     }
     this.stepCubes(dt, now);
   }
 
-  private draw(c: Comp, now: number) {
-    const h = Math.max(0, c.h);
-    const lift = c.target ? h / c.target : 0;
-    // a small tilt while it is moving fast, to sell the spring
-    const wob = Math.max(-4, Math.min(4, c.vel * 0.012));
-    const wx = Math.sin(c.u * 0.01) * wob;
-    c.el.style.transform = h > 0.05 || wob ? `translateZ(${h.toFixed(2)}px) rotateX(${wx.toFixed(2)}deg)` : '';
-    // floating text casts a soft shadow of its own letters (the ground is too far for a real one)
-    if (!c.sides.length && c.kind !== 'text') c.el.style.filter = h > 1 ? `drop-shadow(0 ${(h * 0.45).toFixed(1)}px ${(h * 0.22).toFixed(1)}px rgba(20, 40, 30, ${(0.28 * lift).toFixed(3)}))` : '';
-    const [s0, s1, s2, s3] = c.sides;
-    if (s0 && s1 && s2 && s3) {
-      const vis = h > 0.5 ? '' : 'none';
-      // near (bottom edge), far (top edge), left, right
-      place(s0, c.u, c.v + c.d, c.w, h, `rotateX(90deg)`, 'top', vis);
-      place(s1, c.u, c.v, c.w, h, `rotateX(90deg)`, 'top', vis);
-      place(s2, c.u, c.v, h, c.d, `rotateY(-90deg)`, 'left', vis);
-      place(s3, c.u + c.w, c.v, h, c.d, `rotateY(-90deg)`, 'left', vis);
-    }
-    if (c.shadow) {
-      const s = c.shadow.style;
-      const spread = 4 + h * 0.35;
-      s.left = `${c.u - spread}px`;
-      s.top = `${c.v - spread * 0.4}px`;
-      s.width = `${c.w + spread * 2}px`;
-      s.height = `${c.d + spread * 1.6}px`;
-      s.opacity = String(Math.min(0.55, lift * 0.55));
-      s.transform = `translate3d(${(h * 0.12).toFixed(1)}px, ${(h * 0.25).toFixed(1)}px, 0.5px)`;
-      s.filter = `blur(${(3 + h * 0.18).toFixed(1)}px)`;
-    }
+  private draw(p: Piece, culled: boolean) {
+    const t = p.t;
+    const e = outBack(t);
+    const sm = smooth(t);
+    // home (flat) -> its spot; on the way a leap toward the viewer and a tumble that unwinds as it lands
+    const dx = (p.u - p.x) * sm;
+    const dy = (this.Hp - p.h1 - p.y) * sm;
+    const z = p.z * e + p.pop * Math.sin(Math.PI * Math.min(1, t * 1.15));
+    const spin = p.spin * (1 - smooth(Math.min(1, t * 1.25)));
+    const tf = t <= 0 ? '' : `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, ${z.toFixed(1)}px)` + (spin ? ` rotate3d(${p.axis.join(',')}, ${spin.toFixed(1)}deg)` : '');
+    const d = Math.round(p.d * smooth(t * 1.6));
+    const key = tf + '|' + d + (culled ? '|c' : '');
+    if (key === p.drawn) return;
+    p.drawn = key;
+    p.el.style.transform = tf;
+    p.el.style.visibility = culled ? 'hidden' : '';
+    p.shell.style.transform = tf;
+    p.shell.style.display = t <= 0 || culled ? 'none' : '';
+    const [panel, back, top, bottom, left, right] = p.faces as [HTMLElement, HTMLElement, HTMLElement, HTMLElement, HTMLElement, HTMLElement];
+    back.style.transform = `translateZ(${-d}px)`;
+    panel.style.transform = 'translateZ(-1.5px)';
+    top.style.height = bottom.style.height = `${d}px`;
+    left.style.width = right.style.width = `${d}px`;
   }
 
-  /** The blocks (for walking, climbing, hiding and her occluders). */
-  boxes(minH = 0): (Box & { kind: Kind })[] {
-    return this.comps.filter((c) => c.h > minH && c.kind !== 'text');
+  /** The blocks (for paths, landing and her occluders); a block she carries is not one. */
+  blocks(): Piece[] {
+    return this.pieces.filter((p) => p.t > 0.5 && !p.held);
   }
-  /** The top under a point at or below `maxH` (0: the ground). */
-  supportAt(u: number, v: number, maxH = Infinity, margin = 0): { h: number; box: Box | null } {
-    let best: { h: number; box: Box | null } = { h: 0, box: null };
-    for (const c of this.comps) {
-      if (c.kind === 'text' || c.h <= best.h || c.h > maxH) continue;
-      if (u >= c.u - margin && u <= c.u + c.w + margin && v >= c.v - margin && v <= c.v + c.d + margin) best = { h: c.h, box: c };
+  pieceOf(el: Element | null): Piece | null {
+    if (!el) return null;
+    const shell = el.closest('.lc-shell');
+    return this.pieces.find((p) => (shell ? p.shell === shell : p.el === el || p.el.contains(el))) ?? null;
+  }
+  /** The highest top under a point at or below `maxH` (the ground: 0). */
+  supportAt(u: number, v: number, maxH = Infinity, margin = 0): { h: number; block: Piece | null } {
+    let best: { h: number; block: Piece | null } = { h: 0, block: null };
+    for (const b of this.pieces) {
+      if (b.held || b.t < 0.9 || b.h1 <= best.h || b.h1 > maxH) continue;
+      if (u >= b.u - margin && u <= b.u + b.w + margin && v <= b.z + margin && v >= b.z - b.d - margin) best = { h: b.h1, block: b };
     }
     return best;
+  }
+  /** Is a box free of the blocks (but `except`)? */
+  free(u: number, w: number, h0: number, h1: number, z: number, d: number, except?: Piece) {
+    return !this.pieces.some(
+      (b) => b !== except && !b.held && b.t > 0.5 && b.u < u + w && b.u + b.w > u && b.h0 < h1 && b.h1 > h0 && b.z - b.d < z && b.z > z - d,
+    );
+  }
+  /** Set a block down for good somewhere else (front face at z). */
+  moveTo(p: Piece, u: number, h0: number, z: number) {
+    p.h1 = h0 + (p.h1 - p.h0);
+    p.h0 = h0;
+    p.u = u;
+    p.z = z;
+    p.drawn = '';
+    this.version++;
+  }
+  /** Hold a block somewhere (she carries it): no flight, straight there. */
+  hold(p: Piece, u: number, h0: number, z: number) {
+    p.h1 = h0 + (p.h1 - p.h0);
+    p.h0 = h0;
+    p.u = u;
+    p.z = z;
+    p.drawn = '';
   }
 
   // ------------------------------------------------------------------ loose cubes
@@ -351,36 +456,37 @@ export class Diorama {
     const hard = Math.max(80, g * dt * 3);
     for (const c of this.cubes) {
       if (!c.held) {
+        const prevH = c.h;
         c.vh -= g * dt;
         c.u += c.vu * dt;
         c.v += c.vv * dt;
         c.h += c.vh * dt;
         const half = c.s / 2;
-        // the blocks: land on top, or bounce off a side
-        for (const b of this.comps) {
-          if (b.kind === 'text' || b.h < 2) continue;
+        let grounded = false;
+        for (const b of this.pieces) {
+          if (b.held || b.t < 0.9) continue;
           const inU = c.u + half > b.u && c.u - half < b.u + b.w;
-          const inV = c.v + half > b.v && c.v - half < b.v + b.d;
-          if (!inU || !inV || c.h >= b.h) continue;
-          const prevH = c.h - c.vh * dt;
-          if (prevH >= b.h - 1) {
-            c.h = b.h;
-            if (c.vh < -hard) {
-              this.bump(b, c.vh * 0.08);
-              c.hitAt = now;
-            }
+          const inV = c.v + half > b.z - b.d && c.v - half < b.z;
+          if (!inU || !inV || c.h >= b.h1 || c.h + c.s <= b.h0) continue;
+          if (prevH >= b.h1 - 1) {
+            // onto its top
+            c.h = b.h1;
+            if (c.vh < -hard) c.hitAt = now;
             c.vh = c.vh < -hard ? -c.vh * 0.35 : 0;
-            c.vu *= 0.9;
-            c.vv *= 0.9;
+            grounded = true;
+          } else if (prevH + c.s <= b.h0 + 1) {
+            // its underside
+            c.h = b.h0 - c.s;
+            c.vh = Math.min(0, -c.vh * 0.3);
           } else {
             // pushed out along the shallower axis
             const du = Math.min(c.u + half - b.u, b.u + b.w - (c.u - half));
-            const dv = Math.min(c.v + half - b.v, b.v + b.d - (c.v - half));
+            const dv = Math.min(c.v + half - (b.z - b.d), b.z - (c.v - half));
             if (du < dv) {
               c.u += c.u < b.u + b.w / 2 ? -du : du;
               c.vu = -c.vu * 0.4;
             } else {
-              c.v += c.v < b.v + b.d / 2 ? -dv : dv;
+              c.v += c.v < b.z - b.d / 2 ? -dv : dv;
               c.vv = -c.vv * 0.4;
             }
             if (Math.hypot(c.vu, c.vv) > 150) c.hitAt = now;
@@ -390,41 +496,41 @@ export class Diorama {
           c.h = 0;
           if (c.vh < -hard) c.hitAt = now;
           c.vh = c.vh < -hard ? -c.vh * 0.35 : 0;
-          // ground friction
+          grounded = true;
+        }
+        if (grounded) {
           const f = Math.max(0, 1 - dt * 4);
           c.vu *= f;
           c.vv *= f;
         }
-        c.spin *= Math.max(0, 1 - dt * (c.h <= 0 ? 3 : 0.3));
+        c.spin *= Math.max(0, 1 - dt * (grounded ? 3 : 0.3));
         c.rot += c.spin * dt;
-        // keep them on the page
         c.u = Math.max(half, Math.min(this.W - half, c.u));
-        c.v = Math.max(half, Math.min(this.Hp - half, c.v));
+        c.v = Math.max(-this.zMax - 1.5 * this.m, Math.min(3 * this.m, c.v));
       }
       // cube vs cube: push apart
       for (const o of this.cubes) {
-        if (o === c) continue;
+        if (o === c || c.held) continue;
         const du = c.u - o.u;
         const dv = c.v - o.v;
         const lim = (c.s + o.s) / 2;
         if (Math.abs(du) < lim && Math.abs(dv) < lim && Math.abs(c.h - o.h) < lim) {
           const d = Math.hypot(du, dv) || 1;
           const push = (lim - d) * 0.5;
-          if (!c.held) {
-            c.u += (du / d) * push;
-            c.v += (dv / d) * push;
-          }
+          c.u += (du / d) * push;
+          c.v += (dv / d) * push;
         }
       }
-      c.el.style.transform = `translate3d(${(c.u - c.s / 2).toFixed(1)}px, ${(c.v - c.s / 2).toFixed(1)}px, ${(c.h + c.s / 2).toFixed(1)}px) rotateZ(${c.rot.toFixed(1)}deg)`;
+      // the cube's own +Z is its top: stand it up in the page's space (Y down)
+      c.el.style.transform = `translate3d(${(c.u - c.s / 2).toFixed(1)}px, ${(this.Hp - c.h - c.s).toFixed(1)}px, ${c.v.toFixed(1)}px) rotateX(90deg) rotateZ(${c.rot.toFixed(1)}deg)`;
     }
   }
 
   /** Put the page back exactly as it was. */
   restore() {
-    for (const c of this.comps) {
-      if (c.saved === null) c.el.removeAttribute('style');
-      else c.el.setAttribute('style', c.saved);
+    for (const p of this.pieces) {
+      if (p.saved === null) p.el.removeAttribute('style');
+      else p.el.setAttribute('style', p.saved);
     }
     for (const [a, s] of this.ancestors) {
       if (s === null) a.removeAttribute('style');
@@ -436,22 +542,9 @@ export class Diorama {
     }
     this.ancestors.clear();
     this.hidden.length = 0;
-    this.comps = [];
+    this.pieces = [];
     this.world.remove();
   }
-}
-
-/** A side face: an element on the page at (u, v), size w x h, stood up about its `origin` edge. */
-function place(el: HTMLElement, u: number, v: number, w: number, h: number, rot: string, origin: 'top' | 'left', display: string) {
-  const s = el.style;
-  s.display = display;
-  if (display === 'none') return;
-  s.left = `${u}px`;
-  s.top = `${v}px`;
-  s.width = `${Math.max(0, w)}px`;
-  s.height = `${Math.max(0, h)}px`;
-  s.transformOrigin = origin === 'top' ? '50% 0' : '0 50%';
-  s.transform = rot;
 }
 
 export { smooth };
