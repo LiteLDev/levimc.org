@@ -130,33 +130,42 @@ Clicking it opens her 3D space at once; nothing of it is downloaded before that 
 `import('./levichan/space')`, and the model and motions are fetched from `public/levichan/` as they are needed:
 the model ~9 MB, each motion a few KB, on first use).
 
-- `src/levichan/space.ts` — the space: the page comes apart and the camera swoops down to her eye level, facing her,
-  and follows her (it stays the live page: links, menus and text work; the wheel and Page Up / Down move the camera
-  up and down, and it comes back to her after a while). Her WebGL canvas is drawn over it with a camera matched to
-  the CSS perspective. Click a component and she makes her way onto it; double-click a small one and she carries it
-  somewhere else; drag the sky to look around, drag a cube to throw it, drag her to pick her up. The menu (her
-  avatar, bottom left, or a right click on her): whether she watches the cursor, fewer fidgets, face the page
-  square on, leave (the blocks fly back and the camera returns to the flat page, exactly as it was).
-- `src/levichan/diorama.ts` — the page's components (cards, buttons, the bar, pictures, headings, text) fly out of it,
-  tumbling, in a wave from where she was peeking, and become blocks of their own (sides, top, back) hanging upright in
-  the sky as a staircase: up the page each block sets back behind the ones below it, so every block's top is a ledge
-  in front of the next. The sections' backgrounds dissolve; only inline styles are added, and put back on leaving.
-  Loose Minecraft cubes fall in with simple physics (gravity, bounces, landing on blocks, pushing each other).
-- `src/levichan/mover.ts` — where she is and how she gets around: the ledges (blocks' tops with room above them) as
-  lanes, a shortest path over them by walking, stepping across cracks, hopping (up to 1 m, down, across gaps),
-  climbing onto ledges half a metre up, scaling taller blocks' faces and dropping off high ones; carrying a small block
-  over her head along her ledge and setting it down where it fits; being carried by the cursor and falling. Blocks in
-  front of her hide her (depth-only boxes in her scene); ones that come too close to the camera are hidden.
+- `src/levichan/space.ts` — the space, drawn with three.js on a canvas over the page (the page itself is left as it
+  is underneath). It opens on the page exactly as it was on screen; its components tumble out of it and the camera
+  swoops back over them. The camera then flies like Minecraft's: WASD (or the arrows) on the level, Space up, Shift
+  down, Ctrl faster, the wheel toward or away from where it looks, a drag to look around, F to fly over to her (or the
+  menu's "follow her", which keeps her in view). Her WebGL canvas is drawn over the world's with a camera matched to
+  it. Click a block and she makes her way to it and plays with it; double-click a small one and she carries it
+  somewhere else; drag a cube to throw it, drag her to pick her up. Links and controls on the blocks only light up:
+  nothing navigates from inside the space (the browser's back and forward take the new page apart too). The menu
+  (her avatar, bottom left, or a right click on her): whether she watches the cursor, fewer fidgets, follow her, fly
+  to her, leave (the blocks fly back into the page and the camera returns to it).
+- `src/levichan/diorama.ts` — the world: each component of the page (cards, buttons, the bar, pictures, headings,
+  text) is snapshotted (`modern-screenshot`) and becomes a block with real depth, its picture on the face, scattered
+  over the ground in no particular order: upright, lying flat as platforms, turned sideways, stacked on others (always
+  leaving a strip of the one below to climb from) or hanging a hop away from a neighbour, never closer than her height
+  over another's top. The blocks answer her play: they press in, bounce, spin, flip, wobble, glow or dip as she lands;
+  a link she presses lights up on its face. Loose Minecraft cubes fall in with simple physics (gravity, bounces,
+  landing on blocks, pushing each other).
+- `src/levichan/mover.ts` — where she is and how she gets around: the floors she can stand on (blocks' tops and the
+  ground, a body's width in from every edge and every block in her way, with room above for her), a shortest path over
+  them by walking (straight where nothing is in the way), hopping (up to 1 m, down, across gaps, on arcs that clear the
+  blocks around), climbing onto ledges half a metre up, scaling taller faces and dropping off high ones; whenever
+  nothing is under her feet she falls, and the blocks she falls past push her off. She carries a small block over her
+  head across her floor and sets it down where it fits; she can be carried by the cursor. Blocks in front of her hide
+  her (depth-only boxes in her scene).
 - `src/levichan/levi.ts` — her runtime: the PMX on babylon-mmd (WASM, Bullet physics), cel shading as in the
   LeviChan repository's renders, clips crossfaded over a looping base (idle, or a walk / run cycle), gaze, blinks and
   expressions, a hit test.
 - `src/levichan/brain.ts` — what she does: the visitor never picks a motion; each one answers something they do
-  (click the page and she goes there, three quick clicks and she mines it; pat her head, poke her, press and hold,
-  double-click her skirt, circle her with the cursor, pick her up and drop her, throw a cube at her, scroll hard,
-  linger on a link, copy text, switch language or theme, come back to the tab, the Konami code or typing "levi"...).
+  (click the ground and she goes there, three quick clicks and she mines it; click a block and she goes to it and
+  plays with it in its own way: stomps a button down or whacks it, poses on the title, hums on a heading, reads a
+  text aloud, cheers a picture into a spin, sits on a card or twirls it into a flip; pat her head, poke her, press and hold,
+  double-click her skirt, circle her with the cursor, pick her up and drop her, throw a cube at her,
+  linger on a link, switch language or theme, come back to the tab, the Konami code or typing "levi"...).
   Every 5-11 s she does something on her own: a fidget or a happy clip, a stroll, a trip to another block in view,
-  tidying a small block away somewhere else; she makes her way after the view when the visitor scrolls away (or
-  reaches up and pouts if she cannot get there), waves when the cursor comes back to her and
+  tidying a small block away somewhere else; she makes her way after the view when the visitor flies off elsewhere
+  (or reaches up and pouts if she cannot get there), waves when the cursor comes back to her and
   shows off her dress when it rests on it.
 - `public/levichan/` — her assets, made by `node scripts/levichan-assets.mjs --pmx <LeviChan out/pmx> --motions
   <LeviChan web motions>` from a LeviChan build: the model from the round 11 branches merged together, the clips from

@@ -9,7 +9,10 @@ export interface LeviChanStrings {
   lookLabel: string;
   look: { auto: string; always: string; never: string };
   quiet: string;
-  flat: string;
+  /** the camera keeps her in view */
+  follow: string;
+  /** fly the camera over to her */
+  focus: string;
   exit: string;
   /** short speech bubbles */
   say: {
