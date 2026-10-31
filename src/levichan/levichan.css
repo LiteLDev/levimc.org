@@ -194,3 +194,194 @@ html.lc-3d.dark {
   transition: opacity 0.3s;
 }
 
+
+/* the story: her dialogue box, the things to do, the ending card */
+#lc-dlg {
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  width: min(720px, calc(100vw - 32px));
+  min-height: 92px;
+  padding: 14px 18px 16px;
+  border-radius: 16px;
+  background: var(--lc-ui-bg);
+  border: 1px solid var(--lc-ui-line);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  user-select: none;
+}
+#lc-dlg[hidden],
+#lc-quest[hidden] {
+  display: none;
+}
+.lc-dlg-name {
+  position: absolute;
+  top: -13px;
+  left: 18px;
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: var(--lc-glow);
+  color: #10261a;
+  font-weight: 700;
+  font-size: 13px;
+}
+.lc-dlg-name:empty {
+  display: none;
+}
+.lc-dlg-text {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+#lc-dlg.lc-sys .lc-dlg-text {
+  font-style: italic;
+  opacity: 0.8;
+}
+.lc-dlg-next {
+  position: absolute;
+  right: 16px;
+  bottom: 8px;
+  font-size: 11px;
+  opacity: 0;
+  color: var(--lc-glow);
+}
+#lc-dlg.lc-typed .lc-dlg-next {
+  animation: lc-blink 1s infinite;
+}
+@keyframes lc-blink {
+  50% {
+    opacity: 1;
+  }
+}
+.lc-choices {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+.lc-choices button {
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  color: inherit;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--lc-ui-line);
+  background: color-mix(in srgb, var(--lc-glow) 10%, transparent);
+  cursor: pointer;
+}
+.lc-choices button:hover,
+.lc-choices button:focus-visible {
+  background: color-mix(in srgb, var(--lc-glow) 30%, transparent);
+}
+#lc-quest {
+  left: 14px;
+  top: 14px;
+  max-width: min(320px, calc(100vw - 28px));
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--lc-ui-bg);
+  border: 1px solid var(--lc-ui-line);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+}
+#lc-quest h5 {
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+#lc-quest b {
+  font-size: 11px;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+#lc-quest ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+#lc-quest li span {
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+#lc-quest li.lc-done {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+.lc-wait {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--lc-ui-line);
+}
+.lc-wait .lc-clock {
+  font-size: 18px;
+  opacity: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--lc-glow);
+}
+.lc-wait small {
+  display: block;
+  opacity: 0.6;
+}
+#lc-end {
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 12, 20, 0.45);
+  backdrop-filter: blur(3px);
+  animation: lc-fade 1.2s;
+}
+@keyframes lc-fade {
+  from {
+    opacity: 0;
+  }
+}
+.lc-end-card {
+  width: min(460px, calc(100vw - 32px));
+  padding: 24px;
+  border-radius: 18px;
+  text-align: center;
+  background: var(--lc-ui-bg);
+  border: 1px solid var(--lc-ui-line);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.lc-end-card h3 {
+  margin: 6px 0 10px;
+  font-size: 22px;
+}
+.lc-end-card p {
+  margin: 0 0 14px;
+  line-height: 1.6;
+}
+.lc-end-gallery {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.lc-end-gallery i {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--lc-ui-line);
+}
+.lc-end-gallery i.lc-seen {
+  background: var(--lc-glow);
+}
+.lc-end-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+}
+.lc-end-actions button {
+  font: inherit;
+  color: inherit;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--lc-ui-line);
+  background: color-mix(in srgb, var(--lc-glow) 18%, transparent);
+  cursor: pointer;
+}
+#lc-menu .lc-story-row small {
+  opacity: 0.6;
+}

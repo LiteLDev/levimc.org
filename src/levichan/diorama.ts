@@ -82,6 +82,8 @@ export interface Piece extends Block {
   /** she is carrying it (its spot is set each frame) */
   held: boolean;
   fx: { kind: Fx; t0: number; dur: number } | null;
+  /** a glow it keeps (the story's awakened keystones), under its animations */
+  tint: Color;
   flash: { mesh: Mesh; t0: number } | null;
 }
 
@@ -224,6 +226,10 @@ export class Diorama {
   private backdrop: Mesh | null = null;
   private readonly box = new BoxGeometry(1, 1, 1);
   private readonly sun: DirectionalLight;
+  private readonly hemi: HemisphereLight;
+  private readonly sky: [CanvasTexture, CanvasTexture];
+  private readonly fogDay: Color;
+  private night = 0;
   private t0 = 0;
   private leaving = -1;
   private readonly W: number;
@@ -243,21 +249,34 @@ export class Diorama {
     const bg = parseColor(getComputedStyle(document.body).backgroundColor);
     this.pageBg = bg && bg[3] > 0.5 ? bg : dark ? [12, 22, 30, 1] : [247, 243, 232, 1];
     const sky = dark ? ['#08131c', '#13324a'] : ['#cfe6dc', '#f6f1e4'];
-    const sc = document.createElement('canvas');
-    sc.width = 2;
-    sc.height = 256;
-    const sg = sc.getContext('2d')!;
-    const grad = sg.createLinearGradient(0, 0, 0, 256);
-    grad.addColorStop(0, sky[0]!);
-    grad.addColorStop(0.7, sky[1]!);
-    grad.addColorStop(1, sky[1]!);
-    sg.fillStyle = grad;
-    sg.fillRect(0, 0, 2, 256);
-    const skyTex = new CanvasTexture(sc);
-    skyTex.colorSpace = SRGBColorSpace;
-    this.scene.background = skyTex;
-    this.scene.fog = new Fog(new Color(sky[1]!), 35, 110);
-    this.scene.add(new HemisphereLight(dark ? 0x9fb8d0 : 0xffffff, dark ? 0x1d2a33 : 0x8a9a8a, dark ? 1.6 : 2.2));
+    const gradient = (top: string, bottom: string, stars: boolean) => {
+      const sc = document.createElement('canvas');
+      sc.width = stars ? 512 : 2;
+      sc.height = 256;
+      const sg = sc.getContext('2d')!;
+      const grad = sg.createLinearGradient(0, 0, 0, 256);
+      grad.addColorStop(0, top);
+      grad.addColorStop(0.7, bottom);
+      grad.addColorStop(1, bottom);
+      sg.fillStyle = grad;
+      sg.fillRect(0, 0, sc.width, 256);
+      if (stars) {
+        const r = rng(3);
+        for (let i = 0; i < 160; i++) {
+          sg.fillStyle = `rgba(255,255,240,${0.3 + r() * 0.7})`;
+          sg.fillRect(r() * 512, r() * 150, r() < 0.15 ? 2 : 1, 1);
+        }
+      }
+      const t = new CanvasTexture(sc);
+      t.colorSpace = SRGBColorSpace;
+      return t;
+    };
+    this.sky = [gradient(sky[0]!, sky[1]!, false), gradient('#050b16', '#1b2a44', true)];
+    this.scene.background = this.sky[0];
+    this.fogDay = new Color(sky[1]!);
+    this.scene.fog = new Fog(this.fogDay.clone(), 35, 110);
+    this.hemi = new HemisphereLight(dark ? 0x9fb8d0 : 0xffffff, dark ? 0x1d2a33 : 0x8a9a8a, dark ? 1.6 : 2.2);
+    this.scene.add(this.hemi);
     this.sun = new DirectionalLight(0xffffff, dark ? 1.2 : 1.8);
     this.sun.castShadow = true;
     this.sun.shadow.mapSize.set(2048, 2048);
@@ -463,6 +482,7 @@ export class Diorama {
       pop: 0,
       held: false,
       fx: null,
+      tint: new Color(0, 0, 0),
       flash: null,
     };
     mesh.userData.piece = p;
@@ -607,6 +627,16 @@ export class Diorama {
     if (this.backdrop) this.onWall(this.W / 2, this.scroll + this.H / 2, this.backdrop.position);
   }
 
+  /** Day (0) to night (1): a starry sky, dim light, a dark haze. */
+  setNight(k: number) {
+    if (Math.abs(k - this.night) < 0.001) return;
+    this.night = k;
+    this.scene.background = this.sky[k > 0.5 ? 1 : 0];
+    (this.scene.fog as Fog).color.copy(this.fogDay).lerp(new Color('#1b2a44'), k);
+    this.hemi.intensity = (this.hemi.userData.base ??= this.hemi.intensity) * (1 - 0.65 * k);
+    this.sun.intensity = (this.sun.userData.base ??= this.sun.intensity) * (1 - 0.8 * k);
+  }
+
   /** Start the flight out of the page (at `now`; long ago: already there). */
   explode(now: number) {
     this.t0 = now;
@@ -682,7 +712,7 @@ export class Diorama {
       if (k >= 1) {
         p.fx = null;
         p.front.color.setScalar(1);
-        p.sides.emissive.setScalar(0);
+        p.sides.emissive.copy(p.tint);
       } else {
         const env = Math.sin(Math.PI * k);
         const n = this._n.set(0, 0, 1).applyQuaternion(FACING[p.facing]);
@@ -845,6 +875,6 @@ export class Diorama {
         m.dispose();
       }
     });
-    (this.scene.background as Texture | null)?.dispose();
+    for (const t of this.sky) t.dispose();
   }
 }

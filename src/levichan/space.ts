@@ -12,6 +12,7 @@ import { Levi, MMD_SCALE, type HitRegion } from './levi';
 import { Brain } from './brain';
 import { Diorama, pixelTexture, rng, type Cube, type Piece, type Spot } from './diorama';
 import { Mover, type Goal } from './mover';
+import { Story } from './story/story';
 import type { LeviChanStrings } from './strings';
 
 export interface EnterOptions {
@@ -93,6 +94,7 @@ class Space {
   readonly camera = new PerspectiveCamera(FOV, 1, 0.05, 400);
   levi: Levi | null = null;
   brain: Brain | null = null;
+  story: Story | null = null;
   world!: Diorama;
   mover: Mover | null = null;
   private savedScroll = 0;
@@ -125,6 +127,7 @@ class Space {
   private placed = false;
   private building = false;
   private lastFrame = performance.now();
+  private lastCamNote = 0;
   /** where she lands at first: on the ground in front of the blocks */
   private home = { u: 0, v: 0 };
 
@@ -219,6 +222,7 @@ class Space {
     this.levi.preload(['hop', 'climb_up', 'wall_climb', 'lift_up', 'carry_idle', 'carry_walk', 'put_down', 'fall_land']);
     this.mover = new Mover(this.world, this.levi);
     this.brain = new Brain(this, this.levi, this.mover, this.t);
+    this.story = new Story(this, this.brain);
     this.levi.engine.runRenderLoop(() => {
       if (this.levi && this.mover) this.syncLevi();
       this.levi?.scene.render();
@@ -324,6 +328,7 @@ class Space {
   focus() {
     const mv = this.mover;
     if (!mv) return;
+    this.story?.note('focus');
     this.focusFrom = { pose: { ...this.pose }, t0: performance.now() };
   }
 
@@ -362,6 +367,7 @@ class Space {
       if (target.lengthSq() > 0) {
         target.normalize().multiplyScalar(5.5 * fast);
         this.moved();
+        this.story?.note('camMove');
         this.focusFrom = null;
       }
       this.vel.lerp(target, Math.min(1, dt * 10));
@@ -500,6 +506,14 @@ class Space {
     (this.world.ground.material as MeshLambertMaterial).opacity = k;
     this.world.update(now, dt);
     this.mover?.update(dt, this.world.cubes);
+    if (this.story && this.mover && this.placed) {
+      this.story.update(now);
+      if (now - this.lastCamNote > 5000) {
+        this.lastCamNote = now;
+        const mv = this.mover;
+        this.story.note('cam', { far: Math.hypot(this.pose.x - mv.u, this.pose.y - mv.h, this.pose.z - mv.v) > 12 });
+      }
+    }
 
     // her ring (where she appears) and contact shadow, flat on what is under her
     const reveal = this.leviRevealStart < 0 ? 0 : clamp01((now - this.leviRevealStart) / 700);
@@ -552,6 +566,7 @@ class Space {
   // ------------------------------------------------------------------ leaving
   exit() {
     if (this.outro >= 0) return;
+    this.story?.note('exit');
     this.outro = performance.now();
     this.brain?.farewell();
     this.menu.hidden = true;
@@ -567,6 +582,8 @@ class Space {
     this.alive = false;
     cancelAnimationFrame(this.raf);
     this.unbind();
+    this.story?.dispose();
+    this.story = null;
     this.brain?.dispose();
     this.levi?.dispose();
     this.levi = null;
@@ -660,6 +677,7 @@ class Space {
           this.pose.pitch = clamp(this.drag.pitch - (dy / this.H) * 1.6, -85 * DEG, 85 * DEG);
           this.focusFrom = null;
           this.moved();
+          this.story?.note('camLook');
         }
         return;
       }
@@ -755,9 +773,14 @@ class Space {
       this.dolly = clamp(this.dolly - dy * 0.006, -12, 12);
       this.focusFrom = null;
       this.moved();
+      this.story?.note('camWheel');
     }, { passive: false });
     this.on(window, 'keydown', (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !this.menu.hidden) this.menu.hidden = true;
+      if (this.story?.key(e)) {
+        e.preventDefault();
+        return;
+      }
       const t = e.target as HTMLElement;
       const typing = t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
       const inMenu = this.menu.contains(t);
@@ -879,6 +902,7 @@ class Space {
     }
     this.renderMenu();
     this.menu.hidden = false;
+    this.story?.note('menu');
     const r = this.menu.getBoundingClientRect();
     const left = Math.max(8, Math.min(innerWidth - r.width - 8, x));
     const top = where === 'above' ? Math.max(8, y - r.height) : Math.min(innerHeight - r.height - 8, y);
@@ -898,6 +922,7 @@ class Space {
       <label class="lc-row"><span>${t.quiet}</span><input type="checkbox" data-quiet ${this.quiet ? 'checked' : ''}></label>
       <label class="lc-row"><span>${t.follow}</span><input type="checkbox" data-follow ${this.follow ? 'checked' : ''}></label>
       <button type="button" class="lc-item" data-focus>${t.focus}</button>
+      ${this.story ? `<div class="lc-row lc-story-row"><span>${this.story.chapterTitle}</span><small>${this.story.endingsSeen}/${this.story.endingsTotal}</small></div><button type="button" class="lc-item" data-story-reset>${document.documentElement.lang.startsWith('zh') ? '重新开始故事' : 'Start the story over'}</button>` : ''}
       <button type="button" class="lc-item" data-exit>${t.exit}</button>`;
     this.menu.querySelectorAll<HTMLButtonElement>('[data-look]').forEach((b) =>
       b.addEventListener('click', () => {
@@ -913,6 +938,11 @@ class Space {
     this.menu.querySelector<HTMLInputElement>('[data-follow]')!.addEventListener('change', (e) => {
       this.follow = (e.target as HTMLInputElement).checked;
       this.savePrefs();
+      if (this.follow) this.story?.note('follow');
+    });
+    this.menu.querySelector<HTMLButtonElement>('[data-story-reset]')?.addEventListener('click', () => {
+      this.menu.hidden = true;
+      this.story?.reset();
     });
     this.menu.querySelector<HTMLButtonElement>('[data-focus]')!.addEventListener('click', () => {
       this.menu.hidden = true;
