@@ -852,6 +852,14 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 ## Changelog
 
+### 2.16.0 — 2026-11-01
+
+**Be.D.D., bedboo, BarelyEnoughItems, AlleviatedBackpacks, Bedstones and BeetrootSkin leave the Projects menu.** They
+are no longer listed under Core or Official mods, nor as levimc.org project cards; Be.D.D.'s docs stay online.
+* `PROJECTS` / `ProjectId` drop the six ids, and `projectBlurbs` their descriptions; `DocsProjectId` no longer
+  includes `'BeDD'`, so `DOCS_PROJECTS` (the docs.levimc.org root's cards) lists four projects.
+* Compatible: sites only rebuild.
+
 ### 2.15.0 — 2026-10-30
 
 **Be.D.D. has its own docs and is no longer a mod.** Be.D.D. is a standalone testing toolkit now, documented at

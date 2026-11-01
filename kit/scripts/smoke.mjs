@@ -316,7 +316,7 @@ await check('phone (390px): bar controls visible, one menu with the bar links, n
     await p.keyboard.press('Escape');
   }
   for (const [key, url] of CANONICAL_TABS) if (url) assert(links.some((h) => h === url || new URL(h).pathname === new URL(url).pathname), `menu lacks ${key}`);
-  assert(links.filter((h) => h.startsWith('https://docs.levimc.org/')).length >= 5, 'menu lacks the docs projects');
+  assert(links.filter((h) => h.startsWith('https://docs.levimc.org/')).length >= 4, 'menu lacks the docs projects');
   const sideways = await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   assert(!sideways, 'horizontal page scroll at 390px');
   assert(!e.length, e.join(' | '));

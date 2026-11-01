@@ -204,18 +204,6 @@ const en = {
     moredimensions:
       "An API for adding custom dimensions to Minecraft Bedrock Edition.",
     levistone: "A runtime for running Endstone plugins on LeviLamina.",
-    barelyenoughitems:
-      "Just Enough Items for Minecraft Bedrock Edition: browse every item and look up its recipes and uses.",
-    alleviatedbackpacks:
-      "Sophisticated Backpacks for Minecraft Bedrock Edition: backpacks with upgrades.",
-    bedstones:
-      "Waystones for Minecraft Bedrock Edition: build waystones and travel between them.",
-    beetrootskin:
-      "AppleSkin for Minecraft Bedrock Edition: see the hunger and saturation a food restores.",
-    bedd:
-      "Drive a LeviLamina client from test scripts without touching the real mouse or keyboard, several games at once.",
-    bedboo:
-      "Mineflayer for Minecraft Bedrock Edition: run mineflayer bots and their plugins against a Bedrock Dedicated Server.",
   },
   // Blog (levimc.org/blog/) — the chrome around the posts; the posts themselves are in Chinese
   blog: {
