@@ -103,6 +103,7 @@ MC-MineFeng/LevelExp
 MengHanLOVE1027/lse-easybackuper
 MiracleForest/AlleviatedBackpacks
 MiracleForest/BarelyEnoughItems
+MiracleForest/Bearing
 MiracleForest/Bedstones
 MiracleForest/BeetrootSkin
 MiracleForest/Complementaries
@@ -114,7 +115,6 @@ MiracleForest/iListenAttentively-Release
 MiracleForest/iScale
 MiracleForest/iStructuralShift
 MiracleForest/Lepton
-MiracleForest/Levitate
 MiracleForest/LiftOff
 MiracleForest/LL-ScalePersistenceFix
 MiracleForest/LL-UniteBan
