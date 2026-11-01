@@ -126,22 +126,30 @@ The two apps share the origin: their bar and footer links into the other one are
 ## LeviChan
 
 A small LeviChan head peeks over the top edge of the home hero's showcase card (`src/levichan/LeviChanPeek.tsx`).
-Clicking it opens her 3D space at once; nothing of it is downloaded before that (the runtime is its own chunk,
-`import('./levichan/space')`, and the model and motions are fetched from `public/levichan/` as they are needed:
-the model ~9 MB, each motion a few KB, on first use).
+Clicking it opens her 3D space at once; nothing of it is downloaded or drawn before that, and a reload does not
+reopen it (the story keeps its own place). The world (three.js, `import('./levichan/space')`) and her runtime
+(Babylon and babylon-mmd, `import('./levichan/levi')`) are two chunks fetched in parallel, and the model and motions
+come from `public/levichan/` as they are needed (the model ~9 MB, each motion a few KB, on first use). Nothing waits
+on her: motes lift off the page while the blocks on screen are snapshotted, the world comes up, and the rest of the
+blocks, her and the cubes gather out of swirling motes as they arrive (`src/levichan/particles.ts`, one draw for all
+of them).
 
 - `src/levichan/space.ts` — the space, drawn with three.js on a canvas over the page (the page itself is left as it
   is underneath). It opens on the page exactly as it was on screen; its components tumble out of it and the camera
   swoops back over them. The camera then flies like Minecraft's: WASD (or the arrows) on the level, Space up, Shift
   down, Ctrl faster, the wheel toward or away from where it looks, a drag to look around, F to fly over to her (or the
-  menu's "follow her", which keeps her in view). Her WebGL canvas is drawn over the world's with a camera matched to
-  it. Click a block and she makes her way to it and plays with it; double-click a small one and she carries it
+  menu's "follow her", which keeps her in view). On a touch screen: one finger looks around, a pinch goes forward
+  and back, two fingers move. Her WebGL canvas is drawn over the world's with a camera matched to it, both from one
+  loop capped at 60 frames a second; the world is drawn only when something in it or the camera changed (its
+  shadows only when something casting one moved), and a click that comes while she is busy (climbing, mid-play) is
+  done as soon as she is free. Click a block and she makes her way to it and plays with it; double-click a small one and she carries it
   somewhere else; drag a cube to throw it, drag her to pick her up. Links and controls on the blocks only light up:
   nothing navigates from inside the space (the browser's back and forward take the new page apart too). The menu
-  (her avatar, bottom left, or a right click on her): whether she watches the cursor, fewer fidgets, follow her, fly
+  (her avatar, bottom left, top right on a phone, or a right click on her): whether she watches the cursor, fewer fidgets, follow her, fly
   to her, leave (the blocks fly back into the page and the camera returns to it).
 - `src/levichan/diorama.ts` — the world: each component of the page (cards, buttons, the bar, pictures, headings,
-  text) is snapshotted (`modern-screenshot`) and becomes a block with real depth, its picture on the face, scattered
+  text) is snapshotted (`modern-screenshot`; those on screen first, the rest streamed in) and becomes a block with
+  real depth (two draws each: its face, and its sides and back), its picture on the face, scattered
   over the ground in no particular order: upright, lying flat as platforms, turned sideways, stacked on others (always
   leaving a strip of the one below to climb from) or hanging a hop away from a neighbour, never closer than her height
   over another's top. The blocks answer her play: they press in, bounce, spin, flip, wobble, glow or dip as she lands;

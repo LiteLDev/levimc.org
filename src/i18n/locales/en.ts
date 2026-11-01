@@ -247,6 +247,7 @@ const en = {
     loadFailed: "LeviChan could not be loaded.",
     menuTitle: "LeviChan",
     hint: "The page came apart and she lives on its pieces. Fly about like in Minecraft: WASD, Space up, Shift down, Ctrl faster, the wheel forward and back, drag to look around, F to find her. Click a piece and she makes her way there (hopping, climbing) and plays with it; double-click a small one and she carries it somewhere else; drag her, throw a cube, pat or poke her… Links only light up here.",
+    hintTouch: "The page came apart and she lives on its pieces. Drag with one finger to look around, pinch to go forward and back, drag with two fingers to move. Tap a piece and she makes her way there and plays with it; double-tap a small one and she carries it elsewhere; hold her to pick her up, throw a cube, pat or poke her… Links only light up here.",
     lookLabel: "Watch the cursor",
     look: { auto: "Her choice", always: "Always", never: "Never" },
     quiet: "Fewer fidgets",

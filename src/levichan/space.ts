@@ -5,10 +5,11 @@
 // she is sent to (./brain). The page itself stays as it was under the space's canvas. Everything here is loaded on
 // demand, when the peeking avatar is clicked (./LeviChanPeek).
 import css from './levichan.css?inline';
-import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { Ray } from '@babylonjs/core/Culling/ray.pure';
-import { MeshLambertMaterial, PCFShadowMap, PerspectiveCamera, Raycaster, Vector2, Vector3 as V3, WebGLRenderer, type Intersection, type Material, type MeshBasicMaterial, type Object3D } from 'three';
-import { Levi, MMD_SCALE, type HitRegion } from './levi';
+import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Box3, MeshLambertMaterial, OrthographicCamera, PCFShadowMap, PerspectiveCamera, Raycaster, Scene, Vector2, Vector3 as V3, WebGLRenderer, type Intersection, type Material, type Mesh, type MeshBasicMaterial, type Object3D, type Texture } from 'three';
+// her model (Babylon, babylon-mmd) is a chunk of its own, fetched while the page comes apart
+import type { HitRegion, Levi } from './levi';
+import { Group, Particles } from './particles';
 import { Brain } from './brain';
 import { Diorama, pixelTexture, rng, type Cube, type Piece, type Spot } from './diorama';
 import { Mover, type Goal } from './mover';
@@ -87,7 +88,6 @@ class Space {
   private style!: HTMLStyleElement;
   private view!: HTMLCanvasElement;
   canvas!: HTMLCanvasElement;
-  private loadEl!: HTMLElement;
   private menu!: HTMLElement;
   private fab!: HTMLButtonElement;
   private renderer: WebGLRenderer | null = null;
@@ -127,7 +127,23 @@ class Space {
   private placed = false;
   private building = false;
   private lastFrame = performance.now();
+  private lastTick = performance.now();
   private lastCamNote = 0;
+  /** device pixels per CSS pixel the two canvases draw at */
+  private readonly dpr = Math.min(devicePixelRatio || 1, 1.5);
+  /** her download (0..1) */
+  private loadK = 0;
+  /** motes in the world, and the ones over the page while it is still being cut up */
+  private motes: Particles | null = null;
+  private prelude: { motes: Particles; scene: Scene; cam: OrthographicCamera; from: { x: number; y: number }; until: number } | null = null;
+  /** the cloud she forms out of, and when she was stood there to form */
+  private herCloud: Group | null = null;
+  private formAt = -1;
+  /** the blocks still forming (snapshots on the way) */
+  private clouds = new Map<Piece, Group>();
+  /** what the world looked like at the last draw, and where its shadow casters were (nothing changed: no draw) */
+  private lastSig = NaN;
+  private lastShadowSig = NaN;
   /** where she lands at first: on the ground in front of the blocks */
   private home = { u: 0, v: 0 };
 
@@ -168,9 +184,8 @@ class Space {
     this.view = this.add('canvas', 'lc-three') as HTMLCanvasElement;
     this.canvas = this.add('canvas', 'lc-canvas') as HTMLCanvasElement;
     this.canvas.tabIndex = -1;
+    this.canvas.style.opacity = '0';
     for (const c of [this.view, this.canvas]) c.setAttribute('aria-hidden', 'true');
-    this.loadEl = this.add('div', 'lc-load', 'lc-ui');
-    this.loadEl.innerHTML = `${this.t.loading} <b><span></span></b>`;
     this.fab = this.add('button', 'lc-fab', 'lc-ui') as HTMLButtonElement;
     this.fab.type = 'button';
     this.fab.title = this.t.menuTitle;
@@ -178,37 +193,53 @@ class Space {
     this.fab.innerHTML = `<img src="${this.base}avatar.png" alt="" draggable="false">`;
     this.fab.addEventListener('click', (e) => {
       e.stopPropagation();
+      // the button sits low on a wide screen, high on a phone (out of the dialogue's way): the menu opens away
       const r = this.fab.getBoundingClientRect();
-      this.toggleMenu(r.left, r.top - 8, 'above');
+      const high = r.top < innerHeight / 2;
+      this.toggleMenu(high ? r.right : r.left, high ? r.bottom + 8 : r.top - 8, high ? 'below' : 'above');
     });
     this.menu = this.add('div', 'lc-menu', 'lc-ui');
     this.menu.hidden = true;
     this.menu.setAttribute('role', 'dialog');
     this.menu.setAttribute('aria-label', this.t.menuTitle);
-    try {
-      sessionStorage.setItem(STORE, '1');
-    } catch {
-      /* ignore */
-    }
 
     if (new URLSearchParams(location.search).has('lcdebug')) (window as unknown as { __levichan: unknown }).__levichan = this;
-    // her model downloads while the page is cut up
-    const bar = this.loadEl.querySelector('span') as HTMLElement;
-    const leviP = Levi.load({
-      base: this.base,
-      canvas: this.canvas,
-      onProgress: (r, total) => (bar.style.width = `${Math.min(100, (100 * r) / Math.max(1, total))}%`),
-    });
+    // the renderer and the first motes at once: something happens the moment she is clicked, over the page itself
+    // (the canvas is clear until the world is built)
+    this.renderer = new WebGLRenderer({ canvas: this.view, antialias: true, alpha: true, powerPreference: 'high-performance' });
+    this.renderer.setPixelRatio(this.dpr);
+    this.renderer.setSize(this.W, this.H, false);
+    this.renderer.setClearColor(0x000000, 0);
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = PCFShadowMap;
+    // the shadows are drawn again only when something casting one moves (see draw())
+    this.renderer.shadowMap.autoUpdate = false;
+    const peek = document.querySelector('.lc-peek-head')?.getBoundingClientRect();
+    const pm = new Particles(true);
+    pm.setScale(this.dpr);
+    const pc = new OrthographicCamera(0, this.W, 0, this.H, -10, 10);
+    const ps = new Scene();
+    ps.add(pm.points);
+    this.prelude = { motes: pm, scene: ps, cam: pc, from: peek ? { x: peek.left + peek.width / 2, y: peek.top + peek.height / 2 } : { x: this.W / 2, y: this.H / 2 }, until: Infinity };
+    this.motes = new Particles();
+    this.motes.setScale((this.H * this.dpr) / 2 / Math.tan((FOV / 2) * DEG));
+    this.loop();
+
+    // her model downloads (and its code) while the page is cut up; the world does not wait for her
+    const leviP = import('./levi').then(({ Levi }) =>
+      Levi.load({ base: this.base, canvas: this.canvas, onProgress: (r, total) => (this.loadK = Math.min(1, r / Math.max(1, total))) }),
+    );
     leviP.catch(() => {});
     await this.buildWorld(instant);
     if (!this.alive) return;
     this.bindEvents();
-    this.loop();
 
     try {
       this.levi = await leviP;
     } catch (e) {
-      this.loadEl.textContent = this.t.loadFailed;
+      const el = this.add('div', 'lc-load', 'lc-ui');
+      el.textContent = this.t.loadFailed;
+      this.herCloud?.release();
       console.error('LeviChan:', e);
       return;
     }
@@ -216,17 +247,11 @@ class Space {
       this.levi.dispose();
       return;
     }
-    this.loadEl.style.opacity = '0';
-    setTimeout(() => this.loadEl.remove(), 500);
-    this.levi.engine.setHardwareScalingLevel(1 / Math.min(devicePixelRatio || 1, 1.5));
+    this.levi.engine.setHardwareScalingLevel(1 / this.dpr);
     this.levi.preload(['hop', 'climb_up', 'wall_climb', 'lift_up', 'carry_idle', 'carry_walk', 'put_down', 'fall_land']);
     this.mover = new Mover(this.world, this.levi);
     this.brain = new Brain(this, this.levi, this.mover, this.t);
     this.story = new Story(this, this.brain);
-    this.levi.engine.runRenderLoop(() => {
-      if (this.levi && this.mover) this.syncLevi();
-      this.levi?.scene.render();
-    });
   }
 
   /** Cut the page up and start the fly-out (the first time, and again on a new page). */
@@ -237,14 +262,44 @@ class Space {
     if (!this.alive) return world.dispose();
     const old = this.world;
     this.world = world;
-    if (!this.renderer) {
-      this.renderer = new WebGLRenderer({ canvas: this.view, antialias: true });
-      this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
-      this.renderer.setSize(this.W, this.H, false);
-      this.renderer.shadowMap.enabled = true;
-      this.renderer.shadowMap.type = PCFShadowMap;
+    if (!this.html.classList.contains('lc-3d')) {
       this.html.classList.add('lc-3d');
+      // the page's scrollbar is gone: the canvases are the whole window now
+      this.resize();
     }
+    // the blocks whose snapshots are still on the way are clouds of motes where they fly, until they form
+    for (const g of this.clouds.values()) g.release();
+    this.clouds.clear();
+    const box = new Box3();
+    for (const p of world.pieces) {
+      if (!p.pending) continue;
+      const g = new Group(
+        () => {
+          if (this.world !== world) return null;
+          box.setFromObject(p.mesh);
+          return { x0: box.min.x, x1: box.max.x, y0: box.min.y, y1: box.max.y, z0: box.min.z, z1: box.max.z };
+        },
+        undefined,
+        0.8,
+        1.2,
+      );
+      g.rate = 160;
+      g.max = Math.round(Math.min(260, 40 + p.cw * p.ch * 30));
+      this.clouds.set(p, this.motes!.group(g));
+    }
+    world.onFormed = (p) => {
+      const g = this.clouds.get(p);
+      this.clouds.delete(p);
+      const show = () => {
+        p.mesh.visible = true;
+        this.world.play(p, 'glow');
+      };
+      if (g && this.world === world) g.form(0.7, null, show);
+      else show();
+    };
+    this.motes!.points.removeFromParent();
+    world.scene.add(this.motes!.points);
+    if (this.prelude) this.prelude.until = performance.now() + 1800;
     // the camera starts where it shows the page exactly as it was, and ends looking over the scattered blocks
     const D = this.H / world.m / 2 / Math.tan((FOV / 2) * DEG);
     this.flatPose = { x: 0, y: world.wall.y, z: world.wall.z + D, yaw: 0, pitch: 0 };
@@ -282,12 +337,31 @@ class Space {
     return el;
   }
 
-  /** Once the blocks have landed: she drops in from above her spot, and so do the cubes. */
+  /** Once the blocks have landed and she is loaded: she stands at her spot, unseen, and the cloud there pulls
+   * together onto her (a few frames on, once her bones are posed); then she is there, and the cubes form. */
   private placeHer() {
-    this.mover!.dropFrom(this.home.u, this.home.v, 4.5);
-    this.leviRevealStart = performance.now();
+    this.mover!.dropFrom(this.home.u, this.home.v, 0);
     this.placed = true;
-    this.makeCubes();
+    this.formAt = performance.now();
+  }
+  /** The cloud where she will be, while her model downloads: thicker as more of her arrives. */
+  private gatherHer() {
+    const { u, v } = this.home;
+    const g = new Group(() => ({ x0: u - 0.3, x1: u + 0.3, y0: 0.05, y1: 1.45, z0: v - 0.25, z1: v + 0.25 }), undefined, 1.8, 2.4);
+    this.herCloud = this.motes!.group(g);
+  }
+  private formHer() {
+    const g = this.herCloud;
+    this.formAt = -1;
+    const done = () => {
+      this.leviRevealStart = performance.now();
+      const mv = this.mover!;
+      this.motes!.burst(mv.u, mv.h + 0.8, mv.v, 90, 2.2, 0.045);
+      this.makeCubes();
+    };
+    if (!g) return done();
+    this.herCloud = null;
+    g.form(reduced() ? 0.01 : 1.1, this.levi!.bodyPoints().map((b) => ({ x: b.u, y: b.h, z: b.v, r: b.r })), done);
   }
 
   private makeCubes() {
@@ -308,8 +382,23 @@ class Space {
       const b = tops.length ? tops[Math.floor(r() * tops.length)]! : null;
       const u = b ? b.u + b.w * (0.2 + 0.6 * r()) : this.home.u + (r() - 0.5) * 4;
       const v = b ? b.z - b.d * (0.2 + 0.6 * r()) : this.home.v - r() * 2;
-      const c = this.world.addCube(mats, 0.32, u, v, (b?.h1 ?? 0) + 5 + i * 1.2);
+      const c = this.world.addCube(mats, 0.32, u, v, (b?.h1 ?? 0) + 0.5 + i * 0.1);
       c.spin = (r() - 0.5) * 4;
+      // a little cloud first; the cube is held still (no physics) until it has formed
+      c.held = true;
+      c.mesh.visible = false;
+      const g = new Group(() => ({ x0: c.u - c.s / 2, x1: c.u + c.s / 2, y0: c.h, y1: c.h + c.s, z0: c.v - c.s / 2, z1: c.v + c.s / 2 }), undefined, 0.7, 2);
+      g.max = 70;
+      g.rate = 140;
+      this.motes!.group(g);
+      setTimeout(
+        () =>
+          g.form(0.6, null, () => {
+            c.mesh.visible = true;
+            c.held = false;
+          }),
+        500 + i * 260,
+      );
     });
   }
 
@@ -371,6 +460,8 @@ class Space {
         this.focusFrom = null;
       }
       this.vel.lerp(target, Math.min(1, dt * 10));
+      // settled exactly, or a still camera would never be still (and every frame drawn again)
+      if (target.lengthSq() === 0 && this.vel.lengthSq() < 1e-6) this.vel.set(0, 0, 0);
       p.x += this.vel.x * dt;
       p.y += this.vel.y * dt;
       p.z += this.vel.z * dt;
@@ -404,7 +495,7 @@ class Space {
       p.z = clamp(p.z, -L, L);
       p.y = clamp(p.y, 0.25, 40);
     }
-    this.shake *= Math.max(0, 1 - dt * 8);
+    this.shake = this.shake < 1e-3 ? 0 : this.shake * Math.max(0, 1 - dt * 8);
     const c = this.camera;
     c.position.set(this.pose.x, this.pose.y + Math.sin(now / 30) * this.shake, this.pose.z);
     c.rotation.order = 'YXZ';
@@ -426,7 +517,7 @@ class Space {
   /** What a screen point's ray meets first: a block (with where on it), a cube, or the ground. */
   pick(x: number, y: number): { piece?: Piece; cube?: Cube; hit: PieceHit } | null {
     this.raycaster.setFromCamera(this.ndc(x, y), this.camera);
-    const objs: Object3D[] = [...this.world.blocks().map((p) => p.mesh), ...this.world.cubes.map((c) => c.mesh), this.world.ground];
+    const objs: Object3D[] = [...this.world.blocks().map((p) => p.mesh), ...this.world.cubes.map((c) => c.mesh), this.world.ground].filter((o) => o.visible);
     const hits = this.raycaster.intersectObjects(objs, false);
     const h = hits[0] as Intersection | undefined;
     if (!h) return null;
@@ -441,7 +532,7 @@ class Space {
     base.nu = n.x;
     base.nv = n.z;
     // the content's own face: which link or control is under the point
-    if (h.face!.materialIndex === 4 && h.uv) {
+    if (h.face!.materialIndex === 0 && h.uv) {
       const px = h.uv.x * piece.pw;
       const py = (1 - h.uv.y) * piece.ph;
       base.spot = piece.spots.find((s) => px >= s.x && px <= s.x + s.w && py >= s.y && py <= s.y + s.h) ?? null;
@@ -492,20 +583,38 @@ class Space {
   private loop = () => {
     this.raf = requestAnimationFrame(this.loop);
     const now = performance.now();
+    // at most 60 frames a second: a 120 or 144 Hz screen would draw both canvases twice as often for nothing
+    const step = 1000 / 60;
+    const since = now - this.lastTick;
+    if (since < step - 1.5) return;
+    this.lastTick = since < 2 * step ? now - (since % step) : now;
     const dt = Math.min(0.05, (now - this.lastFrame) / 1000);
     this.lastFrame = now;
-    if (this.building) return;
+    if (this.building || !this.world) {
+      // the page is still being cut up (the first time): motes lift off it
+      if (!this.world && this.prelude) this.drawPrelude(now, dt, true);
+      return;
+    }
     this.intro = clamp01((now - this.introStart) / this.introDur);
     if (this.outro >= 0 && now - this.outro > 2300 && this.world.flat) {
       this.teardown();
       return;
     }
-    if (this.mover && !this.placed && this.outro < 0 && this.world.pieces.every((p) => p.t >= 1)) this.placeHer();
+    const landed = this.world.pieces.every((p) => p.t >= 1);
+    if (!this.herCloud && !this.placed && this.outro < 0 && this.intro > 0.55) this.gatherHer();
+    if (this.herCloud) {
+      this.herCloud.rate = 50 + 420 * this.loadK;
+      this.herCloud.max = Math.round(120 + 760 * this.loadK);
+    }
+    if (this.mover && !this.placed && this.outro < 0 && landed) this.placeHer();
+    // her bones are posed after a frame or two: then the cloud has her shape to gather onto
+    if (this.formAt >= 0 && now - this.formAt > 120 && this.levi) this.formHer();
     this.updateCamera(now, dt);
     const k = this.outro >= 0 ? 1 - clamp01((now - this.outro - 600) / 1400) : clamp01(this.intro * 1.6 - 0.2);
     (this.world.ground.material as MeshLambertMaterial).opacity = k;
     this.world.update(now, dt);
     this.mover?.update(dt, this.world.cubes);
+    this.motes?.update(dt, now);
     if (this.story && this.mover && this.placed) {
       this.story.update(now);
       if (now - this.lastCamNote > 5000) {
@@ -520,8 +629,8 @@ class Space {
     this.leviReveal = this.outro >= 0 ? Math.min(this.leviReveal, 1 - clamp01((now - this.outro) / 600)) : reveal;
     const mv = this.placed ? this.mover : null;
     const { blob, ring } = this.world;
-    blob.visible = ring.visible = !!mv;
-    if (mv) {
+    blob.visible = ring.visible = !!mv && this.leviReveal > 0;
+    if (mv && blob.visible) {
       const sup = this.world.supportAt(mv.u, mv.v, mv.h + 0.02, 0.12);
       const above = mv.h - sup.h;
       blob.position.set(mv.u, sup.h + 0.012, mv.v);
@@ -529,38 +638,113 @@ class Space {
       (blob.material as MeshBasicMaterial).opacity = this.leviReveal * Math.max(0.25, 1 - above / 3);
       ring.position.set(mv.u, sup.h + 0.015, mv.v);
       ring.scale.setScalar(1.4);
-      (ring.material as MeshBasicMaterial).opacity = Math.sin(Math.PI * clamp01(this.leviReveal * 1.1)) * 0.9;
+      const rk = clamp01(this.leviReveal * 1.1);
+      (ring.material as MeshBasicMaterial).opacity = Math.sin(Math.PI * rk) * 0.9;
+      ring.visible = rk < 1;
     }
-    this.renderer!.render(this.world.scene, this.camera);
-    if (this.levi) this.canvas.style.opacity = this.leviReveal > 0 ? String(Math.min(1, this.leviReveal * 3)) : '0';
+    this.draw();
+    if (this.prelude) this.drawPrelude(now, dt, false);
+    // her: every frame while she is there (she breathes, blinks, sways), in step with the world's camera
+    if (this.levi && this.mover && this.placed) {
+      this.syncLevi();
+      this.levi.frame();
+      this.canvas.style.opacity = this.leviReveal > 0 ? String(Math.min(1, this.leviReveal * 3)) : '0';
+    }
   };
 
-  /** Her model (MMD units: x her left, y up, z away from the viewer) -> the world (metres, three's axes): her
-   * heading and spot. Babylon matrices are row-vector ones, laid out as three's column-major arrays. */
-  private herToWorld = Matrix.Identity();
+  /** Draw the world, if anything in it changed since the last time (a still view costs nothing). */
+  private draw() {
+    const scene = this.world.scene;
+    scene.updateMatrixWorld();
+    let sig = 0;
+    let shadow = 0;
+    let w = 1;
+    const add = (x: number) => {
+      sig += x * w;
+      w = ((w * 1.618) % 97) + 1;
+    };
+    for (const e of this.camera.matrixWorld.elements) add(e);
+    add(this.camera.aspect);
+    scene.traverseVisible((o) => {
+      const e = o.matrixWorld.elements;
+      for (let i = 0; i < 16; i++) add(e[i]!);
+      const mesh = o as Mesh;
+      if (mesh.castShadow) for (let i = 0; i < 16; i++) shadow += e[i]! * w * (i + 1);
+      const mats = mesh.material ? ([] as Material[]).concat(mesh.material) : [];
+      for (const m of mats) {
+        const mm = m as Material & { color?: { r: number; g: number; b: number }; emissive?: { r: number; g: number; b: number }; map?: Texture | null };
+        add(m.opacity);
+        if (mm.color) add(mm.color.r + mm.color.g * 3 + mm.color.b * 7);
+        if (mm.emissive) add(mm.emissive.r + mm.emissive.g * 3 + mm.emissive.b * 7);
+        if (mm.map) add(mm.map.id + mm.map.version * 0.001);
+      }
+      const l = o as Object3D & { intensity?: number };
+      if (l.intensity !== undefined) add(l.intensity);
+    });
+    const bg = scene.background as Texture | null;
+    add(bg?.id ?? 0);
+    const fog = scene.fog as { color: { r: number; g: number; b: number } } | null;
+    if (fog) add(fog.color.r + fog.color.g * 3 + fog.color.b * 7);
+    if (sig === this.lastSig && !this.motes?.active) return;
+    this.lastSig = sig;
+    if (shadow !== this.lastShadowSig) {
+      this.lastShadowSig = shadow;
+      this.renderer!.shadowMap.needsUpdate = true;
+    }
+    this.renderer!.render(scene, this.camera);
+    this.draws++;
+  }
+  /** frames the world was actually drawn (for the debug probe) */
+  draws = 0;
+
+  /** Motes lifting off the page while it is cut up (and fading, over the world, once it is up). */
+  private drawPrelude(now: number, dt: number, alone: boolean) {
+    const pl = this.prelude!;
+    const emitting = now < pl.until - 1200;
+    if (emitting) {
+      const n = Math.round(dt * 260);
+      for (let i = 0; i < n; i++) {
+        const near = Math.random() < 0.4;
+        const x = near ? pl.from.x + (Math.random() - 0.5) * 160 : Math.random() * this.W;
+        const y = near ? pl.from.y + (Math.random() - 0.5) * 90 : Math.random() * this.H;
+        pl.motes.emit(x, y, 0, (Math.random() - 0.5) * 40, -30 - Math.random() * 70, 0, 0.8 + Math.random() * 0.9, 3 + Math.random() * 4);
+      }
+    }
+    pl.motes.update(dt, now);
+    const r = this.renderer!;
+    if (alone) r.clear();
+    r.autoClear = false;
+    r.render(pl.scene, pl.cam);
+    r.autoClear = true;
+    if (!emitting && !pl.motes.active) {
+      pl.motes.dispose();
+      this.prelude = null;
+      this.lastSig = NaN;
+    }
+  }
+
+  /** Stand her where the mover has her, seen through the world's camera, hidden by the blocks in front. */
+  private occBoxes = new Float32Array(0);
   private syncLevi() {
-    const levi = this.levi!;
     const mv = this.mover!;
-    const k = 1 / MMD_SCALE;
-    this.herToWorld = Matrix.Scaling(k, k, -k).multiply(Matrix.RotationY(mv.heading)).multiply(Matrix.Translation(mv.u, mv.h, mv.v));
-    const V = Matrix.FromArray(this.camera.matrixWorldInverse.elements);
-    // the WebGL camera: three's (at the origin of view space, looking down -z) carried into her space
-    const Vb = this.herToWorld.multiply(V).multiply(Matrix.Scaling(1 / k, 1 / k, -1 / k));
-    levi.setCamera(Vb.clone().invert(), FOV * DEG);
-    // the blocks (and cubes) in front of her hide her
-    const inv = this.herToWorld.clone().invert();
-    const occ: Matrix[] = [];
-    const box = (u: number, w: number, z: number, d: number, h: number, hh: number) =>
-      occ.push(Matrix.Scaling(w, hh, d).multiply(Matrix.Translation(u + w / 2, h + hh / 2, z - d / 2)).multiply(inv));
-    for (const b of this.world.blocks()) box(b.u, b.w, b.z, b.d, b.h0, b.h1 - b.h0);
+    const blocks = this.world.blocks().filter((b) => b.mesh.visible);
     const held = mv.carrying;
+    const cubes = this.world.cubes.filter((c) => c.mesh.visible);
+    const n = blocks.length + (held ? 1 : 0) + cubes.length;
+    if (this.occBoxes.length < n * 6) this.occBoxes = new Float32Array(n * 12);
+    let i = 0;
+    const box = (u: number, w: number, z: number, d: number, h: number, hh: number) => {
+      this.occBoxes.set([u, w, z, d, h, hh], i * 6);
+      i++;
+    };
+    for (const b of blocks) box(b.u, b.w, b.z, b.d, b.h0, b.h1 - b.h0);
     if (held) box(held.u, held.w, held.z, held.d, held.h0, held.h1 - held.h0);
-    for (const c of this.world.cubes) box(c.u - c.s / 2, c.s, c.v + c.s / 2, c.s, c.h, c.s);
-    levi.setOccluders(occ);
+    for (const c of cubes) box(c.u - c.s / 2, c.s, c.v + c.s / 2, c.s, c.h, c.s);
+    this.levi!.place(mv.heading, mv.u, mv.h, mv.v, this.camera.matrixWorldInverse.elements, FOV * DEG, this.occBoxes, i);
   }
   /** A world point in her Babylon space (for gaze). */
   toBabylon(u: number, v: number, h: number) {
-    return Vector3.TransformCoordinates(new Vector3(u, h, v), this.herToWorld.clone().invert());
+    return this.levi!.toLocal(u, v, h);
   }
 
   // ------------------------------------------------------------------ leaving
@@ -571,11 +755,6 @@ class Space {
     this.brain?.farewell();
     this.menu.hidden = true;
     setTimeout(() => this.world.implode(performance.now()), 450);
-    try {
-      sessionStorage.removeItem(STORE);
-    } catch {
-      /* ignore */
-    }
   }
 
   private teardown() {
@@ -588,7 +767,11 @@ class Space {
     this.levi?.dispose();
     this.levi = null;
     this.world.dispose();
+    this.motes?.dispose();
+    this.prelude?.motes.dispose();
     this.renderer?.dispose();
+    this.renderer?.forceContextLoss();
+    this.resizeObs?.disconnect();
     for (const el of this.els) el.remove();
     this.style.remove();
     this.html.classList.remove('lc-3d');
@@ -602,6 +785,9 @@ class Space {
   private held: { cube: Cube; last: { u: number; v: number; h: number; t: number }; vel: V3 } | null = null;
   private carrying: { x: number; y: number; started: boolean } | null = null;
   private clickTimer = 0;
+  /** fingers down (touch), and the two-finger gesture: pinch to go toward or away, drag to move about */
+  private touches = new Map<number, { x: number; y: number }>();
+  private pinch: { d: number; x: number; y: number } | null = null;
   private unbinders: (() => void)[] = [];
   private on<K extends keyof WindowEventMap>(target: Window | Document | HTMLElement, type: K | string, fn: (e: never) => void, opts?: AddEventListenerOptions) {
     target.addEventListener(type, fn as EventListener, opts);
@@ -612,16 +798,46 @@ class Space {
     this.unbinders = [];
   }
 
-  /** A world ray (Babylon) through a screen point. */
-  ray(x: number, y: number): Ray | null {
-    const l = this.levi;
-    if (!l) return null;
-    const s = l.engine.getHardwareScalingLevel();
-    return l.scene.createPickingRay(x / s, y / s, Matrix.Identity(), l.camera);
-  }
+  /** Which part of her is under a screen point (CSS px), once she is there. */
   hitAt(x: number, y: number): { region: HitRegion; point: Vector3 } | null {
-    const r = this.ray(x, y);
-    return r && this.levi && this.leviReveal > 0.9 ? this.levi.hit(r) : null;
+    const l = this.levi;
+    return l && this.leviReveal > 0.9 ? l.hit(l.rayAt(x, y)) : null;
+  }
+  /** Where two fingers are: their middle and how far apart. */
+  private twoFingers() {
+    const [a, b] = [...this.touches.values()] as [{ x: number; y: number }, { x: number; y: number }];
+    return { d: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  }
+  /** Two fingers: spreading them goes toward where the camera looks, moving them together slides it across. */
+  private gesture() {
+    if (this.intro < 1 || this.outro >= 0 || !this.pinch) return;
+    const now = this.twoFingers();
+    const was = this.pinch;
+    this.pinch = now;
+    if (!was.d) return;
+    const p = this.pose;
+    this.dolly = clamp(this.dolly + Math.log(now.d / was.d) * 7, -12, 12);
+    const right = new V3(Math.cos(p.yaw), 0, -Math.sin(p.yaw));
+    const k = 9 / Math.max(320, this.W);
+    p.x -= right.x * (now.x - was.x) * k;
+    p.z -= right.z * (now.x - was.x) * k;
+    p.y = clamp(p.y + (now.y - was.y) * k, 0.25, 40);
+    this.focusFrom = null;
+    this.moved();
+    this.story?.note('camMove');
+  }
+  private resizeObs: ResizeObserver | null = null;
+  /** The window's size, as the canvases have it: picking, drawing and the camera all go by this. */
+  private resize() {
+    const W = this.view.clientWidth || document.documentElement.clientWidth;
+    const H = this.view.clientHeight || innerHeight;
+    if (W === this.W && H === this.H) return;
+    this.W = W;
+    this.H = H;
+    this.renderer?.setSize(W, H, false);
+    this.levi?.engine.resize();
+    this.motes?.setScale((H * this.dpr) / 2 / Math.tan((FOV / 2) * DEG));
+    this.lastSig = NaN;
   }
   /** Over the space (not our menu or button)? */
   private inSpace(e: Event) {
@@ -630,14 +846,16 @@ class Space {
   }
 
   private bindEvents() {
-    this.on(window, 'resize', () => {
-      this.W = document.documentElement.clientWidth;
-      this.H = innerHeight;
-      this.renderer?.setSize(this.W, this.H, false);
-      this.levi?.engine.resize();
-    });
+    this.on(window, 'resize', () => this.resize());
+    this.resizeObs = new ResizeObserver(() => this.resize());
+    this.resizeObs.observe(this.view);
     this.on(window, 'blur', () => this.keys.clear());
     this.on(window, 'pointermove', (e: PointerEvent) => {
+      if (this.touches.has(e.pointerId)) this.touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (this.pinch) {
+        if (this.touches.size >= 2) this.gesture();
+        return;
+      }
       if (this.held) {
         const c = this.held.cube;
         const p = this.onPlane(e.clientX, e.clientY, new V3(c.u, c.h, c.v));
@@ -694,6 +912,22 @@ class Space {
     this.on(window, 'pointerdown', (e: PointerEvent) => {
       if (!this.menu.hidden && !this.menu.contains(e.target as Node) && e.target !== this.fab && !this.fab.contains(e.target as Node)) this.menu.hidden = true;
       if (!this.inSpace(e) || e.button !== 0) return;
+      if (e.pointerType === 'touch') {
+        this.touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (this.touches.size === 2) {
+          // a second finger: whatever the first began becomes the gesture (nothing is dropped where it is not meant)
+          if (this.carrying && !this.carrying.started) this.carrying = null;
+          if (this.held) {
+            this.held.cube.held = false;
+            this.held = null;
+          }
+          this.drag = null;
+          clearTimeout(this.clickTimer);
+          this.pinch = this.twoFingers();
+          return;
+        }
+        if (this.pinch) return;
+      }
       const hit = this.hitAt(e.clientX, e.clientY);
       if (hit) {
         this.carrying = { x: e.clientX, y: e.clientY, started: false };
@@ -710,7 +944,22 @@ class Space {
       }
       this.drag = { x: e.clientX, y: e.clientY, yaw: this.pose.yaw, pitch: this.pose.pitch, moved: false };
     });
+    const lift = (e: PointerEvent) => {
+      this.touches.delete(e.pointerId);
+      if (!this.pinch) return false;
+      // the gesture ends when the fingers are all up; no click comes of it
+      if (this.touches.size === 0) this.pinch = null;
+      else if (this.touches.size === 1) this.pinch = { d: 0, ...[...this.touches.values()][0]! };
+      return true;
+    };
+    this.on(window, 'pointercancel', (e: PointerEvent) => {
+      lift(e);
+      this.drag = null;
+      if (this.carrying?.started) this.mover?.drop();
+      this.carrying = null;
+    });
     this.on(window, 'pointerup', (e: PointerEvent) => {
+      if (lift(e)) return;
       if (this.held) {
         const { cube, vel } = this.held;
         cube.held = false;
@@ -763,8 +1012,10 @@ class Space {
     });
     this.on(this.canvas, 'contextmenu', (e: MouseEvent) => {
       e.preventDefault();
-      this.toggleMenu(e.clientX, e.clientY, 'below');
+      // a long press on a touch screen is her long press, not a right click
+      if ((e as PointerEvent).pointerType !== 'touch') this.toggleMenu(e.clientX, e.clientY, 'below');
     });
+    this.on(this.view, 'contextmenu', (e: MouseEvent) => e.preventDefault());
     this.on(window, 'wheel', (e: WheelEvent) => {
       if (this.menu.contains(e.target as Node)) return;
       e.preventDefault();
@@ -825,25 +1076,14 @@ class Space {
 
   /** The point the cursor is at, on a plane through her head facing the camera (Babylon). */
   cursorPoint(x: number, y: number): Vector3 | null {
-    const r = this.ray(x, y);
-    const head = this.levi?.bonePos('頭');
-    if (!r || !head) return null;
-    // the plane goes through her head, pulled a hair toward the viewer (a cursor on her face then means "looking
-    // at me")
-    const n = this.levi!.camera.getDirection(Vector3.Forward());
-    const denom = Vector3.Dot(r.direction, n);
-    if (Math.abs(denom) < 1e-6) return null;
-    const plane = head.subtract(n.scale(1.5));
-    const t = Vector3.Dot(plane.subtract(r.origin), n) / denom;
-    return r.origin.add(r.direction.scale(Math.max(1, t)));
+    return this.levi?.cursorPoint(x, y) ?? null;
   }
   cameraPos() {
     return this.levi?.camera.position.clone() ?? null;
   }
   /** Her head on screen (CSS px), for speech bubbles and gestures around her. */
   headScreen() {
-    const p = this.levi?.bonePos('頭');
-    return p && this.levi ? this.levi.project(p.add(new Vector3(0, 2.6, 0))) : null;
+    return this.levi?.headScreen() ?? null;
   }
   feetScreen() {
     const mv = this.mover;
@@ -917,7 +1157,7 @@ class Space {
       .join('');
     this.menu.innerHTML = `
       <h4>LeviChan</h4>
-      <p>${t.hint}</p>
+      <p>${matchMedia('(hover: none)').matches ? t.hintTouch : t.hint}</p>
       <div class="lc-row"><span>${t.lookLabel}</span><span class="lc-seg">${seg}</span></div>
       <label class="lc-row"><span>${t.quiet}</span><input type="checkbox" data-quiet ${this.quiet ? 'checked' : ''}></label>
       <label class="lc-row"><span>${t.follow}</span><input type="checkbox" data-follow ${this.follow ? 'checked' : ''}></label>

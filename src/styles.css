@@ -1638,18 +1638,18 @@
    The 3D space itself (src/levichan/) and its styles load only when it is opened. */
 .lc-peek-anchor {
   position: relative;
+  /* as wide as the card, so she peeks over the card's corner at every width; the card's top margin collapses
+     through this box, so its top edge is the card's */
+  width: 100%;
+  min-width: 0;
+  max-width: 34rem;
 }
 .lc-peek {
   position: absolute;
   z-index: 0;
   right: 1.75rem;
-  top: 3rem;
+  top: 0;
   width: 3.25rem;
-}
-@media (min-width: 1200px) {
-  .lc-peek {
-    top: 0;
-  }
 }
 .lc-peek-anchor > .lm-showcase {
   z-index: 1;
@@ -1683,6 +1683,12 @@
 }
 .lc-peek[data-busy] .lc-peek-head {
   cursor: progress;
+}
+/* no hover on a touch screen: show more of her, so there is something to tap */
+@media (hover: none) {
+  .lc-peek-head {
+    height: 1.7rem;
+  }
 }
 .lc-peek-head:focus-visible {
   outline: 2px solid var(--color-accent, currentColor);
