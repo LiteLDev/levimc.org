@@ -6,6 +6,8 @@ export interface LeviChanStrings {
   loadFailed: string;
   menuTitle: string;
   hint: string;
+  /** the same for a touch screen */
+  hintTouch: string;
   lookLabel: string;
   look: { auto: string; always: string; never: string };
   quiet: string;

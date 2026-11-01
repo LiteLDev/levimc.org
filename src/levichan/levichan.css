@@ -20,9 +20,13 @@ html.lc-3d.dark {
 
 #lc-three {
   position: fixed;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
   inset: 0;
-  width: 100vw;
-  height: 100vh;
+  /* the window as it is (100vh is taller than what shows on a phone with its toolbar out) */
+  width: 100%;
+  height: 100%;
   z-index: 2147483000;
   touch-action: none;
   outline: none;
@@ -30,9 +34,13 @@ html.lc-3d.dark {
 }
 #lc-canvas {
   position: fixed;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
   inset: 0;
-  width: 100vw;
-  height: 100vh;
+  /* the window as it is (100vh is taller than what shows on a phone with its toolbar out) */
+  width: 100%;
+  height: 100%;
   z-index: 2147483001;
   pointer-events: none;
   touch-action: none;
@@ -95,6 +103,19 @@ html.lc-3d.dark {
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
   transition: transform 0.2s;
+}
+/* a phone: the dialogue takes the bottom of the screen, so the button goes to the top corner (the quest is on
+   the other side) */
+@media (max-width: 760px) {
+  #lc-fab {
+    left: auto;
+    right: 14px;
+    bottom: auto;
+    top: calc(14px + env(safe-area-inset-top, 0px));
+  }
+  #lc-quest {
+    max-width: calc(100vw - 84px);
+  }
 }
 #lc-fab:hover {
   transform: scale(1.08);

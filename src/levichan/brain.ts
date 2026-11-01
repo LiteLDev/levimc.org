@@ -188,6 +188,14 @@ export class Brain {
   // ------------------------------------------------------------------ every frame
   private update() {
     const tNow = now();
+    // a click that came while she was busy: done now that she is free (if it is still fresh)
+    const q = this.queued;
+    if (q && (tNow - q.t > 8000 || this.disposed)) this.queued = null;
+    else if (q && !this.busy()) {
+      this.queued = null;
+      if (this.levi.current) this.levi.stop();
+      q.run();
+    }
     if (!this.greeted && this.space.introDone) {
       this.greeted = true;
       this.glance('viewer', 2600);
@@ -441,10 +449,18 @@ export class Brain {
   private clicked(region: HitRegion) {
     this.space.story?.note(region === 'head' ? 'pat' : 'poke');
     if (this.levi.current === 'annoyed_stomp') return;
-    if (region === 'head') {
-      this.act(this.any('head_pat', 'head_pat', 'ehehe', 'finger_twiddle', 'self_hug'), Prio.Touch, { cooldown: 1500, say: this.t.say.pat, mood: { 照れ: 1, にこり: 0.6 }, moodMs: 4000 });
-    } else {
-      this.act(this.any('poke_startle', 'poke_startle', 'ehehe'), Prio.Touch, { cooldown: 900, mood: { びっくり: 1, 瞳小: 0.6 }, moodMs: 1200 });
+    const ok =
+      region === 'head'
+        ? this.act(this.any('head_pat', 'head_pat', 'ehehe', 'finger_twiddle', 'self_hug'), Prio.Touch, { cooldown: 1500, say: this.t.say.pat, mood: { 照れ: 1, にこり: 0.6 }, moodMs: 4000 })
+        : this.act(this.any('poke_startle', 'poke_startle', 'ehehe'), Prio.Touch, { cooldown: 900, mood: { びっくり: 1, 瞳小: 0.6 }, moodMs: 1200 });
+    if (!ok) {
+      // too soon for the whole reaction (or she can't just now): she still feels it, a look and a face
+      this.glance('viewer', 1200);
+      const face = region === 'head' ? { 照れ: 0.8 } : { びっくり: 0.7 };
+      Object.assign(this.levi.mood, face);
+      setTimeout(() => {
+        for (const k of Object.keys(face)) delete this.levi.mood[k];
+      }, 900);
     }
   }
 
@@ -467,9 +483,12 @@ export class Brain {
     const dark = document.documentElement.classList.contains('dark');
     this.space.burst(x, y, dark ? ['#4f9640', '#6c442c', '#7fd4a4'] : ['#5fa94a', '#8a5a3b', '#98674a'], 5);
     this.space.story?.note('ground');
-    if (!this.free()) return;
-    const mv = this.mover;
     const mine = this.floorClicks.length >= 3;
+    this.whenFree(() => this.walkTo(goal, mine));
+    this.nextAmbient = Math.max(this.nextAmbient, tNow + 6000);
+  }
+  private walkTo(goal: Goal, mine: boolean) {
+    const mv = this.mover;
     if (mine) this.floorClicks = [];
     const far = Math.hypot(goal.u - mv.u, goal.v - mv.v) > 3 || goal.block !== mv.on;
     mv.goTo(goal, far ? 'run' : 'walk', (reached) => {
@@ -488,15 +507,26 @@ export class Brain {
         setTimeout(() => this.space.say(this.t.say.mined), 4200);
       }
     });
-    this.nextAmbient = Math.max(this.nextAmbient, tNow + 6000);
   }
 
-  /** Free to be sent somewhere (not carried, falling, climbing or carrying)? Stops what she is playing. */
-  private free() {
+  /** Carried, falling, climbing, hopping, playing on a block or carrying one: not to be sent anywhere just now. */
+  private busy() {
     const mv = this.mover;
-    if (mv.mode === 'carried' || mv.mode === 'fall' || mv.mode === 'clip' || mv.mode === 'hop' || mv.mode === 'wall' || mv.carrying) return false;
+    return mv.mode === 'carried' || mv.mode === 'fall' || mv.mode === 'clip' || mv.mode === 'hop' || mv.mode === 'wall' || !!mv.carrying;
+  }
+  /** Free to be sent somewhere? Stops what she is playing. */
+  private free() {
+    if (this.busy()) return false;
     if (this.levi.current) this.levi.stop();
     return true;
+  }
+  /** The visitor's latest click while she is busy: kept, and done the moment she is free (not dropped). */
+  private queued: { run: () => void; t: number } | null = null;
+  private whenFree(run: () => void) {
+    if (this.free()) return run();
+    this.queued = { run, t: now() };
+    // she heard it
+    this.glance('viewer', 900);
   }
 
   /** A click on a block: she makes her way to it (onto its top, or up to the face that was clicked) and plays with
@@ -506,7 +536,9 @@ export class Brain {
     this.input();
     this.space.burst(x, y, ['#7fd4a4', '#ffffff', '#cfe6dc'], 4);
     this.space.story?.note('piece', { kind: p.kind, piece: p });
-    if (!this.free()) return;
+    this.whenFree(() => this.playWith(p, hit));
+  }
+  private playWith(p: Piece, hit: PieceHit) {
     const mv = this.mover;
     const label = (hit.spot?.el.innerText || hit.spot?.el.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim();
     const words = (p.el.innerText || '').replace(/\s+/g, ' ').trim();
@@ -592,7 +624,10 @@ export class Brain {
   fetchBlock(p: Piece) {
     this.input();
     const mv = this.mover;
-    if (mv.busy) return;
+    if (mv.busy || this.busy()) {
+      this.queued = { run: () => this.fetchBlock(p), t: now() };
+      return;
+    }
     if (this.levi.current) this.levi.stop();
     if (!mv.canLift(p)) {
       this.glance('viewer', 2000);

@@ -18,6 +18,7 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
+import '@babylonjs/core/Meshes/thinInstanceMesh';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { MmdStandardMaterialBuilder } from 'babylon-mmd/esm/Loader/mmdStandardMaterialBuilder';
 import type { MmdStandardMaterial } from 'babylon-mmd/esm/Loader/mmdStandardMaterial';
@@ -78,6 +79,7 @@ const SUN_EL = (12 * Math.PI) / 180;
 const OUTLINE_WORLD = (1.25 / 643) * MMD_SCALE;
 /** crossfade between clips and the idle (frames) */
 const FADE = 9;
+const NO_TURN = Quaternion.Identity();
 
 const GAZE_YAW = (55 * Math.PI) / 180;
 const GAZE_PITCH_UP = (25 * Math.PI) / 180;
@@ -466,32 +468,119 @@ export class Levi {
   // ------------------------------------------------------------------ occluders
   /** Invisible boxes that only write depth: the page's blocks in front of her hide her (the page draws them, under
    * this canvas). Rendering group 0, before her (group 1, with no depth clear between the two). */
-  private occluders: Mesh[] = [];
-  private occMat: StandardMaterial | null = null;
-  setOccluders(boxes: Matrix[]) {
-    if (!this.occMat) {
-      this.occMat = new StandardMaterial('lc-occ', this.scene);
-      this.occMat.disableColorWrite = true;
-      this.occMat.disableLighting = true;
+  private occ: Mesh | null = null;
+  private occBuf = new Float32Array(0);
+  private setOccluders(boxes: ArrayLike<number>, n: number) {
+    if (!this.occ) {
+      const mat = new StandardMaterial('lc-occ', this.scene);
+      mat.disableColorWrite = true;
+      mat.disableLighting = true;
       // the world mirrors her space (three is right-handed): its boxes come out inside out, so both sides write depth
-      this.occMat.backFaceCulling = false;
+      mat.backFaceCulling = false;
       this.scene.setRenderingAutoClearDepthStencil(1, false, false, false);
       for (const m of this.mesh.getChildMeshes()) m.renderingGroupId = 1;
       this.mesh.renderingGroupId = 1;
+      this.occ = CreateBox('lc-occ', { size: 1 }, this.scene);
+      this.occ.material = mat;
+      this.occ.renderingGroupId = 0;
+      this.occ.isPickable = false;
+      this.occ.alwaysSelectAsActiveMesh = true;
     }
-    while (this.occluders.length < boxes.length) {
-      const b = CreateBox('lc-occ', { size: 1 }, this.scene);
-      b.material = this.occMat;
-      b.renderingGroupId = 0;
-      b.isPickable = false;
-      b.rotationQuaternion = Quaternion.Identity();
-      this.occluders.push(b);
+    if (this.occBuf.length < n * 16) {
+      this.occBuf = new Float32Array(Math.max(64, n * 2) * 16);
+      this.occ.thinInstanceSetBuffer('matrix', this.occBuf, 16, false);
     }
-    this.occluders.forEach((o, i) => {
-      const m = boxes[i];
-      o.setEnabled(!!m);
-      if (m) m.decompose(o.scaling, o.rotationQuaternion!, o.position);
-    });
+    const m = this.tmpOcc;
+    for (let i = 0; i < n; i++) {
+      const [u, w, z, d, h, hh] = [boxes[i * 6]!, boxes[i * 6 + 1]!, boxes[i * 6 + 2]!, boxes[i * 6 + 3]!, boxes[i * 6 + 4]!, boxes[i * 6 + 5]!];
+      Matrix.ComposeToRef(new Vector3(w, hh, d), NO_TURN, new Vector3(u + w / 2, h + hh / 2, z - d / 2), m);
+      m.multiplyToRef(this.worldToHer, m);
+      m.copyToArray(this.occBuf, i * 16);
+    }
+    this.occ.thinInstanceCount = n;
+    this.occ.thinInstanceBufferUpdated('matrix');
+  }
+  private readonly tmpOcc = Matrix.Identity();
+
+
+  // ------------------------------------------------------------------ where she is in the world
+  /** Her model (MMD units: x her left, y up, z away from the viewer) -> the world (metres, three's axes): her
+   * heading and spot. Babylon matrices are row-vector ones, laid out as three's column-major arrays. */
+  private herToWorld = Matrix.Identity();
+  private worldToHer = Matrix.Identity();
+  /**
+   * Stand her at (u, h, v) facing `heading`, and look at her through the world's camera (three's view matrix, its
+   * column-major elements, and vertical fov); `boxes` are the blocks (u, w, z, d, h0, height; six numbers each) that
+   * hide her where they are in front.
+   */
+  place(heading: number, u: number, h: number, v: number, view: ArrayLike<number>, fov: number, boxes: ArrayLike<number>, n: number) {
+    const k = 1 / MMD_SCALE;
+    this.herToWorld = Matrix.Scaling(k, k, -k).multiply(Matrix.RotationY(heading)).multiply(Matrix.Translation(u, h, v));
+    this.herToWorld.invertToRef(this.worldToHer);
+    const V = Matrix.FromArray(view);
+    // the WebGL camera: three's (at the origin of view space, looking down -z) carried into her space
+    const Vb = this.herToWorld.multiply(V).multiply(Matrix.Scaling(1 / k, 1 / k, -1 / k));
+    this.setCamera(Vb.invert(), fov);
+    this.setOccluders(boxes, n);
+  }
+  /** A world point in her space (for gaze). */
+  toLocal(u: number, v: number, h: number) {
+    return Vector3.TransformCoordinates(new Vector3(u, h, v), this.worldToHer);
+  }
+  /** Her space -> the world (u, v, h). */
+  toWorld(p: Vector3) {
+    const w = Vector3.TransformCoordinates(p, this.herToWorld);
+    return { u: w.x, v: w.z, h: w.y };
+  }
+  /** A ray (her space) through a screen point (CSS px: Babylon applies the hardware scaling itself; dividing by it
+   * here put every hit on her 1.5x as far from the corner on a high-DPI screen, and clicks fell through her). */
+  rayAt(x: number, y: number): Ray {
+    return this.scene.createPickingRay(x, y, Matrix.Identity(), this.camera);
+  }
+  /** The point the cursor is at, on a plane through her head facing the camera. */
+  cursorPoint(x: number, y: number): Vector3 | null {
+    const r = this.rayAt(x, y);
+    const head = this.bonePos('頭');
+    if (!head) return null;
+    // the plane goes through her head, pulled a hair toward the viewer (a cursor on her face then means "looking
+    // at me")
+    const n = this.camera.getDirection(Vector3.Forward());
+    const denom = Vector3.Dot(r.direction, n);
+    if (Math.abs(denom) < 1e-6) return null;
+    const plane = head.subtract(n.scale(1.5));
+    const t = Vector3.Dot(plane.subtract(r.origin), n) / denom;
+    return r.origin.add(r.direction.scale(Math.max(1, t)));
+  }
+  /** Her head on screen (CSS px), for speech bubbles and gestures around her. */
+  headScreen() {
+    const p = this.bonePos('頭');
+    return p ? this.project(p.add(new Vector3(0, 2.6, 0))) : null;
+  }
+  /** Where her parts are in the world now (u, v, h; metres): the particles she gathers out of aim for these. */
+  bodyPoints(): { u: number; v: number; h: number; r: number }[] {
+    const out: { u: number; v: number; h: number; r: number }[] = [];
+    const add = (a: string, b: string, r: number) => {
+      const A = this.bonePos(a);
+      const B = this.bonePos(b);
+      if (!A || !B) return;
+      for (let i = 0; i <= 4; i++) out.push({ ...this.toWorld(Vector3.Lerp(A, B, i / 4)), r: r / MMD_SCALE });
+    };
+    add('頭', '首', 1.3);
+    add('上半身', '首', 1.1);
+    add('下半身', '上半身', 1.6);
+    for (const s of ['左', '右']) {
+      add(s + 'ひざ', '下半身', 1.4);
+      add(s + 'ひざ', s + '足首', 0.5);
+      add(s + '腕', s + 'ひじ', 0.45);
+      add(s + 'ひじ', s + '手首', 0.4);
+    }
+    return out;
+  }
+  /** Draw a frame (the space's loop drives this, in step with the world's). */
+  frame() {
+    this.engine.beginFrame();
+    this.scene.render();
+    this.engine.endFrame();
   }
 
   // ------------------------------------------------------------------ face: blinks and expressions
@@ -694,7 +783,10 @@ export class Levi {
     this.runtime.unregister(this.scene);
     this.runtime.dispose(this.scene);
     this.scene.dispose();
+    const gl = this.engine._gl as WebGLRenderingContext | null;
     this.engine.dispose();
+    // give the GPU its memory back now, not when the canvas is collected
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
   }
 }
 

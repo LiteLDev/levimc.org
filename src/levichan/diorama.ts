@@ -9,6 +9,7 @@
 import {
   AdditiveBlending,
   BoxGeometry,
+  BufferAttribute,
   CanvasTexture,
   CircleGeometry,
   Color,
@@ -30,6 +31,15 @@ import {
   type Texture,
 } from 'three';
 import { domToCanvas } from 'modern-screenshot';
+
+/** Stands for a snapshot that failed (the block is drawn plainly, not left pending). */
+const PLAIN = document.createElement('canvas');
+/** Is an element drawn at all (closed menus, hidden panels and the like are left out of snapshots)? */
+function shown(el: Element) {
+  const e = el as Element & { checkVisibility?: (o: object) => boolean };
+  if (e.checkVisibility) return e.checkVisibility({ opacityProperty: true, visibilityProperty: true });
+  return el.getClientRects().length > 0;
+}
 
 /** A block's box: u..u+w across, h0..h1 up, z-d..z deep (its side toward the viewer at v = z). */
 export interface Block {
@@ -85,6 +95,8 @@ export interface Piece extends Block {
   /** a glow it keeps (the story's awakened keystones), under its animations */
   tint: Color;
   flash: { mesh: Mesh; t0: number } | null;
+  /** its snapshot is still being taken: it is a cloud of motes until then (the space shows it forming) */
+  pending: boolean;
 }
 
 /** A loose cube: falls, bounces, can be thrown. (u, v) is its centre, h its bottom. */
@@ -225,6 +237,24 @@ export class Diorama {
   readonly ring: Mesh;
   private backdrop: Mesh | null = null;
   private readonly box = new BoxGeometry(1, 1, 1);
+  /** A block's box in two draws, not six: its face (the component) and the rest (sides, and the back darker, by
+   * vertex colour). BoxGeometry's faces are +x, -x, +y, -y, +z, -z, four vertices and six indices each. */
+  private readonly pieceBox = (() => {
+    const g = new BoxGeometry(1, 1, 1);
+    const idx = Array.from(g.index!.array);
+    g.setIndex([...idx.slice(24, 30), ...idx.slice(0, 24), ...idx.slice(30, 36)]);
+    g.clearGroups();
+    g.addGroup(0, 6, 0);
+    g.addGroup(6, 30, 1);
+    const shade = new Float32Array(24 * 3).fill(1);
+    shade.fill(0.75, 20 * 3, 24 * 3);
+    g.setAttribute('color', new BufferAttribute(shade, 3));
+    return g;
+  })();
+  /** set when the space is torn down: snapshots still under way stop */
+  private gone = false;
+  /** Called when a pending block's snapshot is in (the space has it form). */
+  onFormed: ((p: Piece) => void) | null = null;
   private readonly sun: DirectionalLight;
   private readonly hemi: HemisphereLight;
   private readonly sky: [CanvasTexture, CanvasTexture];
@@ -312,41 +342,84 @@ export class Diorama {
 
   /** Choose the page's components, snapshot each, and scatter them (all still flat on the page's wall until
    * explode()). `progress` gets the share done. */
-  async build(progress?: (k: number) => void) {
+  /**
+   * Choose the components and make their blocks. Only those on screen are snapshotted first (the camera starts on
+   * them, so they must look like the page); the rest come in afterwards, a few at a time, and form where they are
+   * (`onFormed`): the space is up at once.
+   */
+  async build() {
     const picked: [HTMLElement, Kind][] = [];
     this.pick(this.root, picked);
     picked.splice(MAX_PIECES);
-    // pictures still waiting to load lazily (off screen) are loaded now, or the snapshots wait for them in vain
-    const lazy = Array.from(this.root.querySelectorAll<HTMLImageElement>('img[loading="lazy"]'));
-    for (const img of lazy) img.loading = 'eager';
-    await Promise.race([Promise.all(lazy.map((img) => img.decode().catch(() => {}))), new Promise((r) => setTimeout(r, 2500))]);
-    const shots = new Array<HTMLCanvasElement | null>(picked.length).fill(null);
+    const onScreen = (el: HTMLElement) => {
+      const r = el.getBoundingClientRect();
+      return r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
+    };
+    const first = picked.filter(([el]) => onScreen(el));
+    const shots = new Map<HTMLElement, HTMLCanvasElement | null>();
+    await this.snapAll(first.map(([el]) => el), (el, c) => shots.set(el, c), 6000);
+    picked.forEach(([el, kind]) => this.addPiece(el, kind, shots.has(el) ? shots.get(el) ?? PLAIN : null));
+    this.addBackdrop();
+    this.layout();
+    void this.formRest();
+  }
+
+  /** Snapshot the blocks still pending. */
+  private async formRest() {
+    const rest = this.pieces.filter((p) => p.pending);
+    if (!rest.length) return;
+    const byEl = new Map(rest.map((p) => [p.el, p]));
+    await this.snapAll(
+      rest.map((p) => p.el),
+      (el, c) => {
+        const p = byEl.get(el);
+        if (!p || this.gone) return;
+        const old = p.front.map;
+        const cs = getComputedStyle(el);
+        const own = parseColor(cs.backgroundColor);
+        p.front.map = this.texture(el, { w: p.pw, h: p.ph }, c, own && own[3] > 0.3 ? own : this.pageBg);
+        p.front.needsUpdate = true;
+        old?.dispose();
+        p.pending = false;
+        this.onFormed?.(p);
+      },
+      20000,
+    );
+  }
+
+  /** Snapshot `els`, four at a time; past `budget` ms the rest are drawn plainly. */
+  private async snapAll(els: HTMLElement[], got: (el: HTMLElement, c: HTMLCanvasElement | null) => void, budget: number) {
     let next = 0;
-    let done = 0;
     const t0 = performance.now();
-    // a few at a time; past a time limit the rest are drawn plainly
     const worker = async () => {
-      while (next < picked.length) {
-        const i = next++;
-        if (performance.now() - t0 < 20000) shots[i] = await this.snapshot(picked[i]![0]);
-        progress?.(++done / picked.length);
+      while (next < els.length && !this.gone) {
+        const el = els[next++]!;
+        got(el, performance.now() - t0 < budget ? await this.snapshot(el) : null);
       }
     };
     await Promise.all([worker(), worker(), worker(), worker()]);
-    for (const img of lazy) img.loading = 'lazy';
-    picked.forEach(([el, kind], i) => this.addPiece(el, kind, shots[i]!));
-    this.addBackdrop();
-    this.layout();
   }
 
   /** A component as a picture (null if the browser can't). */
   private async snapshot(el: HTMLElement): Promise<HTMLCanvasElement | null> {
+    // the snapshot waits for every picture inside, drawn or not: lazy ones (off screen, or in a closed menu) would
+    // never come and it would sit out its whole timeout, so they are fetched now
+    const lazy = Array.from(el.querySelectorAll<HTMLImageElement>('img[loading="lazy"]'));
+    for (const img of lazy) img.loading = 'eager';
+    if (lazy.length) await Promise.race([Promise.all(lazy.map((img) => img.decode().catch(() => {}))), new Promise((r) => setTimeout(r, 2000))]);
+    try {
+      return await this.shoot(el);
+    } finally {
+      for (const img of lazy) img.loading = 'lazy';
+    }
+  }
+  private async shoot(el: HTMLElement): Promise<HTMLCanvasElement | null> {
     const r = el.getBoundingClientRect();
     const scale = Math.min(Math.min(devicePixelRatio || 1, 1.5), 2048 / Math.max(r.width, r.height, 1));
     try {
       return await domToCanvas(el, {
         scale,
-        filter: (n) => !(n instanceof Element) || !n.matches('.lc-peek, [id^="lc-"]'),
+        filter: (n) => !(n instanceof Element) || (!n.matches('.lc-peek, [id^="lc-"]') && shown(n)),
         timeout: 3000,
       });
     } catch (e) {
@@ -395,6 +468,7 @@ export class Diorama {
   /** A component's picture: its snapshot over its background, or drawn plainly (its colour and its words). */
   private texture(el: HTMLElement, r: { w: number; h: number }, shot: HTMLCanvasElement | null, bg: [number, number, number, number]): Texture {
     const c = document.createElement('canvas');
+    if (shot === PLAIN) shot = null;
     const k = shot ? shot.width / Math.max(1, r.w) : Math.min(1.5, 2048 / Math.max(r.w, r.h));
     c.width = Math.max(2, Math.round(r.w * k));
     c.height = Math.max(2, Math.round(r.h * k));
@@ -440,10 +514,9 @@ export class Diorama {
     const own = parseColor(cs.backgroundColor);
     const bg = own && own[3] > 0.3 ? own : this.pageBg;
     const front = new MeshBasicMaterial({ map: this.texture(el, r, shot, bg) });
-    const sides = new MeshLambertMaterial({ color: new Color().setRGB(bg[0] / 255, bg[1] / 255, bg[2] / 255, SRGBColorSpace).multiplyScalar(0.92) });
-    const back = new MeshLambertMaterial({ color: sides.color.clone().multiplyScalar(0.75) });
-    // box faces: +x, -x, +y, -y, +z (the component), -z
-    const mesh = new Mesh(this.box, [sides, sides, sides, sides, front, back] as Material[]);
+    const sides = new MeshLambertMaterial({ color: new Color().setRGB(bg[0] / 255, bg[1] / 255, bg[2] / 255, SRGBColorSpace).multiplyScalar(0.92), vertexColors: true });
+    const mesh = new Mesh(this.pieceBox, [front, sides] as Material[]);
+    mesh.visible = !!shot;
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     mesh.matrixAutoUpdate = false;
@@ -484,6 +557,7 @@ export class Diorama {
       fx: null,
       tint: new Color(0, 0, 0),
       flash: null,
+      pending: !shot,
     };
     mesh.userData.piece = p;
     this.scene.add(mesh);
@@ -843,6 +917,9 @@ export class Diorama {
           c.vv *= f;
         }
         c.spin *= Math.max(0, 1 - dt * (grounded ? 3 : 0.3));
+        // at rest, exactly: a cube still turning by a hair would have every frame drawn again
+        if (grounded && Math.abs(c.spin) < 0.03) c.spin = 0;
+        if (grounded && Math.hypot(c.vu, c.vv) < 0.02) c.vu = c.vv = 0;
         c.rot += c.spin * dt;
         c.u = clamp(c.u, -lim, lim);
         c.v = clamp(c.v, -lim, lim);
@@ -866,6 +943,7 @@ export class Diorama {
   }
 
   dispose() {
+    this.gone = true;
     this.scene.traverse((o) => {
       const mesh = o as Mesh;
       if (!mesh.isMesh) return;
