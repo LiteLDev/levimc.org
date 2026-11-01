@@ -5,8 +5,9 @@
 // with the repairs lipr's maintainers made by hand:
 //
 // - the tag is the version (a manifest says `v1.2.0`, or was not bumped);
-// - the manifest is filed under the tooth it names when that is where the
-//   repository was before a rename (so an old release keeps its old address);
+// - the manifest is filed under the tooth it names when GitHub serves that
+//   address from where it serves the repository (a former name or owner, so
+//   an old release keeps its old address, whichever name repos.txt has);
 //   any other tooth (`CFSP`, a template's, another repository's, the
 //   repository's own in another case) is the repository's address as
 //   repos.txt spells it.
@@ -18,12 +19,12 @@ import { execFile } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { promisify } from "node:util";
-import { compareVersions, type LauncherIndex } from "../lib/game-versions";
-import { migrateManifest, type RegistryManifest } from "../lib/manifest";
-import { fetchWithRetry } from "../lib/mods";
-import { parseRepoList } from "../lib/repo-list";
+import { compareVersions, type LauncherIndex } from "../lib/game-versions.ts";
+import { migrateManifest, type RegistryManifest } from "../lib/manifest.ts";
+import { fetchWithRetry } from "../lib/mods.ts";
+import { parseRepoList } from "../lib/repo-list.ts";
 import type { ModIndex, RawModEntry } from "../types";
-import { mapLimit } from "./map-limit";
+import { mapLimit } from "./map-limit.ts";
 
 const REPOS_FILE = "repos.txt";
 const CACHE_FILE = process.env.MODS_REGISTRY_CACHE ?? ".cache/registry.json";
@@ -34,7 +35,7 @@ const GITHUB = "github.com/";
 
 const run = promisify(execFile);
 
-interface CachedTag {
+export interface CachedTag {
   /** The commit (or tag object) the tag pointed to when it was read. */
   sha: string;
   /** The manifest at the tag, as it is there (`null`: none lip can read). */
@@ -43,11 +44,15 @@ interface CachedTag {
   seen: string;
 }
 
-interface RegistryCache {
+export interface RegistryCache {
   version: number;
   /** Lower-case `owner/repo` → tag → what was read. */
   repos: Record<string, Record<string, CachedTag>>;
-  /** Lower-case `owner/repo` a manifest names → the repository GitHub serves there (lower case), `null`: none. */
+  /**
+   * Lower-case `owner/repo` (a manifest's tooth, or a listed repository with such a manifest) → the repository GitHub
+   * serves there now (lower case), `null`: none. Looked up again by every build; the value here is only for when the
+   * lookup fails.
+   */
   aliases: Record<string, string | null>;
 }
 
@@ -172,7 +177,9 @@ function githubPath(tooth: string): string | null {
   return tooth.startsWith(GITHUB) && parts.length === 3 && parts[1] && parts[2] ? `${parts[1]}/${parts[2]}` : null;
 }
 
-/** Where GitHub serves `owner/repo` now (it follows renames and transfers), lower case; `null`: nowhere. */
+/** Where GitHub serves `owner/repo` now (it follows renames and transfers), lower case; `null`: nowhere; `undefined`: GitHub could not be reached. */
+export type RepoResolver = (path: string) => Promise<string | null | undefined>;
+
 async function resolveRepo(path: string): Promise<string | null | undefined> {
   const token = process.env.GITHUB_TOKEN;
   try {
@@ -189,23 +196,41 @@ async function resolveRepo(path: string): Promise<string | null | undefined> {
 
 /**
  * Whether a manifest of `repo` may keep the tooth it names: the tooth is the
- * repository's address, or one GitHub redirects to it (a former name).
+ * repository's address, or one GitHub serves the same repository at (a former
+ * name or owner) — compared where GitHub serves both now, so it holds whether
+ * repos.txt has the repository's old name or its new one.
+ *
+ * Every address is looked up again on each build (a repository moves after its
+ * first lookup); the cached one is used only when the lookup fails.
  */
-async function ownTooths(read: Map<string, Map<string, CachedTag>>, cache: RegistryCache): Promise<(repo: string, tooth: string) => boolean> {
-  const foreign = new Set<string>();
+export async function ownTooths(
+  read: Map<string, Map<string, CachedTag>>,
+  cache: RegistryCache,
+  resolve: RepoResolver = resolveRepo,
+): Promise<(repo: string, tooth: string) => boolean> {
+  const paths = new Set<string>();
   for (const [repo, tags] of read) {
     for (const { manifest } of tags.values()) {
       const path = manifest && githubPath(manifest.tooth)?.toLowerCase();
-      if (path && path !== repo.toLowerCase() && !(path in cache.aliases)) foreign.add(path);
+      if (path && path !== repo.toLowerCase()) paths.add(path).add(repo.toLowerCase());
     }
   }
-  await mapLimit([...foreign], async (path) => {
-    const resolved = await resolveRepo(path);
-    if (resolved !== undefined) cache.aliases[path] = resolved;
+  const aliases: Record<string, string | null> = {};
+  await mapLimit([...paths], async (path) => {
+    const resolved = await resolve(path);
+    if (resolved !== undefined) aliases[path] = resolved;
+    else if (path in cache.aliases) aliases[path] = cache.aliases[path]!;
   });
+  // only what this build's manifests name stays
+  cache.aliases = aliases;
+  // where GitHub serves an address now (itself when that is not known)
+  const current = (path: string) => (path in aliases ? aliases[path] : path);
   return (repo, tooth) => {
     const path = githubPath(tooth)?.toLowerCase();
-    return !!path && (path === repo.toLowerCase() || cache.aliases[path] === repo.toLowerCase());
+    if (!path) return false;
+    if (path === repo.toLowerCase()) return true;
+    const here = current(repo.toLowerCase());
+    return !!here && current(path) === here;
   };
 }
 
@@ -213,7 +238,7 @@ async function ownTooths(read: Map<string, Map<string, CachedTag>>, cache: Regis
 const tightRange = (range: string) => range.trim().replace(/(>=|<=|>|<|=|\^|~)\s+/g, "$1");
 
 /** Files each version under its tooth and tag (see the top of this file). */
-function fileManifests(read: Map<string, Map<string, CachedTag>>, repos: string[], own: (repo: string, tooth: string) => boolean) {
+export function fileManifests(read: Map<string, Map<string, CachedTag>>, repos: string[], own: (repo: string, tooth: string) => boolean) {
   const manifests = new Map<string, Map<string, RegistryManifest>>();
   const sources = new Map<string, string>();
   const origins = new Map<string, Map<string, ManifestOrigin>>();

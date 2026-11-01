@@ -29,15 +29,15 @@ const N = 32; // pixel grid
 const CELL = SIZE / N;
 const THUMB = 128;
 
-/** Projects with a logo of their own: used as they are (transparent margins trimmed, so they fill the slot). */
+/** Projects with a logo of their own (`owner/repo/ref/path`): used as they are (transparent margins trimmed, so they fill the slot). */
 const UPSTREAM = {
-  LeviLamina: 'LeviLamina/HEAD/docs/main/contents/logo.svg',
-  LegacyScriptEngine: 'LegacyScriptEngine/HEAD/docs/img/logo.png',
-  LeviLauncher: 'LeviLauncher/HEAD/docs/public/appicon.png',
-  BarelyEnoughItems: 'BarelyEnoughItems/HEAD/docs/logo.png',
-  AlleviatedBackpacks: 'AlleviatedBackpacks/HEAD/docs/logo.png',
-  Bedstones: 'Bedstones/HEAD/docs/logo.png',
-  BeetrootSkin: 'BeetrootSkin/HEAD/docs/logo.png',
+  LeviLamina: 'LiteLDev/LeviLamina/HEAD/docs/main/contents/logo.svg',
+  LegacyScriptEngine: 'LiteLDev/LegacyScriptEngine/HEAD/docs/img/logo.png',
+  LeviLauncher: 'LiteLDev/LeviLauncher/HEAD/docs/public/appicon.png',
+  BarelyEnoughItems: 'MiracleForest/BarelyEnoughItems/HEAD/docs/logo.png',
+  AlleviatedBackpacks: 'MiracleForest/AlleviatedBackpacks/HEAD/docs/logo.png',
+  Bedstones: 'MiracleForest/Bedstones/HEAD/docs/logo.png',
+  BeetrootSkin: 'MiracleForest/BeetrootSkin/HEAD/docs/logo.png',
 };
 /** Pixel art upstream (LegacyScriptEngine's hammer): scaled without smoothing. */
 const CRISP = new Set(['LegacyScriptEngine']);
@@ -484,7 +484,7 @@ for (const [id, d] of Object.entries(DESIGNS)) {
 }
 for (const [id, path] of Object.entries(UPSTREAM)) {
   if (!want(id)) continue;
-  const buf = await download(`https://raw.githubusercontent.com/LiteLDev/${path}`);
+  const buf = await download(`https://raw.githubusercontent.com/${path}`);
   const mime = path.endsWith('.svg') ? 'image/svg+xml' : 'image/png';
   writeFileSync(join(OUT, `${id}.webp`), await thumb(`data:${mime};base64,${buf.toString('base64')}`, { trim: true, crisp: CRISP.has(id) }));
   console.log(`upstream ${id}`);

@@ -8,7 +8,8 @@
 // not a fork, with a `v<semver>` tag whose tooth.json lip can read. Merging the pull request lists it; closing it
 // keeps it out: a repository that ever had a pull request (its branch, `mods/add/<owner>/<repo>`) is never
 // proposed again. Removing a line from repos.txt by hand works the same way only for repositories that came in
-// through a pull request, so close one rather than reverting it.
+// through a pull request, so close one rather than reverting it. A repository repos.txt names under a former name or
+// owner (GitHub redirects that to it) counts as listed.
 //
 // Needs GH_TOKEN (or GITHUB_TOKEN) with contents and pull-requests write access to GITHUB_REPOSITORY (default
 // LiteLDev/levimc.org), and git for listing tags. SEARCH_TOKEN, when set, is used for the code search alone: the code
@@ -181,7 +182,38 @@ async function propose(repository, tag, count, manifest) {
   console.log(`${title}: ${pull.html_url}`);
 }
 
-const known = new Set(parseRepoList(readFileSync("repos.txt", "utf8")).map((r) => r.toLowerCase()));
+const listed = parseRepoList(readFileSync("repos.txt", "utf8"));
+const known = new Set(listed.map((r) => r.toLowerCase()));
+
+/** Where GitHub serves `owner/repo` now (it follows renames and transfers), lower case; `null`: nowhere. Throws when GitHub cannot say. */
+const current = new Map();
+async function resolve(path) {
+  const key = path.toLowerCase();
+  if (!current.has(key)) {
+    const found = await api(`repos/${path}`).then(
+      (r) => r.full_name.toLowerCase(),
+      (error) => {
+        if (String(error).includes("HTTP 404")) return null;
+        throw error;
+      },
+    );
+    current.set(key, found);
+  }
+  return current.get(key);
+}
+
+/**
+ * The repos.txt line that is this repository under a former name or owner, if any: one with its name (a transfer), or
+ * the one its tooth names (a rename that kept the old tooth) — when GitHub serves that address from the candidate.
+ */
+async function listedAs(repository, manifest) {
+  const name = repository.full_name.toLowerCase();
+  const tooth = manifest.tooth.match(/^github\.com\/([^/]+\/[^/]+)$/)?.[1]?.toLowerCase();
+  const suspects = listed.filter((r) => r.split("/")[1].toLowerCase() === repository.name.toLowerCase() || r.toLowerCase() === tooth);
+  for (const repo of suspects) if ((await resolve(repo)) === name) return repo;
+  return null;
+}
+
 let found;
 try {
   found = await search();
@@ -212,6 +244,18 @@ for (const repository of candidates) {
   const manifest = await manifestAt(repository.full_name, latest);
   if (!manifest) {
     console.log(`${repository.full_name}: no tooth.json lip can read at ${latest}`);
+    continue;
+  }
+  let as;
+  try {
+    as = await listedAs(repository, manifest);
+  } catch (error) {
+    // the next run tries again
+    console.warn(`${repository.full_name}: could not tell whether repos.txt lists it under another name (${String(error).split("\n")[0]})`);
+    continue;
+  }
+  if (as) {
+    console.log(`${repository.full_name}: listed as ${as}`);
     continue;
   }
   await propose(repository, latest, count, manifest);
