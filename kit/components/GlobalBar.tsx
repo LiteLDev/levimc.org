@@ -2,7 +2,7 @@ import { useRef, type ComponentType, type ReactNode } from 'react';
 import { PixelIcon, BrandIcon } from './PixelIcon';
 import { useDismissableDetails } from './menu';
 import { UI_LOCALES, UI_LOCALE_NAMES, resolveUiLocale, uiLocaleName, uiStrings, type UiStrings } from './i18n';
-import { LINKS, PROJECTS, PROJECT_GROUPS, globalNav, projectHome, sameSitePath, type Project, type ProjectId, type SiteId } from './projects';
+import { LINKS, PROJECTS, globalNav, projectHome, sameSitePath, type Project, type ProjectId, type SiteId } from './projects';
 import { LocaleSwitcher, type LinkLikeProps, type LocaleOption } from './LocaleSwitcher';
 import { ThemeSwitcher } from './ThemeToggle';
 
@@ -123,28 +123,22 @@ function ProjectItem({ p, t, current, ctx }: { p: Project; t: UiStrings; current
   );
 }
 
-/** The Projects menu: every LeviMC project by group, each leading to its home page, then the GitHub organisation. */
+/** The projects the Projects menu lists: those with a documentation site (the others have their project cards). */
+const MENU_PROJECTS = PROJECTS.filter((p) => p.docs);
+
+/** The Projects menu: every project with a documentation site, each leading to its docs, then the GitHub organisation. */
 function ProjectsPanel({ t, currentProject, ctx }: { t: UiStrings; currentProject?: string; ctx: LinkCtx }) {
   return (
     <div className="kit-proj">
-      <div className="kit-proj-groups">
-        {PROJECT_GROUPS.map((g) => {
-          const projects = PROJECTS.filter((p) => p.group === g);
-          return (
-            <div key={g} className={`kit-proj-group kit-proj-group-${g}`}>
-              <p className="kit-proj-heading" aria-hidden="true">
-                <span data-kit-t={`projectGroups.${g}`}>{t.projectGroups[g]}</span>
-                <span className="kit-proj-count">{projects.length}</span>
-              </p>
-              <ul aria-label={t.projectGroups[g]} data-kit-t-aria={`projectGroups.${g}`}>
-                {projects.map((p) => (
-                  <ProjectItem key={p.id} p={p} t={t} current={p.id === currentProject} ctx={ctx} />
-                ))}
-              </ul>
-            </div>
-          );
-        })}
-      </div>
+      <p className="kit-proj-heading" aria-hidden="true">
+        <span data-kit-t="docs">{t.docs}</span>
+        <span className="kit-proj-count">{MENU_PROJECTS.length}</span>
+      </p>
+      <ul className="kit-proj-list" aria-label={t.docs} data-kit-t-aria="docs">
+        {MENU_PROJECTS.map((p) => (
+          <ProjectItem key={p.id} p={p} t={t} current={p.id === currentProject} ctx={ctx} />
+        ))}
+      </ul>
       <a className="kit-proj-all" href={LINKS.github}>
         <BrandIcon name="github" size={14} />
         <span data-kit-t="allRepositories">{t.allRepositories}</span>

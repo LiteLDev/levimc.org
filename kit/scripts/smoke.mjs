@@ -157,7 +157,7 @@ await check('GlobalBar + footer: the shared brand, GitHub → LiteLDev, the comp
   });
   assert(r.mark, 'no LeviMC mark in the bar');
   assert(r.github === 'https://github.com/LiteLDev', `GitHub button → ${r.github}`);
-  assert(r.projects >= 5, `Projects menu has ${r.projects} projects`);
+  assert(r.projects >= 4, `Projects menu has ${r.projects} projects`);
   assert(r.footer && r.footerMark, 'no footer / footer mark');
   assert(r.columns === 0, `footer has ${r.columns} link columns`);
   assert(new Set(r.social).size === r.social.length && r.social.length === 6, `social links ${r.social.join(' ')}`);
