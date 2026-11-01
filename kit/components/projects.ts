@@ -34,15 +34,9 @@ export type ProjectId =
   | 'LeviStone'
   | 'lip'
   | 'LeviLauncher'
-  | 'BeDD'
-  | 'bedboo'
   | 'LeviOptimize'
   | 'LeviAntiCheat'
-  | 'MoreDimensions'
-  | 'BarelyEnoughItems'
-  | 'AlleviatedBackpacks'
-  | 'Bedstones'
-  | 'BeetrootSkin';
+  | 'MoreDimensions';
 
 export interface Project {
   id: ProjectId;
@@ -81,15 +75,9 @@ export const PROJECTS: readonly Project[] = [
   { id: 'LeviStone', name: 'LeviStone', group: 'core', repo: 'https://github.com/LiteLDev/LeviStone', logo: logo('LeviStone'), icon: 'emerald' },
   { id: 'lip', name: 'lip', group: 'core', repo: 'https://github.com/LiteLDev/lip', docs: 'https://docs.levimc.org/lip/', logo: logo('lip'), icon: 'chest' },
   { id: 'LeviLauncher', name: 'LeviLauncher', group: 'core', repo: 'https://github.com/LiteLDev/LeviLauncher', docs: 'https://docs.levimc.org/LeviLauncher/', logo: logo('LeviLauncher'), icon: 'map' },
-  { id: 'BeDD', name: 'Be.D.D.', group: 'core', repo: 'https://github.com/LiteLDev/BeDD', docs: 'https://docs.levimc.org/BeDD/', logo: logo('BeDD'), icon: 'monitor' },
-  { id: 'bedboo', name: 'bedboo', group: 'core', repo: 'https://github.com/LiteLDev/bedboo', logo: logo('bedboo'), icon: 'pickaxe' },
   { id: 'LeviOptimize', name: 'LeviOptimize', group: 'mods', repo: 'https://github.com/LiteLDev/LeviOptimize', mod: modPage('LeviOptimize'), logo: logo('LeviOptimize'), icon: 'potion' },
   { id: 'LeviAntiCheat', name: 'LeviAntiCheat', group: 'mods', repo: 'https://github.com/LiteLDev/LeviAntiCheat', mod: modPage('LeviAntiCheat'), logo: logo('LeviAntiCheat'), icon: 'torch' },
   { id: 'MoreDimensions', name: 'MoreDimensions', group: 'mods', repo: 'https://github.com/LiteLDev/MoreDimensions', mod: modPage('MoreDimensions'), logo: logo('MoreDimensions'), icon: 'compass' },
-  { id: 'BarelyEnoughItems', name: 'BarelyEnoughItems', group: 'mods', repo: 'https://github.com/LiteLDev/BarelyEnoughItems', mod: modPage('BarelyEnoughItems'), logo: logo('BarelyEnoughItems'), icon: 'paper' },
-  { id: 'AlleviatedBackpacks', name: 'AlleviatedBackpacks', group: 'mods', repo: 'https://github.com/LiteLDev/AlleviatedBackpacks', mod: modPage('AlleviatedBackpacks'), logo: logo('AlleviatedBackpacks'), icon: 'chest' },
-  { id: 'Bedstones', name: 'Bedstones', group: 'mods', repo: 'https://github.com/LiteLDev/Bedstones', mod: modPage('Bedstones'), logo: logo('Bedstones'), icon: 'diamond' },
-  { id: 'BeetrootSkin', name: 'BeetrootSkin', group: 'mods', repo: 'https://github.com/LiteLDev/BeetrootSkin', mod: modPage('BeetrootSkin'), logo: logo('BeetrootSkin'), icon: 'heart' },
 ];
 
 /** Where a project leads (its home page): its LeviMC Mods page, else the docs, else the repository. */
@@ -100,7 +88,7 @@ export function projectHome(p: Project): string {
 export const PROJECT_GROUPS: readonly ProjectGroupId[] = ['core', 'mods'];
 
 /** The projects that have a documentation site (docs.levimc.org/<id>/). */
-export type DocsProjectId = 'LeviLamina' | 'LegacyScriptEngine' | 'lip' | 'LeviLauncher' | 'BeDD';
+export type DocsProjectId = 'LeviLamina' | 'LegacyScriptEngine' | 'lip' | 'LeviLauncher';
 
 export interface DocsProject {
   id: DocsProjectId;

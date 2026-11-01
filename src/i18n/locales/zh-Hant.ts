@@ -195,12 +195,6 @@ const zhHant: typeof en = {
     levianticheat: "為 LeviLamina 伺服器提供反作弊解決方案。",
     moredimensions: "為 Minecraft 基岩版新增自訂維度的 API。",
     levistone: "在 LeviLamina 上執行 Endstone 外掛的執行時。",
-    barelyenoughitems: "Minecraft 基岩版的 JEI：瀏覽所有物品，檢視它們的配方與用途。",
-    alleviatedbackpacks: "Minecraft 基岩版的 Sophisticated Backpacks：可以安裝升級的背包。",
-    bedstones: "Minecraft 基岩版的 Waystones：建造傳送石，在它們之間傳送。",
-    beetrootskin: "Minecraft 基岩版的 AppleSkin：檢視食物能恢復多少飢餓值與飽和度。",
-    bedd: "用測試腳本驅動 LeviLamina 用戶端，不佔用真實的滑鼠和鍵盤，還能同時執行多個遊戲。",
-    bedboo: "Minecraft 基岩版的 Mineflayer：讓 mineflayer 機械人和它的外掛直接連上基岩版專用伺服器（BDS）。",
   },
   // 網誌
   blog: {
