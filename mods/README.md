@@ -57,18 +57,21 @@ repositories of every package lipr had.
 - **Versions.** `src/server/registry.ts` lists each repository's tags (`git ls-remote`); every `v<semver>` tag is a
   version, read from the `tooth.json` at that tag and migrated to the current format the way `lip migrate` does
   (`src/lib/manifest.ts`). It also makes the repairs lipr's maintainers made by hand: the tag is the version (a
-  manifest saying `v1.2.0`, or not bumped), and a manifest is filed under the tooth it names only when that is
-  where the repository was before a rename (an old release keeps its old address); any other tooth (`CFSP`, a
-  template's `my-mod`, another repository's) is the repository's address as `repos.txt` spells it. The manifests
-  are otherwise taken as the repositories have them, so a dependency on a host that no longer exists stays.
+  manifest saying `v1.2.0`, or not bumped), and a manifest is filed under the tooth it names only when GitHub serves
+  that address from where it serves the repository, a former name or owner (an old release keeps its old address,
+  whether `repos.txt` has the old name or the new one); any other tooth (`CFSP`, a template's `my-mod`, another
+  repository's) is the repository's address as `repos.txt` spells it. The manifests are otherwise taken as the
+  repositories have them, so a dependency on a host that no longer exists stays.
 - **Cache.** What was read is kept in `.cache/registry.json` (git-ignored; the deploy keeps it in the Actions
   cache, saved when it changed): a tag whose commit is unchanged is not read again, so an hourly build reads only
-  new tags. It is only a cache: without it every tag is read anew (about a minute). `MODS_REGISTRY_CACHE` moves it.
+  new tags. Where GitHub serves each address a manifest names is looked up on every build (a repository can move
+  again); the cached answer is used only when the lookup fails. It is only a cache: without it every tag is read
+  anew (about a minute). `MODS_REGISTRY_CACHE` moves it.
 - **Discovery.** `scripts/discover.mjs` (`.github/workflows/mods-discover.yml`, every two hours) searches GitHub's
   code for a top-level `tooth.json` (what lipr searched for) and opens a pull request adding each repository that is
-  not in `repos.txt`, not a fork and has a version tag with a `tooth.json` lip can read. Merging lists it at the
-  next deploy; closing it keeps it out, since a repository that ever had a pull request (branch
-  `mods/add/<owner>/<repo>`) is not proposed again. To take a mod off, close its pull request or delete its line.
+  not in `repos.txt` (under its name or a former one), not a fork and has a version tag with a `tooth.json` lip can
+  read. Merging lists it at the next deploy; closing it keeps it out, since a repository that ever had a pull request
+  (branch `mods/add/<owner>/<repo>`) is not proposed again. To take a mod off, close its pull request or delete its line.
   `node scripts/discover.mjs --dry-run` shows what it would propose (needs `GH_TOKEN`). The workflow token's code
   search limit is shared and often exhausted (HTTP 429): the script waits as GitHub asks for up to ten minutes, then
   skips the run with a warning. A `MODS_SEARCH_TOKEN` secret (a personal token, no scopes) gives it a limit of its own.
