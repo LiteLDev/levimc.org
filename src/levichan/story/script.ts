@@ -39,6 +39,9 @@ export interface Task extends Text {
   kind?: string;
   /** only on the keystone of this kind (the marked block) */
   keystone?: string;
+  /** done as soon as she is within this many metres of the keystone block's outside (on it, beside it, or carried
+   * there), whether or not she gets to play with it */
+  near?: number;
 }
 export interface Node {
   id: string;
@@ -54,6 +57,8 @@ export interface Node {
 
 const L = (zh: string, en: string, more: Partial<Line> = {}): Line => ({ zh, en, ...more });
 const N = (zh: string, en: string, more: Partial<Line> = {}): Line => ({ zh, en, sys: true, ...more });
+/** how close (m) counts as "taking her to" a block */
+const NEAR = 0.8;
 const T = (id: string, need: number, ev: StoryEvent[], zh: string, en: string, more: Partial<Task> = {}): Task => ({ id, need, ev, zh, en, ...more });
 
 /** The keystones, in the order she wakes them. */
@@ -180,7 +185,7 @@ export const SCRIPT: Node[] = [
       L('看，那个大大的标题。它在发光——那是第一块基石。', 'Look, the big title. It’s glowing — that’s the first keystone.', { act: 'point_right' }),
       N('带她去标题方块（有标记的那块）。', 'Take her to the title block (the marked one).'),
     ],
-    tasks: [T('title', 1, ['play'], '带她去标题方块', 'Take her to the title block', { keystone: 'title' })],
+    tasks: [T('title', 1, ['play'], '带她去标题方块', 'Take her to the title block', { keystone: 'title', near: NEAR })],
     next: 'c2a',
   },
   {
@@ -202,7 +207,7 @@ export const SCRIPT: Node[] = [
   {
     id: 'c2b',
     lines: [L('下一块在导航栏。它连着所有的页面。', 'The next one is in the bar. It connects every page.', { act: 'point_left' })],
-    tasks: [T('bar', 1, ['play'], '带她去导航栏方块', 'Take her to the bar block', { keystone: 'bar' })],
+    tasks: [T('bar', 1, ['play'], '带她去导航栏方块', 'Take her to the bar block', { keystone: 'bar', near: NEAR })],
     next: 'c2c',
   },
   {
@@ -282,7 +287,7 @@ export const SCRIPT: Node[] = [
   {
     id: 'c4c',
     lines: [L('还有四块基石。图片、卡片、小标题、文字——一块一块来。', 'Four keystones left: a picture, a card, a heading, some text — one by one.', { act: 'point_left' })],
-    tasks: [T('media', 1, ['play'], '带她去图片方块', 'Take her to the picture block', { keystone: 'media' })],
+    tasks: [T('media', 1, ['play'], '带她去图片方块', 'Take her to the picture block', { keystone: 'media', near: NEAR })],
     next: 'c4d',
   },
   {
@@ -292,7 +297,7 @@ export const SCRIPT: Node[] = [
       L('图片……每个项目的图标，都是有人一笔一笔画出来的。', 'Pictures… every project’s icon was drawn by someone, stroke by stroke.', { act: 'smell_flower' }),
       L('我也想要一个属于自己的图标。', 'I’d like an icon of my own, too.', { mood: { 照れ: 0.6 } }),
     ],
-    tasks: [T('card', 1, ['play'], '带她去卡片方块', 'Take her to the card block', { keystone: 'card' })],
+    tasks: [T('card', 1, ['play'], '带她去卡片方块', 'Take her to the card block', { keystone: 'card', near: NEAR })],
     next: 'c4e',
   },
   {
@@ -302,14 +307,14 @@ export const SCRIPT: Node[] = [
       L('卡片是我的家。我一直就躲在这样一张卡片后面。', 'Cards are home. I’ve always hidden behind one like this.', { act: 'sit_rest' }),
       L('在卡片后面很安全，可是也很安静。', 'It’s safe behind a card. But it’s quiet, too.'),
     ],
-    tasks: [T('heading', 1, ['play'], '带她去小标题方块', 'Take her to the heading block', { keystone: 'heading' })],
+    tasks: [T('heading', 1, ['play'], '带她去小标题方块', 'Take her to the heading block', { keystone: 'heading', near: NEAR })],
     next: 'c4f',
   },
   {
     id: 'c4f',
     enter: [{ do: 'awaken', kind: 'heading' }],
     lines: [L('小标题把页面分成一段一段的，像一本书的目录。', 'Headings split the page into parts, like a book’s contents.', { act: 'hum_sway' })],
-    tasks: [T('text', 1, ['play'], '带她去文字方块', 'Take her to the text block', { keystone: 'text' })],
+    tasks: [T('text', 1, ['play'], '带她去文字方块', 'Take her to the text block', { keystone: 'text', near: NEAR })],
     next: 'c4g',
   },
   {

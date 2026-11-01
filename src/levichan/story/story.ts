@@ -15,6 +15,9 @@ const BUG = new Color(0.45, 0.05, 0.55);
 /** typing speed (characters a second) */
 const CPS = 38;
 
+/** her height (m), feet to the top of her head */
+const HER_HEIGHT = 1.45;
+
 export class Story {
   private s: Saved;
   private readonly zh: boolean;
@@ -156,6 +159,32 @@ export class Story {
     if (hit) this.renderHud();
   }
 
+  /** "Take her to the block": done when any part of her (feet to head) comes within the task's distance of the
+   * block's outside. Playing with it is no longer the only way: the route or the play can fail on an awkward block
+   * (the bar, wide, thin and high), and she was right there. */
+  private checkNear(n: Node) {
+    const mv = this.space.mover;
+    if (!mv || !n.tasks) return;
+    let hit = false;
+    for (const t of n.tasks) {
+      if (!t.near || !t.keystone || (this.s.tasks[t.id] ?? 0) >= t.need) continue;
+      const b = this.keystone(t.keystone);
+      if (!b) continue;
+      const out = (x: number, lo: number, hi: number) => Math.max(lo - x, 0, x - hi);
+      const du = out(mv.u, b.u, b.u + b.w);
+      const dv = out(mv.v, b.z - b.d, b.z);
+      const dh = Math.max(b.h0 - (mv.h + HER_HEIGHT), 0, mv.h - b.h1);
+      if (Math.hypot(du, dv, dh) >= t.near) continue;
+      this.s.tasks[t.id] = t.need;
+      hit = true;
+      this.space.world.play(b, 'glow');
+    }
+    if (hit) {
+      this.dirty = true;
+      this.renderHud();
+    }
+  }
+
   /** Asleep: she murmurs at a pat, and wakes cross at anything rougher. */
   private sleepTalk(ev: StoryEvent) {
     if (ev === 'pat') {
@@ -199,6 +228,7 @@ export class Story {
     // tasks and the wait
     if (this.s.phase === 'tasks' || this.s.phase === 'wait') {
       const n = this.node!;
+      if (this.s.phase === 'tasks') this.checkNear(n);
       const tasksDone = (n.tasks ?? []).every((t) => (this.s.tasks[t.id] ?? 0) >= t.need);
       if (tasksDone && this.s.phase === 'tasks' && n.wait) {
         this.s.phase = 'wait';
