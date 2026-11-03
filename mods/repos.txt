@@ -3,6 +3,7 @@ amatouhake/LaminaSort
 amatouhake/Lamium
 carefly/RLXMoney
 carefly/RLXTeleport
+ch1-k-mc/BetterF3-Bedrock
 cngege/AutoFishing
 cngege/DispenserDestroyBlock
 cngege/DispenserGetLavaFromCauldron
