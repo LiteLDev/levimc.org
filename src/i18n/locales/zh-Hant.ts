@@ -195,6 +195,7 @@ const zhHant: typeof en = {
     levianticheat: "為 LeviLamina 伺服器提供反作弊解決方案。",
     moredimensions: "為 Minecraft 基岩版新增自訂維度的 API。",
     levistone: "在 LeviLamina 上執行 Endstone 外掛的執行時。",
+    bedboo: "兼容 mineflayer API 的 Minecraft 基岩版機械人庫：讓機械人和 mineflayer 外掛直接連上基岩版專用伺服器（BDS）。",
   },
   // 網誌
   blog: {
