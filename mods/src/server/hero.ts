@@ -11,5 +11,7 @@ export const HERO_FILES = ["hero-light.svg", "hero-dark.svg"] as const;
 /** The SVG of `/mods/hero-light.svg` or `/mods/hero-dark.svg`. */
 export function heroSvg(file: (typeof HERO_FILES)[number]): string {
   const scene = file === "hero-dark.svg" ? harborSunrise({ ...SIZE, boats: true }) : lilyPond({ ...SIZE, bridge: true });
-  return sceneToSvg(scene, { animate: true });
+  // no `animate`: the file is used as a background-image, and an animation inside one makes the browser
+  // re-rasterise the whole filtered SVG every frame.
+  return sceneToSvg(scene);
 }

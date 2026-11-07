@@ -19,7 +19,9 @@
   .kit-backdrop > div {
     position: absolute;
   }
-  /* Soft colour dabs: water-lily pads and light on water, mostly in the margins. */
+  /* Soft colour dabs: water-lily pads and light on water, mostly in the margins. Static: a perpetual
+     full-viewport transform made the compositor re-blend the whole screen every frame (worst under the two
+     full-screen blend layers below), and the 48s, 1.5% drift was invisible anyway. */
   .kit-backdrop-dabs {
     inset: -12%;
     background:
@@ -34,8 +36,6 @@
       radial-gradient(18% 14% at 22% 98%, rgb(217 138 158 / 0.14), transparent 72%),
       radial-gradient(26% 24% at 98% 96%, rgb(79 138 91 / 0.2), transparent 72%),
       radial-gradient(16% 14% at 88% 70%, rgb(154 134 194 / 0.18), transparent 72%);
-    animation: var(--animate-kit-drift);
-    will-change: transform;
   }
   .dark .kit-backdrop-dabs {
     background:
@@ -227,7 +227,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kit-backdrop-dabs,
   .kit-hero-art .kit-scene-glints,
   .kit-hero-art .kit-scene-sun {
     animation: none !important;
