@@ -79,6 +79,7 @@ LeafKnife/Stats
 LeafKnife/ToolStats
 lgc-LLDev/FormAPIEx
 lgc-LLDev/NBSPlayer
+LiteLDev/Arke
 LiteLDev/iListenAttentively
 LiteLDev/LegacyMoney
 LiteLDev/LegacyRemoteCall
