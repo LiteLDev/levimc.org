@@ -204,6 +204,8 @@ const en = {
     moredimensions:
       "An API for adding custom dimensions to Minecraft Bedrock Edition.",
     levistone: "A runtime for running Endstone plugins on LeviLamina.",
+    bedboo:
+      "A Minecraft Bedrock Edition bot library with a mineflayer-compatible API: run bots and mineflayer plugins against a Bedrock Dedicated Server.",
   },
   // Blog (levimc.org/blog/) — the chrome around the posts; the posts themselves are in Chinese
   blog: {

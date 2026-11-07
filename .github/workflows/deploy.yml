@@ -129,5 +129,6 @@ jobs:
           lip build-docs.yml
           LeviLauncher docs.yml
           BeDD docs.yml
+          bedboo docs.yml
           EOF
           exit $status

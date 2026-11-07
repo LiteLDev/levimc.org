@@ -2,7 +2,7 @@
 
 The shared design system and static docs engine for every LeviMC website — levimc.org (with LeviMC Mods at /mods/) and
 the project docs at `docs.levimc.org/<Project>/` (LeviLamina, LegacyScriptEngine, lip, LeviLauncher — Windows and
-Android in one site — and Be.D.D.), plus the Doxygen API reference.
+Android in one site — Be.D.D. and bedboo), plus the Doxygen API reference.
 
 **Design concept: "Impression, Craft".** Monet's Giverny rendered as if built in Minecraft.
 *Painterly = atmosphere* (impressionist colour fields and brush-dab texture in heroes, backdrops and margins);
@@ -606,7 +606,7 @@ Canonical cross-site URLs (exact, no redirect): Home `https://levimc.org/`, Proj
 GitHub organisation) `https://github.com/LiteLDev`, Community `https://levimc.org/community/`, About `https://levimc.org/about/`,
 Mods (LeviMC Mods, id `mods`) `https://levimc.org/mods/`, Blog `https://levimc.org/blog/`, GitHub
 `https://github.com/LiteLDev`,
-Docs `https://docs.levimc.org/{LeviLamina,LegacyScriptEngine,lip,LeviLauncher,BeDD}/`,
+Docs `https://docs.levimc.org/{LeviLamina,LegacyScriptEngine,lip,LeviLauncher,BeDD,bedboo}/`,
 Discord `https://discord.gg/v5R5P4vRZk`, Telegram `https://t.me/LiteLoader`, X `https://x.com/levimc_org`,
 YouTube `https://www.youtube.com/@LeviLamina`, `mailto:contact@levimc.org`. lip's repository is
 `https://github.com/LiteLDev/lip` (`futrime/lip` redirects).
@@ -851,6 +851,16 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.18.0 — 2026-11-06
+
+**bedboo is back, with docs.** `LiteLDev/bedboo`, a Minecraft Bedrock Edition bot library with a mineflayer-compatible
+API, is documented at `https://docs.levimc.org/bedboo/`; it rejoins Core after LeviLauncher, so the Projects menu
+(the projects with docs) lists it, and levimc.org has its project card again.
+* `ProjectId` `'bedboo'` (`projectBlurbs.bedboo` in every chrome language), with `docs`; `DocsProjectId` includes
+  `'bedboo'`, so `DOCS_PROJECTS` (the docs.levimc.org root's cards) lists five projects. Its logo is
+  `https://levimc.org/logos/bedboo.webp`.
+* Compatible: sites only rebuild.
 
 ### 2.17.0 — 2026-11-01
 

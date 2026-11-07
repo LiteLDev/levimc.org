@@ -23,6 +23,7 @@ const TAGS: Record<string, string> = {
   LeviOptimize: 'Performance',
   LeviAntiCheat: 'Security',
   MoreDimensions: 'Functionality',
+  bedboo: 'Bot Library',
 };
 
 // GitHub repositories of the projects: stars, language and description are fetched from the GitHub API
