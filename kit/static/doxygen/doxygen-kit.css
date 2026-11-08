@@ -906,6 +906,19 @@ html {
 #nav-tree:not(.kit-tree-ready) #nav-tree-contents {
   visibility: hidden;
 }
+/* in the drawer, while the tree loads: static placeholder rows where it will be (no animation) */
+.kit-dox-drawer-sidebar #nav-tree:not(.kit-tree-ready) {
+  min-height: 13.5rem;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 0.7rem,
+    color-mix(in srgb, var(--color-muted) 16%, transparent) 0.7rem 1.4rem,
+    transparent 1.4rem 2.25rem
+  );
+  background-size: 62% 13.5rem;
+  background-position: 0.75rem 0;
+  background-repeat: no-repeat;
+}
 /* the titles wait in the header until kit.js moves them into the panes */
 .kit-dox-pane-titles {
   display: none !important;

@@ -546,7 +546,14 @@
         droot.hidden = false;
         root.classList.add('kit-scroll-lock');
         var close = droot.querySelector('.kit-dox-drawer-close');
-        if (close) close.focus();
+        // focus after the drawer's first frame: focusing now would force a style pass over the whole (large) page
+        // on top of the one that frame does anyway
+        if (close)
+          requestAnimationFrame(function () {
+            setTimeout(function () {
+              if (drawerOpen()) close.focus({ preventScroll: true });
+            }, 0);
+          });
         // open with the current page's entry in view (the tree may still be loading its index: once it shows it)
         var reveal = function () {
           var cur = dsheet.querySelector('#nav-tree .selected') || dsheet.querySelector('.kit-drawer-link.is-active');
@@ -572,6 +579,16 @@
       }
     };
     if (droot) {
+      // the tree's index scripts load one after another: start on the press, not on the click that follows it
+      document.addEventListener(
+        'pointerdown',
+        function (e) {
+          if (treeDone || !e.target || !e.target.closest || !e.target.closest('.kit-gbar [data-kit-gbar-menu]')) return;
+          if (dtree && dtreeSlot) dtreeSlot.appendChild(dtree);
+          buildTree();
+        },
+        true,
+      );
       document.addEventListener('click', function (e) {
         var t = e.target && e.target.closest ? e.target : null;
         if (!t) return;

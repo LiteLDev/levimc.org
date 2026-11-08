@@ -757,8 +757,12 @@ member documentation as code blocks (the memtitle as the title bar), fragments a
 the class index in columns, file and directory lists with the kit sprites, thin themed scrollbars, both themes.
 
 **Performance.** `patch-navtree.mjs` makes navtree.js render a window of 150 entries around the current page in long
-lists (the ~9,700-entry Class List) with a "Show all N" row, drops its sync-icon and pane-sizing work and its own
-outline. kit.js builds the tree when the browser is idle (≤ 960px: when the drawer first opens); the outline's
+lists (the ~9,700-entry Class List) with a "Show all N" row, drops its sync-icon, pane-sizing and pane-splitter
+work and its own outline, and expands, collapses and scrolls to the current entry without jQuery animations (each
+frame of those re-styled the whole page). It also splits the tree data scripts above 256 KB: every child list above
+4 KB moves into a script of its own that navtree.js loads on demand (the Class List script 2.4 MB → 1.1 MB). kit.js
+builds the tree when the browser is idle (≤ 960px: when the drawer's menu button is pressed, with a static placeholder
+until it is ready); the outline's
 scroll-spy binary-searches cached targets and touches classes only when the section changes; `div.memitem` and
 `table.memberdecls` are `content-visibility: auto` (kit.js re-settles anchor jumps).
 
@@ -956,6 +960,27 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.19.1 — 2026-11-08
+
+**The Doxygen tree opens faster, and the drawer never shows an empty API Reference section.**
+* `patch-navtree.mjs`:
+  * `splitTreeData` splits the tree data scripts above 256 KB. Every child list above 4 KB moves into a script that
+    navtree.js loads on demand. LeviLamina's Class List script goes from 2.4 MB to 1.1 MB (405 → 222 KB gzipped);
+    it was downloaded and parsed before the tree could open on any class page.
+  * No jQuery `slideDown` / `slideUp` / `scrollTo` animations, no scrollbar probe and no pane splitter
+    (`initResizable`) under the kit's layout. Each of those forced a style pass over the whole page; on the Player
+    class page (25k nodes) they cost about 1.2 s of main thread on the budget phone profile. The layout is unchanged
+    (identical geometry on five page types at 1440, 1100 and 393 px).
+  * `kitRenderAll(true)` after "Show all" has started its idle chunks now renders the rest at once instead of
+    returning (showNode could read a missing entry).
+* kit.js: the tree starts loading when the menu button is pressed (not on the click after it), the drawer shows static
+  placeholder rows until the tree is ready, and focusing the drawer waits for its first frame.
+* Measured on the Player class page: the tree is ready 2.8 s after opening the drawer on a cold budget phone (about
+  5 s before, with an empty section meanwhile); laptop TBT about 3.0 → 2.1 s, idle main-thread work 25–80 → under
+  1 ms/s.
+* New `tests/navtree.test.mjs`.
+* Compatible: LeviLamina's API reference rebuilds with the new `patch-navtree.mjs`; other sites only rebuild.
 
 ### 2.19.0 — 2026-11-08
 
