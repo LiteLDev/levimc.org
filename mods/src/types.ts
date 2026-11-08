@@ -47,6 +47,8 @@ export interface CatalogEntry {
   owner: string;
   /** The mod's own icon, when the build could load it; else the owner's avatar is shown. */
   icon?: string;
+  /** The icon scaled down at build time (`lib/mods.ts` iconPath): shown instead of `icon` (which stays the original). */
+  iconId?: string;
   /** Raw manifest tags. */
   tags: string[];
   categories: string[];
@@ -107,6 +109,7 @@ export interface RelatedMod {
   name: string;
   owner: string;
   icon?: string;
+  iconId?: string;
   /** The mod is in the index (it has a page here). */
   listed?: boolean;
 }
@@ -145,7 +148,7 @@ export interface ModRefJson {
 }
 
 /** A mod in the listing's JSON: its row, and where its page and JSON are. */
-export interface CatalogEntryJson extends Omit<CatalogEntry, "rank" | "icon" | "requiredBy"> {
+export interface CatalogEntryJson extends Omit<CatalogEntry, "rank" | "icon" | "iconId" | "requiredBy"> {
   url: string;
   json: string;
   /** The mod's icon, else its owner's avatar (as the row shows). */

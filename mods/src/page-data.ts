@@ -65,6 +65,11 @@ export type PageData = (
 
 export const SITE_NAME = "LeviMC Mods";
 export const SITE_TAGLINE = "Mods & plugins for Minecraft Bedrock";
+/**
+ * Tab titles follow the LeviMC convention (kit 2.19): "<Page> - LeviMC" on levimc.org, with the section in between
+ * inside it — the listing is "Mods - LeviMC", a mod "<name> - Mods - LeviMC" — and every 404 "Page not found - LeviMC".
+ */
+export const titled = (...parts: string[]) => [...parts, "LeviMC"].join(" - ");
 /** LeviMC Mods is part of levimc.org (at `BASE`); it was pkg.levimc.org. */
 export const SITE_ORIGIN = "https://levimc.org";
 
@@ -110,20 +115,20 @@ export function pageMeta(data: PageData): PageMeta {
   switch (data.kind) {
     case "home":
       return {
-        title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+        title: titled("Mods"),
         description: siteDescription(data.catalog.stats.projects),
         canonical: `${SITE_ORIGIN}${BASE}`,
         json: `${SITE_ORIGIN}${BASE}index.json`,
       };
     case "mod":
       return {
-        title: `${data.entry.name} | ${SITE_NAME}`,
+        title: titled(data.entry.name, "Mods"),
         description: data.mod.info.description || `${data.entry.name} on ${SITE_NAME}`,
         canonical: `${SITE_ORIGIN}${BASE}${data.canonicalTooth ?? data.tooth}/`,
         json: `${SITE_ORIGIN}${BASE}${data.tooth}/index.json`,
       };
     case "not-found":
-      return { title: `Not Found | ${SITE_NAME}`, description: `${SITE_NAME} — ${SITE_TAGLINE}` };
+      return { title: titled("Page not found"), description: `${SITE_NAME} — ${SITE_TAGLINE}` };
   }
 }
 
@@ -153,6 +158,8 @@ export function pageHead(data: PageData): string {
     `<meta property="og:title" content="${escapeHtml(meta.title)}" />`,
     `<meta property="og:description" content="${escapeHtml(meta.description)}" />`,
     `<meta property="og:image" content="${SITE_ORIGIN}${BASE}icon.png" />`,
+    // the language pages are prerendered in (the interface follows the visitor's after hydration)
+    `<meta property="og:locale" content="en_US" />`,
   );
   if (meta.canonical) {
     tags.push(`<meta property="og:url" content="${escapeHtml(meta.canonical)}" />`);

@@ -8,7 +8,8 @@ import {
 } from "../data/categories";
 import { formatCompact, formatNumber, useI18n, type Strings } from "../i18n";
 import type { Locale } from "../locales";
-import { fitChips, initialFit } from "../lib/chip-fit";
+import { initialFit } from "../lib/chip-fit";
+import { watchChips } from "./chip-measure";
 import { modPath } from "../lib/mods";
 import type { CatalogEntry } from "../types";
 import { formatUtcDate, RelativeDate } from "./local-date";
@@ -67,9 +68,9 @@ function place(host: HTMLElement) {
 }
 
 /**
- * The tags on one line: the chips that fit (measured, and again whenever the
- * row's width changes; see `fitChips`), the rest behind "+N", whose tooltip
- * lists them.
+ * The tags on one line: the chips that fit (measured once per label set,
+ * fitted again whenever the row's width changes; see `fitChips` and
+ * `chip-measure.ts`), the rest behind "+N", whose tooltip lists them.
  * Before the first measurement (the prerendered page) a fixed count shows.
  */
 function ChipList({ chips }: { chips: Chip[] }) {
@@ -83,27 +84,14 @@ function ChipList({ chips }: { chips: Chip[] }) {
 
   useLayoutEffect(() => {
     const ul = ref.current;
-    if (!ul || typeof ResizeObserver === "undefined") return;
-    const measure = () => {
-      // every chip in one unwrapped line, at its full width
-      ul.classList.add("is-measuring");
-      const widths = [...ul.querySelectorAll<HTMLElement>(":scope > [data-chip]")].map((li) => li.getBoundingClientRect().width);
-      const more = ul.querySelector<HTMLElement>(":scope > .mods-row-more-li")?.getBoundingClientRect().width ?? 0;
-      const style = getComputedStyle(ul);
-      const gap = parseFloat(style.columnGap) || 0;
-      const room = ul.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0);
-      ul.classList.remove("is-measuring");
-      setFit(fitChips(widths, gap, more, room).map(Number).join(""));
+    if (!ul) return;
+    // measured in one batch with every other row, from one ResizeObserver (see chip-measure.ts)
+    return watchChips(ul, signature, (next) => {
+      setFit(next);
       // an open tooltip follows its chip
       const open = ul.querySelector<HTMLElement>(".mods-row-more-host:hover, .mods-row-more-host:focus-within");
       if (open) requestAnimationFrame(() => place(open));
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(ul);
-    // the web fonts change the chips' widths, not the row's
-    void document.fonts?.ready.then(measure);
-    return () => observer.disconnect();
+    });
   }, [signature]);
 
   const chip = (c: Chip) =>
@@ -173,7 +161,7 @@ export function ProjectRow({ entry, eager, ownerHref }: ProjectRowProps) {
   return (
     <article className="px-card mods-row" data-tooth={entry.tooth}>
       <span className="kit-slot mods-row-icon">
-        <ProjectIcon icon={entry.icon} owner={entry.owner} size={72} eager={eager} />
+        <ProjectIcon icon={entry.icon} iconId={entry.iconId} owner={entry.owner} size={72} eager={eager} />
       </span>
       <div className="mods-row-head">
         <h3 className="mods-row-name">

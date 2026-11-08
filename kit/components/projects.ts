@@ -34,6 +34,7 @@ export type ProjectId =
   | 'LeviStone'
   | 'lip'
   | 'LeviLauncher'
+  | 'BeDD'
   | 'bedboo'
   | 'LeviOptimize'
   | 'LeviAntiCheat'
@@ -76,6 +77,7 @@ export const PROJECTS: readonly Project[] = [
   { id: 'LeviStone', name: 'LeviStone', group: 'core', repo: 'https://github.com/LiteLDev/LeviStone', logo: logo('LeviStone'), icon: 'emerald' },
   { id: 'lip', name: 'lip', group: 'core', repo: 'https://github.com/LiteLDev/lip', docs: 'https://docs.levimc.org/lip/', logo: logo('lip'), icon: 'chest' },
   { id: 'LeviLauncher', name: 'LeviLauncher', group: 'core', repo: 'https://github.com/LiteLDev/LeviLauncher', docs: 'https://docs.levimc.org/LeviLauncher/', logo: logo('LeviLauncher'), icon: 'map' },
+  { id: 'BeDD', name: 'Be.D.D.', group: 'core', repo: 'https://github.com/LiteLDev/BeDD', docs: 'https://docs.levimc.org/BeDD/', logo: logo('BeDD'), icon: 'monitor' },
   { id: 'bedboo', name: 'bedboo', group: 'core', repo: 'https://github.com/LiteLDev/bedboo', docs: 'https://docs.levimc.org/bedboo/', logo: logo('bedboo'), icon: 'pickaxe' },
   { id: 'LeviOptimize', name: 'LeviOptimize', group: 'mods', repo: 'https://github.com/LiteLDev/LeviOptimize', mod: modPage('LeviOptimize'), logo: logo('LeviOptimize'), icon: 'potion' },
   { id: 'LeviAntiCheat', name: 'LeviAntiCheat', group: 'mods', repo: 'https://github.com/LiteLDev/LeviAntiCheat', mod: modPage('LeviAntiCheat'), logo: logo('LeviAntiCheat'), icon: 'torch' },
@@ -90,7 +92,7 @@ export function projectHome(p: Project): string {
 export const PROJECT_GROUPS: readonly ProjectGroupId[] = ['core', 'mods'];
 
 /** The projects that have a documentation site (docs.levimc.org/<id>/). */
-export type DocsProjectId = 'LeviLamina' | 'LegacyScriptEngine' | 'lip' | 'LeviLauncher' | 'bedboo';
+export type DocsProjectId = 'LeviLamina' | 'LegacyScriptEngine' | 'lip' | 'LeviLauncher' | 'BeDD' | 'bedboo';
 
 export interface DocsProject {
   id: DocsProjectId;

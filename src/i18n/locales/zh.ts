@@ -2,6 +2,13 @@
 import type en from "./en";
 
 const zh: typeof en = {
+  // <title>s ("<Page> - LeviMC") and the 404 page
+  meta: {
+    blog: "博客",
+    notFound: "页面未找到",
+    pickProject: "或者打开一个项目的文档：",
+  },
+
   // Navigation
   nav: {
     home: "首页",

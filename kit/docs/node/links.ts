@@ -90,7 +90,7 @@ export function createLinkResolver(ctx: LinkContext, page: PageRoute) {
 
   const routeUrl = (r: PageRoute) => cfg.base + r.path;
 
-  const resolveContentPath = (contentPath: string, kind: 'a' | 'img'): { url: string; route?: PageRoute } | null => {
+  const resolveContentPath = (contentPath: string, kind: 'a' | 'img'): { url: string; route?: PageRoute; file?: string } | null => {
     const p = posix.normalize(contentPath || '.').replace(/^\.$/, '');
     if (p.startsWith('..')) return null;
     if (kind === 'a') {
@@ -121,12 +121,12 @@ export function createLinkResolver(ctx: LinkContext, page: PageRoute) {
         const ext = extname(decoded);
         const out = `assets/${basename(decoded, ext).replace(/[^\w.-]/g, '_')}.${hash}${ext}`;
         ctx.assets.set(out, { abs: inContent, out });
-        return { url: cfg.base + out };
+        return { url: cfg.base + out, file: inContent };
       }
       if (!cfg.copyContentAssets) ctx.assets.set(decoded, { abs: inContent, out: decoded });
-      return { url: cfg.base + p };
+      return { url: cfg.base + p, file: inContent };
     }
-    if (inPublic && decoded && existsSync(inPublic)) return { url: cfg.base + p };
+    if (inPublic && decoded && existsSync(inPublic)) return { url: cfg.base + p, file: inPublic };
     return null;
   };
 
@@ -139,7 +139,7 @@ export function createLinkResolver(ctx: LinkContext, page: PageRoute) {
       h = '/' + h.slice(ownPrefix.length).replace(/^\/*/, '');
       const { path, query, hash } = splitHref(h.slice(1));
       const res = resolveContentPath(safeDecode(path), kind);
-      if (res) return { href: res.url + query + hash, target: res.route && hash ? { route: res.route.id, anchor: safeDecode(hash.slice(1)) } : undefined };
+      if (res) return { href: res.url + query + hash, file: res.file, target: res.route && hash ? { route: res.route.id, anchor: safeDecode(hash.slice(1)) } : undefined };
       return { href: raw, external: true };
     }
     if (SCHEME.test(h) || h.startsWith('//')) {
@@ -160,6 +160,7 @@ export function createLinkResolver(ctx: LinkContext, page: PageRoute) {
     if (!res) return null;
     return {
       href: res.url + query + hash,
+      file: res.file,
       target: res.route && hash ? { route: res.route.id, anchor: safeDecode(hash.slice(1)) } : undefined,
     };
   };

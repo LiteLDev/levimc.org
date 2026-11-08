@@ -9,8 +9,10 @@
 // Both modes check the unified chrome contract (kit ≥ 1.1): the GlobalBar's canonical tabs in order, its
 // controls (language, theme, GitHub) in order, Auto as the default theme, theme + language choices stored in
 // the cross-site cookies (levimc_theme / levimc_lang) and applied again after a reload, no console or hydration
-// errors, the phone layout (one menu with the bar's links, no sideways scroll) and the themed 404.
-// Docs mode adds: SPA navigation, Ctrl+K search, the language menu landing on the equivalent page, the
+// errors, the phone layout (one menu button, the bar's, at the same place on every site; on docs sites it opens
+// the drawer: sections → section tree → Resources → LeviMC links; no sideways scroll) and the themed 404.
+// Docs mode adds: the navigation IA (kit 2.19: brand = home, tabs = sections, the sidebar is the active section,
+// prev/next stays inside it), SPA navigation, Ctrl+K search, the language menu landing on the equivalent page, the
 // root-only language redirect (the stored preference wins), content tabs, copy buttons, no duplicated controls
 // in the docs header and its sticky behaviour. Exit code 1 on any failure.
 import { createRequire } from 'node:module';
@@ -52,7 +54,8 @@ const assert = (c, msg) => {
   if (!c) throw new Error(msg);
 };
 
-const browser = await chromium.launch({ headless: !args.includes('--headed'), proxy: { server: 'http://127.0.0.1:1080', bypass: 'localhost,127.0.0.1' } });
+// LEVIMC_CHROME: a browser executable to use instead of Playwright's own download (e.g. an installed Chrome)
+const browser = await chromium.launch({ headless: !args.includes('--headed'), executablePath: process.env.LEVIMC_CHROME || undefined, proxy: { server: 'http://127.0.0.1:1080', bypass: 'localhost,127.0.0.1' } });
 const newCtx = (o = {}) => browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'light', ...o });
 const ctx = await newCtx();
 await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(base).origin });
@@ -121,7 +124,7 @@ await check('GlobalBar: canonical tabs in order, controls (language · theme · 
     });
     const end = g.querySelector('.kit-gbar-end');
     const order = [...end.children].map((c) =>
-      c.matches('.kit-locale') ? 'language' : c.matches('.kit-theme') ? 'theme' : c.matches('.kit-gbar-github') ? 'github' : c.matches('.kit-gbar-more') ? 'menu' : c.className,
+      c.matches('.kit-locale') ? 'language' : c.matches('.kit-theme') ? 'theme' : c.matches('.kit-gbar-github') ? 'github' : c.matches('.kit-gbar-more, [data-kit-gbar-menu]') ? 'menu' : c.className,
     );
     return { tabs, order, current: g.querySelector('.kit-gbar-nav [aria-current="page"]:not(.kit-proj-main) [data-kit-t], .kit-gbar-nav summary[aria-current="page"] [data-kit-t]')?.getAttribute('data-kit-t') ?? null };
   });
@@ -296,15 +299,26 @@ await check('phone (390px): bar controls visible, one menu with the bar links, n
   const e = errorsOf(p);
   await p.goto(pages[0] ?? base, { waitUntil: 'networkidle' });
   for (const sel of ['[data-kit-locale-switcher]', '[data-kit-theme-toggle]', '.kit-gbar-github']) assert(await p.locator(sel).first().isVisible(), `${sel} hidden at 390px`);
-  const docsToggle = p.locator('[data-kit-nav-toggle]');
+  // kit 2.19: one menu button on every site, the bar's ([data-kit-gbar-menu], same place as on levimc.org); on
+  // docs sites it opens the drawer (the docs row has no menu button of its own any more)
   const gbarMenu = p.locator('[data-kit-gbar-menu]');
-  const toggles = (await docsToggle.isVisible().catch(() => false)) + (await gbarMenu.isVisible().catch(() => false));
-  assert(toggles === 1, `${toggles} menu buttons visible`);
+  const visible = await p.locator('[data-kit-gbar-menu], [data-kit-nav-toggle]').evaluateAll((els) => els.filter((el) => el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden').length);
+  assert(visible === 1, `${visible} menu buttons visible`);
+  assert(await gbarMenu.first().isVisible(), "the bar's menu button is not the visible one");
   let links;
-  if (await docsToggle.isVisible().catch(() => false)) {
-    await docsToggle.click();
+  if (!APP) {
+    assert((await p.locator('#kit-drawer *').count()) < 20, 'the closed drawer is fully rendered (its body should mount on first open)');
+    await gbarMenu.first().click();
     await p.waitForSelector('#kit-drawer', { state: 'visible' });
-    assert((await docsToggle.getAttribute('aria-expanded')) === 'true', 'aria-expanded not true');
+    assert((await gbarMenu.first().getAttribute('aria-expanded')) === 'true', 'aria-expanded not true');
+    // sections → the current section's tree (titled) → Resources → LeviMC
+    const order = await p.$$eval('#kit-drawer > *', (els) =>
+      els.map((e) => ['kit-drawer-nav', 'kit-drawer-sidebar', 'kit-drawer-resources', 'kit-drawer-network'].find((c) => e.classList.contains(c))).filter(Boolean),
+    );
+    const want = ['kit-drawer-nav', 'kit-drawer-sidebar', 'kit-drawer-resources', 'kit-drawer-network'].filter((c) => order.includes(c));
+    assert(order.join() === want.join(), `drawer sections out of order: ${order.join(' → ')}`);
+    assert(order.includes('kit-drawer-network'), 'the drawer lacks the LeviMC links');
+    if (order.includes('kit-drawer-sidebar')) assert(await p.locator('#kit-drawer .kit-drawer-sidebar .kit-sb-title').count(), 'the drawer tree has no section title');
     for (let i = 0; i < 60; i++) await p.keyboard.press('Tab');
     assert(await p.evaluate(() => !!document.activeElement?.closest('#kit-drawer')), 'focus escaped the drawer');
     links = await p.$$eval('#kit-drawer .kit-gbar-list a', (as) => as.map((a) => a.href));
@@ -360,8 +374,10 @@ if (!APP) {
     await page.goto(pages[0] ?? base, { waitUntil: 'networkidle' });
     const dup = await page.evaluate(() => {
       const h = document.querySelector('.kit-site-header');
-      // the site's own nav may link GitHub as a section; a GitHub icon button among the actions would duplicate the bar
-      return h ? ['[data-kit-theme-toggle]', '[data-kit-locale-switcher]', '.kit-site-actions a[href^="https://github.com/"]'].filter((s) => h.querySelector(s)) : null;
+      // the bar has theme + language; the only GitHub link in the row is the project's repository (resources slot)
+      return h
+        ? ['[data-kit-theme-toggle]', '[data-kit-locale-switcher]', '[data-kit-nav-toggle]', '.kit-site-actions > a[href^="https://github.com/"]'].filter((s) => h.querySelector(s))
+        : null;
     });
     assert(dup, 'no .kit-site-header');
     assert(!dup.length, `duplicated controls in the docs header: ${dup.join(', ')}`);
@@ -375,6 +391,48 @@ if (!APP) {
     assert(Math.abs(pos.header) < 1, `header not stuck (top ${pos.header})`);
     assert(pos.bar <= 0, 'the LeviMC bar did not scroll away');
     return `stuck at 0; bar scrolled away; fit=${await page.evaluate(() => document.documentElement.getAttribute('data-kit-nav-fit') ?? 'none')}`;
+  });
+  await check('navigation IA: brand = home, tabs = sections, sidebar = the active section, pager inside it', async () => {
+    const problems = [];
+    let checked = 0;
+    for (const u of [base, ...pages].slice(0, 12)) {
+      await page.goto(u, { waitUntil: 'networkidle' });
+      const r = await page.evaluate(() => {
+        const brand = document.querySelector('.kit-site-brand')?.getAttribute('href');
+        const tabs = [...document.querySelectorAll('.kit-site-nav > ul > li > :is(a, details)')];
+        const active = document.querySelector('.kit-site-nav-link.is-active');
+        const sb = document.querySelector('.kit-doc-sidebar');
+        const sbLinks = sb ? [...sb.querySelectorAll('a.kit-sb-link')].map((a) => a.getAttribute('href')) : [];
+        return {
+          home: !document.querySelector('.kit-doc-layout'),
+          brand,
+          tabLinks: tabs.map((t) => t.getAttribute?.('href') ?? null),
+          dropdowns: document.querySelectorAll('.kit-site-nav details').length,
+          external: document.querySelectorAll('.kit-site-nav a[target="_blank"]').length,
+          activeText: active?.textContent.trim() ?? null,
+          sbTitle: sb?.querySelector('.kit-sb-title')?.textContent.trim() ?? null,
+          hasSidebar: !!sb,
+          pager: [...document.querySelectorAll('.kit-pager-link')].map((a) => a.getAttribute('href')),
+          sbLinks,
+          repo: document.querySelectorAll('.kit-site-actions [data-kit-resource="github"]').length,
+        };
+      });
+      checked++;
+      const at = new URL(u).pathname;
+      if (r.tabLinks.includes(r.brand)) problems.push(`${at}: a tab links the home page (the brand is the home link)`);
+      if (r.dropdowns || r.external) problems.push(`${at}: ${r.dropdowns} dropdown / ${r.external} external tab(s)`);
+      if (r.repo > 1) problems.push(`${at}: ${r.repo} repository icons`);
+      if (r.home) {
+        if (r.activeText) problems.push(`${at}: a tab is active on the home page`);
+        continue;
+      }
+      if (!r.hasSidebar) problems.push(`${at}: doc page without a sidebar (in no section)`);
+      else if (r.activeText !== r.sbTitle) problems.push(`${at}: active tab '${r.activeText}' ≠ sidebar title '${r.sbTitle}'`);
+      for (const h of r.pager) if (!r.sbLinks.includes(h)) problems.push(`${at}: pager link ${h} leaves the section`);
+      if (r.pager.includes(r.brand)) problems.push(`${at}: the pager links the home page`);
+    }
+    assert(!problems.length, problems.slice(0, 6).join(' | '));
+    return `${checked} pages`;
   });
   const term = opt('--search-term', 'the');
   await check(`search opens with Ctrl+K and finds "${term}"`, async () => {

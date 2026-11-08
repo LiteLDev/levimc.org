@@ -8,8 +8,7 @@ import { useContentEnhancements } from '../enhance';
 import { PixelIcon } from '../../../components/PixelIcon';
 import type { UiStrings } from '../../../components/i18n';
 
-function MobileToc({ page, t }: { page: PageData; t: UiStrings }) {
-  const active = useActiveHeading(page.toc.map((x) => x.id));
+function MobileToc({ page, t, active }: { page: PageData; t: UiStrings; active: string | null }) {
   const ref = useRef<HTMLDetailsElement>(null);
   if (!page.toc.length) return null;
   return (
@@ -31,6 +30,8 @@ export function DocLayout({ route, page, t }: { route: RouteMeta; page: PageData
   const showToc = page.toc.length > 0 && page.frontmatter?.aside !== false;
   // With a sidebar the TOC column is always reserved, so the text column never jumps between pages.
   const tocColumn = showToc || !!sidebar;
+  // one scroll-spy for both outlines (the column and the narrow-screen dropdown)
+  const active = useActiveHeading(showToc ? page.toc.map((x) => x.id) : [], route.page);
   return (
     <div className="kit-doc-layout" data-sidebar={sidebar ? '' : undefined} data-toc={tocColumn ? '' : undefined}>
       {sidebar ? (
@@ -42,7 +43,7 @@ export function DocLayout({ route, page, t }: { route: RouteMeta; page: PageData
         </div>
       ) : null}
       <main id="kit-main" className="kit-doc-main" tabIndex={-1}>
-        {showToc ? <MobileToc page={page} t={t} /> : null}
+        {showToc ? <MobileToc page={page} t={t} active={active} /> : null}
         <article className="kit-doc-article" lang={contentLang}>
           <div ref={contentRef} className="kit-prose" data-doc-content="" dangerouslySetInnerHTML={{ __html: page.html }} />
         </article>
@@ -50,7 +51,7 @@ export function DocLayout({ route, page, t }: { route: RouteMeta; page: PageData
       </main>
       {tocColumn ? (
         <div className="kit-doc-toc" aria-hidden={showToc ? undefined : true}>
-          <div className="kit-doc-toc-inner">{showToc ? <Toc toc={page.toc} title={t.onThisPage} /> : null}</div>
+          <div className="kit-doc-toc-inner">{showToc ? <Toc toc={page.toc} title={t.onThisPage} active={active} /> : null}</div>
         </div>
       ) : null}
     </div>

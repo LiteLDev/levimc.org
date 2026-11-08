@@ -254,10 +254,28 @@
     width: 20px;
     height: 28px;
   }
+  /* The LeviMC wordmark in the pixel face, drawn as a mask (--kit-wordmark, generated from Silkscreen's glyphs: 32.6×5
+     cells of 1/8 em with the 0.04em tracking), so no site loads the Silkscreen webfont and the bar never shows a
+     fallback face first. The margins are the font's side bearings, so it takes the room the text took. The text stays
+     in the element (for assistive technology, find and copy), moved out of its box. */
+  .kit-wordmark {
+    display: inline-block;
+    flex: none;
+    width: calc(1em * 32.6 / 8);
+    height: calc(1em * 5 / 8);
+    margin: 0 calc(1em * 1.32 / 8) 0 calc(1em / 8);
+    /* where the font's baseline put the capitals in a centred line box */
+    position: relative;
+    top: 0.1em;
+    overflow: hidden;
+    white-space: nowrap;
+    text-indent: 110%;
+    background-color: currentColor;
+    -webkit-mask: var(--kit-wordmark) 0 0 / 100% 100% no-repeat;
+    mask: var(--kit-wordmark) 0 0 / 100% 100% no-repeat;
+  }
   .kit-gbar-brand-text {
-    font-family: var(--font-pixel);
     font-size: 0.8125rem;
-    letter-spacing: 0.04em;
   }
   .kit-gbar-brand:hover .kit-gbar-brand-text {
     color: #c9f0a8;
@@ -558,6 +576,19 @@
   .kit-gbar-more {
     display: none;
   }
+  /* GlobalBar onMenu: the same button in the same place, opening the site's own menu (the docs drawer) */
+  .kit-gbar-menu-btn {
+    display: none;
+    padding: 0;
+    font: inherit;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .kit-gbar-menu-btn[aria-expanded="true"] {
+    color: #fff;
+    background: rgb(255 255 255 / 0.08);
+  }
   .kit-gbar-more-panel {
     width: min(22rem, calc(100vw - 1.5rem));
     /* long Docs lists stay reachable: the panel scrolls inside the viewport, with shadows as a scroll cue */
@@ -670,6 +701,9 @@
     .kit-gbar-more {
       display: block;
     }
+    .kit-gbar-menu-btn {
+      display: inline-grid;
+    }
   }
   @media (max-width: 400px) {
     .kit-gbar-inner {
@@ -731,24 +765,21 @@
     inset: 0;
     z-index: -1;
     pointer-events: none;
+    /* the brush overlay is a soft-light background layer (opacity baked into --kit-footer-brush), not a
+       mix-blend-mode element: no extra blend layer to composite when the footer scrolls in */
     background:
+      var(--kit-footer-brush) 0 0 / 256px 256px,
       linear-gradient(to bottom, rgb(247 243 232 / 0.3), rgb(247 243 232 / 0.5)),
       var(--kit-paint-lilies) center 92% / cover no-repeat,
       #dfe8dc;
+    background-blend-mode: soft-light, normal, normal;
   }
   .dark .kit-footer-paint {
     background:
+      var(--kit-footer-brush) 0 0 / 256px 256px,
       linear-gradient(to bottom, rgb(8 19 27 / 0.7), rgb(8 19 27 / 0.35) 55%, rgb(8 19 27 / 0.55)),
       var(--kit-paint-sunrise) 70% 60% / cover no-repeat,
       #08131b;
-  }
-  .kit-footer-paint::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--kit-brush) 0 0 / 256px 256px;
-    mix-blend-mode: soft-light;
-    opacity: 0.45;
   }
   /* one row: the mark + tagline on the left, the social channels on the right (stacked on phones) */
   .kit-footer-inner {
@@ -777,9 +808,7 @@
     gap: 0.75rem;
     color: var(--kf-ink);
     text-decoration: none;
-    font-family: var(--font-pixel);
     font-size: 18px;
-    letter-spacing: 0.04em;
   }
   .kit-footer-tagline {
     margin: 0.875rem 0 0;
@@ -1214,13 +1243,59 @@
   .kit-static-actions {
     margin: 1.75rem 0 0;
   }
+  /* ================================================================== 404 (one look on every site) */
+  /* React docs (layouts/NotFound), levimc.org, LeviMC Mods and the static pages share these classes: the compass in
+     a slot, the red "Error 404" label, the display title, one line of text, then the actions. */
+  .kit-notfound {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    padding: 4rem 1rem 2rem;
+    outline: none;
+  }
+  .kit-notfound-card {
+    max-width: 34rem;
+    padding: 2.5rem 2rem 2.25rem;
+    text-align: center;
+  }
   .kit-notfound-compass {
     width: 6rem;
     height: 6rem;
     margin-bottom: 1.25rem;
   }
+  /* the compass spins a few times, then settles (no perpetual animation; none under reduced motion) */
   .kit-notfound-spin {
-    animation: kit-compass-spin 2.4s steps(12, end) infinite;
+    animation: kit-compass-spin 2.4s steps(12, end) 2;
+  }
+  .kit-notfound-code {
+    margin: 0 0 0.75rem;
+    color: var(--color-adm-danger);
+  }
+  .kit-notfound-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+  .kit-notfound-title:lang(ja) {
+    word-break: auto-phrase; /* break between phrases (迷子 stays whole); ignored where unsupported */
+  }
+  .kit-notfound-text {
+    margin: 1rem auto 0;
+    max-width: 26rem;
+    color: var(--color-muted);
+    text-wrap: pretty;
+  }
+  .kit-notfound-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
   }
 }
 
@@ -1252,13 +1327,5 @@
   to {
     opacity: 1;
     transform: none;
-  }
-}
-@keyframes kit-float {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-6px);
   }
 }

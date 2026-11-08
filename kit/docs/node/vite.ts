@@ -21,7 +21,8 @@ import tailwindcss from '@tailwindcss/vite';
 import { resolveConfig, type DocsConfig, type ResolvedConfig } from './config.ts';
 import { buildSite, type BuiltSite } from './site.ts';
 import { localeRedirectScript } from '../shared/head.ts';
-import { createThemeInitScript, themeInitScript } from '../../components/theme.ts';
+import { PAGE_META_KEYS, type SiteData } from '../shared/types.ts';
+import { createThemeInitScript } from '../../components/theme.ts';
 import { UI_LOCALES } from '../../components/i18n.ts';
 import { GOOGLE_FONTS_HREF } from '../../components/fonts.ts';
 import { noJsDarkCss } from '../../static/nojs-dark.mjs';
@@ -44,6 +45,36 @@ export interface KitDocsPluginOptions {
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const KIT_DOCS_APP_DIR = resolve(here, '../app');
+
+/**
+ * The pre-paint script's chrome locales: a placeholder that matches nothing (index 0 = "the content language"),
+ * then the kit's UI languages none of the site's locales covers (by base language). A stored preference that maps
+ * past index 0 differs from the page's language → html.kit-chrome-pending until the app re-renders the chrome.
+ */
+function chromeOnlyLocales(site: Pick<SiteData, 'locales'>): string[] {
+  const bases = new Set(site.locales.map((l) => l.lang.toLowerCase().split('-')[0]));
+  return ['x-kit-content', ...UI_LOCALES.filter((u) => !bases.has(u.toLowerCase().split('-')[0]!))];
+}
+
+/** dist/_kit/nav.json: the docs' sections and resources per locale (generates the Doxygen API header, kit 2.19). */
+export function navJson(site: SiteData): Record<string, unknown> {
+  const abs = (link: string, external?: boolean) => (external ? link : site.base + link);
+  const out: Record<string, unknown> = {};
+  for (const l of site.locales) {
+    out[l.code] = {
+      lang: l.lang,
+      label: l.label,
+      prefix: l.prefix,
+      title: site.title,
+      home: site.base + (site.homePaths[l.code] ?? l.prefix),
+      tabs: (site.nav[l.code] ?? [])
+        .filter((it) => it.link !== undefined)
+        .map((it) => ({ text: it.text, link: abs(it.link!, it.external), ...(it.external ? { external: true } : {}) })),
+      resources: (site.resources[l.code] ?? []).map((r) => ({ kind: r.kind, text: r.text, link: abs(r.link, r.external) })),
+    };
+  }
+  return out;
+}
 
 function hash8(s: string) {
   return createHash('sha256').update(s).digest('hex').slice(0, 8);
@@ -132,16 +163,26 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
       if (id === LAYOUTS_ID) return R_LAYOUTS;
       return null;
     },
-    async load(id) {
+    async load(id, opts) {
       if (id === R_SITE) {
         const b = await ensure();
         const pages = b.routes
           .map((r) => `${JSON.stringify(r.page)}: () => import(${JSON.stringify(PAGE_PREFIX + r.page)})`)
           .filter((v, i, a) => a.indexOf(v) === i)
           .join(',\n  ');
+        // The browser gets a slim route table (routing, titles, alternates): the per-page meta (description, edit
+        // link, dates, prev/next) travels with each page (its chunk, or #kit-page-data) and is merged on render.
+        // JSON.parse of a string literal parses faster than the same object literal.
+        const routes = opts?.ssr
+          ? b.routes
+          : b.routes.map((r) => {
+              const slim: Record<string, unknown> = { ...r };
+              for (const k of PAGE_META_KEYS) delete slim[k];
+              return slim;
+            });
         return (
-          `export const site = ${JSON.stringify(b.site)};\n` +
-          `export const routes = ${JSON.stringify(b.routes)};\n` +
+          `export const site = JSON.parse(${JSON.stringify(JSON.stringify(b.site))});\n` +
+          `export const routes = JSON.parse(${JSON.stringify(JSON.stringify(routes))});\n` +
           `export const pages = {\n  ${pages}\n};\n`
         );
       }
@@ -150,7 +191,7 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
         const pageId = id.slice(R_PAGE.length);
         const page = [...b.pages.values()].find((p) => p.route.page === pageId);
         if (!page) return 'export default { html: "", toc: [] }';
-        const data = { html: page.html, toc: page.toc, hero: page.hero, features: page.features, frontmatter: page.frontmatter };
+        const data = { html: page.html, toc: page.toc, meta: page.meta, hero: page.hero, features: page.features, frontmatter: page.frontmatter };
         return `export default ${JSON.stringify(data)};`;
       }
       if (id === R_TOKENS) {
@@ -171,8 +212,9 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
       async handler(html) {
         const b = await ensure();
         const redirect = localeRedirectScript(b.site);
-        // single-locale sites: the chrome follows the stored language (App's useChromeLocale); hide it until then
-        const init = b.site.locales.length < 2 ? createThemeInitScript({ chromeLocales: UI_LOCALES }) : themeInitScript;
+        // the chrome language rule (App's useChromeLocale): a stored language none of the site's locales has moves
+        // the chrome (bar, footer) to that language — hide it until the app has re-rendered it
+        const init = createThemeInitScript({ chromeLocales: chromeOnlyLocales(b.site) });
         const favicon = b.site.favicon ?? b.site.logo?.src;
         const headExtra = (cfg.head ?? [])
           .map(([tag, attrs, content]) => {
@@ -247,6 +289,7 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
       const b = built;
       for (const f of searchFiles.values()) this.emitFile({ type: 'asset', fileName: f.file, source: f.json });
       this.emitFile({ type: 'asset', fileName: '.nojekyll', source: '' });
+      this.emitFile({ type: 'asset', fileName: '_kit/nav.json', source: JSON.stringify(navJson(b.site), null, 2) + '\n' });
       // moved pages: a redirect page at each old URL
       const routeFiles = new Set(b.routes.map((r) => r.path));
       for (const [from, to] of Object.entries(cfg.redirects ?? {})) {

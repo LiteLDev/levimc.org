@@ -9,12 +9,13 @@ import { scanContent, type ContentScan, type PageRoute } from './content.ts';
 import { createLinkResolver, type AssetRef } from './links.ts';
 import { renderMarkdown, type RenderResult } from './markdown/render.ts';
 import { TokenStyles } from './markdown/shiki.ts';
-import { buildNavigation } from './nav.ts';
+import { buildNavigation, HOME_KEY } from './nav.ts';
 import { convertMarkdown, prepareConvertedLocales } from './convert.ts';
 import { gitLastUpdated } from './git.ts';
 import { uiStrings } from '../../components/i18n.ts';
 import { searchOptions, SNIPPET_STORE_CHARS } from '../shared/search.ts';
-import type { FeatureData, HeroData, PageData, RouteMeta, SearchDoc, SiteData } from '../shared/types.ts';
+import { docsStrings } from '../shared/strings.ts';
+import { PAGE_META_KEYS, type FeatureData, type HeroData, type PageData, type PageMeta, type ResourceLink, type RouteMeta, type SearchDoc, type SiteData } from '../shared/types.ts';
 
 export interface BuiltPage extends PageData {
   route: RouteMeta;
@@ -126,6 +127,23 @@ export async function buildSite(cfg: ResolvedConfig, opts: { changed?: Set<strin
   const routes: RouteMeta[] = [];
   const homePaths: Record<string, string> = {};
   for (const loc of cfg.locales) homePaths[loc.code] = scan.byKey.get('index')?.get(loc.code)?.path ?? loc.prefix;
+  // "Last updated" is formatted here, once per locale, so the browser builds no Intl.DateTimeFormat on hydration
+  const dateFormats = new Map<string, Intl.DateTimeFormat>();
+  const formatDate = (code: string, ms: number) => {
+    const lang = cfg.locales.find((l) => l.code === code)?.lang ?? code;
+    let f = dateFormats.get(lang);
+    if (!f) {
+      try {
+        f = new Intl.DateTimeFormat(lang, { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+      } catch {
+        f = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+      }
+      dateFormats.set(lang, f);
+    }
+    const d = new Date(ms);
+    return { iso: d.toISOString(), text: f.format(d) };
+  };
+  const orphans = new Map<string, string>();
 
   for (const r of scan.routes) {
     const res = rendered.get(r.id)!;
@@ -152,17 +170,22 @@ export async function buildSite(cfg: ResolvedConfig, opts: { changed?: Set<strin
       };
       features = ((fm.features ?? []) as FeatureData[]).map((f) => ({ ...f, external: f.link ? /^[a-z]+:/i.test(f.link) : undefined, link: f.link ? resolveHref(f.link) : undefined }));
     }
+    const isHome = r.key === HOME_KEY || layout === 'home';
+    const updatedMs = lastUpdated.get(r.source.rel);
     const meta: RouteMeta = {
       path: r.path,
       locale: r.locale,
       page: pageModuleId(r),
       key: r.key,
       title: layout === 'home' && !res.title ? (hero?.name ?? cfg.title) : titles.get(r.id)!,
-      description: (typeof fm.description === 'string' && fm.description) || res.description || cfg.description,
+      // a home page describes the site (its first paragraph is often a notice for readers, S16)
+      description:
+        (typeof fm.description === 'string' && fm.description) || (isHome ? cfg.description || res.description : res.description || cfg.description),
       layout,
       alternates,
       source: r.source.rel,
-      lastUpdated: lastUpdated.get(r.source.rel),
+      lastUpdated: updatedMs,
+      updated: cfg.lastUpdated && updatedMs ? formatDate(r.locale, updatedMs) : undefined,
       editUrl: cfg.editLink
         ? typeof cfg.editLink.pattern === 'function'
           ? cfg.editLink.pattern(r.source.rel)
@@ -175,9 +198,39 @@ export async function buildSite(cfg: ResolvedConfig, opts: { changed?: Set<strin
       next: fm.next === false ? undefined : p.next,
     };
     routes.push(meta);
+    // every doc page belongs to exactly one section (kit 2.19 IA): report pages no section lists
+    const sectioned = cfg.sidebar === undefined || cfg.sidebar === 'tabs' || (typeof cfg.sidebar === 'object' && cfg.sidebar !== null);
+    if (sectioned && layout === 'doc' && !isHome && r.key !== '404' && fm.sidebar !== false && !p.sidebar && !orphans.has(r.key)) orphans.set(r.key, r.source.rel);
     const keepFm: Record<string, unknown> = {};
     for (const k of ['layout', 'outline', 'aside', 'sidebar', 'editLink', 'lastUpdated', 'pageClass']) if (k in fm) keepFm[k] = fm[k];
-    pages.set(r.id, { route: meta, html: res.html, toc: fm.outline === false ? [] : res.toc, hero, features, frontmatter: keepFm, render: res });
+    const pageMeta: PageMeta = {};
+    for (const k of PAGE_META_KEYS) if (meta[k] !== undefined) (pageMeta as Record<string, unknown>)[k] = meta[k];
+    pages.set(r.id, { route: meta, html: res.html, toc: fm.outline === false ? [] : res.toc, meta: pageMeta, hero, features, frontmatter: keepFm, render: res });
+  }
+
+  for (const [key, rel] of orphans) warnings.push(`nav: page '${key}' (${rel}) is in no section: add it to a section's tree in nav, or set sidebar: false`);
+
+  // ---- the resources slot: header.links, then the repository
+  const github = cfg.repo ?? cfg.social?.find((s) => s.icon === 'github')?.link;
+  const resources: Record<string, ResourceLink[]> = {};
+  const routeByPath = (p: string) => scan.byPath.get(p) ?? scan.byPath.get(p + '.html') ?? scan.byPath.get(p + '/') ?? scan.byPath.get(p.replace(/\.html$/, ''));
+  for (const loc of cfg.locales) {
+    const ds = docsStrings(loc.lang);
+    const list: ResourceLink[] = [];
+    for (const h of cfg.header?.links ?? []) {
+      const text = h.text?.[loc.code] ?? h.text?.[cfg.defaultLocale] ?? (h.kind === 'download' ? ds.download : ds.changelog);
+      if (/^[a-z][a-z0-9+.-]*:|^\/\//i.test(h.link)) {
+        list.push({ kind: h.kind, text, link: h.link, external: true });
+        continue;
+      }
+      let rel = h.link.startsWith(cfg.base) ? h.link.slice(cfg.base.length) : h.link.replace(/^\/+/, '');
+      const hit = routeByPath(rel);
+      if (hit) rel = scan.byKey.get(hit.key)?.get(loc.code)?.path ?? hit.path;
+      else if (loc.isDefault) warnings.push(`header.links: '${h.link}' is no page of this site (linked as is)`);
+      list.push({ kind: h.kind, text, link: rel });
+    }
+    if (github) list.push({ kind: 'github', text: ds.onGithub.replace('{name}', () => cfg.title), link: github, external: true });
+    resources[loc.code] = list;
   }
 
   // ---- search (one MiniSearch index per locale)
@@ -213,6 +266,7 @@ export async function buildSite(cfg: ResolvedConfig, opts: { changed?: Set<strin
     title: cfg.title,
     description: cfg.description ?? '',
     hostname: cfg.hostname,
+    ogImage: cfg.ogImage ? (/^https?:/.test(cfg.ogImage) ? cfg.ogImage : assetUrl(cfg, cfg.ogImage)) : undefined,
     logo: cfg.logo ? { ...cfg.logo, src: assetUrl(cfg, cfg.logo.src), dark: cfg.logo.dark ? assetUrl(cfg, cfg.logo.dark) : undefined } : undefined,
     favicon: cfg.favicon ? assetUrl(cfg, cfg.favicon) : undefined,
     project: cfg.project,
@@ -223,9 +277,10 @@ export async function buildSite(cfg: ResolvedConfig, opts: { changed?: Set<strin
     locales: cfg.locales.map((l) => ({ code: l.code, label: l.label, lang: l.lang, prefix: l.prefix })),
     nav,
     sidebars,
-    // GitHub lives in the top bar (the repository); other social links stay in the docs header
+    // the repository is the resources slot's GitHub icon; other social links stay in the docs header
     social: (cfg.social ?? []).filter((s) => s.icon !== 'github'),
-    github: cfg.social?.find((s) => s.icon === 'github')?.link ?? cfg.repo,
+    github,
+    resources,
     editLink: cfg.editLink ? { text: cfg.editLink.text } : undefined,
     footer: cfg.footer,
     outline: cfg.outline,

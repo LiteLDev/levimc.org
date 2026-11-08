@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
-import { App } from './App';
+import { App, preloadRoute } from './App';
 import { canonicalPath } from './routes';
 import { preloadBlogPath } from './blog/data';
 import './styles.css';
@@ -26,9 +26,10 @@ const app = (
   </StrictMode>
 );
 
-// Production pages are prerendered (hydrate them); the dev server serves an empty #root. A blog post's
-// markdown is its own chunk: load it first, so the first render matches the prerendered HTML.
-void preloadBlogPath(canonical).finally(() => {
+// Production pages are prerendered (hydrate them); the dev server serves an empty #root. The page's chunk (all
+// pages but the home, see App) and a blog post's markdown are chunks of their own: load them first, so the first
+// render matches the prerendered HTML (prerender.mjs modulepreloads both beside the entry script).
+void Promise.allSettled([preloadRoute(canonical), preloadBlogPath(canonical)]).finally(() => {
   if (rootElement.firstElementChild) hydrateRoot(rootElement, app);
   else createRoot(rootElement).render(app);
 });

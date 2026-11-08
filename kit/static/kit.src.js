@@ -26,9 +26,10 @@
     var i = ml(tag, L);
     return i < 0 ? 'en' : L[i].c;
   }
+  // the chrome's UI locale: the checked language (a UI locale, or on Doxygen one of the docs' locales: zh → zh-CN)
   function chromeLocale() {
     var a = document.querySelector('[data-kit-lang-value].is-active');
-    return a ? a.getAttribute('data-kit-lang-value') : uiLocale(root.lang || 'en');
+    return uiLocale(a ? a.getAttribute('data-kit-lang-value') : root.lang || 'en');
   }
   function strings() {
     return STR[chromeLocale()] || STR.en;
@@ -75,6 +76,7 @@
   // ------------------------------------------------------------------ language (chrome only)
   // Only the chrome is translated: the bar, the footer, the skip link (each gets lang=<code>). The page's own
   // content — including copies of chrome strings in it, e.g. project blurbs on the 404 page — stays as written.
+  // (.kit-dox-drawer-network: the LeviMC links of the Doxygen drawer, .kit-drawer-network there too)
   var CHROME = '.kit-gbar, .kit-footer, .kit-skip-link, .kit-dox-drawer-network';
   function inChrome(el) {
     return el.matches(CHROME) || !!el.closest(CHROME);
@@ -84,7 +86,9 @@
     var i = k.indexOf('.');
     return i < 0 ? S[k] : S[k.slice(0, i)] && S[k.slice(0, i)][k.slice(i + 1)];
   }
-  function translate(code) {
+  // `code`: a UI locale; `pref`: the chosen language as stored (picks the menu item — the bar on Doxygen lists the
+  // docs' locales, e.g. zh-Hant, whose chrome is zh-HK)
+  function translate(code, pref) {
     var S = STR[code];
     if (!S) return;
     each('[data-kit-t]', function (el) {
@@ -107,8 +111,16 @@
     });
     // the language menu: check the new language, move the check mark, relabel the trigger
     var check = null;
+    var items = [];
     each('[data-kit-lang-value]', function (o) {
-      var on = o.getAttribute('data-kit-lang-value') === code;
+      var v = o.getAttribute('data-kit-lang-value');
+      items.push({ c: v, l: v });
+    });
+    var pick = ml(pref || code, items);
+    if (pick < 0) pick = ml(code, items);
+    var pickValue = pick < 0 ? null : items[pick].c;
+    each('[data-kit-lang-value]', function (o) {
+      var on = o.getAttribute('data-kit-lang-value') === pickValue;
       o.setAttribute('aria-checked', String(on));
       o.classList.toggle('is-active', on);
       var c = o.querySelector('.kit-menu-check');
@@ -168,13 +180,30 @@
         if (x && !hrefOnly) a.setAttribute('lang', loc.l);
         else a.removeAttribute('lang');
       }
+      // accessible names (the drawer, the repository icon, the navs): [label, url?]
+      var named = row.querySelectorAll('[data-kit-l10n-aria]');
+      for (var n = 0; n < named.length; n++) {
+        var el = named[n];
+        var am = null;
+        try {
+          am = JSON.parse(el.getAttribute('data-kit-l10n-aria') || 'null');
+        } catch (e) {
+          am = null;
+        }
+        if (!am || typeof am !== 'object') continue;
+        if (!el.hasAttribute('data-kit-l10n-aria-default')) el.setAttribute('data-kit-l10n-aria-default', el.getAttribute('aria-label') || '');
+        var ax = loc ? am[loc.c] : null;
+        var label = ax ? ax[0] : el.getAttribute('data-kit-l10n-aria-default');
+        el.setAttribute('aria-label', label);
+        if (el.hasAttribute('title')) el.setAttribute('title', label);
+      }
     });
     if (siteFit) siteFit();
   }
   function applyLanguagePref() {
     var p = rp('lang');
     var code = p ? uiLocale(p) : null;
-    if (code && code !== chromeLocale() && document.querySelector('[data-kit-lang-value]')) translate(code);
+    if (code && document.querySelector('[data-kit-lang-value]')) translate(code, p);
     localizeSite(p);
     root.classList.remove('kit-chrome-pending');
   }
@@ -192,7 +221,7 @@
       var code = lg.getAttribute('data-kit-lang-value');
       wp('lang', code);
       if (lg.tagName === 'BUTTON') {
-        translate(uiLocale(code));
+        translate(uiLocale(code), code);
         localizeSite(code);
       }
     }
@@ -295,18 +324,23 @@
     if (document.visibilityState === 'visible') resync();
   });
 
-  // Doxygen: its regions become landmarks, and its phone menu button + search, which menu.js inserts before
-  // #main-nav, move into the project's row (header#titlearea) where they are shown — so everything on the page
-  // is inside a landmark. A MutationObserver catches the insertion before it is painted.
+  // ------------------------------------------------------------------ Doxygen (static/doxygen/header.html)
+  // The API pages carry the docs header (#top is the docs' .kit-site-header), the docs drawer and the docs layout
+  // (doxygen-kit.css). Here: landmarks, Doxygen's search box in the row's search slot, the nav fit, the drawer (opened
+  // by the LeviMC bar's menu button), the tree (built lazily), the "On this page" outline and its scroll-spy.
   var dtop = document.getElementById('top');
-  var drow = document.getElementById('titlearea');
-  if (doxygen && dtop && drow && drow.classList.contains('kit-dox-row')) {
+  var drow = dtop && dtop.querySelector('.kit-site-header-inner');
+  if (doxygen && dtop && drow) {
+    // tells the kit's navtree.js patch (doxygen/patch-navtree.mjs) that the kit lays the page out
+    window.kitDoxygen = true;
+    var DRAWER_MAX = '(max-width: 960px)'; // the docs' one breakpoint (docs.css, doxygen-kit.css)
+    var narrow = function () {
+      return !!(window.matchMedia && window.matchMedia(DRAWER_MAX).matches);
+    };
     // landmarks for Doxygen's own regions (it emits plain <div>s)
     var LANDMARKS = [
-      ['main-nav', 'navigation', 'Doxygen'],
       ['side-nav', 'navigation', 'Index'],
       ['doc-content', 'main', ''],
-      ['nav-path', 'navigation', 'Breadcrumb'],
     ];
     for (var li = 0; li < LANDMARKS.length; li++) {
       var le = document.getElementById(LANDMARKS[li][0]);
@@ -318,100 +352,498 @@
     // the skip link's target (#doc-content) takes focus, so the next Tab continues inside the page content
     var dmain = document.getElementById('doc-content');
     if (dmain && !dmain.hasAttribute('tabindex')) dmain.setAttribute('tabindex', '-1');
-    var adopt = function () {
-      var m = dtop.querySelector(':scope > .sm-dox');
-      if (m) drow.appendChild(m);
-      return !!m;
-    };
-    if (!adopt() && window.MutationObserver) {
-      var mo = new MutationObserver(function () {
-        if (adopt()) mo.disconnect();
-      });
-      mo.observe(dtop, { childList: true });
-    }
-    // the sections fit like the docs header's (doxygen-kit.css): on wide screens the first of the docs' states
-    // ("search": icon-only search, then "tabs": the sections on their own row) with which they are not cut off;
-    // re-measured when the page or Doxygen's search box (inserted by menu.js) changes width, when the web fonts
-    // load and when the labels change language
-    var dtabs = drow.querySelector('.kit-dox-tabs > ul');
-    var dfit = function () {
-      if (!dtabs) return;
-      root.removeAttribute('data-kit-nav-fit');
-      var steps = ['search', 'tabs'];
-      for (var fi = 0; fi < steps.length; fi++) {
-        if (dtabs.scrollWidth <= dtabs.clientWidth) return;
-        root.setAttribute('data-kit-nav-fit', steps[fi]);
-      }
-    };
-    dfit();
-    if (dtabs && window.ResizeObserver) {
-      var dro = new ResizeObserver(dfit);
-      dro.observe(dtop);
-      var observeSearch = function () {
-        var dnav = document.getElementById('main-nav');
-        if (dnav) dro.observe(dnav);
-        return !!dnav;
-      };
-      if (!observeSearch()) document.addEventListener('DOMContentLoaded', observeSearch);
-    }
-    if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', dfit);
-    siteFit = dfit;
 
-    // The docs layout (doxygen-kit.css): the header holds the titles of the sidebar (the current tab's name) and of
-    // Doxygen's page-outline panel ("On this page"), which go over the tree and the page-outline list
-    var dtitles = document.querySelector('.kit-dox-pane-titles');
-    if (dtitles) {
-      var dtree = document.getElementById('nav-tree');
-      var doutline = document.getElementById('page-nav-tree');
-      var heads = dtitles.children;
-      if (dtree && heads[0]) dtree.insertBefore(heads[0], dtree.firstChild);
-      if (doutline && heads[0]) doutline.insertBefore(heads[0], doutline.firstChild);
-      dtitles.parentNode.removeChild(dtitles);
-    }
-    // wide tables scroll inside the reading column instead of running under the page-outline list
-    each('#doc-content :is(table.memberdecls, table.fieldtable, table.doxtable, table.markdownTable, table.directory, table.params)', function (tb) {
-      if (tb.parentNode.classList.contains('kit-dox-table-wrap')) return;
-      var wrap = document.createElement('div');
-      wrap.className = 'kit-dox-table-wrap';
-      tb.parentNode.insertBefore(wrap, tb);
-      wrap.appendChild(tb);
-    });
-    // The page scrolls, not Doxygen's content pane: links to an anchor of this page scroll the page (navtree.js
-    // would scroll the pane, which no longer scrolls), and the page-outline list marks the section being read, like the docs.
-    var dtoc = function () {
-      var links = document.querySelectorAll('#page-nav .page-outline a[href^="#"]');
-      if (!links.length) return;
-      // the section under the header is current; at the end of the page, the last one that is in view
-      var atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
-      var line = atEnd ? window.innerHeight - 1 : dtop.getBoundingClientRect().bottom + 24;
-      var cur = links[0];
-      for (var ti = 0; ti < links.length; ti++) {
-        var t = document.getElementById(decodeURIComponent(links[ti].getAttribute('href').slice(1)));
-        if (t && t.getBoundingClientRect().top <= line) cur = links[ti];
+    // ---- search: menu.js builds Doxygen's search box (and rebuilds it when the window crosses 768px) in its own
+    // holders; it lives in the row's search slot (the docs trigger's frame). Ctrl/⌘+K and "/" focus it.
+    var dslot = drow.querySelector('.kit-dox-search');
+    var adoptSearch = function () {
+      if (!dslot) return;
+      var boxes = document.querySelectorAll('#MSearchBox');
+      for (var bi = 0; bi < boxes.length; bi++) {
+        var box = boxes[bi];
+        if (box.parentNode === dslot) continue;
+        var old = dslot.querySelector('#MSearchBox');
+        if (old) dslot.removeChild(old);
+        dslot.insertBefore(box, dslot.querySelector('.kit-search-trigger-keys'));
       }
-      for (var tj = 0; tj < links.length; tj++) links[tj].classList.toggle('is-active', links[tj] === cur);
     };
-    var dtocQueued = false;
+    adoptSearch();
+    if (window.MutationObserver) new MutationObserver(adoptSearch).observe(dtop, { childList: true, subtree: true });
+    // the results panel (fixed, doxygen-kit.css) opens right under the box
+    var placeResults = function () {
+      var box = document.getElementById('MSearchBox');
+      if (box) root.style.setProperty('--kit-dox-search-top', Math.round(box.getBoundingClientRect().bottom + 8) + 'px');
+    };
+    if (dslot) {
+      dslot.addEventListener('focusin', placeResults);
+      dslot.addEventListener('keyup', placeResults);
+    }
     window.addEventListener(
       'scroll',
       function () {
-        if (dtocQueued) return;
-        dtocQueued = true;
-        requestAnimationFrame(function () {
-          dtocQueued = false;
-          dtoc();
-        });
+        var w = document.getElementById('MSearchResultsWindow');
+        if (w && w.style.display === 'block') placeResults();
       },
       { passive: true },
     );
-    // navtree.js builds the page-outline list when the document is ready
-    window.addEventListener('load', dtoc);
+    var focusSearch = function () {
+      var f = document.getElementById('MSearchField');
+      if (f) f.focus();
+      return !!f;
+    };
+    if (dslot)
+      dslot.addEventListener('click', function (e) {
+        if (!e.target.closest('#MSearchSelect, #MSearchClose, input')) focusSearch();
+      });
+    document.addEventListener('keydown', function (e) {
+      var tg = e.target;
+      var editing = tg && (tg.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName));
+      if (((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && (e.key === 'k' || e.key === 'K')) || (e.key === '/' && !editing && !e.ctrlKey && !e.metaKey && !e.altKey)) {
+        if (focusSearch()) e.preventDefault();
+      }
+    });
+
+    // ---- the nav fit: the docs header's states (html[data-kit-nav-fit]: "search", "tabs", "drawer"), computed from the
+    // natural widths the inline script after the row measured before the first paint (window.__kitNavFit) — the same
+    // arithmetic as the docs' useNavFit: a resize reads nothing and writes the root attribute only when the state
+    // changes. Re-measured when the web fonts arrive (if they were loading) and when the labels change language.
+    var dlist = drow.querySelector('.kit-site-nav > ul');
+    var FIT_STEPS = ['search', 'tabs', 'drawer'];
+    var fitM = window.__kitNavFit || null;
+    var fitW = fitM ? fitM.w : -1;
+    var fitSet = function (state) {
+      if (root.getAttribute('data-kit-nav-fit') === state) return;
+      if (state) root.setAttribute('data-kit-nav-fit', state);
+      else root.removeAttribute('data-kit-nav-fit');
+    };
+    var fitMeasure = function () {
+      if (!dlist || narrow()) return (fitM = null);
+      var had = root.getAttribute('data-kit-nav-fit');
+      if (had) root.removeAttribute('data-kit-nav-fit');
+      var cs = getComputedStyle(drow);
+      var trig = drow.querySelector('.kit-search-trigger');
+      var m = {
+        w: drow.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight),
+        // the tabs' natural width: scrollWidth is only the stretched (flex: 1) box while they fit
+        need: dlist.firstElementChild && dlist.lastElementChild ? dlist.lastElementChild.getBoundingClientRect().right - dlist.firstElementChild.getBoundingClientRect().left : dlist.scrollWidth,
+        have: dlist.clientWidth,
+        trig: trig ? trig.offsetWidth : 0,
+        rem: parseFloat(getComputedStyle(root).fontSize) || 16,
+        compact: window.matchMedia('(max-width: 1180px)').matches,
+        loading: false,
+      };
+      if (had) root.setAttribute('data-kit-nav-fit', had);
+      fitM = m.have > 0 ? m : null;
+      fitW = m.w;
+      return fitM;
+    };
+    var fitState = function (m, w) {
+      var delta = Math.max(0, (m.compact || !m.trig ? 13 * m.rem : m.trig) - 2 * m.rem);
+      var haveFull = m.have - (m.compact ? delta : 0) + (w - m.w);
+      var avail = {
+        '': haveFull + (window.matchMedia('(max-width: 1180px)').matches ? delta : 0),
+        search: haveFull + delta,
+        tabs: w + 1.5 * m.rem,
+        drawer: Infinity,
+      };
+      var state = '';
+      for (var si = 0; si < FIT_STEPS.length; si++) {
+        if (m.need <= avail[state] + 0.5) break;
+        state = FIT_STEPS[si];
+      }
+      return state || null;
+    };
+    var fitApply = function (w) {
+      fitW = w;
+      if (narrow()) return fitSet(null);
+      var m = fitM || fitMeasure();
+      if (m) fitSet(fitState(m, w));
+    };
+    var fitRemeasure = function () {
+      fitM = null;
+      var m = fitMeasure();
+      if (m) fitSet(fitState(m, m.w));
+    };
+    if (dlist && window.ResizeObserver) {
+      new ResizeObserver(function (entries) {
+        var w = entries[entries.length - 1].contentRect.width;
+        if (Math.abs(w - fitW) < 0.5) return;
+        fitApply(w);
+      }).observe(drow);
+    }
+    if (dlist && document.fonts && (fitM ? fitM.loading : document.fonts.status !== 'loaded')) document.fonts.ready.then(fitRemeasure);
+    siteFit = dlist ? fitRemeasure : null;
+
+    // ---- the tree: navtree.js builds Doxygen's whole tree when the document is ready. Below 960px the tree lives in
+    // the closed drawer, so it is built when the drawer first opens; on wide screens when the browser is idle.
+    var treeArgs = null;
+    var treeDone = false;
+    var buildTree = function () {
+      if (treeDone || !treeArgs) return;
+      treeDone = true;
+      realInitNavTree.apply(window, treeArgs);
+      // shown once it has opened on the current page (or after a moment, e.g. a page that is not in the tree)
+      var tree = document.getElementById('nav-tree');
+      if (!tree) return;
+      var ready = function () {
+        tree.classList.add('kit-tree-ready');
+        if (treeMo) treeMo.disconnect();
+      };
+      var treeMo = null;
+      if (tree.querySelector('.selected')) return ready();
+      if (window.MutationObserver) {
+        treeMo = new MutationObserver(function () {
+          if (tree.querySelector('.selected')) requestAnimationFrame(ready);
+        });
+        treeMo.observe(tree, { subtree: true, attributes: true, attributeFilter: ['class'] });
+      }
+      setTimeout(ready, 2500);
+    };
+    var realInitNavTree = window.initNavTree;
+    if (typeof realInitNavTree === 'function') {
+      window.initNavTree = function () {
+        treeArgs = arguments;
+        if (narrow()) return;
+        if (window.requestIdleCallback) window.requestIdleCallback(buildTree, { timeout: 1200 });
+        else setTimeout(buildTree, 1);
+      };
+    }
+    // the tree's title (the current tab's name, like the docs sidebar) and the outline's title wait in the header
+    var dtitles = document.querySelector('.kit-dox-pane-titles');
+    var sbTitle = dtitles && dtitles.querySelector('.kit-sb-title');
+    var tocTitle = dtitles && dtitles.querySelector('.kit-toc-title');
+    var dtree = document.getElementById('nav-tree');
+    var dside = document.getElementById('side-nav');
+    // (in a holder that keeps the site's locales, so the language preference still relabels it)
+    if (dtree && sbTitle) {
+      var sbHold = document.createElement('div');
+      sbHold.className = 'kit-dox-sb-head';
+      sbHold.setAttribute('data-kit-site-locales', dtitles.getAttribute('data-kit-site-locales') || '[]');
+      sbHold.appendChild(sbTitle);
+      dtree.insertBefore(sbHold, dtree.firstChild);
+    }
+
+    // ---- the drawer (the docs' MobileDrawer): the sections, the API Reference tree, the resources, the LeviMC links
+    var droot = document.querySelector('.kit-dox-drawer-root');
+    var dsheet = droot && droot.querySelector('.kit-drawer');
+    var dtreeSlot = droot && droot.querySelector('.kit-dox-drawer-sidebar');
+    var lastFocus = null;
+    var menuButtons = function () {
+      return document.querySelectorAll('.kit-gbar [data-kit-gbar-menu]');
+    };
+    var drawerOpen = function () {
+      return !!droot && !droot.hidden;
+    };
+    var setDrawer = function (open) {
+      if (!droot || open === drawerOpen()) return;
+      var btns = menuButtons();
+      for (var i = 0; i < btns.length; i++) btns[i].setAttribute('aria-expanded', String(open));
+      if (open) {
+        lastFocus = document.activeElement;
+        // the tree moves into the drawer (built now if it was waiting)
+        if (dtree && dtreeSlot) dtreeSlot.appendChild(dtree);
+        buildTree();
+        droot.hidden = false;
+        root.classList.add('kit-scroll-lock');
+        var close = droot.querySelector('.kit-dox-drawer-close');
+        if (close) close.focus();
+        // open with the current page's entry in view (the tree may still be loading its index: once it shows it)
+        var reveal = function () {
+          var cur = dsheet.querySelector('#nav-tree .selected') || dsheet.querySelector('.kit-drawer-link.is-active');
+          if (cur) dsheet.scrollTop += cur.getBoundingClientRect().top - dsheet.getBoundingClientRect().top - dsheet.clientHeight / 2;
+        };
+        requestAnimationFrame(reveal);
+        if (dtree && !dtree.querySelector('.selected') && window.MutationObserver) {
+          var ro = new MutationObserver(function () {
+            if (!dtree.querySelector('.selected')) return;
+            ro.disconnect();
+            requestAnimationFrame(reveal);
+          });
+          ro.observe(dtree, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true });
+          setTimeout(function () {
+            ro.disconnect();
+          }, 4000);
+        }
+      } else {
+        droot.hidden = true;
+        root.classList.remove('kit-scroll-lock');
+        if (dtree && dside && dtree.parentNode !== dside) dside.insertBefore(dtree, dside.firstChild);
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+      }
+    };
+    if (droot) {
+      document.addEventListener('click', function (e) {
+        var t = e.target && e.target.closest ? e.target : null;
+        if (!t) return;
+        if (t.closest('.kit-gbar [data-kit-gbar-menu]')) {
+          e.preventDefault();
+          setDrawer(!drawerOpen());
+        } else if (drawerOpen() && (t.closest('.kit-dox-drawer-close') || t.closest('.kit-drawer-scrim'))) setDrawer(false);
+        else if (drawerOpen() && t.closest('.kit-drawer a[href]') && !t.closest('#nav-tree .item > a:first-child') && e.button === 0 && !(e.ctrlKey || e.metaKey || e.shiftKey || e.altKey)) {
+          // a link to this page's anchor scrolls (below); any other navigates: close either way
+          if (!t.closest('a[href]').getAttribute('href').match(/^javascript:/)) setDrawer(false);
+        }
+      });
+      document.addEventListener('keydown', function (e) {
+        if (!drawerOpen()) return;
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          setDrawer(false);
+        } else if (e.key === 'Tab') {
+          // keep the focus inside the dialog
+          var f = dsheet.querySelectorAll('a[href], button, summary, input, [tabindex]:not([tabindex="-1"])');
+          if (!f.length) return;
+          var first = f[0];
+          var last = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      });
+      // wide again: the sidebar is back (unless the nav-fit "drawer" state keeps the drawer)
+      if (window.matchMedia) {
+        var dmq = window.matchMedia(DRAWER_MAX);
+        var onWide = function () {
+          if (!dmq.matches && root.getAttribute('data-kit-nav-fit') !== 'drawer') setDrawer(false);
+          if (!dmq.matches) buildTree();
+        };
+        if (dmq.addEventListener) dmq.addEventListener('change', onWide);
+      }
+    }
+
+    // ---- "On this page": the docs' table of contents, built from the page's sections (Doxygen's outline: the section
+    // headings, the members of each declaration table, the documented members), in #page-nav from 1281px and as the
+    // docs' dropdown above the title below that. The scroll-spy reads a handful of boxes per frame (a binary search
+    // over cached targets: first the declaration tables / member titles, then the rows inside the one at the line —
+    // never the skipped content of content-visibility:auto) and touches the classes only when the section changes.
+    var dpagenav = document.getElementById('page-nav');
+    var dcontents = document.querySelector('#doc-content div.contents');
+    var toc = [];
+    var blocks = []; // { el, from, to } in document order: the boxes the binary search reads first
+    var tocLinks = [];
+    var mobileList = null;
+    var escapeHtml = function (s) {
+      return String(s).replace(/[&<>"]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+      });
+    };
+    var buildToc = function () {
+      if (!dcontents) return;
+      var heads = dcontents.querySelectorAll('h2.groupheader, h2.memtitle, :is(h1, h2, h3).doxsection');
+      var block = null;
+      var push = function (el, id, text, level, blockEl) {
+        if (!id || !text) return;
+        if (!block || block.el !== blockEl) {
+          block = { el: blockEl, from: toc.length, to: toc.length };
+          blocks.push(block);
+        }
+        block.to = toc.length;
+        toc.push({ el: el, id: id, text: text, level: level });
+      };
+      for (var hi = 0; hi < heads.length; hi++) {
+        var h = heads[hi];
+        if (h.classList.contains('groupheader')) {
+          var ga = h.querySelector('a[id]');
+          var table = h.closest('table.memberdecls');
+          push(h, ga ? ga.id : h.id, h.textContent.trim(), 0, table || h);
+          if (table) {
+            var rows = table.querySelectorAll('tr[id]');
+            for (var ri = 0; ri < rows.length; ri++) {
+              var tr = rows[ri];
+              if (!/^memitem:/.test(tr.className) || /\binherit\b/.test(tr.className)) continue;
+              var right = tr.querySelector('td.memItemRight, td.memTemplItemRight');
+              if (!right) continue;
+              var first = right.firstElementChild;
+              var anon = right.textContent.trim().charAt(0) === '{';
+              push(tr, tr.id, anon ? 'anonymous enum' : (first ? first.textContent : right.textContent).trim(), 1, table);
+            }
+          }
+        } else if (h.classList.contains('memtitle')) {
+          var pl = h.querySelector('.permalink a');
+          var href = pl && pl.getAttribute('href');
+          var name = '';
+          for (var ci = 0; ci < h.childNodes.length; ci++) if (h.childNodes[ci] !== h.firstElementChild) name += h.childNodes[ci].textContent;
+          name = name.trim().replace(/\(\)(\s*\[\d+\/\d+\])?$/, '');
+          if (href && href.charAt(0) === '#') push(h, href.slice(1), name, 1, h);
+        } else {
+          var sa = h.querySelector('a.anchor[id]') || h;
+          push(h, sa.id, h.textContent.trim(), Math.max(0, +h.tagName.charAt(1) - 1), h);
+        }
+      }
+    };
+    var tocHtml = function () {
+      var out = '';
+      for (var i = 0; i < toc.length; i++)
+        out += '<li' + (toc[i].level ? ' data-level="' + toc[i].level + '"' : '') + '><a href="#' + escapeHtml(toc[i].id) + '">' + escapeHtml(toc[i].text) + '</a></li>';
+      return out;
+    };
+    var tocCur = -1;
+    var tocMark = function (i) {
+      if (i === tocCur) return;
+      var lists = [tocLinks, mobileList ? mobileList.querySelectorAll('a') : []];
+      for (var l = 0; l < lists.length; l++) {
+        if (lists[l][tocCur]) lists[l][tocCur].classList.remove('is-active');
+        if (lists[l][i]) lists[l][i].classList.add('is-active');
+      }
+      tocCur = i;
+      // keep the current entry in view in the sticky list (only when the section changes)
+      var a = tocLinks[i];
+      if (a && dpagenav && dpagenav.scrollHeight > dpagenav.clientHeight) {
+        var pr = dpagenav.getBoundingClientRect();
+        var ar = a.getBoundingClientRect();
+        if (ar.top < pr.top + 48 || ar.bottom > pr.bottom - 48) dpagenav.scrollTop += ar.top - pr.top - pr.height / 2;
+      }
+    };
+    var topOf = function (el) {
+      return el.getBoundingClientRect().top;
+    };
+    // the last index in [lo, hi] whose box top is at or above the line (lo - 1 when none)
+    var lastAbove = function (lo, hi, get, line) {
+      var r = lo - 1;
+      while (lo <= hi) {
+        var mid = (lo + hi) >> 1;
+        if (topOf(get(mid)) <= line) {
+          r = mid;
+          lo = mid + 1;
+        } else hi = mid - 1;
+      }
+      return r;
+    };
+    var dtoc = function () {
+      if (!toc.length) return;
+      var se = document.scrollingElement || root;
+      var atEnd = window.innerHeight + window.scrollY >= se.scrollHeight - 2;
+      var line = atEnd ? window.innerHeight - 1 : dtop.getBoundingClientRect().bottom + 24;
+      var b = lastAbove(0, blocks.length - 1, function (i) {
+        return blocks[i].el;
+      }, line);
+      if (b < 0) return tocMark(0);
+      var blk = blocks[b];
+      var t = blk.from === blk.to ? blk.from : lastAbove(blk.from, blk.to, function (i) {
+        return toc[i].el;
+      }, line);
+      tocMark(t < blk.from ? blk.from : t);
+    };
+    var tocQueued = false;
+    var onScroll = function () {
+      if (tocQueued) return;
+      tocQueued = true;
+      requestAnimationFrame(function () {
+        tocQueued = false;
+        dtoc();
+      });
+    };
+    var hasSections = dcontents && dcontents.querySelector('h2.groupheader, h2.memtitle, .doxsection');
+    if (hasSections) {
+      buildToc();
+      // the docs' heading permalink on each section heading
+      for (var gi = 0; gi < toc.length; gi++) {
+        var ge = toc[gi].el;
+        if (ge.tagName === 'H2' && ge.classList.contains('groupheader') && !ge.querySelector('.kit-anchor')) {
+          var ka = document.createElement('a');
+          ka.className = 'kit-anchor';
+          ka.href = '#' + toc[gi].id;
+          ka.setAttribute('aria-hidden', 'true');
+          ka.tabIndex = -1;
+          ge.appendChild(ka);
+        }
+      }
+      if (toc.length && dpagenav) {
+        var nav = document.createElement('nav');
+        nav.className = 'kit-dox-toc';
+        nav.setAttribute('aria-label', tocTitle ? tocTitle.textContent : 'On this page');
+        if (tocTitle) nav.appendChild(tocTitle.cloneNode(true));
+        var ul = document.createElement('ul');
+        ul.className = 'kit-toc-list';
+        ul.innerHTML = tocHtml();
+        nav.appendChild(ul);
+        dpagenav.insertBefore(nav, dpagenav.firstChild);
+        tocLinks = ul.querySelectorAll('a');
+      }
+      // below 1281px: the docs' dropdown above the title (its place is kept by doxygen-kit.css); the list is filled
+      // when it is first opened
+      var dheader = document.querySelector('#doc-content div.header');
+      if (toc.length && dheader) {
+        var det = document.createElement('details');
+        det.className = 'kit-toc-mobile kit-dox-toc-mobile';
+        var sum = document.createElement('summary');
+        sum.appendChild(document.createTextNode(tocTitle ? tocTitle.textContent : 'On this page'));
+        var chev = document.createElement('span');
+        chev.className = 'kit-menu-chevron kit-dox-chevron';
+        chev.setAttribute('aria-hidden', 'true');
+        sum.appendChild(chev);
+        det.appendChild(sum);
+        det.addEventListener('toggle', function () {
+          if (!det.open || mobileList) return;
+          mobileList = document.createElement('ul');
+          mobileList.className = 'kit-toc-list';
+          mobileList.innerHTML = tocHtml();
+          det.appendChild(mobileList);
+          var c = tocCur;
+          tocCur = -1;
+          tocMark(c < 0 ? 0 : c);
+        });
+        // inside the header, first: it takes the room doxygen-kit.css kept for it, so nothing moves
+        dheader.insertBefore(det, dheader.firstChild);
+      }
+      if (toc.length) {
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll, { passive: true });
+        dtoc();
+      }
+    }
+    // localized titles (the outline is built before the language preference is applied below): keep them in step
+    if (tocTitle && window.MutationObserver)
+      new MutationObserver(function () {
+        each('.kit-dox-toc .kit-toc-title', function (t) {
+          t.textContent = tocTitle.textContent;
+        });
+        each('.kit-dox-toc-mobile > summary', function (s) {
+          s.firstChild.nodeValue = tocTitle.textContent;
+        });
+      }).observe(tocTitle, { childList: true, characterData: true, subtree: true });
+
+    // Landing on an anchor: the members around it render only once they are near the screen (content-visibility:
+    // auto), which moves it — scroll to it again until it stays put (a few frames)
+    var settleOn = function (t) {
+      var n = 0;
+      var want = null;
+      var step = function () {
+        var top = t.getBoundingClientRect().top;
+        if (want === null) want = (parseFloat(getComputedStyle(root).scrollPaddingTop) || 0) + (parseFloat(getComputedStyle(t).scrollMarginTop) || 0);
+        if (Math.abs(top - want) > 2) t.scrollIntoView();
+        if (++n < 8) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+    var hashTarget = function () {
+      if (!location.hash || location.hash.length < 2) return null;
+      try {
+        return document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      } catch (e) {
+        return null;
+      }
+    };
+    if (hashTarget()) {
+      var landed = hashTarget();
+      settleOn(landed);
+      window.addEventListener('load', function () {
+        // a click or a scroll by the reader in the meantime wins
+        if (Math.abs(landed.getBoundingClientRect().top) < window.innerHeight * 2) settleOn(landed);
+      });
+    }
+    // The page scrolls, not Doxygen's content pane: links to an anchor of this page scroll the page (navtree.js
+    // would scroll the pane, which no longer scrolls).
     document.addEventListener(
       'click',
       function (e) {
         var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
         if (!a || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
-        if (!a.closest('#page-nav, #nav-tree, #doc-content')) return;
+        if (!a.closest('#page-nav, #nav-tree, #doc-content, .kit-dox-toc-mobile')) return;
         var u = new URL(a.href, location.href);
         if (!u.hash || u.pathname !== location.pathname || u.search !== location.search) return;
         var t = document.getElementById(decodeURIComponent(u.hash.slice(1)));
@@ -419,7 +851,11 @@
         e.preventDefault();
         e.stopPropagation();
         if (location.hash !== u.hash) history.pushState(null, '', u.hash);
+        var det2 = a.closest('.kit-dox-toc-mobile');
+        if (det2) det2.open = false;
+        if (drawerOpen()) setDrawer(false);
         t.scrollIntoView();
+        settleOn(t);
         dtoc();
       },
       true,

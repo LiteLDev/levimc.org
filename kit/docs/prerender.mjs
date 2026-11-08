@@ -11,7 +11,7 @@ export async function prerenderDocs({ root = process.cwd(), outDir } = {}) {
   if (!existsSync(ssrEntry)) throw new Error(`SSR bundle not found at ${ssrEntry} — run the SSR build first.`);
   const mod = await import(pathToFileURL(ssrEntry).href);
   const { site, routes, render } = mod;
-  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')); // { appHtml, outDir, pages: page id → chunk files }
   const out = outDir ?? manifest.outDir ?? join(root, 'dist');
   const templatePath = join(out, manifest.appHtml);
   const template = readFileSync(templatePath, 'utf8');
@@ -27,11 +27,12 @@ export async function prerenderDocs({ root = process.cwd(), outDir } = {}) {
   let count = 0;
   for (const route of routes) {
     const r = await render(site.base + route.path);
-    const chunks = manifest.pages[route.page] ?? [];
-    const preload = chunks.map((f) => `\n    <link rel="modulepreload" href="${site.base}${f}">`).join('');
+    // No modulepreload of the page's own chunk: hydration reuses the prerendered HTML and #kit-page-data
+    // (entry-client primes the page cache), so that chunk is only fetched for client-side navigation (KitLink
+    // warms it on hover/focus). Page chunks are plain data and import nothing the entry does not load already.
     const file = join(out, r.file);
     mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(file, fill(r, preload));
+    writeFileSync(file, fill(r, ''));
     count++;
   }
   // themed, locale-aware 404 (GitHub Pages serves it for every missing path under the site)

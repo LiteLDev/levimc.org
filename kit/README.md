@@ -51,10 +51,11 @@ levimc-kit/
 ├── theme/                 Tailwind v4 CSS-first theme
 │   ├── tailwind.css         one-line entry: @import "tailwindcss" + index.css + @source for the kit
 │   ├── index.css            imports everything below except hero.css (use after your own @import "tailwindcss")
-│   ├── fonts.css            metric-matched fallback faces (Inter/Manrope/JetBrains Mono/Silkscreen): no CLS on swap
+│   ├── fonts.css            metric-matched fallback faces (Inter/Manrope/JetBrains Mono): no CLS on swap
 │   ├── tokens.css           @theme tokens (light on :root, dark on .dark) + @custom-variant dark
 │   ├── generated.css        textures & sprites as data URIs (generated — do not edit)
-│   ├── hero.css             PaintedHero's default scenes as cached backgrounds (generated; imported by PaintedHero)
+│   ├── hero.css             PaintedHero's default scenes (generated; imported by PaintedHero) → hero-lilies.svg,
+│   │                        hero-sunrise.svg (generated scene files the bundler fingerprints)
 │   ├── base.css             document defaults, focus ring, skip link, reduced motion, :lang(ko) rules
 │   ├── pixel.css            .px-corners .mc-btn .mc-btn-primary .mc-icon-btn .mc-input .mc-kbd .px-card
 │   │                        .kit-slot .hotbar .mc-tooltip .kit-dissolve-{bottom,top,left} .kit-rule .px-dot
@@ -65,7 +66,8 @@ levimc-kit/
 │   └── chrome.css           GlobalBar, footer, menus, theme + language menus, badges, tooltips, cards, hero layout
 ├── assets/
 │   ├── sprites.mjs          16×16 pixel sprites as text grids (the source of truth)
-│   ├── build-assets.mjs     → icons/*.svg, components/pixel-icons.ts, theme/generated.css, theme/hero.css
+│   ├── build-assets.mjs     → icons/*.svg, components/pixel-icons.ts, theme/generated.css (incl. the backdrop
+│   │                        tiles: a pure-JS rasteriser + PNG encoder, and the wordmark), theme/hero.css + hero-*.svg
 │   └── icons/*.svg          36 crisp-edge sprites (grass, chest, pickaxe, map, book-quill, emerald, …)
 ├── components/            React + TS, SSR-safe (no window access during render)
 │   ├── index.ts             barrel export
@@ -95,11 +97,12 @@ levimc-kit/
 │   ├── kit.js (built from kit.src.js)  theme-init.js  theme-init-static.js  theme-init-doxygen.js
 │   ├── globalbar.html  footer.html  i18n/{globalbar,footer}.<locale>.html
 │   ├── pages/index.html  pages/404.html     docs.levimc.org root redirect + themed 404
-│   ├── doxygen/header.html footer.html doxygen-kit.css
-│   └── icons/  grass.svg  nojs-dark.mjs  snippets.tsx  build-static.mjs
+│   ├── doxygen/header.html footer.html doxygen-kit.css gen-header.mjs header-parts.json patch-navtree.mjs
+│   └── icons/  grass.svg  levimc.svg  nojs-dark.mjs  snippets.tsx  build-static.mjs
 ├── scripts/               publish-kit · fetch-kit · chrome-parity · serve-pages · linkcheck · url-parity · text-parity · smoke · shot · vendor · mkdocs-nav
 ├── tests/                 prefs.test.mjs (node --test: cookies, locale mapping, inline scripts) ·
 │                          static.test.mjs (no-JS dark CSS, kit.js: footer year, chrome-only translation) ·
+│                          render.test.mjs (rendering budget of the CSS, backdrop tiles, hero files) ·
 │                          cross-site.e2e.mjs (Playwright: preferences shared by levimc.org + docs.levimc.org)
 ├── demo/                  demo sites (not published): docs (suffix/directory/pymdownx), lip (folder/html/vitepress),
 │                          single (the docs as a single-locale site), app/ (plain Vite + React app, the
@@ -297,8 +300,9 @@ export default defineDocsConfig({ … });
 | `title`, `description` | string | `site_name` / `title` |
 | `logo` | `'logo.svg'` or `{ src, alt, dark? }` | path relative to base; each project keeps its own logo |
 | `favicon` | path | |
+| `ogImage` | path or URL | `og:image` for social previews; defaults to `logo.src` |
 | `project` | default = base segment | highlights the project in the GlobalBar "Docs" menu |
-| `repo` | URL | the project's repository (edit links, the docs header's GitHub icon) |
+| `repo` | URL | the project's repository: the GitHub icon at the end of the docs header's resources slot and in the drawer ("<title> on GitHub"); the LeviMC bar's GitHub button stays the LiteLDev organisation |
 | `editLink` | `'https://github.com/<org>/<repo>/edit/<branch>/<dir>/:path'` or `{ pattern: string \| (source) => url \| undefined, text?: { [locale]: label } }` | `:path` = path relative to `contentDir`; evaluated at build time |
 | `contentDir` | string (required) | `docs_dir` / `srcDir` |
 | `publicDir` | default `<contentDir>/public` if present, or `false` | VitePress `public/` (copied verbatim) |
@@ -319,9 +323,9 @@ export default defineDocsConfig({ … });
 | `markdown.admonitionTitles` | `'mkdocs'` ("Note") \| `'vitepress'` ("TIP") | default titles |
 | `markdown.autoTitle` | default `true` for python-markdown | MkDocs Material: pages without `# H1` get one from their nav title / file name |
 | `markdown.literalBackslashes` | `false` | python-markdown only: keep backslashes Python-Markdown does not treat as escapes (`\<T\>` → `\<T>`, byte-identical to MkDocs) |
-| `nav` | `NavEntry[]` or `{ [locale]: NavEntry[] }` | MkDocs `nav` (verbatim YAML structure works) / VitePress `themeConfig.nav` |
+| `nav` | `NavEntry[]` or `{ [locale]: NavEntry[] }` | the sections (see [Navigation model](#navigation-model-kit-219)); MkDocs `nav` (verbatim YAML structure works) / VitePress `{ text, items }` objects |
 | `navTranslations` | `{ [locale]: { 'User Guides': '用户指南' } }` | static-i18n `nav_translations` |
-| `sidebar` | `'tabs'` (default) \| `'tree'` \| `false` \| `SidebarConfig` \| `{ [locale]: SidebarConfig }` | `'tabs'` = Material `navigation.tabs` (header shows top-level sections, sidebar shows the active one); `SidebarConfig` = VitePress array or `{ '/guide/': [...] }` multi-sidebar |
+| `sidebar` | `'tabs'` (default) \| `'tree'` \| `false` \| `SidebarConfig` \| `{ [locale]: SidebarConfig }` | `'tabs'` = the LeviMC model: every top-level `nav` entry is a section (a tab) and its tree is the sidebar of its pages. The object forms (VitePress array / `{ '/guide/': [...] }` multi-sidebar) are **deprecated** (kit 2.19, build warning) but keep working |
 | `layouts` | `{ name: './path/Component.tsx' }` | custom page layouts for `layout: <name>` frontmatter (props: `CustomLayoutProps` from `kit/docs/app/layout-api.ts`) |
 | `lastUpdated` | `true` | `git log` timestamp per file; silently absent without git history |
 | `hostname` | `'https://docs.levimc.org'` | canonical / og:url / hreflang origin (defaults to `sitemap.hostname`) |
@@ -331,8 +335,9 @@ export default defineDocsConfig({ … });
 | `social` | `[{ icon: 'github'\|'discord'\|'telegram'\|'x'\|'youtube'\|'email', link, label? }]` | icons in the docs header (the bar's GitHub button is always the LiteLDev organisation) |
 | `footer` | — | deprecated in kit 2 and ignored: the footer is the same on every LeviMC site |
 | `ui` | `{ [locale]: Partial<UiStrings> }` | override the docs UI strings (e.g. VitePress `docFooter`, `editLink.text`); leave the bar's and footer's labels to the kit |
-| `titleTemplate` | `':title \| :site'` | use `':title - :site'` to match MkDocs; the root page of a directory-style site gets the template without `:title` (Material's home title) |
-| `header`, `sidebarExpand` | | see [Header](#header-the-docs-own-row) and the table under it |
+| `titleTemplate` | `':title - :site Docs'` | every LeviMC docs site uses the default; home pages (every locale's `index`, and `layout: home`) get the template without `:title` (`LeviLamina Docs`), the 404 page `Page not found - LeviLamina Docs` |
+| `header` | `{ tabsRow?, links? }` | layout of the docs row and its resources slot: see [Header](#header-the-docs-own-row) |
+| `sidebarExpand` | `false` | open every sidebar group (overrides the collapse policy of the [navigation model](#navigation-model-kit-219)) |
 | `outDir` | `'dist'` | |
 | `searchExclude` | globs on page keys | |
 | `redirects` | `{ 'old/page': 'new/page' \| 'https://…' }` — a redirect page at each old URL (keeps the `#hash`) | mkdocs-redirects |
@@ -349,6 +354,41 @@ export default defineDocsConfig({ … });
 { text: 'Guide', link: '/guide/quick-start' }             // VitePress (root-absolute, locale prefix allowed)
 { text: 'Developer', items: [ … ], collapsed: true }      // VitePress group / dropdown
 ```
+
+### Navigation model (kit 2.19)
+
+One model on every docs site (and the Doxygen API, which generates its header from the LeviLamina docs' `dist/_kit/nav.json`):
+
+* **Header row** = brand (logo + name: the **only** link to the docs home — no Home tab) + **2–5 section tabs** + search
+  + the **resources slot** (`header.links`, then the `repo` GitHub icon). Each tab is exactly one sidebar tree and links
+  to its first page: no dropdowns, no single-page tabs, no external links. A same-site reference that has its own tree
+  and no docs pages (LeviLamina's Doxygen API, `{ 'API Reference': '/LeviLamina/api/' }`) counts as a section.
+* **Sidebar** on every doc page: only the active section's tree, titled with the section's name. Every doc page belongs
+  to exactly one section — the build warns `nav: page '<key>' … is in no section` (home and 404 excepted; frontmatter
+  `sidebar: false` opts a page out). Groups: all open when the section has ≤ 24 links, otherwise only the group holding
+  the current page (`collapsed: false` keeps a group open, `collapsed: true` closed; `sidebarExpand` opens all).
+* **Prev / next** stays inside the active section, never targets the home page and behaves the same in every locale.
+* **Home** = `layout: home` (hero + features + optional markdown body below): no sidebar, no edit link, no active tab.
+  Its `<meta name="description">` is the config `description` unless the frontmatter sets one.
+* **Order**: sections — guides first, then topic guides, then reference (API, CLI, protocol), contributor material
+  last; inside a section — getting started first, FAQ / troubleshooting / supported versions / privacy last, in a
+  `Help` group.
+* **Lint** (build warnings, tabs mode): `nav: top-level entry 'X' is not a section (…)` for a top-level page, the home
+  page or an external link; `nav: section 'X' has no page`.
+
+```ts
+nav: [
+  { Guide: [{ 'Getting Started': ['guide/install.md', 'guide/first-steps.md'] }, 'guide/usage.md', { Help: ['faq.md', 'troubleshooting.md'] }] },
+  { 'API Reference': ['api/README.md', { Events: ['api/events/listen.md'] }] },
+],
+navTranslations: { zh: { Guide: '指南', 'Getting Started': '入门', Help: '帮助', 'API Reference': 'API 参考' } },
+header: { links: [{ kind: 'download', link: 'https://github.com/LiteLDev/<project>/releases/latest' }] },
+repo: 'https://github.com/LiteLDev/<project>',
+```
+
+The build also writes **`dist/_kit/nav.json`**: per locale code `{ lang, label, prefix, title, home, tabs: [{ text, link }],
+resources: [{ kind: 'download' | 'changelog' | 'github', text, link }] }` with absolute paths (base included) — the
+Doxygen header and drawer are generated from it.
 
 Home pages: frontmatter `layout: home` with VitePress `hero` (`name`, `text`, `tagline`, `image`,
 `actions[{ theme: brand|alt, text, link, platform? }]`) and `features[{ title, details, icon?, link? }]`.
@@ -378,15 +418,26 @@ Generate a starting config from an existing `mkdocs.yml`:
 ### Header (the docs' own row)
 
 The LeviMC bar (GlobalBar) is the top of every page and carries the language menu, the theme menu and the
-GitHub button. Under it, the docs header is one light row on the page's own canvas: the project's logo and
-name, the section tabs (`nav`) and search — never a second set of controls. The bar scrolls away, the row
-sticks (a hairline fades in once it is stuck). Below 960px one menu button opens the drawer with the
-sections, the current section's sidebar and the LeviMC links of the bar (the bar's own menu is off on docs).
+GitHub button (the LiteLDev organisation). Under it, the docs header is one light row on the page's own canvas:
+the project's logo and name (the home link), the section tabs (`nav`), search and the **resources slot** — never a
+second set of language/theme controls. The bar scrolls away, the row sticks.
 
-Long navs are measured before the first paint (inline script after the header, then on resize / font load /
-locale change) and the header steps through `html[data-kit-nav-fit]`: `search` (icon-only search), `tabs`
-(the tabs move to a second row under brand + search — MkDocs Material's `navigation.tabs`), `drawer` (the tabs
-move into the drawer). `header.tabsRow: true` starts in the two-row layout, `false` skips it.
+* **Resources slot** (`header.links`, then `repo`): `header.links: [{ kind: 'download' | 'changelog', link, text?:
+  { [locale]: label } }]` — `download` is the accent button, `changelog` a text link; a `link` that is a page of the
+  site gets the locale's version of it ('download' → 'ja-JP/download'); labels default to the kit's
+  (Download / Changelog in 9 languages). Then the project's GitHub icon from `repo`. This is the only place for
+  links that leave the docs. Below 960px the slot moves into the drawer.
+* **Phones and tablets (≤ 960px)**: the docs row has no menu button. The LeviMC bar's menu button — the same button
+  in the same place on every LeviMC site — opens the docs drawer (`GlobalBar onMenu`): the sections, the current
+  section's tree titled with the section, **Resources**, then the LeviMC links. The drawer's body is rendered on
+  its first opening only.
+
+Long navs are measured once before the first paint (inline script after the header) and re-measured only when
+web fonts finish loading or the locale changes; a resize computes the state arithmetically from those natural
+widths (no DOM reads, no attribute toggling) and writes `html[data-kit-nav-fit]` only when it changes:
+`search` (icon-only search), `tabs` (the tabs move to a second row under brand + search — MkDocs Material's
+`navigation.tabs`), `drawer` (the tabs move into the drawer, opened by the bar's menu button). `header.tabsRow:
+true` starts in the two-row layout, `false` skips it.
 
 ### Language behaviour
 
@@ -403,18 +454,23 @@ move into the drawer). `header.tabsRow: true` starts in the two-row layout, `fal
   preference — only the language menu does (a Ctrl/⌘/Shift/Alt-click opens the other locale elsewhere and
   stores nothing). Kit 1.0's per-site choice (`localStorage['levimc-locale-<site>']`) is moved into the
   preference once.
-* A site with a single locale: the bar's menu offers the 9 chrome languages; the LeviMC chrome (bar, footer, the
-  drawer's LeviMC links) follows the stored preference and switches in place when one is chosen — the content
-  stays in the site's language. The pre-paint script hides the chrome until then (`chromeLocales`), so it never
-  flashes in the site's language first (`demo/vite.single.config.ts`, `npm run smoke:single`).
+* **Chrome language rule** (the same on levimc.org, Mods, the docs and the static/Doxygen pages): the LeviMC chrome
+  (bar, footer, the drawer's LeviMC links) is in the content language when the site has the visitor's preferred
+  language; otherwise it follows the stored preference if the kit has chrome strings for it (the 9 UI languages),
+  else the content language. E.g. `levimc_lang=de` on LeviLamina (en/zh/zh-Hant): German bar and footer over English
+  content; `levimc_lang=zh-TW` there: the chrome follows the page. The pre-paint script hides the chrome until the
+  app has re-rendered it (`chromeLocales` = the UI languages none of the site's locales covers), so it never
+  flashes in the other language first.
+* A site with a single locale: the bar's menu offers the 9 chrome languages; a choice re-renders the chrome in
+  place — the content stays in the site's language (`demo/vite.single.config.ts`, `npm run smoke:single`).
 
 | Option | Type / default | Notes |
 |---|---|---|
-| `header` | `{ tabsRow?: 'auto' \| true \| false }` | see [Header](#header-the-docs-own-row) |
-| `sidebarExpand` | `false` | MkDocs Material `navigation.expand` for the `'tabs'` sidebar. Default: only the group holding the current page starts open (plus groups with `collapsed: false`) |
+| `header` | `{ tabsRow?: 'auto' \| true \| false; links?: { kind: 'download' \| 'changelog'; link: string; text?: { [locale]: string } }[] }` | see [Header](#header-the-docs-own-row) |
+| `sidebarExpand` | `false` | open every group of every section. Default: all groups of a section with ≤ 24 links, else only the group holding the current page (plus `collapsed: false`) |
 
-`social`: icons at the end of the docs header. The bar's GitHub button always opens the LiteLDev organisation; each
-project's repository is in the bar's Projects menu.
+`social`: other icons (Discord, …) at the end of the docs header. The bar's GitHub button always opens the LiteLDev
+organisation; the project's repository is the resources slot's GitHub icon (`repo`).
 
 ## Markdown support
 
@@ -483,7 +539,7 @@ kit transforms → Shiki → HTML). No markdown is parsed in the browser.
 its pages are prerendered in; add `legacyTheme` / `legacyLang` to migrate a site's old localStorage keys once,
 e.g. levimc.org: `{ legacyTheme: ['theme'], legacyLang: [{ key: 'locale', map: { zh: 'zh-CN' } }] }`),
 then the fonts (`FONT_HEAD_HTML` from `kit/components/fonts.ts`): preconnect to fonts.googleapis.com /
-fonts.gstatic.com and the css2 URL for Inter, Manrope, Silkscreen, JetBrains Mono (`display=swap`; `theme/fonts.css`
+fonts.gstatic.com and the css2 URL for Inter, Manrope, JetBrains Mono (`display=swap`; `theme/fonts.css`
 adds metric-matched fallbacks, so the swap does not shift the layout). CJK uses the system stack — never ship a
 CJK webfont. `demo/app/` is a complete example (`npm run build:app && npm run preview:app && npm run smoke:app`).
 
@@ -576,16 +632,16 @@ All components are SSR-safe and render identical markup on server and client.
 
 | Component | Purpose / key props |
 |---|---|
-| `GlobalBar` | the bar at the top of every LeviMC site — identical everywhere: the LeviMC mark (`BrandMark`), tabs **Home · Projects ▾ · Mods · Blog · Community · About** (`globalNav()`), then **language menu · theme menu · GitHub** (→ LiteLDev); below 960px the tabs fold into one menu (≤ 400px the triggers lose their chevrons). **Projects ▾** lists the projects of `PROJECTS` (`projects.ts`) that have a documentation site (`docs`), two by two under a "Docs" heading with their count, on a faint wash of the primary: each tile (logo, name, two-line blurb) is one link to the project's docs; the GitHub organisation at the bottom; on phones it is a collapsed section of the menu. Props: `current` (`'home'\|'projects'\|'mods'\|'blog'\|'community'\|'about'`), `currentProject` (docs: marks the project and the Projects tab), `locale`, `strings`, `languages` (`{ options, current, onSelect?, linkComponent? }`; the options are the site's locales, named the kit's way — `uiLocaleName`; omitted → the 9 chrome languages, stored as the preference, then `onLanguageChange` or a reload), `siteOrigin` + `linkComponent` + `isAppPath` (same-site links through the router), `menu` (false when the site's own drawer carries the links, see `GlobalNavList`), `sticky`. `github`, `brandIcon` and `currentDocs` are deprecated (ignored / alias). A labelled region; `<details>` menus work without JS. No props to hide, add or reorder tabs or controls |
+| `GlobalBar` | the bar at the top of every LeviMC site — identical everywhere: the LeviMC mark (`BrandMark`), tabs **Home · Projects ▾ · Mods · Blog · Community · About** (`globalNav()`), then **language menu · theme menu · GitHub** (→ LiteLDev); below 960px the tabs fold into one menu (≤ 400px the triggers lose their chevrons). **Projects ▾** lists the projects of `PROJECTS` (`projects.ts`) that have a documentation site (`docs`), two by two under a "Docs" heading with their count, on a faint wash of the primary: each tile (logo, name, two-line blurb) is one link to the project's docs; the GitHub organisation at the bottom; on phones it is a collapsed section of the menu. Props: `current` (`'home'\|'projects'\|'mods'\|'blog'\|'community'\|'about'`), `currentProject` (docs: marks the project and the Projects tab), `locale`, `strings`, `languages` (`{ options, current, onSelect?, linkComponent? }`; the options are the site's locales, named the kit's way — `uiLocaleName`; omitted → the 9 chrome languages, stored as the preference, then `onLanguageChange` or a reload), `siteOrigin` + `linkComponent` + `isAppPath` (same-site links through the router), `menu` (false when the site's own drawer carries the links, see `GlobalNavList`), `onMenu` + `menuOpen` + `menuControls` (≤ 960px the menu button — the same button in the same place as levimc.org's, `data-kit-gbar-menu` — is a plain `<button>` that calls `onMenu` instead of opening the bar's dropdown, with `aria-expanded={menuOpen}`, `aria-controls={menuControls}`, `aria-haspopup="dialog"`: docs sites open their drawer with it; static markup renders it with `menuControls` alone and binds it in kit.js), `sticky`. The LeviMC wordmark is a mask (`.kit-wordmark`, no webfont), its text kept for assistive technology. `github`, `brandIcon` and `currentDocs` are deprecated (ignored / alias). A labelled region; `<details>` menus work without JS. No props to hide, add or reorder tabs or controls |
 | `GlobalNavList` | the bar's tabs + the Projects menu as a vertical list (the bar's phone menu; the "LeviMC" part of the docs drawer) |
 | `ThemeSwitcher` | the theme menu: **Auto** (default; follows `prefers-color-scheme` live) / Light / Dark. Trigger sprite + name and the checked item come from `html[data-theme-pref]` via CSS (right before hydration and on static pages); the choice is the cross-site `levimc_theme` cookie. `ThemeToggle` is a deprecated alias |
 | `LocaleSwitcher` | `options[{ code, label, short?, lang, href? }]` (`href` → links to the equivalent page; none → buttons), `current`, `onSelect(code, option)`, `persist` (default: store `lang` as the cross-site `levimc_lang`; a modified click on a link opens it elsewhere and stores nothing), `linkComponent`, `showLabel` |
 | `SiteFooter` | the theme's painting (Nymphéas / Impression, soleil levant) rising out of the page through the pixel dissolve; LeviMC mark + tagline, Discord/Telegram/X/YouTube/GitHub/email, © year · Support us; `strings`, `year`, `siteOrigin` + `linkComponent` + `isAppPath`, `locale` |
-| `PaintedBackdrop` | fixed impressionist dabs + brush + grain; optional painted scene band at the page top |
-| `PaintedHero` | painted pond with block-built Japanese bridge (light) / harbour sunrise with pixel boats (dark) on the right of the copy (`--kit-hero-paint-x`), its left and bottom edges in the pixel dissolve (below 961px: a band on top; `.kit-hero-strip` keeps it on the right); `eyebrow name text tagline actions image badge aside linkComponent`. The default scenes are cached CSS backgrounds (`theme/hero.css`, imported by the component — no per-page SVG, no flash); a custom `seed` or `pixelProps={false}` renders inline SVG |
+| `PaintedBackdrop` | impressionist dabs + brush + grain as the page root's own scrolling background (`:root:has(.kit-backdrop)`: the `.kit-backdrop` element it renders is only the hook and paints nothing — keep body and the app shell transparent); optional painted scene band at the page top (`scene`, `sceneHeight`, `sceneOpacity`, `sceneOpacityDark`) |
+| `PaintedHero` | painted pond with block-built Japanese bridge (light) / harbour sunrise with pixel boats (dark) on the right of the copy (`--kit-hero-paint-x`), its left and bottom edges in the pixel dissolve (below 961px: a band on top; `.kit-hero-strip` keeps it on the right); `eyebrow name text tagline actions image badge aside linkComponent`. The default scenes are SVG files drawn by `theme/hero.css` (imported by the component; the bundler fingerprints them and only a page with a hero loads one, preloaded by the system theme — no per-page SVG, no flash, nothing in other pages' CSS); a custom `seed` or `pixelProps={false}` renders inline SVG |
 | `PixelButton` | Minecraft bevel button: `variant` default/primary/ghost, `size`, `icon`, `iconRight`, `href` |
 | `Card` | stepped-corner card with sprite in an inventory slot; `title description icon eyebrow href footer` |
-| `Badge` | `tone` grass/diamond/gold/redstone/enchant/stone/pond, `pixel` (Silkscreen, Latin only) |
+| `Badge` | `tone` grass/diamond/gold/redstone/enchant/stone/pond, `pixel` (micro-label: small spaced capitals, Latin only) |
 | `Tooltip` | Minecraft item tooltip on hover/focus (`aria-describedby`) |
 | `HotbarTabs`, `Pagination` | hotbar-style tabs (WAI-ARIA keyboard) and numbered pagination (crawlable hrefs) |
 | `PixelIcon`, `BrandIcon` | 16×16 crisp sprites (`PIXEL_ICONS`); vector brand marks for social links |
@@ -593,9 +649,11 @@ All components are SSR-safe and render identical markup on server and client.
 | `locale.ts` | `usePreferredLocale(locales, fallback)` → `[locale, setLocale]` for apps whose language is state (syncs before paint, then `revealPendingChrome()`) |
 | `menu.ts` | `useDismissableDetails(ref)` for every `<details class="kit-menu">`: outside click, Escape, focus leaving, one open at a time; `role="menu"` panels (language, theme) get the WAI-ARIA menu keys — Enter/Space open on the checked item, ArrowDown/ArrowUp on the trigger open on the first/last item, inside Arrow keys move (wrapping), Home/End jump (`menuKey`, `focusMenuOnOpen`; kit.js does the same on static pages) |
 | `theme.ts` | `ThemeProvider`, `useTheme()` (`preference`, `resolved`, `setPreference`), `themeInitScript`, `createThemeInitScript(opts)`, `applyThemePreference`; `'system'` is accepted as an alias of `'auto'` |
-| `projects.ts` | `LINKS`, `DOCS_PROJECTS`, `MODS_SITE`, `SOCIAL`, `globalNav()`, `sameSitePath()` — the redirect-free canonical cross-site URLs |
+| `projects.ts` | `LINKS`, `PROJECTS`, `DOCS_PROJECTS` (the projects with docs: LeviLamina, LegacyScriptEngine, lip, LeviLauncher, Be.D.D., bedboo), `MODS_SITE`, `SOCIAL`, `globalNav()`, `sameSitePath()` — the redirect-free canonical cross-site URLs |
 | `i18n.ts` | `uiStrings(lang, overrides)`, `resolveUiLocale(tag)`, `UI_LOCALE_NAMES` for en, zh-CN, zh-HK, es, ru, de, ja, ko, fr |
 | `version.ts` | `KIT_VERSION`, `KIT_GENERATOR`, `GENERATOR_META` |
+| `fonts.ts` | `GOOGLE_FONTS_HREF`, `FONT_HEAD_HTML`: Inter, Manrope, JetBrains Mono (no Silkscreen since 2.19) |
+| `paint.ts` | `lilyPond`, `harborSunrise`, `sceneToSvg(scene, { preserveAspectRatio? })` — static scenes (no `animate` since 2.19) |
 
 Stable test hooks: `data-kit-theme-toggle` (theme menu trigger), `data-kit-theme-value`, `data-kit-locale-switcher`,
 `data-kit-lang-value`, `data-kit-gbar-menu`, `data-kit-search-trigger`, `data-kit-nav-toggle`, `data-kit-subnav`,
@@ -615,10 +673,13 @@ YouTube `https://www.youtube.com/@LeviLamina`, `mailto:contact@levimc.org`. lip'
 
 `static/` is prebuilt — consumers copy files, no build needed:
 
-* `kit.css` — full theme incl. Tailwind preflight (standalone pages). `kit-chrome.css` — only the chrome,
-  no preflight, cascade layers flattened so it can sit next to foreign CSS (Doxygen); its scoped reset comes
-  first so host element styles lose and every kit rule wins. `kit-nojs-dark.css` — kit.css's `.dark` rules as
-  `:root` rules, for `<noscript><link … media="(prefers-color-scheme: dark)"></noscript>`.
+* `kit.css` — full theme incl. Tailwind preflight (standalone pages). `kit-chrome.css` — the chrome plus the docs
+  layout (`docs/app/docs.css`: header row, drawer, sidebar title, table of contents), no preflight, cascade layers
+  flattened so it can sit next to foreign CSS (Doxygen); its scoped reset comes first so host element styles lose and
+  every kit rule wins. It emits every theme token (`theme(static)`) and only the utilities of the bar and footer
+  snippets (no source detection: a `.contents` or `.table` utility would hit Doxygen's own classes).
+  `kit-nojs-dark.css` — kit.css's `.dark` rules as `:root` rules, for
+  `<noscript><link … media="(prefers-color-scheme: dark)"></noscript>`.
 * `globalbar.html`, `footer.html` (+ `i18n/*.<locale>.html`) — rendered from the React components, with
   `data-kit-t` hooks for the runtime translation.
 * `kit.js` (built from `kit.src.js`) — the GlobalBar's theme and language menus, `<details>` menus (outside
@@ -626,48 +687,80 @@ YouTube `https://www.youtube.com/@LeviLamina`, `mailto:contact@levimc.org`. lip'
   footer and skip link follow the visitor's language preference (strings for the 9 UI locales are embedded; each
   translated part gets `lang=<locale>`); choosing a language stores it for every LeviMC site and translates the
   chrome in place. Only the chrome is translated — page content stays as written, including copies of chrome
-  strings in it (the 404 page's project cards stay English like the rest of the page). On Doxygen pages it also
-  follows the preference in the project's own row (`data-kit-site-locales` / `data-kit-l10n`: LeviLamina's zh
-  section labels and URLs), turns Doxygen's regions into landmarks (`#main-nav`, `#side-nav`, `#doc-content` as
-  `main`, `#nav-path`) and moves Doxygen's phone menu button + search into the row.
+  strings in it (the 404 page's project cards stay English like the rest of the page). On Doxygen pages it runs the
+  docs header and layout (below).
 * `theme-init.js` (React apps), `theme-init-static.js` (static pages: also hides the chrome for ≤ 1.5 s while
   kit.js translates it, so it never flashes in English), `theme-init-doxygen.js` — blocking head scripts.
 * `pages/index.html` (docs.levimc.org root → levimc.org redirect, redirect tags before any stylesheet, with
-  project cards) and `pages/404.html`: skip link, generator meta, no-JS dark theme, footer year; they reference
-  assets under `/levimc-kit/` (copy `kit.css`, `kit.js`, `kit-nojs-dark.css`, `icons/`, `grass.svg` there).
+  project cards) and `pages/404.html` (the one 404 of every site: `.kit-notfound` card with the red "Error 404"
+  label, title `Page not found - LeviMC Docs`, the levimc.org action, then the projects with docs): skip link,
+  generator meta, no-JS dark theme, footer year, the LeviMC mark as favicon; they reference assets under
+  `/levimc-kit/` (copy `kit.css`, `kit.js`, `kit-nojs-dark.css`, `icons/`, `levimc.svg` there; liteldev.github.io's
+  `scripts/build-site.mjs` copies exactly what they reference).
 
-**LeviLamina Doxygen** (`docs/api/`): copy `static/doxygen/header.html` → `docs/api/header.html`,
-`static/doxygen/footer.html` → `docs/api/footer.html`, and set in the Doxyfile:
+### LeviLamina Doxygen (`docs/api/`)
+
+The API reference carries the docs pages' header, generated from the docs build's navigation, so the two never
+drift:
+
+```sh
+# after the docs build (it writes dist/_kit/nav.json); without --nav: the kit's copy of LeviLamina's sections
+node docs/main/kit/static/doxygen/gen-header.mjs --nav docs/main/dist/_kit/nav.json --out docs/api/header.html
+doxygen docs/api/Doxyfile
+node docs/main/kit/static/doxygen/patch-navtree.mjs site/api
+```
 
 ```
-HTML_HEADER            = docs/api/header.html
-HTML_FOOTER            = docs/api/footer.html
-HTML_EXTRA_STYLESHEET  = docs/api/doxygen-awesome-css/doxygen-awesome.css kit/static/kit-chrome.css kit/static/doxygen/doxygen-kit.css
-HTML_EXTRA_FILES       = kit/static/kit.js
+HTML_HEADER            = docs/api/header.html                        (generated, git-ignored)
+HTML_FOOTER            = docs/main/kit/static/doxygen/footer.html
+HTML_EXTRA_STYLESHEET  = docs/api/doxygen-awesome-css/doxygen-awesome.css docs/main/kit/static/kit-chrome.css docs/main/kit/static/doxygen/doxygen-kit.css
+HTML_EXTRA_FILES       = docs/main/kit/static/kit.js
+PROJECT_ICON           = docs/main/contents/favicon.ico              (the docs' favicon)
+USE_MDFILE_AS_MAINPAGE = docs/api/mainpage.md                        (also listed in INPUT)
+HTML_COLORSTYLE_HUE    = 135   SAT = 40   GAMMA = 90                 (Doxygen's own images in the kit green)
 ```
 
-Drop `doxygen-awesome-darkmode-toggle.js` (kit.js owns the theme and keeps `html.dark-mode` /
-`html.light-mode` in sync for doxygen-awesome v2.4.1). The header is the docs pages' one header: the GlobalBar
-(language and theme menus, GitHub → LeviLamina; its own phone menu off) above Doxygen's layers, then one
-light row (`header#titlearea`) with LeviLamina's logo + name, the docs header's tabs (Home · User Guides ·
-Developer Guides · **API Reference** · Maintainer Guides · Supported Versions, linking into the docs) with API
-Reference — the docs tab that is this Doxygen reference — current, and Doxygen's search box — no painted title band, no second menubar: Doxygen's Main Page / Related Pages / Classes /
-Files menubar is hidden from 768px (the tree on the left lists the same pages). From 768px the sections fit like
-the docs header's (kit.js measures them into `html[data-kit-nav-fit]`): one row while they fit, then `search` (the
-search box shrinks to its icon and opens over the row while used), then `tabs` (the sections get their own row
-under logo + search). Phones: Doxygen's menu button is the only one; it opens one panel with the
-docs sections, Doxygen's menu and the LeviMC links. The sections are configured in `DOX` in
-`static/build-static.mjs`.
+In CI (LeviLamina `.github/workflows/build-docs.yml`) `build-doxygen` runs after `build-docs`, takes `_kit/nav.json`
+from its artifact, generates the header, runs Doxygen and the navtree patch; `merge` puts the output under
+`dist/api/` as before. `static/doxygen/header-parts.json` holds the React-rendered parts gen-header needs (bar,
+LeviMC links, sprites, chrome strings, the nav-fit script) — gen-header itself has no dependencies.
+`static/doxygen/header.html` is the same header rendered from the fallback nav (`build-static.mjs`). Drop
+`doxygen-awesome-darkmode-toggle.js` (kit.js owns the theme and keeps `html.dark-mode` / `html.light-mode` in sync).
 
-Below the header the pages are laid out like the docs pages: the painted backdrop, the page itself scrolling (not
-Doxygen's panes) with the project row sticking under the bar, Doxygen's tree as the docs sidebar (sticky, with the
-current tab's name as its title, the docs' link and current-page styles), the page in the docs' centred 76ch
-column with their headings, Doxygen's page outline as the docs' "On this page" (sticky from 1281px, marking the
-section being read) and the LeviMC footer across the page; Doxygen's breadcrumb bar is off. header.html opens a
-`.kit-dox-page` grid that footer.html closes, so the sticky sidebar and outline end above the footer. kit.js puts
-the two titles into the panes, wraps wide tables so they scroll inside the column, scrolls to anchors of the page
-(navtree.js would scroll its pane) and marks the current outline entry. Verified with doxygen 1.16.1 + doxygen-awesome-css 2.4.1 in both themes at 1440,
-1024 and 390px (`screens/kit-doxygen-*.png`).
+**Header.** `<title>`: `$title - LeviLamina API`. The LeviMC bar (its language menu lists the docs' locales — the
+API is one English reference for all of them; a choice relabels the bar, footer and the project row in place and
+is stored like on the docs; a preference the docs have no locale for still translates the chrome), then `#top` is the
+docs header row itself (`.kit-site-header` markup and docs.css rules): brand → the docs home, the section tabs of
+nav.json with the tab under `<base>api/` current, search, the RESOURCES slot. Opaque once stuck, without blur
+(docs.css: opacity-only pseudo-elements on the root scroll timeline). The nav fit is the docs' (`search` → `tabs` →
+`drawer`), measured before the first paint by an inline script and computed arithmetically on resize (no root
+toggling). Search is Doxygen's box in the docs trigger's frame (same size, sprite, `Ctrl` `K` hint, icon-only where
+the docs trigger is; Ctrl/⌘+K and `/` focus it; the results open as a framed panel under it). Doxygen's own menubar
+and phone menu are hidden at every width.
+
+**Drawer** (≤ 960px, and the nav-fit `drawer` state): the LeviMC bar's menu button (GlobalBar `onMenu` markup,
+`[data-kit-gbar-menu]`) opens the docs drawer markup — the sections, the API Reference tree (Doxygen's tree, moved in
+while open), Resources, the LeviMC links; focus trap, Escape, scrim click, scroll lock.
+
+**Layout.** One breakpoint (960px) like the docs. The painted backdrop is the root's background (`.kit-backdrop`
+hook; `html`, `body` and Doxygen's wrappers paint nothing over it). The page scrolls (not Doxygen's panes), the tree is
+the docs sidebar (sticky, titled with the section, chevrons on the right, the dotted rail, the current page's row;
+shown once navtree.js has opened it on the current page), the page sits in the docs' column (47.95rem = 76ch of
+Inter, in rem so it does not jump when the web fonts arrive), "On this page" is the docs' TOC built by kit.js from the
+page's sections (sticky from 1281px, the docs' dropdown above the title below that, its place reserved from the static
+HTML), and the LeviMC footer runs across the page. header.html opens a `.kit-dox-page` grid that footer.html closes.
+
+**Content** in the docs' visual language (doxygen-kit.css): the docs' type (16px / 1.75, metric-matched fallbacks),
+H2/H3 with the hairline and the `#` permalink, member tables as docs tables (full width, 1px frame, hairlines),
+member documentation as code blocks (the memtitle as the title bar), fragments and source listings as `.kit-code`,
+`@note` / `@warning` / `@bug` / `@deprecated` / `@todo` / `@pre` … as `.kit-adm` admonitions, the A–Z bar as a hotbar,
+the class index in columns, file and directory lists with the kit sprites, thin themed scrollbars, both themes.
+
+**Performance.** `patch-navtree.mjs` makes navtree.js render a window of 150 entries around the current page in long
+lists (the ~9,700-entry Class List) with a "Show all N" row, drops its sync-icon and pane-sizing work and its own
+outline. kit.js builds the tree when the browser is idle (≤ 960px: when the drawer first opens); the outline's
+scroll-spy binary-searches cached targets and touches classes only when the section changes; `div.memitem` and
+`table.memberdecls` are `content-visibility: auto` (kit.js re-settles anchor jumps).
 
 ## Verification scripts
 
@@ -727,10 +820,17 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   segmented controls, `kit-slot` for icons, `px-corners` / `px-card` for frames, `mc-kbd` for keys.
 * Use sprites at 16 or 32 px (crisp multiples). Use Manrope (`--font-display`) only for display headings (H1/H2, hero,
   section titles); micro-labels (`.kit-pixel-label`: eyebrows, badges, versions) are small spaced capitals in Inter. The
-  pixel face (Silkscreen) only spells the LeviMC wordmark.
+  pixel face only spells the LeviMC wordmark, and only as the `.kit-wordmark` mask (Silkscreen's glyphs; no webfont).
 * Keep each project's own logo; the kit provides the shared chrome around it.
 * Link to the canonical, redirect-free URLs (trailing slash for directories); run `linkcheck --external`.
 * Respect `prefers-reduced-motion` (all kit animations stop) and keep focus visible (`--color-focus`).
+* Keep the rendering budget (checked by `tests/render.test.mjs` on the theme, docs and Doxygen CSS and the rebuilt
+  static chrome): no `position: fixed` full-viewport layer, no `mix-blend-mode` on a full-viewport layer, no
+  `backdrop-filter`, no `background-attachment: fixed`, no `will-change` on the backdrop, and no perpetual animation —
+  nothing `infinite`; animate only during an interaction, scroll-linked only `opacity`/`transform` (the compositor runs
+  those). Sticky headers are opaque once stuck (a canvas `::before` + hairline `::after` whose opacity follows
+  `scroll(root)`), scrims are plain colour. Blend a texture over a painting as a `background-blend-mode` layer with its
+  opacity baked into the tile (`--kit-backdrop-brush`, `--kit-footer-brush`), not as a `mix-blend-mode` element.
 * Put the GlobalBar first on every page, unmodified: same tabs, same controls, same order on every site. A site's
   own navigation goes below it as a light secondary row (the docs header) or in the page itself.
 * Read and write theme / language only through the kit (`ThemeProvider`, `LocaleSwitcher`, `usePreferredLocale`,
@@ -753,8 +853,13 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 * Don't render dates/random values differently on server and client (hydration); format dates with
   `timeZone: 'UTC'` like the kit does.
 * Don't edit a site's `kit/` (it is fetched); change the kit in levimc.org.
-* Don't add theme, language or GitHub controls to a site's own header (they live in the GlobalBar), and don't
-  store those preferences under site-specific keys.
+* Don't add theme, language or GitHub-organisation controls to a site's own header (they live in the GlobalBar),
+  and don't store those preferences under site-specific keys. The project's own repository icon belongs in the
+  docs header's resources slot (`repo`), nowhere else.
+* Don't give a docs site a Home tab, dropdown tabs, single-page tabs or external tabs: tabs are sections (one sidebar
+  tree each), the brand is the home link, and downloads / changelogs go to `header.links`
+  ([Navigation model](#navigation-model-kit-219)). Don't leave a doc page outside every section (the build warns).
+* Don't add a second menu button: on phones and tablets the LeviMC bar's menu button opens the site's own menu.
 
 ## Porting checklist: MkDocs sites (LeviLamina, LegacyScriptEngine)
 
@@ -851,6 +956,72 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.19.0 — 2026-11-08
+
+**One navigation model, one header, and a rendering budget a 2016 laptop or a 2021 budget phone can afford.**
+Every docs site, the LeviLamina Doxygen reference, levimc.org and LeviMC Mods now share the same header, drawer, titles,
+404 and chrome-language rules, and the kit no longer asks the compositor to redraw the screen.
+
+**Rendering (all sites)**
+* The painted backdrop is the root's scrolling background (`:root:has(.kit-backdrop)`): pre-rendered, vertically
+  mirrored dabs tiles (`assets/build-assets.mjs`, 128×256 PNG per theme) with the brush and grain as
+  `background-blend-mode` layers, opacity baked in. No fixed full-viewport layer, no `mix-blend-mode` layer, no
+  `background-attachment: fixed`. `.kit-backdrop` is only the hook; `body` is transparent on such pages.
+* No `backdrop-filter` anywhere: the sticky docs header (and Doxygen's `#top`) is transparent at scroll 0 and fades in
+  an opaque `::before` / hairline `::after` (opacity only, on `scroll(root)`); the search scrim and drawer head are
+  opaque.
+* No perpetual animations: `kit-drift`, `kit-shimmer`, `kit-spin-steps`, `kit-glint`, `kit-float` and the scene
+  `animate` option are gone; the 404 compass spins twice and stops. New `tests/render.test.mjs` enforces this for the
+  theme, docs, Doxygen and static CSS.
+* Hero scenes are files (`theme/hero-lilies.svg`, `theme/hero-sunrise.svg`); `PaintedHero` preloads the one for the
+  system theme. Every docs page's CSS loses ~140 KB. The LeviMC wordmark is a mask, so Silkscreen is no longer loaded.
+* Measured (software GPU, scroll compositing per 3 s): docs page 977 → 300 ms (laptop), 291 → 70 ms (phone); hero home
+  409 → 87 / 247 → 58 ms; layer memory roughly halves.
+
+**Navigation model (README "Navigation model (kit 2.19)")**
+* `sidebar: 'tabs'` is the one model: each top-level `nav` entry is a section (tab = its sidebar tree, titled). The
+  brand is the only home link. The object-form (VitePress) `sidebar` is deprecated and warns.
+* Prev/next stays inside the section and never targets home (en and zh now agree). All groups open at ≤ 24 links,
+  else only the current page's group.
+* Build lint for Home / single-page / external tabs, empty sections and orphan pages.
+* Resources slot: `header.links` (`download` / `changelog`) after search, then the GitHub icon from `repo`; the
+  drawer shows the same under "Resources".
+* One menu button: the LeviMC bar's (`GlobalBar` `onMenu` / `menuOpen` / `menuControls`) opens the docs drawer, from
+  the right, at the same place as on levimc.org. One breakpoint, 960px. Drawer order: sections → section tree →
+  Resources → LeviMC links; its body mounts on first open.
+* `dist/_kit/nav.json` is written on every build; the Doxygen header is generated from it.
+* Titles: `:title - :site Docs` (default), homes `<site> Docs`, 404 `Page not found - <site> Docs`.
+* The chrome-language rule applies on every site; scroll position is restored on cross-page Back/Forward.
+* New `ogImage` config option (defaults to the logo).
+* Performance: nav fit measured once and computed arithmetically on resize; one shared IntersectionObserver
+  scroll-spy; DocFooter date formatted at build time; slim client route table; deferred, paged search; image
+  `width`/`height` and badge heights against CLS. LSE Player page: laptop TBT 111–135 → 3–7 ms, forced layouts on
+  scroll 41 → 0.
+
+**Doxygen (LeviLamina API reference)**
+* `static/doxygen/gen-header.mjs` renders `docs/api/header.html` from `nav.json`: the docs' header row, drawer,
+  resources and locales (no hand-copied tab table). `kit-chrome.css` now includes docs.css, so both run on the same
+  rules. Title `$title - LeviLamina API`.
+* Content parity with the docs (DP-01…24): tables, code blocks, admonitions, type scale, permalinks, TOC, sidebar
+  tree, search box in the docs trigger frame (Ctrl K).
+* `static/doxygen/patch-navtree.mjs` windows long tree lists; the tree builds when idle; `content-visibility` on
+  members. classActor (laptop): DOM 83k → 12.7k, TBT 5.9 → 1.7 s, scroll frame p90 97 → 27 ms.
+* The static 404 uses the shared `.kit-notfound` card; title `Page not found - LeviMC Docs`.
+
+**Projects**: Be.D.D. is back in Projects (Core, with docs); `DOCS_PROJECTS` lists six projects.
+
+**levimc.org and Mods** (apps only): D7 titles, chrome-language rule, the shared 404, `og:image` / `og:locale`, no
+idle animations, external data fetched when idle and cached per session, lazy route chunks, Mods chip fitting without
+layout thrash, icons resized to WebP at build time.
+
+**Migration**
+* Every site: refetch the kit and rebuild. Keep your own wrappers free of an opaque background.
+* Docs sites: drop `titleTemplate`, set `repo`, move download/changelog links to `header.links`, give `index`
+  `layout: home`, replace an object `sidebar` with `sidebar: 'tabs'` sections, and fix any `nav:` warnings.
+* LeviLamina: the new `build-docs.yml` builds Doxygen after the docs (gen-header from `_kit/nav.json`, then
+  patch-navtree); new `docs/api/mainpage.md`, Doxyfile `HTML_HEADER` / `PROJECT_ICON`.
+* `sceneToSvg(…, { animate })` no longer type-checks: drop the option.
 
 ### 2.18.0 — 2026-11-06
 

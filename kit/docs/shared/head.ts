@@ -8,11 +8,11 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 export function pageTitle(site: SiteData, route: RouteMeta | undefined, fallback?: string): string {
   // replacement functions: a title may contain `$&`-style patterns
   const fill = (title: string) => site.titleTemplate.replace(':title', () => title).replace(':site', () => site.title);
-  if (!route) return fallback ? fill(fallback) : site.title;
-  // MkDocs (directory URLs) titles the site root page with the bare site name (Material's `page.is_homepage`),
-  // i.e. the title template without its ':title' part: ':title - LeviLamina Docs' → 'LeviLamina Docs'.
-  if (site.urlStyle === 'directory' && route.path === '') return siteName(site);
-  if (route.layout === 'home' || route.title === site.title) return site.title;
+  // the 404 page: 'Page not found - LeviLamina Docs' (the caller passes the localized 'Page not found')
+  if (!route) return fallback ? fill(fallback) : siteName(site);
+  // every home page (each locale's, hero or not) is titled with the site name alone, i.e. the title template
+  // without its ':title' part: ':title - :site Docs' → 'LeviLamina Docs' (MkDocs Material's `page.is_homepage`)
+  if (route.key === 'index' || route.layout === 'home' || route.path === '' || route.title === site.title) return siteName(site);
   return fill(route.title);
 }
 
@@ -101,7 +101,7 @@ export function routeHead(site: SiteData, route: RouteMeta | undefined, notFound
     alternates: site.hostname ? alternates : undefined,
     xDefault: site.hostname && def !== undefined && alternates.length ? absoluteUrl(site, def) : undefined,
     locale: site.locales.find((l) => l.code === route.locale)?.lang,
-    image: site.hostname && site.logo ? (/^https?:/.test(site.logo.src) ? site.logo.src : site.hostname + site.logo.src) : undefined,
+    image: ((src) => (src && (/^https?:/.test(src) ? src : site.hostname ? site.hostname + src : undefined)))(site.ogImage ?? site.logo?.src),
     siteName: site.title,
   });
 }

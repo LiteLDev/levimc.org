@@ -37,6 +37,12 @@ for (const [path, { body }] of ssr.showcaseFiles()) {
   writeFileSync(`dist/${path}`, body);
 }
 
+// The mods' icons, scaled down to the sizes the pages show them at (see src/server/icons.ts).
+for (const [path, body] of ssr.iconFiles()) {
+  mkdirSync(dirname(`dist/${path}`), { recursive: true });
+  writeFileSync(`dist/${path}`, body);
+}
+
 // The pages' JSON: /mods/index.json and /mods/<tooth>/index.json (see src/server/api.ts).
 const json = await ssr.jsonFiles();
 for (const [path, body] of json) {

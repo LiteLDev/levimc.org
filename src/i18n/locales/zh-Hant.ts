@@ -2,6 +2,13 @@
 import type en from "./en";
 
 const zhHant: typeof en = {
+  // <title>s ("<Page> - LeviMC") and the 404 page
+  meta: {
+    blog: "網誌",
+    notFound: "找不到頁面",
+    pickProject: "或者打開一個專案的文檔：",
+  },
+
   // Navigation
   nav: {
     home: "首頁",

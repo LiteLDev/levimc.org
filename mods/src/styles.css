@@ -916,7 +916,6 @@
     display: block;
     height: 6.5rem;
     background: color-mix(in srgb, var(--color-ink) 4%, var(--color-surface));
-    animation: mods-pulse 1.6s steps(4, end) infinite alternate;
   }
 
   .kit-pagination.mods-pager-bottom {
@@ -1532,7 +1531,7 @@
     padding: 0;
   }
   .mods-project-version {
-    /* a data value: mono, like the README header's version (Silkscreen is for micro-labels only) */
+    /* a data value: mono, like the README header's version (not a micro-label) */
     font-family: var(--font-mono);
     font-weight: 500;
     max-width: 100%;
@@ -2236,8 +2235,26 @@
     height: 6rem;
     margin-bottom: 1.5rem;
   }
+  /* the label, title and actions of every LeviMC 404 (kit/docs/app/docs.css .kit-notfound-*) */
   .mods-notfound-code {
     margin: 0 0 0.75rem;
+    color: var(--color-adm-danger);
+  }
+  .mods-notfound-title {
+    margin: 0 0 1rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+  .mods-notfound-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
   }
   .mods-error-title {
     margin: 0 0 0.75rem;
@@ -2247,10 +2264,6 @@
     line-height: 1.15;
     letter-spacing: -0.02em;
     color: var(--color-ink);
-  }
-  .mods-notfound-code .kit-hero-name {
-    margin: 0 auto;
-    font-size: clamp(3.25rem, 2.4rem + 3.5vw, 4.75rem);
   }
   .mods-notfound-text {
     max-width: 28rem;
@@ -2277,7 +2290,6 @@
     width: 100%;
     height: 0.875rem;
     background: color-mix(in srgb, var(--color-ink) 8%, transparent);
-    animation: mods-pulse 1.6s steps(4, end) infinite alternate;
   }
   .mods-skeleton-title {
     width: 40%;
@@ -2408,6 +2420,14 @@
   }
 }
 
+/* No perpetual animation while the page is idle (kit Design rules): a placeholder pulses for at most ~13 s (it is
+   replaced as soon as its content arrives); none with reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .mods-skeleton-row,
+  .mods-skeleton-bar {
+    animation: mods-pulse 1.6s steps(4, end) 8 alternate;
+  }
+}
 @keyframes mods-pulse {
   from {
     opacity: 1;

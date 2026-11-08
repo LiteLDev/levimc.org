@@ -18,6 +18,17 @@ export const ROUTES: readonly { id: RouteId; path: string }[] = [
   { id: 'blog', path: '/blog/' },
 ];
 
+/**
+ * The pages that are chunks of their own (React.lazy, see App.tsx) by their source module (the key in Vite's
+ * manifest), so prerender.mjs can modulepreload the chunk of the page each file shows. Keep in step with App.tsx.
+ */
+export const ROUTE_MODULES: Partial<Record<RouteId, string>> = {
+  community: 'src/pages/Community.tsx',
+  about: 'src/pages/About.tsx',
+  support: 'src/pages/Support.tsx',
+  blog: 'src/blog/Blog.tsx',
+};
+
 /** Every prerendered route (used by prerender.mjs): the pages above plus every blog page. */
 export const ROUTE_PATHS: string[] = [...new Set([...ROUTES.map((r) => r.path), ...BLOG_ROUTES])];
 /** Rendered into 404.html. */
@@ -47,6 +58,15 @@ export function routeIdOf(pathname: string): RouteId | null {
 
 export const HOME_TITLE = 'LeviMC - Open-Source Tools for Minecraft Bedrock';
 
+/**
+ * The site's name in every <title>. Titles follow one convention across the LeviMC sites (kit 2.19, D7):
+ * "<Page> - LeviMC" for the site's pages (the home keeps HOME_TITLE), "<Page> - <Section> - LeviMC" inside the
+ * blog (and LeviMC Mods: "<mod> - Mods - LeviMC"), "Page not found - LeviMC" for the 404; the docs use
+ * "<Page> - <Project> Docs".
+ */
+export const SITE_NAME = 'LeviMC';
+const titled = (...parts: string[]) => [...parts, SITE_NAME].join(' - ');
+
 /** <title> and meta description of a page, built from the site's existing copy (and the blog's posts). */
 export function routeMeta(pathname: string, t: Messages): { title: string; description: string } {
   const hero = t.hero.tagline;
@@ -55,15 +75,15 @@ export function routeMeta(pathname: string, t: Messages): { title: string; descr
     case 'home':
       return { title: HOME_TITLE, description: hero };
     case 'community':
-      return { title: `${t.nav.community} - LeviMC`, description: t.community.description };
+      return { title: titled(t.nav.community), description: t.community.description };
     case 'about':
-      return { title: `${t.about.pageTitle}`, description: t.about.pageSubtitle };
+      return { title: titled(t.nav.about), description: t.about.pageSubtitle };
     case 'support':
-      return { title: `${t.support.pageTitle}`, description: t.support.pageDesc };
+      return { title: titled(t.nav.support), description: t.support.pageDesc };
     case 'blog':
       return blogMeta(pathname, t);
     default:
-      return { title: `404 - LeviMC`, description: hero };
+      return { title: titled(t.meta.notFound), description: hero };
   }
 }
 
@@ -71,26 +91,27 @@ function blogMeta(pathname: string, t: Messages): { title: string; description: 
   const c = canonicalPath(pathname);
   const view = resolveBlogPath(c.endsWith('/') ? c : c + '/');
   const b = t.blog;
-  const site = b.name;
+  const section = t.meta.blog;
+  const inBlog = (title: string) => titled(title, section);
   const paged = (title: string, page: number) => (page > 1 ? `${title} (${b.page(page)})` : title);
   const description = b.tagline;
-  if (!view) return { title: site, description };
+  if (!view) return { title: titled(section), description };
   switch (view.kind) {
     case 'index':
-      return { title: paged(site, view.page), description };
+      return { title: view.page > 1 ? inBlog(b.page(view.page)) : titled(section), description };
     case 'post':
-      return { title: `${view.post.title} - ${site}`, description: view.post.excerpt };
+      return { title: inBlog(view.post.title), description: view.post.excerpt };
     case 'page':
-      return { title: `${blog.pages[view.name]?.title ?? view.name} - ${site}`, description };
+      return { title: inBlog(blog.pages[view.name]?.title ?? view.name), description };
     case 'tags':
-      return { title: `${b.tags} - ${site}`, description };
+      return { title: inBlog(b.tags), description };
     case 'categories':
-      return { title: `${b.categories} - ${site}`, description };
+      return { title: inBlog(b.categories), description };
     case 'tag':
-      return { title: paged(`${b.tagTitle(view.term.name)} - ${site}`, view.page), description };
+      return { title: inBlog(paged(b.tagTitle(view.term.name), view.page)), description };
     case 'category':
-      return { title: paged(`${b.categoryTitle(view.term.name)} - ${site}`, view.page), description };
+      return { title: inBlog(paged(b.categoryTitle(view.term.name), view.page)), description };
     case 'archives':
-      return { title: paged(`${view.year ? b.archiveTitle(view.year, view.month) : b.archives} - ${site}`, view.page), description };
+      return { title: inBlog(paged(view.year ? b.archiveTitle(view.year, view.month) : b.archives, view.page)), description };
   }
 }

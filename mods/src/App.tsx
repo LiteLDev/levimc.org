@@ -13,7 +13,9 @@ import { Header } from "./components/header";
 import { KitRouterLink } from "./components/router-link";
 import { LocaleContext, STRINGS, useI18n, type Strings } from "./i18n";
 import { LOCALES } from "./locales";
-import { pageMeta, SITE_ORIGIN, type PageData } from "./page-data";
+import { pageMeta, SITE_ORIGIN, titled, type PageData } from "./page-data";
+import { useChromeLocale } from "./chrome-locale";
+import { uiStrings } from "../kit/components/i18n";
 import { PageStoreContext, usePageStore, type PageStore } from "./page-store";
 import { HomePage } from "./pages/home-page";
 import { NotFoundPage } from "./pages/not-found-page";
@@ -63,7 +65,7 @@ function useDocumentHead(data: PageData) {
   const { locale, t } = useI18n();
   useEffect(() => {
     const meta = pageMeta(data);
-    document.title = locale === "en" ? meta.title : localizedTitle(data, t);
+    document.title = locale === "en" ? meta.title : localizedTitle(data, t, LOCALES.find((l) => l.code === locale)?.lang ?? "en");
     setHeadTag('meta[name="description"]', metaTag("name", "description"), "content", meta.description);
     setHeadTag('link[rel="canonical"]', canonicalTag, "href", meta.canonical);
     setHeadTag('meta[property="og:title"]', metaTag("property", "og:title"), "content", meta.title);
@@ -84,14 +86,16 @@ function useDocumentHead(data: PageData) {
 }
 
 /** The tab title in the interface language (pages are prerendered with the English one). */
-function localizedTitle(data: PageData, t: Strings): string {
+function localizedTitle(data: PageData, t: Strings, lang: string): string {
+  // "Mods" as the LeviMC bar says it in this language
+  const mods = uiStrings(lang).mods;
   switch (data.kind) {
     case "home":
-      return `${t.siteName} — ${t.tagline}`;
+      return titled(mods);
     case "mod":
-      return `${data.entry.name} | ${t.siteName}`;
+      return titled(data.entry.name, mods);
     case "not-found":
-      return `${t.notFoundTitle} | ${t.siteName}`;
+      return titled(t.notFoundTitle);
   }
 }
 
@@ -196,6 +200,8 @@ function Shell({ children }: { children: ReactNode }) {
   const [locale, setLocale] = usePreferredLocale(LOCALES, LOCALES[0]);
   const i18n = useMemo(() => ({ locale: locale.code, t: STRINGS[locale.code] }), [locale.code]);
   const { pathname } = useLocation();
+  // the LeviMC bar's and footer's language (see chrome-locale.ts)
+  const chrome = useChromeLocale(locale.lang);
   useEffect(() => {
     // the document's language is the interface's (prerendered as English)
     document.documentElement.lang = locale.lang;
@@ -204,12 +210,12 @@ function Shell({ children }: { children: ReactNode }) {
     <LocaleContext value={i18n}>
       <div className="kit-shell" lang={locale.lang}>
         <PaintedBackdrop scene={pathname !== BASE && pathname !== `${BASE}index.html`} />
-        <a className="kit-skip-link" href="#main">
-          {i18n.t.skipToContent}
+        <a className="kit-skip-link" href="#main" lang={chrome}>
+          {uiStrings(chrome).skipToContent}
         </a>
         <GlobalBar
           current="mods"
-          locale={locale.lang}
+          locale={chrome}
           sticky
           siteOrigin={SITE_ORIGIN}
           linkComponent={KitRouterLink}
@@ -221,7 +227,7 @@ function Shell({ children }: { children: ReactNode }) {
           }}
         />
         {children}
-        <SiteFooter locale={locale.lang} siteOrigin={SITE_ORIGIN} linkComponent={KitRouterLink} isAppPath={isAppPath} />
+        <SiteFooter locale={chrome} siteOrigin={SITE_ORIGIN} linkComponent={KitRouterLink} isAppPath={isAppPath} />
       </div>
     </LocaleContext>
   );

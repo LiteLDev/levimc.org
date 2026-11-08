@@ -145,7 +145,8 @@ const en = {
   copiedShort: "Copied",
   copyText: (text: string) => `Copy "${text}" to clipboard`,
   copyCode: "Copy code",
-  notFoundTitle: "Not Found",
+  /** In the tab title ("Page not found - LeviMC", as every LeviMC 404). */
+  notFoundTitle: "Page not found",
   notFoundText: "The page you are looking for does not exist or the mod could not be found.",
   errorTitle: "Something went wrong",
   errorPage: "An unexpected error occurred while loading this page. Please try again.",
@@ -294,7 +295,7 @@ const zhCN: Strings = {
   copiedShort: "已复制",
   copyText: (text) => `复制“${text}”`,
   copyCode: "复制代码",
-  notFoundTitle: "未找到",
+  notFoundTitle: "页面未找到",
   notFoundText: "你要找的页面不存在，或找不到这个模组。",
   errorTitle: "出错了",
   errorPage: "加载此页面时发生意外错误，请重试。",

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-/** Silkscreen is for short Latin labels only; CJK labels fall back to the UI face. */
+/** The pixel label (small spaced capitals) is for short Latin labels only; CJK labels get the plain eyebrow. */
 export const isLatin = (s: string) => /^[\x20-\x7e]+$/.test(s);
 
 export function Eyebrow({ children, className }: { children: string; className?: string }) {

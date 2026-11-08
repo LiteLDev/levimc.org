@@ -55,8 +55,29 @@ export interface DiscordInfo {
   isFallback?: boolean;
 }
 
-// Cache with longer duration to reduce API calls
+// Cache with longer duration to reduce API calls. Kept for the tab's session (sessionStorage), so the next
+// page load of the visit reuses the answers instead of asking GitHub, shields.io and Discord again.
 const cache = new Map<string, { data: unknown; timestamp: number }>();
+const SESSION_PREFIX = 'levimc-fetch:';
+
+function readSession(url: string): { data: unknown; timestamp: number } | null {
+  try {
+    const raw = window.sessionStorage.getItem(SESSION_PREFIX + url);
+    if (!raw) return null;
+    const entry = JSON.parse(raw) as { data: unknown; timestamp: number };
+    return typeof entry?.timestamp === 'number' ? entry : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSession(url: string, entry: { data: unknown; timestamp: number }): void {
+  try {
+    window.sessionStorage.setItem(SESSION_PREFIX + url, JSON.stringify(entry));
+  } catch {
+    // storage full or blocked: the in-memory cache still serves this page
+  }
+}
 // Concurrent callers of the same URL share one request (the hero and the project cards both ask for LeviLamina).
 const inflight = new Map<string, Promise<unknown>>();
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
@@ -76,8 +97,9 @@ async function fetchWithCache<T>(url: string, timeout = 5000): Promise<T | null>
   // Never fetch while prerendering: the static HTML shows placeholders, data arrives after hydration.
   if (typeof window === 'undefined') return null;
 
-  const cached = cache.get(url);
+  const cached = cache.get(url) ?? readSession(url);
   if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    cache.set(url, cached);
     return cached.data as T;
   }
   const pending = inflight.get(url);
@@ -95,7 +117,9 @@ async function fetchWithCache<T>(url: string, timeout = 5000): Promise<T | null>
         return null;
       }
       const data = (await response.json()) as T;
-      cache.set(url, { data, timestamp: Date.now() });
+      const entry = { data, timestamp: Date.now() };
+      cache.set(url, entry);
+      writeSession(url, entry);
       return data;
     } catch {
       return null;

@@ -376,20 +376,18 @@ export function shapeToString(s: Shape): string {
   return `<${s.tag} ${attrs}/>`;
 }
 
-/** CSS inside a standalone scene (e.g. a CSS background): the hero's slow shimmer, off under reduced motion. */
-const SCENE_ANIMATION_CSS =
-  '.kit-scene-glints{animation:g 7s ease-in-out infinite alternate}.kit-scene-sun{animation:g 9s ease-in-out infinite alternate}' +
-  '@keyframes g{from{opacity:.55}to{opacity:1}}@media (prefers-reduced-motion:reduce){.kit-scene-glints,.kit-scene-sun{animation:none}}';
-
-export function sceneToSvg(scene: Scene, extra: { preserveAspectRatio?: string; animate?: boolean } = {}): string {
+/**
+ * A scene as a standalone SVG document (CSS backgrounds, asset files). Static by design: an animation inside an SVG
+ * image makes the browser re-rasterise the whole filtered image every frame (kit 2.19 removed the `animate` option).
+ */
+export function sceneToSvg(scene: Scene, extra: { preserveAspectRatio?: string } = {}): string {
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${scene.width} ${scene.height}" preserveAspectRatio="${extra.preserveAspectRatio ?? 'xMidYMid slice'}">` +
-    (extra.animate ? `<style>${SCENE_ANIMATION_CSS}</style>` : '') +
     `<defs>${scene.defs}</defs>` +
     scene.layers
       .map(
         (l) =>
-          `<g${l.filter ? ` filter="${l.filter}"` : ''}${l.crisp ? ' shape-rendering="crispEdges"' : ''}${extra.animate && l.className ? ` class="${l.className}"` : ''}>` +
+          `<g${l.filter ? ` filter="${l.filter}"` : ''}${l.crisp ? ' shape-rendering="crispEdges"' : ''}>` +
           l.shapes.map(shapeToString).join('') +
           `</g>`,
       )

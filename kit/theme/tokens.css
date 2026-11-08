@@ -102,34 +102,7 @@
   --ease-pixel: steps(4, end);
   --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
 
-  --animate-kit-drift: kit-drift 48s var(--ease-soft) infinite alternate;
-  --animate-kit-shimmer: kit-shimmer 9s linear infinite;
-  --animate-kit-spin-steps: kit-spin-steps 1.6s steps(8, end) infinite;
-
-  @keyframes kit-drift {
-    0% {
-      transform: translate3d(0, 0, 0) scale(1);
-    }
-    50% {
-      transform: translate3d(1.5%, -1%, 0) scale(1.03);
-    }
-    100% {
-      transform: translate3d(-1%, 1.2%, 0) scale(1.01);
-    }
-  }
-  @keyframes kit-shimmer {
-    0% {
-      background-position: 0% 50%;
-    }
-    100% {
-      background-position: 200% 50%;
-    }
-  }
-  @keyframes kit-spin-steps {
-    to {
-      transform: rotate(360deg);
-    }
-  }
+  /* No perpetual animations (kit 2.19): the drift, shimmer and step-spinner tokens are gone. */
 }
 
 /* ---- Dark: Impression, soleil levant ---- */

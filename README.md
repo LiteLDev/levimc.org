@@ -51,19 +51,29 @@ npm run smoke:kit
 
 ## Layout
 
-- `src/App.tsx` — routes (`/`, `/community/`, `/about/`, `/support/`, `/blog/…`, and the 404 page)
+- `src/App.tsx` — routes (`/`, `/community/`, `/about/`, `/support/`, `/blog/…`, and the 404 page); every page but
+  the home and the 404 is its own chunk (`src/lazy-route.ts`): the page being opened is loaded before hydrating, the
+  others when the browser is idle
 - `src/pages/`, `src/components/` — page content; `src/i18n/locales/{en,zh,zh-Hant}.ts` — all site text (English, Simplified and Traditional Chinese)
-- `src/routes.ts` — route list, titles and descriptions; `src/head.ts` — per-page `<head>` tags
+- `src/routes.ts` — route list, titles ("<Page> - LeviMC", "<post> - Blog - LeviMC", "Page not found - LeviMC") and
+  descriptions; `src/head.ts` — per-page `<head>` tags (Open Graph with the social card `public/og/levimc.jpg`, made
+  by `node scripts/build-og.mjs`)
 - `src/components/SiteHeader.tsx`, `src/components/Footer.tsx` — the kit GlobalBar and SiteFooter, the same on every
   LeviMC site (each project in the Projects menu leads to its home page: its LeviMC Mods page, docs or repository;
   the footer links Support us).
   The project list is `PROJECTS` in `kit/components/projects.ts`; the home page's project cards read it too.
 - `src/prepaint.ts` — the pre-paint script: theme and language come from the cross-site LeviMC preferences
   (cookies `levimc_theme` = auto | light | dark, Auto by default, and `levimc_lang`, shared by levimc.org and
-  every *.levimc.org site; see `kit/README.md`, "Cross-site preferences")
+  every *.levimc.org site; see `kit/README.md`, "Cross-site preferences"). The bar and footer speak the page's
+  language, or a stored language the site has no pages in when the kit has chrome strings for it
+  (`chromeLocaleFor` in `src/i18n`)
+- `src/hooks/useExternalData.ts`, `src/services/githubService.ts` — the live numbers (GitHub stars, the latest
+  LeviLamina release, Discord presence): requested once the page is idle after hydration, kept for the visit in
+  `sessionStorage` (30 minutes)
 - `public/donors.csv` — the supporters listed on `/support/` (read at build time, also served at `/donors.csv`)
 - `content/blog/`, `blog/`, `src/blog/` — the blog (see below)
-- `prerender.mjs` — writes `dist/<route>/index.html`, `404.html`, `sitemap.xml`, `robots.txt`
+- `prerender.mjs` — writes `dist/<route>/index.html`, `404.html`, `sitemap.xml`, `robots.txt`; modulepreloads each
+  page's chunk (from Vite's manifest) and a blog post's markdown chunk
 
 ## Blog
 

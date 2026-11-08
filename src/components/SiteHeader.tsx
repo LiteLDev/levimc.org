@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { GlobalBar, type LinkLikeProps, type SiteId } from '../../kit/components';
-import { useI18n, kitLocale, LOCALES } from '../i18n';
+import { useI18n, LOCALES } from '../i18n';
 import { MODS_PATH, SITE_ORIGIN, type RouteId } from '../routes';
 
 /** Same-site links of the bar and footer navigate inside the app (no full reload). */
@@ -28,15 +28,18 @@ const LANGUAGE_OPTIONS = LOCALES.map(({ code, label, lang }) => ({ code, label, 
 /**
  * levimc.org is the home of the LeviMC network and of the kit: the GlobalBar — identical on every LeviMC site
  * (Home · Projects ▾ · Mods · Blog · Community · About, then language · theme · GitHub) — is the site's only header.
- * Its language menu switches this site's own languages (app state, stored as the cross-site preference).
+ * Its language menu switches this site's own languages (app state, stored as the cross-site preference); the bar
+ * itself speaks the chrome language (`chromeLocaleFor`: the content language, or a stored language the kit has
+ * strings for and the site has no content in). It is sticky because it is the page's only header — on the docs the
+ * project row is the sticky header and the bar scrolls away (kit Design rules).
  */
 export default function SiteHeader({ current }: { current: RouteId | null }) {
-  const { locale, setLocale } = useI18n();
+  const { locale, setLocale, chrome } = useI18n();
 
   return (
     <GlobalBar
       current={current ? BAR_TAB[current] : undefined}
-      locale={kitLocale[locale]}
+      locale={chrome}
       sticky
       siteOrigin={SITE_ORIGIN}
       linkComponent={RouterLink}

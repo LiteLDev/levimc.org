@@ -65,7 +65,7 @@ export function SiteFooter({ locale, strings, year = BUILD_YEAR, siteOrigin, lin
           <div className="kit-footer-brand">
             <FooterLink nav={nav} url={LINKS.home} className="kit-footer-logo">
               <BrandMark className="kit-brand-mark-lg" />
-              <span>LeviMC</span>
+              <span className="kit-wordmark">LeviMC</span>
             </FooterLink>
             <p className="kit-footer-tagline" data-kit-t="tagline">
               {t.tagline}

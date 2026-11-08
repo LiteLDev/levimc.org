@@ -144,7 +144,6 @@
     display: inline-block;
     vertical-align: middle;
     background: color-mix(in srgb, var(--color-ink) 11%, transparent);
-    animation: lm-pulse 1.6s steps(4, end) infinite;
   }
   .lm-skeleton-xs {
     width: 1.75rem;
@@ -205,7 +204,6 @@
     flex: none;
     background: var(--color-mc-grass);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-mc-grass) 30%, transparent);
-    animation: lm-blink 2.4s steps(2, end) infinite;
   }
   .lm-release-version {
     font-family: var(--font-mono);
@@ -641,7 +639,6 @@
     height: 6px;
     background: var(--color-mc-grass);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-mc-grass) 30%, transparent);
-    animation: lm-blink 2.4s steps(2, end) infinite;
   }
   .lm-qq-groups {
     display: flex;
@@ -1436,9 +1433,27 @@
     text-decoration: underline;
     text-underline-offset: 0.2em;
   }
+  /* while a page's chunk loads after a link (rare: they are fetched when idle after load) */
+  .lm-route-loading {
+    min-height: 60vh;
+  }
+
+  /* the 404: the docs' card, wide enough for the projects grid under its actions (as docs.levimc.org's 404) */
+  .lm-notfound .kit-notfound-card {
+    width: min(46rem, 100%);
+    max-width: none;
+  }
+  .lm-notfound .lm-notfound-pick {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  /* the docs' h1 scale (kit/theme/prose.css .kit-prose h1), so a post reads like a docs page */
   .lm-blog-post-title {
-    font-size: clamp(1.875rem, 1.35rem + 2vw, 2.75rem);
-    line-height: 1.2;
+    font-size: clamp(2rem, 1.6rem + 1.4vw, 2.625rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
   }
   .lm-blog-post-tags {
     display: flex;
@@ -1622,6 +1637,17 @@
   }
 }
 
+/* No perpetual animation while the page is idle (kit Design rules): the status dots blink four times when they
+   appear, a placeholder pulses for at most ~10 s (it is replaced as soon as its data arrives); none with reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .lm-skeleton {
+    animation: lm-pulse 1.6s steps(4, end) 6;
+  }
+  .lm-release-dot,
+  .lm-online-dot {
+    animation: lm-blink 2.4s steps(2, end) 4;
+  }
+}
 @keyframes lm-blink {
   50% {
     opacity: 0.35;

@@ -137,7 +137,7 @@ await check('/index.html and /<route>/index.html show their page at the canonica
     assert(res?.status() === 200, `${path} → ${res?.status()}`);
     const h1 = (await page.locator('h1').first().innerText()).replace(/\s+/g, ' ').trim();
     assert(h1.startsWith(H1.en[r]), `${path}: h1 "${h1}"`);
-    assert(!(await page.title()).startsWith('404'), `${path}: title "${await page.title()}"`);
+    assert(!(await page.title()).startsWith('Page not found'), `${path}: title "${await page.title()}"`);
     const u = new URL(page.url());
     assert(u.pathname === new URL(base + r).pathname, `${path}: URL ${u.pathname}`);
     if (path.includes('?')) assert(u.search === '?ref=x' && u.hash === '#top', `${path}: query/hash lost (${u.search}${u.hash})`);
@@ -243,7 +243,7 @@ await check('language switcher: en ⇄ zh, stored in the cross-site cookie levim
   assert((await page.locator('h1').innerText()).includes('参与进来'), 'not kept after reload');
   await page.click('.kit-gbar-nav a[href="/about/"]');
   await page.waitForURL((u) => u.pathname === '/about/');
-  await page.waitForFunction(() => document.title === '关于 LeviMC', null, { timeout: 5000 });
+  await page.waitForFunction(() => document.title === '关于 - LeviMC', null, { timeout: 5000 });
   await page.click('[data-kit-locale-switcher]');
   await page.click('.kit-locale [role="menuitemradio"][data-locale="en"]');
   await page.waitForFunction(() => document.documentElement.lang === 'en');
@@ -442,7 +442,7 @@ await check('blog: every blog URL in the sitemap is prerendered (200, h1, zh-CN 
     const res = await page.goto(base + path.slice(1), { waitUntil: 'networkidle' });
     assert(res?.status() === 200, `${path} → ${res?.status()}`);
     assert((await page.locator('h1').count()) === 1, `${path}: ${await page.locator('h1').count()} h1`);
-    assert(!(await page.title()).startsWith('404'), `${path}: 404 title`);
+    assert(!(await page.title()).startsWith('Page not found'), `${path}: 404 title`);
     if (/\/\d{4}\/\d{2}\/\d{2}\//.test(path)) {
       assert((await page.locator('[data-doc-content][lang="zh-CN"]').count()) === 1, `${path}: post content not marked zh-CN`);
       assert((await page.locator('.kit-gbar-link[aria-current="page"]').innerText()) === 'Blog', `${path}: Blog tab not current`);

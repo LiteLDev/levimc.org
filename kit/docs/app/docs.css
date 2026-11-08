@@ -17,19 +17,38 @@
   :root:has(.kit-site-header) {
     --kit-sticky-offset: var(--spacing-header);
   }
+  /* Opaque once stuck, with no blur (kit 2.19): transparent at the top of the page, then the canvas and a bottom
+     hairline fade in while the LeviMC bar scrolls away. Both are pseudo-elements whose opacity alone is animated on
+     the root scroll timeline, so the compositor runs it (no style, paint or backdrop-filter on any scroll frame).
+     Without scroll timelines they are simply shown. The Doxygen row (doxygen-kit.css #top) does the same. */
   .kit-site-header {
     position: sticky;
     top: 0;
     z-index: 50;
     height: var(--spacing-header);
-    background: color-mix(in srgb, var(--color-canvas) 90%, transparent);
-    -webkit-backdrop-filter: saturate(1.2) blur(14px);
-    backdrop-filter: saturate(1.2) blur(14px);
-    box-shadow: 0 1px 0 0 color-mix(in srgb, var(--color-line) 70%, transparent);
+  }
+  .kit-site-header::before,
+  .kit-site-header::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .kit-site-header::before {
+    top: 0;
+    bottom: 0;
+    background: var(--color-canvas);
+  }
+  .kit-site-header::after {
+    bottom: -1px;
+    height: 1px;
+    background: color-mix(in srgb, var(--color-line) 70%, transparent);
   }
   @supports (animation-timeline: scroll()) {
-    /* the hairline appears only while the row is stuck (after the LeviMC bar has scrolled away) */
-    .kit-site-header {
+    .kit-site-header::before,
+    .kit-site-header::after {
       animation: kit-subnav-stuck linear both;
       animation-timeline: scroll(root);
       animation-range: 0 var(--spacing-globalbar);
@@ -351,8 +370,7 @@
     overflow-y: auto;
     padding: 2rem 0.5rem 4rem 0;
     overscroll-behavior: contain;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.25rem, #000 calc(100% - 3rem), transparent);
-    mask-image: linear-gradient(to bottom, transparent 0, #000 1.25rem, #000 calc(100% - 3rem), transparent);
+    /* (no fade mask on the scroller since kit 2.19: a masked scroller is re-blended on every scroll frame) */
   }
   .kit-doc-main {
     min-width: 0;
@@ -724,48 +742,6 @@
     }
   }
 
-  /* ================================================================== 404 */
-  .kit-notfound {
-    flex: 1;
-    display: grid;
-    place-items: center;
-    padding: 4rem 1rem 2rem;
-    outline: none;
-  }
-  .kit-notfound-card {
-    max-width: 34rem;
-    padding: 2.5rem 2rem 2.25rem;
-    text-align: center;
-  }
-  .kit-notfound-code {
-    margin: 0 0 0.75rem;
-    color: var(--color-adm-danger);
-  }
-  .kit-notfound-title {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.5rem);
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-    text-wrap: balance;
-  }
-  .kit-notfound-title:lang(ja) {
-    word-break: auto-phrase; /* break between phrases (迷子 stays whole); ignored where unsupported */
-  }
-  .kit-notfound-text {
-    margin: 1rem auto 0;
-    max-width: 26rem;
-    color: var(--color-muted);
-    text-wrap: pretty;
-  }
-  .kit-notfound-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-top: 1.75rem;
-  }
   .kit-loading {
     flex: 1;
     min-height: 60vh;
@@ -784,10 +760,12 @@
   .kit-search-scrim {
     position: absolute;
     inset: 0;
-    background: var(--color-scrim);
-    -webkit-backdrop-filter: blur(3px);
-    backdrop-filter: blur(3px);
+    /* no blur: it re-rendered the whole screen at every caret blink; a slightly darker scrim instead */
+    background: rgb(31 42 51 / 0.48);
     animation: kit-fade 0.15s ease-out;
+  }
+  .dark .kit-search-scrim {
+    background: rgb(4 10 16 / 0.7);
   }
   .kit-search {
     --px-border: color-mix(in srgb, var(--color-ink) 45%, var(--color-line-strong));
@@ -951,19 +929,21 @@
     background: var(--color-scrim);
     animation: kit-fade 0.15s ease-out;
   }
+  /* The drawer comes in from the right, under the menu button that opens it (the LeviMC bar's, at the right end on
+     every site; Doxygen's drawer is the same) */
   .kit-drawer {
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 0;
+    right: 0;
     width: min(21rem, 88vw);
     overflow-y: auto;
     overscroll-behavior: contain;
     background: var(--color-canvas);
     box-shadow:
-      2px 0 0 0 color-mix(in srgb, var(--color-ink) 30%, var(--color-line-strong)),
+      -2px 0 0 0 color-mix(in srgb, var(--color-ink) 30%, var(--color-line-strong)),
       var(--shadow-float);
-    animation: kit-slide 0.2s var(--ease-soft);
+    animation: kit-slide-in-end 0.2s var(--ease-soft);
   }
   .kit-drawer-head {
     position: sticky;
@@ -975,9 +955,8 @@
     gap: 0.5rem;
     height: 3.25rem;
     padding: 0 0.5rem 0 1.25rem;
-    background: color-mix(in srgb, var(--color-canvas) 96%, transparent);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
+    /* opaque, no blur (a blur under a scrolling list re-renders on every scroll frame) */
+    background: var(--color-canvas);
     border-bottom: 1px solid var(--color-line);
   }
   .kit-drawer-brand {
@@ -1057,12 +1036,16 @@
   }
 }
 
+/* the stuck look of .kit-site-header (its ::before canvas and ::after hairline): opacity only, compositor-driven */
 @keyframes kit-subnav-stuck {
   from {
-    background-color: transparent;
-    box-shadow: 0 1px 0 0 transparent;
-    -webkit-backdrop-filter: saturate(1) blur(0px);
-    backdrop-filter: saturate(1) blur(0px);
+    opacity: 0;
+  }
+}
+@keyframes kit-slide-in-end {
+  from {
+    transform: translateX(24px);
+    opacity: 0.4;
   }
 }
 @keyframes kit-fade {
@@ -1080,5 +1063,77 @@
   from {
     transform: translateX(-24px);
     opacity: 0.4;
+  }
+}
+
+/* kit 2.19 nav (workstream docs-engine): resources slot, drawer resources, search containment, drawer state */
+@layer components {
+  /* the RESOURCES slot after search: header.links (Download = accent button, Changelog = text link), then the
+     project's GitHub icon (config repo) */
+  .kit-site-resources {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: 0.5rem;
+  }
+  .kit-site-download {
+    height: 2rem;
+    min-height: 0;
+    padding: 0 0.75rem;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+  .kit-site-resource.kit-site-nav-link {
+    height: 2rem;
+  }
+  @media (max-width: 960px) {
+    /* phones and tablets: the drawer lists the resources (Resources section) */
+    .kit-site-resources {
+      display: none;
+    }
+  }
+  /* sections -> section tree -> Resources -> LeviMC: the drawer's own section heading */
+  .kit-drawer-resources {
+    margin: 1rem 0.75rem 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-line);
+  }
+  .kit-drawer-resources ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .kit-drawer-section-title {
+    margin: 0 0.75rem 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .kit-drawer-link-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  .kit-drawer-link > .kit-pixel-icon,
+  .kit-drawer-link > svg {
+    flex: none;
+    opacity: 0.6;
+  }
+  /* the search layer is a fixed full-viewport overlay: keep its (re)layout from touching the page behind it */
+  .kit-search-root {
+    contain: strict;
+  }
+  .kit-search-item {
+    contain: content;
+  }
+  /* above 960px the tabs only move into the drawer when even the tabs row cannot hold them (header.tabsRow:
+     false): the bar's menu button (GlobalBar onMenu, [data-kit-gbar-menu]) then opens the drawer */
+  @media (width > 960px) {
+    :root[data-kit-nav-fit="drawer"] .kit-gbar [data-kit-gbar-menu] {
+      display: inline-grid;
+    }
   }
 }

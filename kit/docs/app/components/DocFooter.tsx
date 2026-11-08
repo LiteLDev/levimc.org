@@ -1,5 +1,5 @@
 import type { RouteMeta } from '../../shared/types';
-import { href, langOf, site } from '../data';
+import { href, site } from '../data';
 import { KitLink } from './KitLink';
 import { PixelIcon } from '../../../components/PixelIcon';
 import type { UiStrings } from '../../../components/i18n';
@@ -7,10 +7,9 @@ import type { UiStrings } from '../../../components/i18n';
 export function DocFooter({ route, t }: { route: RouteMeta; t: UiStrings }) {
   const edit = route.editUrl ?? null;
   const editText = site.editLink?.text?.[route.locale] ?? t.editPage;
-  const updated = site.lastUpdated && route.lastUpdated ? new Date(route.lastUpdated) : null;
-  const fmt = updated
-    ? new Intl.DateTimeFormat(langOf(route.locale), { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }).format(updated)
-    : null;
+  // formatted at build time (site.ts): no Intl.DateTimeFormat during hydration
+  const updated = site.lastUpdated ? route.updated : undefined;
+  const fmt = updated?.text ?? null;
   return (
     <footer className="kit-doc-footer">
       {edit || fmt ? (
@@ -28,7 +27,7 @@ export function DocFooter({ route, t }: { route: RouteMeta; t: UiStrings }) {
               <PixelIcon name="history" />
               <span>
                 {t.lastUpdated}{' '}
-                <time dateTime={updated!.toISOString()}>{fmt}</time>
+                <time dateTime={updated!.iso}>{fmt}</time>
               </span>
             </p>
           ) : null}

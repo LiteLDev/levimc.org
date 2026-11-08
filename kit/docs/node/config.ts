@@ -50,6 +50,18 @@ export type NavEntry =
 /** VitePress-style sidebar: one list, or a map of path prefix → list (multi-sidebar). */
 export type SidebarConfig = NavEntry[] | Record<string, NavEntry[]>;
 
+/**
+ * A link of the header's resources slot. `kind` sets its look and default label: 'download' is the accent button,
+ * 'changelog' a text link. `link`: a path of this site (relative to base, locale-prefixed automatically: 'download'
+ * → 'ja-JP/download' on ja-JP pages when that page exists) or an absolute URL. `text`: label per locale code
+ * (default: the kit's 'Download' / 'Changelog' in the page's language).
+ */
+export interface HeaderLink {
+  kind: 'download' | 'changelog';
+  link: string;
+  text?: Record<string, string>;
+}
+
 export type HeadTag = [tag: string, attrs: Record<string, string | boolean>, content?: string];
 
 export interface DocsConfig {
@@ -61,9 +73,14 @@ export interface DocsConfig {
   /** Project logo (path relative to base, e.g. '/logo.svg' or 'img/logo.png'). Each project keeps its own. */
   logo?: string | { src: string; alt?: string; dark?: string };
   favicon?: string;
+  /** Social preview image (og:image), path relative to base or absolute URL. Defaults to the logo. */
+  ogImage?: string;
   /** Which docs project this is (highlights it in the GlobalBar). Defaults to the base segment. */
   project?: string;
-  /** Repository URL (GitHub link in the header). */
+  /**
+   * The project's repository URL: the GitHub icon at the end of the docs header (the resources slot) and in the
+   * drawer, labelled '<title> on GitHub'. (The LeviMC bar's GitHub button is the LiteLDev organisation.)
+   */
   repo?: string;
   /**
    * Edit link: a pattern with :path (path relative to contentDir), e.g.
@@ -118,21 +135,26 @@ export interface DocsConfig {
   /** MkDocs nav_translations: locale code → { 'User Guides': '用户指南' }. */
   navTranslations?: Record<string, Record<string, string>>;
   /**
-   * Sidebar: 'tabs' (MkDocs Material navigation.tabs: header shows top-level sections, sidebar shows the
-   * active section), 'tree' (whole nav), false, or explicit VitePress sidebars (shared or per locale code).
+   * Sidebar: 'tabs' (default; the LeviMC model: every top-level nav entry is a section = one sidebar tree, the
+   * header shows the sections, the sidebar the active one), 'tree' (whole nav), false, or explicit VitePress
+   * sidebars (shared or per locale code).
+   * @deprecated the object forms (VitePress sidebar / multi-sidebar by URL prefix): use 'tabs' (kit 2.19). They
+   * still work and print a build warning.
    */
   sidebar?: 'tabs' | 'tree' | false | SidebarConfig | Record<string, SidebarConfig>;
   /**
-   * MkDocs Material `navigation.expand` for the 'tabs' sidebar: open every group. Default false (Material's
-   * default): only the group holding the current page starts open, plus groups marked `collapsed: false`.
+   * Open every sidebar group. Default false: a section with up to 24 links opens all its groups, a longer one only
+   * the group holding the current page (plus groups marked `collapsed: false`).
    */
   sidebarExpand?: boolean;
   /**
    * Docs header layout. `tabsRow`: 'auto' (default) keeps brand, section tabs and search in one row and, only
    * when the tabs do not fit, first shortens search to its icon, then moves the tabs to a second row below,
    * then into the drawer; true always uses the second row above 960px; false never does (icon search, then drawer).
+   * `links`: the RESOURCES slot after search (before the repository's GitHub icon) — the only place for links
+   * that leave the docs (a download page, release notes). See {@link HeaderLink}.
    */
-  header?: { tabsRow?: boolean | 'auto' };
+  header?: { tabsRow?: boolean | 'auto'; links?: HeaderLink[] };
   /** Globs (relative to contentDir) excluded from the build. */
   exclude?: string[];
   /** Image/asset handling for files referenced from markdown: 'verbatim' (keep path) or 'hashed' (assets/x.hash.ext). */
@@ -152,7 +174,10 @@ export interface DocsConfig {
   footer?: { message?: string; copyright?: string };
   /** Override chrome strings per locale code. */
   ui?: Record<string, Partial<UiStrings>>;
-  /** <title> template; ':title' and ':site' are replaced. Default ':title | :site'. */
+  /**
+   * <title> template; ':title' and ':site' are replaced. Default ':title - :site Docs' (every LeviMC docs site).
+   * The home page gets the template without ':title' ('<title> Docs'), the 404 page 'Page not found - <title> Docs'.
+   */
   titleTemplate?: string;
   /** Output directory (default 'dist'). */
   outDir?: string;
@@ -289,7 +314,7 @@ export function resolveConfig(config: DocsConfig, root: string): ResolvedConfig 
     outline: outline as [number, number],
     logo,
     editLink,
-    titleTemplate: config.titleTemplate ?? ':title | :site',
+    titleTemplate: config.titleTemplate ?? ':title - :site Docs',
     hostname: (config.hostname ?? (config.sitemap ? config.sitemap.hostname : undefined))?.replace(/\/$/, ''),
   };
 }

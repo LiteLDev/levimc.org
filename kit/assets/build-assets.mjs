@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-// Regenerates pixel icons (SVG files + components/pixel-icons.ts) and the shared texture CSS
-// (theme/generated.css: grass strip, brush texture, grain) from assets/sprites.mjs.
+// Regenerates pixel icons (SVG files + components/pixel-icons.ts), the shared texture CSS (theme/generated.css:
+// grass strip, brush texture, grain, the painted backdrop's tiles, the LeviMC wordmark) from assets/sprites.mjs, and
+// PaintedHero's default scenes (theme/hero-*.svg + theme/hero.css).
 // Usage: node assets/build-assets.mjs
 import { writeFileSync, mkdirSync } from 'node:fs';
+import { deflateSync } from 'node:zlib';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sprites, grassStrip } from './sprites.mjs';
@@ -109,27 +111,164 @@ for (let i = 0; i < 90; i++) {
       const x = cx + dx;
       const y = cy + dy;
       if (x + rx < -8 || x - rx > T + 8 || y + rx < -8 || y - rx > T + 8) continue;
+      // translate + rotate instead of cx/cy + rotate(r cx cy): the same ellipse in fewer bytes
       dabs.push(
-        `<ellipse cx='${x.toFixed(1)}' cy='${y.toFixed(1)}' rx='${rx.toFixed(1)}' ry='${ry.toFixed(1)}' transform='rotate(${rot.toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})' fill='${light ? '#fff' : '#000'}' opacity='${op}'/>`,
+        `<ellipse transform='translate(${x.toFixed(1)} ${y.toFixed(1)})rotate(${rot.toFixed(1)})' rx='${rx.toFixed(1)}' ry='${ry.toFixed(1)}' fill='${light ? '#fff' : '#000'}' opacity='${op}'/>`,
       );
     }
   }
 }
-const brushSvg =
+/**
+ * The brush tile. `opacity` bakes a layer opacity in: layers of a background (blended with background-blend-mode,
+ * which replaces a separate mix-blend-mode element) have no opacity of their own.
+ */
+const brushSvg = (opacity = 1) =>
   `<svg xmlns='http://www.w3.org/2000/svg' width='${T}' height='${T}' viewBox='0 0 ${T} ${T}'>` +
   `<filter id='p' x='0' y='0' width='100%' height='100%'>` +
   `<feTurbulence type='fractalNoise' baseFrequency='0.03 0.11' numOctaves='2' seed='4' stitchTiles='stitch' result='n'/>` +
   `<feDisplacementMap in='SourceGraphic' in2='n' scale='9' xChannelSelector='R' yChannelSelector='G' result='d'/>` +
   `<feGaussianBlur in='d' stdDeviation='0.6'/>` +
   `</filter>` +
-  `<g filter='url(#p)'>${dabs.join('')}</g></svg>`;
-const brushUri = enc(brushSvg);
+  (opacity < 1 ? `<g opacity='${opacity}'>` : '') +
+  `<g filter='url(#p)'>${dabs.join('')}</g>` +
+  (opacity < 1 ? `</g>` : '') +
+  `</svg>`;
+const brushUri = enc(brushSvg());
 
-const grainSvg =
+/** Canvas grain; `opacity` is a baked layer opacity (see brushSvg), applied to the rect's own 0.6. */
+const grainSvg = (opacity = 1) =>
   `<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'>` +
   `<filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/>` +
   `<feColorMatrix type='saturate' values='0'/></filter>` +
-  `<rect width='100%' height='100%' filter='url(#g)' opacity='0.6'/></svg>`;
+  `<rect width='100%' height='100%' filter='url(#g)' opacity='${+(0.6 * opacity).toFixed(4)}'/></svg>`;
+
+// ---------------------------------------------------------------- painted backdrop: the colour dabs as a bitmap
+// The page backdrop used to be a fixed full-viewport element (11 radial gradients on a box inset -12%, i.e. 124% of
+// the viewport, plus brush and grain layers in mix-blend-mode): one more full-screen layer to composite on every
+// scroll frame and ~200 ms of gradient raster at each load and theme switch on a phone. Since kit 2.19 it is the
+// page root's own scrolling background (theme/painterly.css): the same gradients, rasterised here once per theme by
+// this pure-JS rasteriser (premultiplied sRGB, like CSS gradients between legacy colours and `transparent`),
+// cropped to the old visible box, mirrored vertically (so the tile repeats seamlessly down the page) and embedded
+// as a PNG data URI (theme/generated.css). The geometry is in percentages of the box, so the small bitmap scales
+// to any viewport exactly; a smooth gradient survives bilinear upscaling.
+/** [ellipse width %, height %, centre x %, centre y %, [r, g, b], alpha, stop %] — first = topmost, as in CSS. */
+const BACKDROP_DABS = {
+  light: [
+    [30, 24, 6, 10, [79, 138, 91], 0.26, 70],
+    [22, 18, 18, 3, [154, 134, 194], 0.26, 72],
+    [26, 22, 94, 8, [62, 110, 142], 0.24, 70],
+    [18, 14, 80, 2, [233, 196, 106], 0.32, 72],
+    [16, 13, 68, 16, [217, 138, 158], 0.2, 72],
+    [22, 18, 30, 52, [154, 134, 194], 0.1, 72],
+    [24, 20, 74, 48, [79, 138, 91], 0.1, 72],
+    [28, 22, 2, 92, [62, 110, 142], 0.2, 72],
+    [18, 14, 22, 98, [217, 138, 158], 0.14, 72],
+    [26, 24, 98, 96, [79, 138, 91], 0.2, 72],
+    [16, 14, 88, 70, [154, 134, 194], 0.18, 72],
+  ],
+  dark: [
+    [26, 20, 88, 6, [240, 138, 75], 0.26, 70],
+    [14, 10, 84, 3, [245, 178, 107], 0.24, 70],
+    [30, 24, 8, 8, [63, 127, 140], 0.3, 72],
+    [22, 18, 40, 0, [125, 111, 158], 0.28, 72],
+    [24, 20, 70, 50, [63, 127, 140], 0.1, 72],
+    [28, 22, 4, 94, [63, 127, 140], 0.22, 72],
+    [22, 18, 96, 92, [125, 111, 158], 0.22, 72],
+    [14, 12, 92, 62, [240, 138, 75], 0.12, 72],
+  ],
+};
+const BACKDROP_INSET = 0.12; // the old .kit-backdrop-dabs { inset: -12% }
+const BACKDROP_W = 128; // px per viewport width
+const BACKDROP_H = 128; // px per viewport height (the tile is two: the second half mirrors the first)
+
+/** RGBA (straight alpha) of the dabs over a transparent viewport, W×H pixels, mirrored below → W×2H. */
+function rasterDabs(list, W, H) {
+  const out = new Uint8Array(W * H * 2 * 4);
+  const box = 1 + 2 * BACKDROP_INSET;
+  for (let j = 0; j < H; j++) {
+    const by = ((j + 0.5) / H + BACKDROP_INSET) / box; // viewport → box coordinates
+    for (let i = 0; i < W; i++) {
+      const bx = ((i + 0.5) / W + BACKDROP_INSET) / box;
+      let r = 0, g = 0, b = 0, a = 0; // premultiplied
+      for (let k = list.length - 1; k >= 0; k--) {
+        const [ew, eh, cx, cy, [cr, cg, cb], alpha, stop] = list[k];
+        const d = Math.hypot((bx - cx / 100) / (ew / 100), (by - cy / 100) / (eh / 100));
+        const sa = d >= stop / 100 ? 0 : alpha * (1 - d / (stop / 100));
+        if (!sa) continue;
+        r = cr * sa + r * (1 - sa);
+        g = cg * sa + g * (1 - sa);
+        b = cb * sa + b * (1 - sa);
+        a = sa + a * (1 - sa);
+      }
+      const A = Math.round(a * 255);
+      const px = A ? [Math.round(r / a), Math.round(g / a), Math.round(b / a), A] : [0, 0, 0, 0];
+      out.set(px, (j * W + i) * 4);
+      out.set(px, ((2 * H - 1 - j) * W + i) * 4);
+    }
+  }
+  return { width: W, height: 2 * H, data: out };
+}
+
+const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
+  let c = n;
+  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  return c >>> 0;
+});
+function crc32(buf) {
+  let c = 0xffffffff;
+  for (const byte of buf) c = CRC_TABLE[(c ^ byte) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+/** A minimal PNG encoder (RGBA8, per-row adaptive filter, zlib from node:zlib). */
+function encodePng({ width, height, data }) {
+  const stride = width * 4;
+  const raw = Buffer.alloc((stride + 1) * height);
+  const paeth = (a, b, c) => {
+    const p = a + b - c;
+    const pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
+    return pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
+  };
+  for (let y = 0; y < height; y++) {
+    const row = data.subarray(y * stride, (y + 1) * stride);
+    const prev = y ? data.subarray((y - 1) * stride, y * stride) : new Uint8Array(stride);
+    let best = null, bestSum = Infinity;
+    for (let f = 0; f < 5; f++) {
+      const line = Buffer.alloc(stride + 1);
+      line[0] = f;
+      let sum = 0;
+      for (let x = 0; x < stride; x++) {
+        const left = x >= 4 ? row[x - 4] : 0, up = prev[x], ul = x >= 4 ? prev[x - 4] : 0;
+        const pred = f === 0 ? 0 : f === 1 ? left : f === 2 ? up : f === 3 ? (left + up) >> 1 : paeth(left, up, ul);
+        const v = (row[x] - pred) & 0xff;
+        line[x + 1] = v;
+        sum += v < 128 ? v : 256 - v;
+      }
+      if (sum < bestSum) [best, bestSum] = [line, sum];
+    }
+    best.copy(raw, y * (stride + 1));
+  }
+  const chunk = (type, body) => {
+    const len = Buffer.alloc(4);
+    len.writeUInt32BE(body.length);
+    const tb = Buffer.concat([Buffer.from(type, 'ascii'), body]);
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(tb));
+    return Buffer.concat([len, tb, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(width, 0);
+  ihdr.writeUInt32BE(height, 4);
+  ihdr.set([8, 6, 0, 0, 0], 8); // 8-bit RGBA, no interlace
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', ihdr),
+    chunk('IDAT', deflateSync(raw, { level: 9 })),
+    chunk('IEND', Buffer.alloc(0)),
+  ]);
+}
+const pngUri = (img) => `url("data:image/png;base64,${encodePng(img).toString('base64')}")`;
+const dabsLight = pngUri(rasterDabs(BACKDROP_DABS.light, BACKDROP_W, BACKDROP_H));
+const dabsDark = pngUri(rasterDabs(BACKDROP_DABS.dark, BACKDROP_W, BACKDROP_H));
 
 // Dark soil tile (footer): 16×16 speckled dirt, rendered at 2× with image-rendering: pixelated.
 function dirtTile(seed, base, shades) {
@@ -199,14 +338,61 @@ const iconVars = Object.entries(iconData)
   })
   .join('\n');
 
+// The LeviMC wordmark in the pixel face (Silkscreen's glyphs, 1 cell = 1/8 em, cap height 5 cells): drawn as a
+// mask (.kit-wordmark, theme/chrome.css), so no site loads Silkscreen for six letters and the bar never shows the
+// fallback face first. Silkscreen sets lower case as small capitals: "LeviMC" reads LEVIMC.
+const WORDMARK = [
+  '#....###..#...#..#..#...#...##.',
+  '#....#....#...#..#..##.##..#..#',
+  '#....###...#.#...#..#.#.#..#...',
+  '#....#.....#.#...#..#...#..#..#',
+  '###..###....#....#..#...#...##.',
+];
+// the bar and the footer set the text with letter-spacing 0.04em: 0.32 cells after each glyph
+const WORDMARK_TRACKING = 0.32;
+const wordmarkCols = WORDMARK[0].length;
+const wordmarkGlyph = []; // glyph index of each column (glyphs are separated by empty columns)
+for (let x = 0, g = 0; x < wordmarkCols; x++) {
+  const empty = (c) => WORDMARK.every((row) => row[c] !== '#');
+  if (x > 0 && !empty(x) && empty(x - 1)) g++;
+  wordmarkGlyph.push(g);
+}
+const wordmarkWidth = +(wordmarkCols + wordmarkGlyph[wordmarkCols - 1] * WORDMARK_TRACKING).toFixed(2);
+const wordmarkSvg = (() => {
+  const runs = [];
+  WORDMARK.forEach((row, y) => {
+    for (let x = 0; x < row.length; ) {
+      if (row[x] !== '#') {
+        x++;
+        continue;
+      }
+      let len = 1;
+      while (row[x + len] === '#' && wordmarkGlyph[x + len] === wordmarkGlyph[x]) len++;
+      runs.push(`M${+(x + wordmarkGlyph[x] * WORDMARK_TRACKING).toFixed(2)} ${y}h${len}v1h-${len}z`);
+      x += len;
+    }
+  });
+  return `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${wordmarkWidth} ${WORDMARK.length}'><path d='${runs.join('')}'/></svg>`;
+})();
+
 const css = `/* Generated by assets/build-assets.mjs — do not edit by hand. Shared texture tokens. */
 :root {
+  /* The painted page backdrop (theme/painterly.css, on the root of a page with .kit-backdrop): the colour dabs as a
+     vertically mirrored bitmap (one viewport wide, two high), the brush and the grain with their opacity baked in
+     (background-blend-mode layers have none). Light = Nymphéas; .dark below. */
+  --kit-backdrop-dabs: ${dabsLight};
+  --kit-backdrop-brush: ${enc(brushSvg(0.16))};
+  --kit-backdrop-grain: ${enc(grainSvg(0.05))};
+  /* The footer painting's brush overlay (soft-light at 0.45, baked in). */
+  --kit-footer-brush: ${enc(brushSvg(0.45))};
+  /* The LeviMC wordmark (${wordmarkWidth}×${WORDMARK.length} cells of 1/8 em, tracking included): a mask, see .kit-wordmark. */
+  --kit-wordmark: ${enc(wordmarkSvg)};
   /* 16×8 grass-over-dirt pixel strip (render at 2×: background-size 32px 16px; image-rendering: pixelated). */
   --kit-grass-strip: ${enc(stripSvg)};
   /* Impressionist brush-dab texture: ellipse dabs displaced by feTurbulence. Tile 256px, use at low opacity. */
   --kit-brush: ${brushUri};
   /* Fine canvas grain. */
-  --kit-grain: ${enc(grainSvg)};
+  --kit-grain: ${enc(grainSvg())};
   /* Pixel dissolve masks (6px cells, 96px deep, 288px along the edge). Name = the solid side. Use with
      .kit-dissolve-* (pixel.css) or as mask layers: the kit's only transition from painting to canvas. */
   --kit-dissolve-top: ${dissolveTop};
@@ -221,15 +407,21 @@ const css = `/* Generated by assets/build-assets.mjs — do not edit by hand. Sh
   /* Pixel sprites (16×16). Monochrome glyphs are black: use them as mask-image with background: currentColor. */
 ${iconVars}
 }
+.dark {
+  --kit-backdrop-dabs: ${dabsDark};
+  --kit-backdrop-brush: ${enc(brushSvg(0.12))};
+  --kit-backdrop-grain: ${enc(grainSvg(0.035))};
+}
 `;
 writeFileSync(join(root, 'theme/generated.css'), css);
 
-// The PaintedHero's default scenes (seed + pixel props as the component's defaults) as cached CSS backgrounds:
-// imported by PaintedHero.tsx, so only apps with a hero ship them, once per site instead of ~200 KB of inline
-// SVG per page. CSS is render-blocking, so the scene paints with the page (no flash). No `animate`: a CSS
-// animation inside a background-image makes the browser re-rasterise the whole filtered SVG every frame.
-const heroLilies = enc(sceneToSvg(lilyPond({ prefix: 'hl' })));
-const heroSunrise = enc(sceneToSvg(harborSunrise({ prefix: 'hd' })));
+// The PaintedHero's default scenes (seed + pixel props as the component's defaults) as two SVG files next to
+// theme/hero.css, which PaintedHero.tsx imports: the bundler fingerprints them and only a page that renders a hero
+// loads one (kit ≤ 2.18 inlined both as data URIs into hero.css — ~200 KB of render-blocking CSS on every page of a
+// site with a hero anywhere). PaintedHero also preloads them (no flash). SVG text files, so the kit stays a set of
+// text files (kit.json). Static: an animation inside an SVG image would re-rasterise the filtered image every frame.
+writeFileSync(join(root, 'theme/hero-lilies.svg'), sceneToSvg(lilyPond({ prefix: 'hl' })) + '\n');
+writeFileSync(join(root, 'theme/hero-sunrise.svg'), sceneToSvg(harborSunrise({ prefix: 'hd' })) + '\n');
 writeFileSync(
   join(root, 'theme/hero.css'),
   `/* Generated by assets/build-assets.mjs — do not edit by hand. PaintedHero default scenes (imported by components/PaintedHero.tsx). */
@@ -237,12 +429,12 @@ writeFileSync(
    components layer is not created ahead of theme/base (which would let preflight override every component). */
 @layer theme, base, components, utilities;
 @layer components {
+  /* until the scene has loaded: its sky, so the band never flashes the bare canvas */
   .kit-hero-art[data-scene="default"] {
-    background: ${heroLilies} 62% 50% / cover no-repeat;
+    background: url("./hero-lilies.svg") 62% 50% / cover no-repeat, linear-gradient(#d9e7cf, #c5ddd2 38%, #a7cbc6 50%, #7eaab0);
   }
   .dark .kit-hero-art[data-scene="default"] {
-    background-image: ${heroSunrise};
-    background-position: 78% 50%;
+    background: url("./hero-sunrise.svg") 78% 50% / cover no-repeat, linear-gradient(#1b2e41, #2c465a 32%, #36576a 50%, #22394c 56%, #0f1b26);
   }
 }
 `,

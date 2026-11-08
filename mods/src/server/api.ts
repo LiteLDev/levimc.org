@@ -36,7 +36,7 @@ export async function catalogJson(): Promise<CatalogJson> {
     url: url(BASE),
     stats: catalog.stats,
     sort: DEFAULT_STATE.sort as "relevance",
-    mods: matched.map(({ rank: _rank, icon, requiredBy, ...entry }) => ({
+    mods: matched.map(({ rank: _rank, icon, iconId: _iconId, requiredBy, ...entry }) => ({
       ...entry,
       url: url(modPath(entry.tooth)),
       json: url(modJsonPath(entry.tooth)),

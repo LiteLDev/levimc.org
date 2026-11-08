@@ -35,6 +35,12 @@ export function ownerOf(tooth: string): string {
 }
 
 /** A GitHub user's or organisation's avatar (answers 200 directly, no redirect). */
+/** The widths a mod's icon is served at (scaled at build time, see server/icons.ts): 40, 72 and 96 px slots at 1x–3x. */
+export const ICON_WIDTHS = [96, 144, 288] as const;
+
+/** A scaled icon's file at `width` (`id`: `CatalogEntry.iconId`). */
+export const iconPath = (id: string, width: number) => `${BASE}icons/${id}-${width}.webp`;
+
 export function ownerAvatar(owner: string, size = 144): string {
   return `https://avatars.githubusercontent.com/${encodeURIComponent(owner)}?s=${size}`;
 }

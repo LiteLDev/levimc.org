@@ -81,13 +81,74 @@ export interface NavBuildInput {
   warn: (m: string) => void;
 }
 
+export interface NavPlacement {
+  sidebar?: string;
+  nav?: number;
+  prev?: { text: string; path: string };
+  next?: { text: string; path: string };
+}
+
 export interface NavBuildResult {
   nav: Record<string, NavItem[]>;
   sidebars: Record<string, SidebarData>;
   /** route id → { sidebar id, nav index, prev, next } */
-  placement: Map<string, { sidebar?: string; nav?: number; prev?: { text: string; path: string }; next?: { text: string; path: string } }>;
+  placement: Map<string, NavPlacement>;
   /** `${locale}:${key}` → explicit (translated) nav title, for pages listed with a title in the nav. */
   navTitles: Map<string, string>;
+}
+
+/** Sections whose sidebar holds at most this many links open every group; longer ones only the current page's. */
+export const OPEN_ALL_MAX_LINKS = 24;
+
+/** The home page is never a section's page, a pager target or a tab (the brand links it). */
+export const HOME_KEY = 'index';
+
+export function countLinks(items: NavItem[]): number {
+  let n = 0;
+  for (const it of items) {
+    if (it.link !== undefined) n++;
+    if (it.items) n += countLinks(it.items);
+  }
+  return n;
+}
+
+/** Pager order of a tree: every internal page once, depth first, without the home page. */
+function flatten(items: NavItem[], acc: NavItem[] = []): NavItem[] {
+  for (const it of items) {
+    // `link !== undefined`: the default locale's home path is '' (falsy) — test presence, not truthiness
+    if (it.link !== undefined && it.key && it.key !== HOME_KEY && !it.external && !acc.some((a) => a.link === it.link)) acc.push(it);
+    if (it.items) flatten(it.items, acc);
+  }
+  return acc;
+}
+
+const contains = (it: NavItem, key: string): boolean => it.key === key || !!it.items?.some((c) => contains(c, key));
+
+function firstLink(items: NavItem[]): NavItem | undefined {
+  for (const it of items) {
+    if (it.link !== undefined && !it.external) return it;
+    if (it.items) {
+      const f = firstLink(it.items);
+      if (f) return f;
+    }
+  }
+  return undefined;
+}
+
+function pager(flat: NavItem[], key: string): Pick<NavPlacement, 'prev' | 'next'> {
+  const pos = flat.findIndex((it) => it.key === key);
+  if (pos < 0) return {};
+  const at = (i: number) => (i >= 0 && i < flat.length ? { text: flat[i]!.text, path: flat[i]!.link! } : undefined);
+  return { prev: at(pos - 1), next: at(pos + 1) };
+}
+
+/**
+ * One sidebar policy for every docs site (kit 2.19): the section's title over its tree; every group open when
+ * the section is short (≤ OPEN_ALL_MAX_LINKS links, or `sidebarExpand`), else only the group(s) holding the
+ * current page (plus groups marked `collapsed: false`).
+ */
+function sidebarOf(cfg: ResolvedConfig, items: NavItem[], title?: string): SidebarData {
+  return { ...(title ? { title } : {}), items, openAll: !!cfg.sidebarExpand || countLinks(items) <= OPEN_ALL_MAX_LINKS };
 }
 
 export function buildNavigation({ cfg, scan, titles, warn }: NavBuildInput): NavBuildResult {
@@ -95,6 +156,13 @@ export function buildNavigation({ cfg, scan, titles, warn }: NavBuildInput): Nav
   const sidebars: Record<string, SidebarData> = {};
   const placement: NavBuildResult['placement'] = new Map();
   const navTitles = new Map<string, string>();
+  // nav lint runs per locale, but each problem is reported once
+  const warned = new Set<string>();
+  const warnOnce = (m: string) => {
+    if (warned.has(m)) return;
+    warned.add(m);
+    warn(m);
+  };
   const perLocale = <T,>(v: T[] | Record<string, T[]> | undefined, code: string): T[] | undefined => {
     if (!v) return undefined;
     if (Array.isArray(v)) return v;
@@ -125,27 +193,14 @@ export function buildNavigation({ cfg, scan, titles, warn }: NavBuildInput): Nav
       })
       .filter((x): x is NavItem => !!x);
 
-  const firstLink = (items: NavItem[]): NavItem | undefined => {
-    for (const it of items) {
-      if (it.link && !it.external) return it;
-      if (it.items) {
-        const f = firstLink(it.items);
-        if (f) return f;
-      }
-    }
-    return undefined;
-  };
-  const flatten = (items: NavItem[], acc: NavItem[] = []): NavItem[] => {
-    for (const it of items) {
-      if (it.link && it.key && !acc.some((a) => a.link === it.link)) acc.push(it);
-      if (it.items) flatten(it.items, acc);
-    }
-    return acc;
-  };
-  const contains = (it: NavItem, key: string): boolean => it.key === key || !!it.items?.some((c) => contains(c, key));
-
   const mode = cfg.sidebar === undefined ? 'tabs' : cfg.sidebar;
   const isMkdocsMode = mode === 'tabs' || mode === 'tree';
+  if (mode && typeof mode === 'object') {
+    warn(
+      "sidebar: the object form (VitePress sidebar / multi-sidebar by URL prefix) is deprecated since kit 2.19 — use sidebar: 'tabs' " +
+        'with one nav section per sidebar tree (README: Site config API). It keeps working for now.',
+    );
+  }
 
   for (const loc of cfg.locales) {
     const code = loc.code;
@@ -153,32 +208,52 @@ export function buildNavigation({ cfg, scan, titles, warn }: NavBuildInput): Nav
     const tree = materialize(parseNav(navEntries, scan, cfg, warn), code);
 
     if (isMkdocsMode) {
+      if (mode === 'tabs' && loc.isDefault) {
+        // the canonical IA (kit 2.19): every top-level entry is a section = one sidebar tree; the brand is the
+        // only home link and external resources go to header.links
+        for (const it of tree) {
+          if (it.items) {
+            if (!firstLink(it.items)) warnOnce(`nav: section '${it.text}' has no page`);
+            continue;
+          }
+          if (it.external) warnOnce(`nav: top-level entry '${it.text}' is not a section (an external link: put it in header.links)`);
+          else if (it.key === HOME_KEY) warnOnce(`nav: top-level entry '${it.text}' is not a section (the home page: the brand already links it, remove the entry)`);
+          else if (it.key) warnOnce(`nav: top-level entry '${it.text}' is not a section (a single page: put it into a section, e.g. its 'Help' group)`);
+        }
+      }
       // header: top-level entries; groups link to their first page
       nav[code] = tree.map((it) => {
         if (!it.items) return { ...it, activePrefix: undefined };
         const f = firstLink(it.items);
         return { text: it.text, link: f?.link, key: f?.key, items: undefined };
       });
-      if (mode === 'tree') sidebars[`${code}:tree`] = { items: tree };
+      if (mode === 'tree') sidebars[`${code}:tree`] = sidebarOf(cfg, tree);
       tree.forEach((it, i) => {
-        if (mode === 'tabs' && it.items) sidebars[`${code}:tab${i}`] = { title: it.text, items: it.items, collapseGroups: !cfg.sidebarExpand };
+        if (mode === 'tabs' && it.items) sidebars[`${code}:tab${i}`] = sidebarOf(cfg, it.items, it.text);
       });
-      const flat = flatten(tree);
+      // prev/next: inside the active section (tabs) or the whole tree ('tree'); never the home page
+      const flats = tree.map((it) => (it.items ? flatten(it.items) : []));
+      const flatAll = mode === 'tree' ? flatten(tree) : [];
       for (const r of scan.routes.filter((x) => x.locale === code)) {
-        const idx = tree.findIndex((it) => contains(it, r.key));
-        const pos = flat.findIndex((it) => it.key === r.key);
-        const sidebar = mode === 'tree' ? `${code}:tree` : idx >= 0 && tree[idx]!.items ? `${code}:tab${idx}` : undefined;
+        const isHome = r.key === HOME_KEY;
+        const idx = isHome ? -1 : tree.findIndex((it) => contains(it, r.key));
+        const sidebar = isHome ? undefined : mode === 'tree' ? `${code}:tree` : idx >= 0 && tree[idx]!.items ? `${code}:tab${idx}` : undefined;
         placement.set(r.id, {
           sidebar,
           nav: idx >= 0 ? idx : undefined,
-          prev: pos > 0 ? { text: flat[pos - 1]!.text, path: flat[pos - 1]!.link! } : undefined,
-          next: pos >= 0 && pos < flat.length - 1 ? { text: flat[pos + 1]!.text, path: flat[pos + 1]!.link! } : undefined,
+          ...(isHome ? {} : mode === 'tree' ? pager(flatAll, r.key) : idx >= 0 ? pager(flats[idx]!, r.key) : {}),
         });
       }
     } else {
-      // VitePress: explicit nav + sidebar(s)
+      // VitePress: explicit nav + sidebar(s) (deprecated for LeviMC sites, see the warning above)
       const prefixOf = (link: string) => posix.dirname('/' + link).replace(/^\/$/, '') + '/';
-      nav[code] = tree.map((it) => ({ ...it, activePrefix: it.link && !it.external ? prefixOf(it.link) : undefined }));
+      // N4: a header link claims its folder as active prefix, unless that folder is a locale root: the link
+      // '/ja-JP/download' must not light up on every ja-JP page (it is active on its own page only)
+      const roots = new Set(['/', ...cfg.locales.map((l) => '/' + l.prefix)]);
+      nav[code] = tree.map((it) => {
+        const p = it.link !== undefined && !it.external && !it.items ? prefixOf(it.link) : undefined;
+        return { ...it, activePrefix: p && !roots.has(p) ? p : undefined };
+      });
       // active prefixes per header item (build-time only): its own, or a dropdown's internal links'
       const navPrefixes = nav[code]!.map((it) =>
         it.activePrefix ? [it.activePrefix] : [...new Set((it.items ?? []).filter((c) => c.link && !c.external).map((c) => prefixOf(c.link!)))],
@@ -193,30 +268,38 @@ export function buildNavigation({ cfg, scan, titles, warn }: NavBuildInput): Nav
           sb = looksLikeLocales ? (rec as Record<string, SidebarConfig>)[code] : (rec as SidebarConfig);
         }
       }
-      const groups: { prefix: string; id: string; items: NavItem[] }[] = [];
+      const groups: { prefix: string; id: string; items: NavItem[]; flat: NavItem[] }[] = [];
       if (Array.isArray(sb)) {
         const id = `${code}:main`;
         const items = materialize(parseNav(sb, scan, cfg, warn), code);
-        sidebars[id] = { items, expand: true };
-        groups.push({ prefix: '/', id, items });
+        sidebars[id] = sidebarOf(cfg, items);
+        groups.push({ prefix: '/', id, items, flat: flatten(items) });
       } else if (sb) {
         Object.entries(sb).forEach(([prefix, entries], i) => {
           const id = `${code}:sb${i}`;
           const items = materialize(parseNav(entries, scan, cfg, warn), code);
-          sidebars[id] = { items, expand: true };
-          groups.push({ prefix: prefix.startsWith('/') ? prefix : '/' + prefix, id, items });
+          sidebars[id] = sidebarOf(cfg, items);
+          groups.push({ prefix: prefix.startsWith('/') ? prefix : '/' + prefix, id, items, flat: flatten(items) });
         });
       }
       for (const r of scan.routes.filter((x) => x.locale === code)) {
+        if (r.key === HOME_KEY) {
+          placement.set(r.id, {});
+          continue;
+        }
         const url = '/' + r.path;
-        const g = groups.filter((x) => url.startsWith(x.prefix) || ('/' + r.source.rel).startsWith(x.prefix)).sort((a, b) => b.prefix.length - a.prefix.length)[0];
-        const flat = g ? flatten(g.items) : [];
-        const pos = flat.findIndex((it) => it.key === r.key);
-        // header item: exact match first, then a dropdown listing the page (VitePress), else the longest active
+        // N4: a sidebar that lists the page wins over the URL prefix (a 'Help' group may link a page outside its folder)
+        const g =
+          groups.find((x) => x.items.some((it) => contains(it, r.key))) ??
+          groups.filter((x) => url.startsWith(x.prefix) || ('/' + r.source.rel).startsWith(x.prefix)).sort((a, b) => b.prefix.length - a.prefix.length)[0];
+        // header item: exact match first, then a dropdown listing the page (VitePress), then the link into the
+        // page's sidebar, else the longest active
         // prefix; on a tie a plain link beats a dropdown, then the earlier item wins
         const items = nav[code]!;
         let navIdx = items.findIndex((it) => it.key === r.key);
         if (navIdx < 0) navIdx = items.findIndex((it) => !!it.items && contains(it, r.key));
+        // the header link whose page is in this page's sidebar (privacy-policy listed in the /guide/ sidebar → Guide)
+        if (navIdx < 0 && g) navIdx = items.findIndex((it) => !it.items && !!it.key && g.items.some((x) => contains(x, it.key!)));
         if (navIdx < 0) {
           let best = -1;
           let bestLen = 1;
@@ -232,12 +315,7 @@ export function buildNavigation({ cfg, scan, titles, warn }: NavBuildInput): Nav
           });
           navIdx = best;
         }
-        placement.set(r.id, {
-          sidebar: g?.id,
-          nav: navIdx >= 0 ? navIdx : undefined,
-          prev: pos > 0 ? { text: flat[pos - 1]!.text, path: flat[pos - 1]!.link! } : undefined,
-          next: pos >= 0 && pos < flat.length - 1 ? { text: flat[pos + 1]!.text, path: flat[pos + 1]!.link! } : undefined,
-        });
+        placement.set(r.id, { sidebar: g?.id, nav: navIdx >= 0 ? navIdx : undefined, ...(g ? pager(g.flat, r.key) : {}) });
       }
     }
   }

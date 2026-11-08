@@ -2,6 +2,13 @@
 const MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 const en = {
+  // <title>s ("<Page> - LeviMC") and the 404 page
+  meta: {
+    blog: "Blog",
+    notFound: "Page not found",
+    pickProject: "Or open the docs of a project:",
+  },
+
   // Navigation
   nav: {
     home: "Home",

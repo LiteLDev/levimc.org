@@ -141,8 +141,9 @@ export function useContentEnhancements(ref: RefObject<HTMLElement | null>, key: 
         else if (w !== document.activeElement) w.removeAttribute('tabindex'); // never pull focus from under the user
       }
     };
-    syncScrollable();
+    // the observer's first callback (after layout) does the initial check: no layout forced while hydrating
     const resizeObserver = tableWraps.length && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(syncScrollable) : undefined;
+    if (!resizeObserver && tableWraps.length) syncScrollable();
     // Watch the table too: web fonts loading later change its width without resizing the wrapper.
     for (const w of tableWraps) for (const el of [w, w.firstElementChild]) if (el) resizeObserver?.observe(el);
     return () => {

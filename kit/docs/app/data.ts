@@ -71,6 +71,11 @@ export function loadPage(id: string): Thenable<PageData> {
   return p;
 }
 
+/** The full route of a page: the route table's entry plus the per-page meta its page data carries (see PageMeta). */
+export function withMeta(route: RouteMeta, page: PageData): RouteMeta {
+  return page.meta ? { ...route, ...page.meta } : route;
+}
+
 export function preloadPage(id: string) {
   void loadPage(id).catch(() => undefined);
 }

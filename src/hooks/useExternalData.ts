@@ -1,7 +1,8 @@
 // Live data shown on the site (GitHub stars/forks, the latest LeviLamina release, Discord presence).
-// Nothing is fetched while prerendering: the first render (server and hydration) shows placeholders and
-// the requests start in an effect. Results are kept for the rest of the visit, so client-side navigation
-// between pages shows them immediately.
+// Nothing is fetched while prerendering: the first render (server and hydration) shows placeholders. The
+// requests start once the main thread is idle after hydration (requestIdleCallback, at most 2 s later), never
+// inside the hydration task. Results are kept for the rest of the visit (in memory, and in sessionStorage for
+// 30 minutes, see githubService.ts), so client-side navigation and the next page load show them at once.
 import { useEffect, useState } from 'react';
 import { getDiscordInfo, getLatestRelease, getMultipleRepos, getRepoInfo, type DiscordInfo, type RepoInfo } from '../services/githubService';
 import { PROJECT_CONFIGS } from '../data/projects';
@@ -28,16 +29,31 @@ const leviLamina = cached(() => getRepoInfo('LiteLDev', 'LeviLamina'));
 
 let hydrationDone = false;
 
+/** Run `task` when the main thread is idle (or after `timeout` ms at the latest); returns a cancel function. */
+function whenIdle(task: () => void, timeout = 2000): () => void {
+  if (typeof window.requestIdleCallback === 'function') {
+    const id = window.requestIdleCallback(task, { timeout });
+    return () => window.cancelIdleCallback(id);
+  }
+  const id = window.setTimeout(task, 200);
+  return () => window.clearTimeout(id);
+}
+
 function useCached<T>(source: ReturnType<typeof cached<T>>): T | undefined {
   // During hydration the first render must match the prerendered placeholders.
   const [state, setState] = useState<{ v: T } | null>(() => (hydrationDone ? source.peek() : null));
   useEffect(() => {
     let alive = true;
-    source.get().then((v) => {
-      if (alive) setState({ v });
-    });
+    const start = () => {
+      source.get().then((v) => {
+        if (alive) setState({ v });
+      });
+    };
+    // already loaded (a later page of the visit): no need to wait
+    const cancel = source.peek() ? (start(), () => {}) : whenIdle(start);
     return () => {
       alive = false;
+      cancel();
     };
   }, [source]);
   return state?.v;

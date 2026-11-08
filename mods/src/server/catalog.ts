@@ -155,6 +155,7 @@ async function build(): Promise<BuildData> {
     // "all": an icon that does not load as an image (an LFS pointer, say) is dropped by checkIcons
     if (url) iconUrls.set(tooth, updateUrl(url, renames, "all"));
   }
+  // the icons that load, each scaled down to the sizes the pages show (server/icons.ts)
   const loadable = await checkIcons(iconUrls.values());
   const gameVersions = resolveGameVersions(launcher);
 
@@ -172,7 +173,7 @@ async function build(): Promise<BuildData> {
       name: mod.info.name || tooth.split("/").at(-1)!,
       description: truncate(mod.info.description ?? ""),
       owner,
-      ...(icon && loadable.has(icon) ? { icon } : {}),
+      ...(icon && loadable.has(icon) ? { icon, ...(loadable.get(icon)!.id ? { iconId: loadable.get(icon)!.id } : {}) } : {}),
       tags,
       ...facets,
       gameVersions: gameVersions.get(tooth.toLowerCase()) ?? [],
@@ -258,7 +259,16 @@ export function loadBuildData(): Promise<BuildData> {
 /** A mod as dependency and dependent lists show it (an old name of a repository leads to the one it is listed under). */
 export function related(data: BuildData, tooth: string): RelatedMod {
   const entry = data.byTooth.get(pageOf(data.listings, data.canonical.get(tooth.toLowerCase())) ?? "");
-  if (entry) return { tooth: entry.tooth, name: entry.name, owner: entry.owner, ...(entry.icon ? { icon: entry.icon } : {}), listed: true };
+  if (entry) {
+    return {
+      tooth: entry.tooth,
+      name: entry.name,
+      owner: entry.owner,
+      ...(entry.icon ? { icon: entry.icon } : {}),
+      ...(entry.iconId ? { iconId: entry.iconId } : {}),
+      listed: true,
+    };
+  }
   return { tooth, name: tooth.split("/").at(-1) ?? tooth, owner: ownerOf(tooth) };
 }
 

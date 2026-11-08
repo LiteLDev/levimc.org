@@ -17,15 +17,14 @@ interface ItemProps {
   depth: number;
   onNavigate?: () => void;
   idPath: string;
-  expand?: boolean;
-  collapse?: boolean;
+  openAll?: boolean;
 }
 
-function Group({ item, path, depth, onNavigate, idPath, expand, collapse }: ItemProps) {
+function Group({ item, path, depth, onNavigate, idPath, openAll }: ItemProps) {
   const active = containsPath(item, path);
-  // open: the group holding the current page; groups marked collapsed: false; else VitePress (expand) opens all
-  // but `collapsed: true`, MkDocs opens the top level unless the tabs sidebar collapses groups (Material default)
-  const [open, setOpen] = useState(active || item.collapsed === false || (!item.collapsed && (expand || (depth === 0 && !collapse))));
+  // one policy (kit 2.19, nav.ts): the group(s) holding the current page; groups marked collapsed: false; every
+  // other group too in a short section (openAll), except those marked collapsed: true
+  const [open, setOpen] = useState(active || item.collapsed === false || (!!openAll && !item.collapsed));
   // reveal the current page after client-side navigation
   useEffect(() => {
     if (active) setOpen(true);
@@ -39,16 +38,16 @@ function Group({ item, path, depth, onNavigate, idPath, expand, collapse }: Item
       </button>
       <ul id={listId} className="kit-sb-list" hidden={!open}>
         {item.items!.map((c, i) => (
-          <Item key={i} item={c} path={path} depth={depth + 1} onNavigate={onNavigate} idPath={`${idPath}-${i}`} expand={expand} collapse={collapse} />
+          <Item key={i} item={c} path={path} depth={depth + 1} onNavigate={onNavigate} idPath={`${idPath}-${i}`} openAll={openAll} />
         ))}
       </ul>
     </li>
   );
 }
 
-function Item({ item, path, depth, onNavigate, idPath, expand, collapse }: ItemProps) {
-  if (item.items) return <Group item={item} path={path} depth={depth} onNavigate={onNavigate} idPath={idPath} expand={expand} collapse={collapse} />;
-  if (!item.link) return null;
+function Item({ item, path, depth, onNavigate, idPath, openAll }: ItemProps) {
+  if (item.items) return <Group item={item} path={path} depth={depth} onNavigate={onNavigate} idPath={idPath} openAll={openAll} />;
+  if (item.link === undefined) return null;
   const current = !item.external && item.link === path;
   return (
     <li>
@@ -86,7 +85,7 @@ export function Sidebar({ data, path, label, onNavigate }: { data: SidebarData; 
       {data.title ? <p className="kit-sb-title">{data.title}</p> : null}
       <ul className="kit-sb-list kit-sb-root">
         {data.items.map((it, i) => (
-          <Item key={i} item={it} path={path} depth={0} onNavigate={onNavigate} idPath={String(i)} expand={data.expand} collapse={data.collapseGroups} />
+          <Item key={i} item={it} path={path} depth={0} onNavigate={onNavigate} idPath={String(i)} openAll={data.openAll} />
         ))}
       </ul>
     </nav>

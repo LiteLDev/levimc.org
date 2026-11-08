@@ -11,7 +11,8 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active: boolean
     const prev = document.activeElement as HTMLElement | null;
     const focusables = () => [...el.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((n) => !n.closest('[hidden]') && n.offsetParent !== null);
     const first = el.querySelector<HTMLElement>('[data-autofocus]') ?? focusables()[0];
-    first?.focus();
+    // no scroll: the trap's container is already in view, and scrolling the page behind a modal re-lays it out
+    first?.focus({ preventScroll: true });
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -34,7 +35,7 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active: boolean
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('keydown', onKey);
-      if (prev && document.contains(prev)) prev.focus();
+      if (prev && document.contains(prev)) prev.focus({ preventScroll: true });
     };
   }, [active]);
 }

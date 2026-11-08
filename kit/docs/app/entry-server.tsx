@@ -2,7 +2,8 @@ import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
 import { StaticRouter } from 'react-router';
 import { App } from './App';
-import { langOf, loadPage, matchPathname, primePage, routes, site, stringsFor } from './data';
+import { langOf, loadPage, matchPathname, primePage, routes, site } from './data';
+import { docsStrings } from '../shared/strings';
 import { routeHead } from '../shared/head';
 import { outFileFor } from '../shared/routing';
 import type { EmbeddedPageData } from '../shared/types';
@@ -25,7 +26,7 @@ export async function render(url: string): Promise<RenderedPage> {
   if (route) {
     const data = await loadPage(route.page);
     primePage(route.page, data);
-    pageData = { page: route.page, toc: data.toc, hero: data.hero, features: data.features, frontmatter: data.frontmatter };
+    pageData = { page: route.page, toc: data.toc, meta: data.meta, hero: data.hero, features: data.features, frontmatter: data.frontmatter };
   }
   const html = renderToString(
     <StrictMode>
@@ -37,7 +38,7 @@ export async function render(url: string): Promise<RenderedPage> {
   const locale = route?.locale ?? site.defaultLocale;
   return {
     html,
-    head: routeHead(site, route, stringsFor(locale).notFoundTitle),
+    head: routeHead(site, route, docsStrings(langOf(locale)).pageNotFound),
     lang: langOf(locale),
     pageData,
     page: route?.page,

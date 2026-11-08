@@ -250,7 +250,7 @@ function Index({ page }: { page: number }) {
   const { items, pageCount } = pageOf(blog.posts, page);
   return (
     <>
-      {/* the hero's eyebrow is a Silkscreen micro-label: Latin only */}
+      {/* the hero's eyebrow is a micro-label (small spaced capitals): Latin only */}
       <PaintedHero className="lm-blog-hero" eyebrow="Blog" name={b.name} tagline={b.tagline} horizon />
       <div className="lm-container lm-blog-body">
         <BlogNav view={{ kind: 'index', page }} />

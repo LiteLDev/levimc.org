@@ -16,12 +16,16 @@ import { highlightToHast, type TokenStyles } from './shiki.ts';
 import { HTML_TAGS } from './html-tags.ts';
 import { isPlatform, platformOfLabel, PLATFORM_NAMES } from '../../shared/platform.ts';
 
+import { badgeHeight, imageSize } from './image-size.ts';
+
 export interface LinkResolution {
   href: string;
   /** Absolute external URL (gets target=_blank). */
   external?: boolean;
   /** Internal page target for anchor validation. */
   target?: { route: string; anchor: string };
+  /** A local file (image): its path on disk, to read its intrinsic size. */
+  file?: string;
 }
 
 export interface RenderOptions {
@@ -473,6 +477,18 @@ export async function renderMarkdown(source: string, o: RenderOptions): Promise<
       const r = o.resolveLink(node.properties.src, 'img');
       if (r) node.properties.src = r.href;
       else o.onWarning?.(`unresolved image ${node.properties.src}`);
+      // reserve the image's space before it loads (CLS): intrinsic size of local files, the fixed height of badges
+      const p = node.properties;
+      if (p.width === undefined && p.height === undefined) {
+        const size = r?.file ? imageSize(r.file) : null;
+        if (size) {
+          p.width = size.width;
+          p.height = size.height;
+        } else {
+          const h = badgeHeight(String(p.src));
+          if (h && p.style === undefined) p.style = `height:${h}px`;
+        }
+      }
       if (node.properties.loading === undefined) node.properties.loading = 'lazy';
       if (node.properties.decoding === undefined) node.properties.decoding = 'async';
     }

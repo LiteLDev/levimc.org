@@ -90,7 +90,7 @@ export function ModDetail({ data, selection, tab: requestedTab, info: manifestIn
 
       <header className="mods-project-head">
         <span className="kit-item-frame mods-project-icon">
-          <ProjectIcon icon={entry.icon} owner={entry.owner} size={96} eager />
+          <ProjectIcon icon={entry.icon} iconId={entry.iconId} owner={entry.owner} size={96} eager />
         </span>
         <div className="mods-project-heading">
           <h1 className="mods-project-name">{info.name || entry.name}</h1>

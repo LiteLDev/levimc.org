@@ -55,6 +55,18 @@ export interface GlobalBarProps {
    * provides one menu button that opens a drawer with the same links (docs sites: {@link GlobalNavList}).
    */
   menu?: boolean;
+  /**
+   * Phones and tablets (≤ 960px): the bar's menu button opens the site's own menu instead of the bar's dropdown —
+   * docs sites (React and Doxygen) open their drawer (sections, the section's sidebar, resources, the LeviMC links:
+   * {@link GlobalNavList}). The button is the same and in the same place as the bar's own menu button on
+   * levimc.org; it is a plain `<button>` (`data-kit-gbar-menu`) that calls this. Takes precedence over `menu`.
+   * Static markup (Doxygen, build-static) renders the same button with `menuControls` alone and binds it in kit.js.
+   */
+  onMenu?: () => void;
+  /** With `onMenu`: whether the menu it opens is open (`aria-expanded`). */
+  menuOpen?: boolean;
+  /** With `onMenu`: the id of the menu it opens (`aria-controls`, e.g. the drawer's dialog). */
+  menuControls?: string;
   /** Keep the bar at the top while scrolling (sites where it is the only header). Docs headers scroll it away. */
   sticky?: boolean;
   className?: string;
@@ -221,6 +233,9 @@ export function GlobalBar({
   linkComponent,
   isAppPath,
   menu = true,
+  onMenu,
+  menuOpen = false,
+  menuControls,
   sticky = false,
   className,
 }: GlobalBarProps) {
@@ -233,7 +248,9 @@ export function GlobalBar({
   useDismissableDetails(moreRef);
   const ctx: LinkCtx = { siteOrigin, linkComponent, isAppPath };
   const items = globalNav(t);
-  const cls = ['kit-gbar', sticky ? 'kit-gbar-sticky' : '', menu ? '' : 'kit-gbar-no-menu', className ?? ''].filter(Boolean).join(' ');
+  // the button that opens the site's own menu (docs drawer), else the bar's own dropdown (menu), else none
+  const menuButton = onMenu !== undefined || menuControls !== undefined;
+  const cls = ['kit-gbar', sticky ? 'kit-gbar-sticky' : '', menu || menuButton ? '' : 'kit-gbar-no-menu', className ?? ''].filter(Boolean).join(' ');
 
   const lang = languages ?? {
     options: chromeLanguageOptions(),
@@ -248,7 +265,7 @@ export function GlobalBar({
       <div className="kit-gbar-inner">
         <BarLink url={LINKS.home} ctx={ctx} className="kit-gbar-brand">
           <BrandMark />
-          <span className="kit-gbar-brand-text">LeviMC</span>
+          <span className="kit-gbar-brand-text kit-wordmark">LeviMC</span>
         </BarLink>
         <nav className="kit-gbar-nav" aria-label={t.network} data-kit-t-aria="network">
           <ul>
@@ -288,7 +305,23 @@ export function GlobalBar({
           <a className="kit-gbar-icon kit-gbar-github" href={LINKS.github} aria-label="GitHub" title="GitHub">
             <BrandIcon name="github" size={16} />
           </a>
-          {menu ? (
+          {menuButton ? (
+            <button
+              type="button"
+              className="kit-gbar-icon kit-gbar-menu-btn"
+              aria-label={t.menu}
+              title={t.menu}
+              aria-haspopup="dialog"
+              aria-expanded={menuOpen}
+              aria-controls={menuControls}
+              data-kit-gbar-menu=""
+              data-kit-t-aria="menu"
+              data-kit-t-title="menu"
+              onClick={onMenu}
+            >
+              <PixelIcon name="menu" />
+            </button>
+          ) : menu ? (
             <details ref={moreRef} className="kit-menu kit-gbar-more">
               <summary className="kit-gbar-icon" aria-label={t.menu} title={t.menu} data-kit-gbar-menu="" data-kit-t-aria="menu" data-kit-t-title="menu">
                 <PixelIcon name="menu" />

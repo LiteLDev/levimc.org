@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { ownerAvatar } from "../lib/mods";
+import { ICON_WIDTHS, iconPath, ownerAvatar } from "../lib/mods";
 
 interface ProjectIconProps {
   /** The mod's own icon (checked at build time), if any. */
   icon?: string;
+  /** The icon scaled down at build time (server/icons.ts): served instead of `icon`. */
+  iconId?: string;
   owner: string;
   /** Intrinsic size in CSS px; the stylesheet sizes the box per context. */
   size: number;
@@ -12,14 +14,30 @@ interface ProjectIconProps {
   className?: string;
 }
 
+interface Source {
+  src: string;
+  srcSet?: string;
+}
+
 /**
- * A mod's icon: its own, else its owner's GitHub avatar, else the pixel
- * chest. The box keeps its size whatever loads, so nothing shifts.
+ * A mod's icon: its own (as the build scaled it, else as published), else its
+ * owner's GitHub avatar, else the pixel chest. The box keeps its size whatever
+ * loads, so nothing shifts.
  */
-export function ProjectIcon({ icon, owner, size, eager, className }: ProjectIconProps) {
-  const sources = [icon, owner ? ownerAvatar(owner) : undefined].filter((s): s is string => !!s);
+export function ProjectIcon({ icon, iconId, owner, size, eager, className }: ProjectIconProps) {
+  const sources: Source[] = [];
+  if (iconId) {
+    sources.push({
+      // the smallest width that covers the slot at 2x; the browser picks by its own density from srcSet
+      src: iconPath(iconId, ICON_WIDTHS.find((w) => w >= size * 2) ?? ICON_WIDTHS.at(-1)!),
+      srcSet: ICON_WIDTHS.map((w) => `${iconPath(iconId, w)} ${w}w`).join(", "),
+    });
+  }
+  if (icon) sources.push({ src: icon });
+  if (owner) sources.push({ src: ownerAvatar(owner) });
   const [failed, setFailed] = useState<string[]>([]);
-  const src = sources.find((s) => !failed.includes(s));
+  const source = sources.find((s) => !failed.includes(s.src));
+  const src = source?.src;
   const ref = useRef<HTMLImageElement>(null);
 
   // An image that failed before hydration fired its `error` event before
@@ -32,11 +50,14 @@ export function ProjectIcon({ icon, owner, size, eager, className }: ProjectIcon
   }, [src]);
 
   const classes = ["mods-icon", className].filter(Boolean).join(" ");
-  if (src) {
+  if (source && src) {
     return (
       <img
         ref={ref}
         key={src}
+        // sizes and srcSet before src: a client-rendered <img> then fetches only the width it needs
+        sizes={source.srcSet ? `${size}px` : undefined}
+        srcSet={source.srcSet}
         src={src}
         alt=""
         width={size}

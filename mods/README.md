@@ -87,6 +87,7 @@ At build time (`src/server/catalog.ts`) the registry is enriched with:
 | every version's `tooth.json` | "Required by", Depends On, Game Version (every version's dependency ranges, followed to LeviLamina and its `bds` version), the LeviLamina range of each version | — |
 | GitHub GraphQL (`GITHUB_TOKEN`) | where renamed repositories live, stars, release dates, creation date, license, organization owner | links keep the tooth path, no stars, dates are when the build first saw a version, no "Newest" sort and no License filter |
 | `docs/showcase/showcase.json` on each mod's default branch | the Gallery tab (`src/server/showcase.ts`) | no Gallery tab |
+| each mod's icon (the manifest's `avatar_url`) | the icon in rows and on pages, downloaded once and scaled with [sharp](https://sharp.pixelplumbing.com) (a devDependency) to 96/144/288 px WebP under `/mods/icons/` (`src/server/icons.ts`), served with `srcset` | an icon that does not load: the owner's GitHub avatar; one sharp cannot read: the original file |
 
 ### Galleries
 

@@ -14,7 +14,7 @@
 // Usage: node kit/static/build-static.mjs [--out <dir>] [--asset-base /levimc-kit/]
 import { mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build, createServer } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -37,6 +37,8 @@ const i18n = await server.ssrLoadModule(join(here, '../components/i18n.ts'));
 const projects = await server.ssrLoadModule(join(here, '../components/projects.ts'));
 const fonts = await server.ssrLoadModule(join(here, '../components/fonts.ts'));
 const version = await server.ssrLoadModule(join(here, '../components/version.ts'));
+// docs-engine labels (resources heading, 404 title); optional so the static build also runs on an older kit
+const docsStrings = await server.ssrLoadModule(join(here, '../docs/shared/strings.ts')).then((m) => m.docsStrings, () => null);
 await server.close();
 
 const VERSION = readFileSync(join(here, '../VERSION'), 'utf8').trim();
@@ -86,14 +88,14 @@ const head = (title, { first = '', extra = '' } = {}) => `<meta charset="utf-8">
   ${fonts.FONT_HEAD_HTML}
   <link rel="stylesheet" href="${assetBase}kit.css">
   <noscript><link rel="stylesheet" href="${assetBase}kit-nojs-dark.css" media="(prefers-color-scheme: dark)"></noscript>
-  <link rel="icon" href="${assetBase}grass.svg">${extra ? `\n  ${extra}` : ''}`;
+  <link rel="icon" href="${assetBase}levimc.svg" type="image/svg+xml">${extra ? `\n  ${extra}` : ''}`;
 const icon = (name) => `${assetBase}icons/${name.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase())}.svg`;
 // the cards are page content (English, like the rest of the page): kit.js translates only the chrome
 const docsCards = projects.DOCS_PROJECTS.map(
   (p) =>
     `<a class="px-card kit-card" href="${p.url}"><span class="kit-card-icon kit-slot"><img src="${p.logo}" width="52" height="52" alt="" class="kit-card-logo"></span><span class="kit-card-body"><span class="kit-card-title">${p.name}</span> <span class="kit-card-desc">${esc(i18n.UI_STRINGS.en.projectBlurbs[p.id])}</span></span></a>`,
 ).join('\n        ');
-const page = ({ title, first, extraHead, main }) => `<!doctype html>
+const page = ({ title, first, extraHead, main, mainClass = 'kit-static-main' }) => `<!doctype html>
 <html lang="en">
 <head>
   ${head(title, { first, extra: extraHead })}
@@ -104,7 +106,7 @@ const page = ({ title, first, extraHead, main }) => `<!doctype html>
   <div class="kit-backdrop-scene kit-dissolve-bottom" aria-hidden="true"></div>
   <div class="kit-shell kit-above-backdrop">
   ${snippets.globalBarHtml({ locale: 'en', current: 'projects' })}
-  <main id="kit-main" class="kit-static-main">
+  <main id="kit-main" class="${mainClass}" tabindex="-1">
 ${main}
   </main>
   ${snippets.footerHtml({ locale: 'en' })}
@@ -128,151 +130,145 @@ writeFileSync(
     </section>`,
   }),
 );
+// the 404 of docs.levimc.org (unknown project paths): the one 404 look of every LeviMC site (chrome.css .kit-notfound:
+// compass, red "Error 404" label, title, text, actions), plus the projects with docs, like levimc.org's 404
+const en = i18n.UI_STRINGS.en;
 writeFileSync(
   join(out, 'pages', '404.html'),
   page({
-    title: 'Page not found | LeviMC Docs',
+    title: `${esc(docsStrings ? docsStrings('en').pageNotFound : 'Page not found')} - LeviMC Docs`,
     extraHead: '<meta name="robots" content="noindex">',
-    main: `    <section class="kit-static-card px-card kit-painted">
-      <div class="kit-notfound-compass kit-slot" aria-hidden="true"><img src="${icon('compass')}" width="64" height="64" alt="" class="pixelated kit-notfound-spin"></div>
-      <p class="kit-pixel-label kit-static-eyebrow">Error 404</p>
-      <h1 class="kit-static-title">This page wandered off</h1>
-      <p class="kit-static-text">Your compass is spinning — the page you are looking for does not exist or has moved. Pick a project:</p>
-      <div class="kit-static-grid">
+    mainClass: 'kit-notfound',
+    main: `    <div class="kit-notfound-card px-card kit-painted">
+      <div class="kit-notfound-compass kit-slot" aria-hidden="true">${snippets.pixelIconHtml('compass', 'kit-notfound-spin', 64)}</div>
+      <p class="kit-notfound-code kit-pixel-label">Error 404</p>
+      <h1 class="kit-notfound-title">${esc(en.notFoundTitle)}</h1>
+      <p class="kit-notfound-text">${esc(en.notFoundText)}</p>
+      <div class="kit-notfound-actions">
+        <a class="mc-btn mc-btn-primary" href="https://levimc.org/">${snippets.pixelIconHtml('grass')}levimc.org</a>
+      </div>
+      <p class="kit-notfound-text">Or open the docs of a project:</p>
+      <div class="kit-static-grid kit-notfound-projects">
         ${docsCards}
       </div>
-      <p class="kit-static-actions"><a class="mc-btn mc-btn-primary" href="https://levimc.org/">levimc.org</a></p>
-    </section>`,
+    </div>`,
   }),
 );
 
 // ---------------------------------------------------------------- 4. Doxygen header/footer templates
-// The API reference of LeviLamina (the only Doxygen site). Its header is the one header of the docs pages: a
-// skip link, the LeviMC bar, then one compact row with the project's logo + name, the same tabs as the docs row
-// (docs.config.ts nav: its sections, external links included — none today; API Reference, the tab that is this
-// reference, is the current one) and Doxygen's search box (doxygen-kit.css moves #main-nav's search
-// into that row and hides Doxygen's menubar on wide screens — the tree on the left has the same entries). On
-// phones Doxygen's single menu button opens one panel: the docs sections, Doxygen's menu and the LeviMC links (the
-// bar's menu is off). Labels and URLs follow the visitor's language like the docs (kit.js: data-kit-site-locales/-l10n).
-const DOX = {
-  project: 'LeviLamina',
-  base: '/LeviLamina/',
-  github: 'https://github.com/LiteLDev/LeviLamina',
-  // the docs site's locales (mkdocs-static-i18n suffix mode: en at the root, zh under zh/, zh-Hant — converted from
-  // zh, kit 2.7 convertFrom — under zh-Hant/)
-  locales: [
-    { c: 'en', l: 'en', prefix: '' },
-    { c: 'zh', l: 'zh', prefix: 'zh/' },
-    { c: 'zh-Hant', l: 'zh-Hant', prefix: 'zh-Hant/' },
-  ],
-  // the top-level tabs of the docs, in its docs.config.ts nav order and labels (a group links to its first page;
-  // `url` = an external link, opened like the docs row does; `shared` = one page for every locale; `active` = the
-  // tab of this API reference)
-  sections: [
-    { path: '', label: { en: 'Home', zh: '主页', 'zh-Hant': '主頁' } },
-    { path: 'user_guides/install/', label: { en: 'User Guides', zh: '用户指南', 'zh-Hant': '用戶指南' } },
-    { path: 'developer_guides/tutorials/create_your_first_mod/', label: { en: 'Developer Guides', zh: '开发者指南', 'zh-Hant': '開發者指南' } },
-    { path: 'api/', shared: true, label: { en: 'API Reference', zh: 'API 参考', 'zh-Hant': 'API 參考' }, active: true },
-    { path: 'maintainer_guides/cpp_style_guide/', label: { en: 'Maintainer Guides', zh: '维护者指南', 'zh-Hant': '維護者指南' } },
-    { path: 'versions/', label: { en: 'Supported Versions', zh: '支持的版本', 'zh-Hant': '支持的版本' } },
-  ],
+// The API reference of LeviLamina (the only Doxygen site) carries the docs pages' header: the LeviMC bar (its
+// language menu lists the docs' locales, its menu button opens the drawer), the project row (the docs SiteHeader
+// markup: brand, section tabs with API Reference current, search = Doxygen's search box in the docs trigger's frame,
+// resources) and the docs drawer. doxygen/gen-header.mjs renders header.html from the docs build's
+// dist/_kit/nav.json (CI); the React-rendered parts it needs are written to doxygen/header-parts.json here, and
+// doxygen/header.html is rendered from the fallback below (LeviLamina's sections) for local use.
+const DOX_PROJECT = 'LeviLamina';
+const DOX_BASE = '/LeviLamina/';
+const DOX_REPO = 'https://github.com/LiteLDev/LeviLamina';
+const doxOnGithub = (lang) => (docsStrings ? docsStrings(lang).onGithub : '{name} on GitHub').replace('{name}', DOX_PROJECT);
+const doxLocale = (lang, label, prefix, tabs) => ({
+  lang,
+  label,
+  prefix,
+  title: DOX_PROJECT,
+  home: DOX_BASE + prefix,
+  tabs: tabs.map(([text, path, shared]) => ({ text, link: DOX_BASE + (shared ? '' : prefix) + path })),
+  resources: [{ kind: 'github', text: doxOnGithub(lang), link: DOX_REPO }],
+});
+// the shape of the docs build's _kit/nav.json (same locales, sections and resources as LeviLamina's docs.config.ts)
+const doxFallbackNav = {
+  en: doxLocale('en', 'English', '', [
+    ['User Guides', 'user_guides/install/'],
+    ['Developer Guides', 'developer_guides/tutorials/create_your_first_mod/'],
+    ['API Guides', 'api_reference/'],
+    ['API Reference', 'api/', true],
+    ['Maintainer Guides', 'maintainer_guides/cpp_style_guide/'],
+  ]),
+  zh: doxLocale('zh', '简体中文', 'zh/', [
+    ['用户指南', 'user_guides/install/'],
+    ['开发者指南', 'developer_guides/tutorials/create_your_first_mod/'],
+    ['API 指南', 'api_reference/'],
+    ['API 参考', 'api/', true],
+    ['维护者指南', 'maintainer_guides/cpp_style_guide/'],
+  ]),
+  'zh-Hant': doxLocale('zh-Hant', '繁體中文', 'zh-Hant/', [
+    ['用戶指南', 'user_guides/install/'],
+    ['開發者指南', 'developer_guides/tutorials/create_your_first_mod/'],
+    ['API 指南', 'api_reference/'],
+    ['API 參考', 'api/', true],
+    ['維護者指南', 'maintainer_guides/cpp_style_guide/'],
+  ]),
 };
-const doxLocalesAttr = esc(JSON.stringify(DOX.locales.map(({ c, l }) => ({ c, l }))));
-const doxExtIcon = snippets.pixelIconHtml('external', 'kit-dox-tab-ext');
-/** a section's URL in a locale (`shared`: the same page for every locale, like this Doxygen reference) */
-const doxPath = (sec, lo) => DOX.base + (sec.shared ? '' : lo.prefix) + sec.path;
-/** data-kit-l10n: { <other locale>: [label, url] | url } — kit.js swaps them in when the preference maps to it */
-const doxL10n = (sec) =>
-  esc(JSON.stringify(Object.fromEntries(DOX.locales.slice(1).map((lo) => [lo.c, [sec.label[lo.c] ?? sec.label.en, sec.url ?? doxPath(sec, lo)]]))));
-/** data-kit-l10n of a text (no link): { <other locale>: [label, ''] } */
-const doxTextL10n = (label) => esc(JSON.stringify(Object.fromEntries(DOX.locales.slice(1).map((lo) => [lo.c, [label[lo.c] ?? label.en, '']]))));
-// the titles kit.js puts over the tree (the current tab's name, like the docs sidebar) and the page-outline panel
-const doxActive = DOX.sections.find((sec) => sec.active);
-const doxTocLabel = Object.fromEntries(DOX.locales.map((lo) => [lo.c, i18n.uiStrings(lo.l).onThisPage]));
-const doxSectionLink = (sec, cls) =>
-  sec.url
-    ? // the label sits in its own element (kit.js localizes [data-kit-l10n-text]) so the external mark stays
-      `<a class="${cls}" href="${esc(sec.url)}" target="_blank" rel="noopener" data-kit-l10n="${doxL10n(sec)}"><span data-kit-l10n-text="">${esc(sec.label.en)}</span>${doxExtIcon}</a>`
-    : `<a class="${cls}${sec.active ? ' is-active' : ''}" href="${doxPath(sec, DOX.locales[0])}"${sec.active ? ' aria-current="true"' : ''} data-kit-l10n="${doxL10n(sec)}">${esc(sec.label.en)}</a>`;
-const doxHeader = `<!-- levimc-kit ${VERSION} Doxygen HTML_HEADER (doxygen ≥ 1.9.8 + doxygen-awesome-css 2.4.1) — generated by static/build-static.mjs -->
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="$langISO" data-kit-doxygen="">
-<head>
-<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=11"/>
-<meta name="generator" content="Doxygen $doxygenversion"/>
-${GENERATOR.replace(/>$/, '/>')}
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<!--BEGIN PROJECT_NAME--><title>$projectname: $title</title><!--END PROJECT_NAME-->
-<!--BEGIN !PROJECT_NAME--><title>$title</title><!--END !PROJECT_NAME-->
-<script type="text/javascript">${doxygenInit}</script>
-${fonts.FONT_HEAD_HTML.replace(/ \/>/g, '/>')}
-<link href="$relpath^tabs.css" rel="stylesheet" type="text/css"/>
-<!--BEGIN DISABLE_INDEX-->
-  <!--BEGIN FULL_SIDEBAR-->
-<script type="text/javascript">var page_layout=1;</script>
-  <!--END FULL_SIDEBAR-->
-<!--END DISABLE_INDEX-->
-<script type="text/javascript" src="$relpath^jquery.js"></script>
-<script type="text/javascript" src="$relpath^dynsections.js"></script>
-$treeview
-$search
-$mathjax
-$darkmode
-<link href="$relpath^$stylesheet" rel="stylesheet" type="text/css" />
-$extrastylesheet
-<script type="text/javascript" src="$relpath^kit.js" defer="defer"></script>
-</head>
-<body>
-<a class="kit-skip-link" href="#doc-content" data-kit-t="skipToContent">${esc(i18n.UI_STRINGS.en.skipToContent)}</a>
-<div class="kit-backdrop" aria-hidden="true"><div class="kit-backdrop-dabs"></div><div class="kit-backdrop-brush"></div><div class="kit-backdrop-grain"></div></div>
-<div class="kit-backdrop-scene kit-dissolve-bottom" aria-hidden="true"></div>
-<!--BEGIN DISABLE_INDEX-->
-  <!--BEGIN FULL_SIDEBAR-->
-<div id="side-nav" class="ui-resizable side-nav-resizable"><!-- do not remove this div, it is closed by doxygen! -->
-  <!--END FULL_SIDEBAR-->
-<!--END DISABLE_INDEX-->
-
-<!-- the docs layout (doxygen-kit.css): the header, the tree and the page; closed by footer.html, so the tree
-     and the page-outline panel stop above the footer -->
-<div class="kit-dox-page">
-<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
-${snippets.globalBarHtml({ locale: 'en', currentProject: DOX.project, menu: false })}
-
-<!--BEGIN TITLEAREA-->
-<header id="titlearea" class="kit-dox-row" data-kit-site-locales="${doxLocalesAttr}">
- <a class="kit-dox-brand" href="${DOX.base}" data-kit-l10n="${esc(JSON.stringify(Object.fromEntries(DOX.locales.slice(1).map((lo) => [lo.c, DOX.base + lo.prefix]))))}">
-  <!--BEGIN PROJECT_LOGO--><img class="kit-dox-logo" alt="" src="$relpath^$projectlogo" width="24" height="24"/><!--END PROJECT_LOGO-->
-  <!--BEGIN PROJECT_NAME--><span id="projectname" class="kit-dox-title">$projectname<!--BEGIN PROJECT_NUMBER--><span id="projectnumber">&#160;$projectnumber</span><!--END PROJECT_NUMBER--></span><!--END PROJECT_NAME-->
- </a>
- <nav class="kit-dox-tabs" aria-label="${esc(DOX.project)}">
-  <ul>
-   ${DOX.sections.map((sec) => `<li>${doxSectionLink(sec, 'kit-dox-tab')}</li>`).join('\n   ')}
-  </ul>
- </nav>
- <!--BEGIN DISABLE_INDEX-->
-  <!--BEGIN SEARCHENGINE-->
- <div class="kit-dox-search">$searchbox</div>
-  <!--END SEARCHENGINE-->
- <!--END DISABLE_INDEX-->
-</header>
-<!--END TITLEAREA-->
-<nav class="kit-dox-drawer kit-dox-drawer-sections" aria-label="${esc(DOX.project)}" data-kit-site-locales="${doxLocalesAttr}">
- <ul>
-  ${DOX.sections.map((sec) => `<li>${doxSectionLink(sec, 'kit-dox-drawer-link')}</li>`).join('\n  ')}
- </ul>
-</nav>
-<nav class="kit-dox-drawer kit-dox-drawer-network" aria-label="LeviMC" lang="en">
-<p class="kit-dox-drawer-title" aria-hidden="true">LeviMC</p>
-${snippets.globalNavListHtml({ locale: 'en', currentProject: DOX.project })}
-</nav>
-<div class="kit-dox-pane-titles">
- <div data-kit-site-locales="${doxLocalesAttr}"><p class="kit-dox-sb-title" data-kit-l10n="${doxTextL10n(doxActive.label)}">${esc(doxActive.label.en)}</p></div>
- <div data-kit-site-locales="${doxLocalesAttr}"><p class="kit-dox-toc-title" data-kit-l10n="${doxTextL10n(doxTocLabel)}">${esc(doxTocLabel.en)}</p></div>
-</div>
-<!-- end header part -->
-`;
-writeFileSync(join(out, 'doxygen', 'header.html'), doxHeader);
+// the bar with a placeholder language menu: gen-header fills in the docs' locales (buttons, see header-parts.langItem)
+const KIT_SENTINEL = '__KIT_LANG__';
+let doxBar = snippets.globalBarHtml({
+  locale: 'en',
+  currentProject: DOX_PROJECT,
+  menu: false,
+  drawerMenu: true,
+  languages: { options: [{ code: KIT_SENTINEL, label: KIT_SENTINEL, lang: KIT_SENTINEL }], current: KIT_SENTINEL },
+});
+const langItemRe = /<button type="button" role="menuitemradio"[^>]*data-kit-lang-value="__KIT_LANG__"[^>]*>[\s\S]*?<\/button>/;
+const langItemSrc = langItemRe.exec(doxBar)?.[0];
+if (!langItemSrc) throw new Error('build-static: the language menu item markup changed (doxygen header)');
+const langCheck = /<svg[^>]*kit-menu-check[\s\S]*?<\/svg>/.exec(langItemSrc)?.[0] ?? '';
+const langItem = langItemSrc
+  .replace(langCheck, '%CHECK%')
+  .replace('aria-checked="true"', 'aria-checked="%ON%"')
+  .replace(' is-active', '%ACTIVE%')
+  .replace(`<span>${KIT_SENTINEL}</span>`, '<span>%LABEL%</span>')
+  .replaceAll(KIT_SENTINEL, '%LANG%');
+doxBar = doxBar
+  .replace(langItemSrc, '<!--KIT:LANG-ITEMS-->')
+  .replace(new RegExp(`(<span class="kit-menu-trigger-label"[^>]*>)${KIT_SENTINEL}`), '$1<!--KIT:LANG-LABEL-->')
+  .replace(new RegExp(`lang="${KIT_SENTINEL}"`, 'g'), 'lang="en"')
+  .replace(new RegExp(KIT_SENTINEL, 'g'), 'English');
+// kit 2.19's GlobalBar `onMenu` renders the bar's menu button as a plain button (data-kit-gbar-menu); until the bar
+// has it, add the same button so the drawer opens from the bar's usual place on every width ≤ 960px
+if (!/<button[^>]*data-kit-gbar-menu/.test(doxBar)) {
+  const menuBtn = `<button type="button" class="kit-gbar-icon kit-gbar-menu-btn" aria-label="${esc(i18n.UI_STRINGS.en.menu)}" title="${esc(i18n.UI_STRINGS.en.menu)}" aria-controls="kit-drawer" aria-expanded="false" data-kit-gbar-menu="" data-kit-t-aria="menu" data-kit-t-title="menu">${snippets.pixelIconHtml('menu')}</button>`;
+  const end = doxBar.lastIndexOf('</div></div></div>');
+  if (end < 0) throw new Error('build-static: GlobalBar markup changed (menu button)');
+  doxBar = doxBar.slice(0, end) + menuBtn + doxBar.slice(end);
+}
+const pickStrings = (loc) => {
+  const t = i18n.UI_STRINGS[loc];
+  const d = docsStrings ? docsStrings(loc) : { resources: 'Resources' };
+  return { mainNav: t.mainNav, search: t.search, menu: t.menu, close: t.close, onThisPage: t.onThisPage, network: t.network, skipToContent: t.skipToContent, resources: d.resources };
+};
+// inline after the row, before the first paint (the docs' navFitScript, measuring #top's row): the first state and
+// the natural widths (window.__kitNavFit) kit.js computes every later state from
+const doxFitScript =
+  `(function(){try{var d=document.documentElement,i=document.querySelector("#top > .kit-site-header-inner"),u=i&&i.querySelector(".kit-site-nav > ul"),` +
+  `t=i&&i.querySelector(".kit-search-trigger"),S=["search","tabs","drawer"],k,c,m,a,z;if(!u)return;d.removeAttribute("data-kit-nav-fit");a=u.firstElementChild;z=u.lastElementChild;` +
+  `if(u.clientWidth>0&&a&&z){c=getComputedStyle(i);m={w:i.clientWidth-parseFloat(c.paddingLeft)-parseFloat(c.paddingRight),need:z.getBoundingClientRect().right-a.getBoundingClientRect().left,have:u.clientWidth,` +
+  `trig:t?t.offsetWidth:0,rem:parseFloat(getComputedStyle(d).fontSize)||16,compact:matchMedia("(max-width: 1180px)").matches,` +
+  `loading:!!document.fonts&&document.fonts.status!=="loaded"};window.__kitNavFit=m}` +
+  `for(k=0;k<S.length;k++){if(u.scrollWidth<=u.clientWidth)return;d.setAttribute("data-kit-nav-fit",S[k])}}catch(e){}})();`;
+const headerParts = {
+  version: VERSION,
+  generator: version.KIT_GENERATOR,
+  themeInit: doxygenInit,
+  fontHead: fonts.FONT_HEAD_HTML.replace(/ \/>/g, '/>'),
+  fitScript: doxFitScript,
+  uiLocales: i18n.UI_LOCALES,
+  strings: Object.fromEntries(i18n.UI_LOCALES.map((loc) => [loc, pickStrings(loc)])),
+  gbar: doxBar,
+  langItem,
+  langCheck,
+  networkList: snippets.globalNavListHtml({ locale: 'en', currentProject: DOX_PROJECT, brandHeading: true }),
+  icons: {
+    search: snippets.pixelIconHtml('search'),
+    close: snippets.pixelIconHtml('close'),
+    external: snippets.pixelIconHtml('external'),
+    github: snippets.brandIconHtml('github', 18),
+    github16: snippets.brandIconHtml('github', 16),
+  },
+  fallbackNav: doxFallbackNav,
+};
+writeFileSync(join(out, 'doxygen', 'header-parts.json'), JSON.stringify(headerParts, null, 1) + '\n');
+const { renderDoxygenHeader } = await import(pathToFileURL(join(here, 'doxygen', 'gen-header.mjs')).href);
+writeFileSync(join(out, 'doxygen', 'header.html'), renderDoxygenHeader(doxFallbackNav, headerParts, { source: 'the kit fallback nav (build-static.mjs)' }));
 // The credit links to https://www.doxygen.nl/index.html (www.doxygen.org/index.html answers 301 → http → 301 https).
 const doxFooter = `<!-- levimc-kit ${VERSION} Doxygen HTML_FOOTER — generated by static/build-static.mjs -->
 <!-- HTML footer for doxygen 1.9.8+ -->
@@ -361,3 +357,5 @@ console.log(`static: wrote globalbar/footer snippets (${i18n.UI_LOCALES.length} 
 mkdirSync(join(out, 'icons'), { recursive: true });
 for (const f of readdirSync(join(here, '../assets/icons'))) writeFileSync(join(out, 'icons', f), readFileSync(join(here, '../assets/icons', f)));
 writeFileSync(join(out, 'grass.svg'), readFileSync(join(here, '../assets/icons/grass.svg')));
+// the LeviMC mark: the static pages' favicon (levimc.org's own)
+writeFileSync(join(out, 'levimc.svg'), readFileSync(join(here, '../assets/levimc-mark.svg')));

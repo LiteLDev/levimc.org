@@ -13,6 +13,7 @@ export { listRoutes, listSitemapRoutes, parsePageData };
 export { catalogJson, jsonFiles, modJson } from "./server/api";
 export { HERO_FILES, heroSvg } from "./server/hero";
 export { showcaseFiles } from "./server/showcase";
+export { iconFiles } from "./server/icons";
 
 /**
  * Renders one page for prerender.mjs (and the dev server): `/mods/`,

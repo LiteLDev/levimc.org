@@ -5,12 +5,16 @@
 //  - language: the pages are prerendered in English; when the visitor's language (cookie levimc_lang, else the
 //    browser languages) maps to another locale, the bar, <main> and the footer stay hidden until React has
 //    re-rendered in it (kit usePreferredLocale, at most 1.5 s).
+//  - chrome language: a stored language the site has no content in but the kit has chrome strings for (de, ja …)
+//    is the bar's and footer's language (src/i18n chromeLocale): the bar and footer stay hidden until then too.
 // The previous site's localStorage keys ("theme" = light | dark, "locale" = en | zh) are migrated once.
 import { createThemeInitScript } from '../kit/components/theme.ts';
+import { UI_LOCALES } from '../kit/components/i18n.ts';
 import { DEFAULT_LOCALE, LEGACY_LOCALE_KEY, LEGACY_LOCALE_MAP, LOCALES } from './i18n/config.ts';
 
 export const PREPAINT_SCRIPT = createThemeInitScript({
   appLocales: { locales: LOCALES, prerendered: DEFAULT_LOCALE },
+  chromeLocales: UI_LOCALES,
   legacyTheme: ['theme'],
   legacyLang: [{ key: LEGACY_LOCALE_KEY, map: LEGACY_LOCALE_MAP }],
 });

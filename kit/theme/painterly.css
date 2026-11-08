@@ -7,46 +7,30 @@
 
 @layer components {
   /* ------------------------------------------------------------------ page backdrop */
+  /* The painted backdrop is the page root's own background, scrolling with the page (kit 2.19): the colour dabs
+     (pre-rendered per theme from the kit ≤ 2.18 radial gradients, a tile one viewport wide and two high whose
+     second half mirrors the first, so it repeats seamlessly), the brush in soft-light and the grain in multiply /
+     screen (opacity baked into the tiles), over the canvas. It used to be a fixed full-viewport element: one more
+     full-screen layer to composite on every scroll frame, plus the gradients' raster at every load and theme switch.
+     The hook is the .kit-backdrop element (PaintedBackdrop, the static and Doxygen pages), which no longer paints.
+     Never `background-attachment: fixed` (the whole page repaints on every scroll frame); `lvh`, so a phone's URL bar
+     showing and hiding does not rescale the tile. body and app shells stay transparent over it. */
+  :root:has(.kit-backdrop) {
+    background:
+      var(--kit-backdrop-grain) 0 0 / 180px 180px,
+      var(--kit-backdrop-brush) 0 0 / 256px 256px,
+      var(--kit-backdrop-dabs) 0 0 / 100% 200lvh repeat-y,
+      var(--color-canvas);
+    background-blend-mode: multiply, soft-light, normal;
+  }
+  :root.dark:has(.kit-backdrop) {
+    background-blend-mode: screen, soft-light, normal;
+  }
+  :root:has(.kit-backdrop) body {
+    background: transparent;
+  }
   .kit-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    overflow: hidden;
-    contain: strict;
-    background: var(--color-canvas);
-  }
-  .kit-backdrop > div {
-    position: absolute;
-  }
-  /* Soft colour dabs: water-lily pads and light on water, mostly in the margins. Static: a perpetual
-     full-viewport transform made the compositor re-blend the whole screen every frame (worst under the two
-     full-screen blend layers below), and the 48s, 1.5% drift was invisible anyway. */
-  .kit-backdrop-dabs {
-    inset: -12%;
-    background:
-      radial-gradient(30% 24% at 6% 10%, rgb(79 138 91 / 0.26), transparent 70%),
-      radial-gradient(22% 18% at 18% 3%, rgb(154 134 194 / 0.26), transparent 72%),
-      radial-gradient(26% 22% at 94% 8%, rgb(62 110 142 / 0.24), transparent 70%),
-      radial-gradient(18% 14% at 80% 2%, rgb(233 196 106 / 0.32), transparent 72%),
-      radial-gradient(16% 13% at 68% 16%, rgb(217 138 158 / 0.2), transparent 72%),
-      radial-gradient(22% 18% at 30% 52%, rgb(154 134 194 / 0.1), transparent 72%),
-      radial-gradient(24% 20% at 74% 48%, rgb(79 138 91 / 0.1), transparent 72%),
-      radial-gradient(28% 22% at 2% 92%, rgb(62 110 142 / 0.2), transparent 72%),
-      radial-gradient(18% 14% at 22% 98%, rgb(217 138 158 / 0.14), transparent 72%),
-      radial-gradient(26% 24% at 98% 96%, rgb(79 138 91 / 0.2), transparent 72%),
-      radial-gradient(16% 14% at 88% 70%, rgb(154 134 194 / 0.18), transparent 72%);
-  }
-  .dark .kit-backdrop-dabs {
-    background:
-      radial-gradient(26% 20% at 88% 6%, rgb(240 138 75 / 0.26), transparent 70%),
-      radial-gradient(14% 10% at 84% 3%, rgb(245 178 107 / 0.24), transparent 70%),
-      radial-gradient(30% 24% at 8% 8%, rgb(63 127 140 / 0.3), transparent 72%),
-      radial-gradient(22% 18% at 40% 0%, rgb(125 111 158 / 0.28), transparent 72%),
-      radial-gradient(24% 20% at 70% 50%, rgb(63 127 140 / 0.1), transparent 72%),
-      radial-gradient(28% 22% at 4% 94%, rgb(63 127 140 / 0.22), transparent 72%),
-      radial-gradient(22% 18% at 96% 92%, rgb(125 111 158 / 0.22), transparent 72%),
-      radial-gradient(14% 12% at 92% 62%, rgb(240 138 75 / 0.12), transparent 72%);
+    display: none;
   }
   /* Painted scene band at the very top of the page (scrolls away), dissolving into the canvas in pixel blocks
      (PaintedBackdrop adds .kit-dissolve-bottom). */
@@ -72,28 +56,6 @@
   :root:has(.kit-hero) .kit-backdrop-scene {
     display: none;
   }
-  .kit-backdrop-brush {
-    inset: 0;
-    background-image: var(--kit-brush);
-    background-size: 256px 256px;
-    mix-blend-mode: soft-light;
-    opacity: 0.16;
-  }
-  .dark .kit-backdrop-brush {
-    opacity: 0.12;
-  }
-  .kit-backdrop-grain {
-    inset: 0;
-    background-image: var(--kit-grain);
-    background-size: 180px 180px;
-    opacity: 0.05;
-    mix-blend-mode: multiply;
-  }
-  .dark .kit-backdrop-grain {
-    mix-blend-mode: screen;
-    opacity: 0.035;
-  }
-
   /* Anything placed after the backdrop sits above it. */
   .kit-above-backdrop {
     position: relative;
@@ -169,12 +131,6 @@
   .dark .kit-hero-art .kit-scene-dark {
     display: block;
   }
-  .kit-hero-art .kit-scene-glints {
-    animation: kit-glint 7s ease-in-out infinite alternate;
-  }
-  .kit-hero-art .kit-scene-sun {
-    animation: kit-glint 9s ease-in-out infinite alternate;
-  }
   .kit-hero-brush {
     background-image: var(--kit-brush);
     background-size: 256px 256px;
@@ -214,21 +170,5 @@
       var(--px) 0 0 0 var(--px-border),
       var(--px-bevel),
       0 18px 40px -16px rgb(0 0 0 / 0.45);
-  }
-}
-
-@keyframes kit-glint {
-  from {
-    opacity: 0.55;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .kit-hero-art .kit-scene-glints,
-  .kit-hero-art .kit-scene-sun {
-    animation: none !important;
   }
 }

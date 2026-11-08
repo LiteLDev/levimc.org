@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode, type UIEvent } from 'react';
 import { useNavigate } from 'react-router';
 import type MiniSearchType from 'minisearch';
 import type { SearchDoc } from '../../shared/types';
@@ -12,6 +12,15 @@ import type { UiStrings } from '../../../components/i18n';
 type Result = Pick<SearchDoc, 'title' | 'page' | 'crumbs' | 'path' | 'text'> & { id: number; score: number; terms: string[] };
 
 const indexCache = new Map<string, Promise<MiniSearchType<SearchDoc>>>();
+/** Results shown at first, and added each time the list is scrolled (or arrowed) to its end. */
+const PAGE = 10;
+const MAX_RESULTS = 40;
+
+/** Start loading the locale's search index (search trigger hover/focus, Ctrl+K) before the modal mounts. */
+export function preloadSearchIndex(locale: string): void {
+  void loadIndex(locale).catch(() => undefined);
+}
+
 function loadIndex(locale: string): Promise<MiniSearchType<SearchDoc>> {
   let p = indexCache.get(locale);
   if (!p) {
@@ -51,6 +60,9 @@ function snippet(text: string, terms: string[], len = 150): string {
 
 export function SearchModal({ open, onClose, locale, t }: { open: boolean; onClose: () => void; locale: string; t: UiStrings }) {
   const [query, setQuery] = useState('');
+  // typing stays responsive: the query runs on the deferred value, in a render React can interrupt
+  const deferred = useDeferredValue(query);
+  const [shown, setShown] = useState(PAGE);
   const [index, setIndex] = useState<MiniSearchType<SearchDoc> | null>(null);
   const [error, setError] = useState(false);
   const [sel, setSel] = useState(0);
@@ -74,8 +86,9 @@ export function SearchModal({ open, onClose, locale, t }: { open: boolean; onClo
   }, [open, locale]);
 
   const results: Result[] = useMemo(() => {
-    const q = query.trim();
-    if (!index || !q) return [];
+    const q = deferred.trim();
+    // one Latin letter matches half the index: wait for a second one (a single CJK character is a word)
+    if (!index || !q || (q.length < 2 && /^[\x00-\x7f]$/.test(q))) return [];
     const opts = {
       prefix: (term: string) => term.length > 1,
       fuzzy: (term: string) => (term.length > 4 && /^[\x00-\x7f]+$/.test(term) ? 0.2 : false),
@@ -84,10 +97,14 @@ export function SearchModal({ open, onClose, locale, t }: { open: boolean; onClo
     };
     let r = index.search(q, { ...opts, combineWith: 'AND' });
     if (!r.length) r = index.search(q, { ...opts, combineWith: 'OR' });
-    return r.slice(0, 24) as unknown as Result[];
-  }, [index, query]);
+    return r.slice(0, MAX_RESULTS) as unknown as Result[];
+  }, [index, deferred]);
 
-  useEffect(() => setSel(0), [query]);
+  useEffect(() => {
+    setSel(0);
+    setShown(PAGE);
+  }, [deferred]);
+  const visible = results.length > shown ? results.slice(0, shown) : results;
   useEffect(() => {
     list.current?.querySelector<HTMLElement>(`[data-index="${sel}"]`)?.scrollIntoView({ block: 'nearest' });
   }, [sel]);
@@ -104,7 +121,11 @@ export function SearchModal({ open, onClose, locale, t }: { open: boolean; onClo
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSel((s) => Math.min(results.length - 1, s + 1));
+      setSel((s) => {
+        const n = Math.min(results.length - 1, s + 1);
+        if (n >= shown - 1) setShown((v) => Math.min(results.length, v + PAGE));
+        return n;
+      });
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setSel((s) => Math.max(0, s - 1));
@@ -114,8 +135,12 @@ export function SearchModal({ open, onClose, locale, t }: { open: boolean; onClo
     }
   };
   const optionId = (i: number) => `kit-search-opt-${i}`;
-  const q = query.trim();
+  const q = deferred.trim();
   const terms = tokenizeQuery(q).concat(q.split(/\s+/));
+  const onBodyScroll = (e: UIEvent<HTMLDivElement>) => {
+    const b = e.currentTarget;
+    if (shown < results.length && b.scrollTop + b.clientHeight >= b.scrollHeight - 120) setShown((v) => Math.min(results.length, v + PAGE));
+  };
 
   return (
     <div className="kit-search-root">
@@ -141,17 +166,17 @@ export function SearchModal({ open, onClose, locale, t }: { open: boolean; onClo
             <kbd className="mc-kbd">Esc</kbd>
           </button>
         </div>
-        <div className="kit-search-body">
+        <div className="kit-search-body" onScroll={onBodyScroll}>
           {!index && !error ? <p className="kit-search-status">{t.searchLoading}</p> : null}
           {error ? <p className="kit-search-status">Search index unavailable.</p> : null}
-          {index && q && !results.length ? (
+          {index && q && !results.length && !(q.length < 2 && /^[\x00-\x7f]$/.test(q)) ? (
             <p className="kit-search-status">
               {t.searchNoResults} “{q}”
             </p>
           ) : null}
           {results.length ? (
             <ul id="kit-search-list" ref={list} role="listbox" aria-label={t.search} className="kit-search-list">
-              {results.map((r, i) => (
+              {visible.map((r, i) => (
                 <li
                   key={r.id}
                   id={optionId(i)}

@@ -19,8 +19,8 @@ const root = (opt("--url", "http://127.0.0.1:4173/") ?? "").replace(/\/?$/, "/")
 const require = createRequire(process.env.LEVIMC_PW_DIR ? `${process.env.LEVIMC_PW_DIR}/` : import.meta.url);
 const { chromium } = require("playwright");
 
-const SITE = "LeviMC Mods";
-const HOME_TITLE = `${SITE} — Mods & plugins for Minecraft Bedrock`;
+// tab titles: "<Page> - LeviMC", inside LeviMC Mods "<mod> - Mods - LeviMC" (see src/page-data.ts)
+const HOME_TITLE = "Mods - LeviMC";
 // the site's path (/mods/ on levimc.org)
 const base = new URL(root).pathname;
 const LEVILAMINA = "github.com/LiteLDev/LeviLamina/";
@@ -376,7 +376,7 @@ await check("a row opens its mod without a page load; Back to search returns to 
   await home.waitForURL((u) => u.pathname === `${base}${LEVILAMINA}`);
   await home.waitForSelector("[data-mods-detail] [data-doc-content]");
   assert(await sameDocument(home), "page reloaded");
-  assert((await home.title()) === `LeviLamina | ${SITE}`, `title ${await home.title()}`);
+  assert((await home.title()) === "LeviLamina - Mods - LeviMC", `title ${await home.title()}`);
   assert((await home.evaluate(() => window.scrollY)) === 0, "not scrolled to the top");
   await home.locator(".mods-back").click();
   await home.waitForURL((u) => u.pathname === base && u.search === "?cat=library&sort=stars");
@@ -470,7 +470,7 @@ await check("unknown paths get the themed 404 page", async () => {
   const { page, response, errors } = await open("no/such/page/");
   assert(response.status() === 404, `status ${response.status()}`);
   await page.waitForSelector(".mods-notfound h1");
-  assert((await page.title()) === `Not Found | ${SITE}`, await page.title());
+  assert((await page.title()) === "Page not found - LeviMC", await page.title());
   assert(errors.every((e) => /404/.test(e)), errors.join(" | "));
   await page.close();
   return "ok";
