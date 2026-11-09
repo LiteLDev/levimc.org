@@ -188,9 +188,10 @@ export interface ShowcaseItem {
 }
 
 // ---------------------------------------------------------------------------
-// The site's JSON (`/mods/index.json`, `/mods/<id>/index.json`): what each
-// page shows, for programs (see `server/api.ts`). Launchers read it too
-// (LeviLauncher, LeviLaunchroid): its keys are a contract.
+// The site's JSON (`/api/v4/mods/index.json`, `/api/v4/mods/<id>/index.json`):
+// what each page shows, for programs (see `server/api.ts`). Launchers read it
+// too (LeviLauncher): its keys are a contract. The JSON from before version 4
+// is in `server/legacy-json.ts`.
 // ---------------------------------------------------------------------------
 
 /** A mod the JSON refers to. */
@@ -225,7 +226,7 @@ export interface CatalogEntryJson {
   requiredBy: number;
 }
 
-/** `/mods/index.json`: the listing as `/mods/` shows it, unfiltered and in the default order. */
+/** `/api/v4/mods/index.json`: the listing as `/mods/` shows it, unfiltered and in the default order. */
 export interface CatalogJson {
   url: string;
   stats: CatalogStats;
@@ -257,7 +258,7 @@ export interface VersionJson {
   variants: Record<string, EntryJson[]>;
 }
 
-/** `/mods/<id>/index.json`: the mod page, every version included. */
+/** `/api/v4/mods/<id>/index.json`: the mod page, every version included. */
 export interface ModJson {
   url: string;
   id: string;

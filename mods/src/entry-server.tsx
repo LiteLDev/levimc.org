@@ -10,7 +10,7 @@ import { modulePreloadTags } from "./server/client-assets";
 
 // For prerender.mjs: the pages to write, a check of what was written, the JSON and the hero paintings.
 export { listRoutes, listSitemapRoutes, parsePageData };
-export { catalogJson, jsonFiles, modJson } from "./server/api";
+export { catalogJson, jsonFiles, legacyCatalogJson, legacyModJsonOf, modJson } from "./server/api";
 export { HERO_FILES, heroSvg } from "./server/hero";
 export { showcaseFiles } from "./server/showcase";
 export { iconFiles } from "./server/icons";

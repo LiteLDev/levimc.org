@@ -1,8 +1,10 @@
-// The site's JSON, next to the pages it is the data of: `/mods/index.json`
+// The site's JSON, version 4 (lip v0.40's keys): `/api/v4/mods/index.json`
 // (the listing as `/mods/` shows it, unfiltered and in the default order) and
-// `/mods/<id>/index.json` (the mod page, every version included — the page
-// loads another version's manifest from it). Launchers read both. Only the
-// server bundle imports this.
+// `/api/v4/mods/<id>/index.json` (the mod page, every version included — the
+// page loads another version's manifest from it). Launchers read both.
+// Next to the pages, `/mods/index.json` and `/mods/<id>/index.json` keep the
+// JSON from before version 4 for older launchers (see `legacy-json.ts`).
+// Only the server bundle imports this.
 // Also lipr's indexes under `/mods/lipr/`, which LiteLDev/lipr serves at
 // lipr.levimc.org for lip and older LeviLaunchers (see `liprFiles`).
 import { BASE } from "../base-path";
@@ -15,18 +17,41 @@ import {
   getReleaseUrl,
   installCommand,
   isPrerelease,
+  LEGACY_CATALOG_JSON,
+  legacyModJsonPath,
   modJsonPath,
   modPath,
   ownerAvatar,
 } from "../lib/mods";
 import { SITE_ORIGIN } from "../page-data";
-import type { CatalogJson, ModJson, ModRefJson, RelatedMod, VersionJson } from "../types";
+import type { CatalogEntry, CatalogEntryJson, CatalogJson, ModJson, ModRefJson, RelatedMod, VersionJson } from "../types";
 import { listRoutes, loadPageData, variantsJson } from "./build-data";
 import { loadBuildData } from "./catalog";
+import { legacyCatalogEntry, legacyModJson, type LegacyCatalogJson, type LegacyModJson } from "./legacy-json";
 
 const url = (path: string) => `${SITE_ORIGIN}${encodeURI(path)}`;
 
 const ref = ({ id, name, owner, listed }: RelatedMod): ModRefJson => ({ id, name, owner, ...(listed ? { url: url(modPath(id)) } : {}) });
+
+const entryJson = (e: CatalogEntry): CatalogEntryJson => ({
+  id: e.id,
+  name: e.name,
+  description: e.description,
+  owner: e.owner,
+  logo: e.logo ?? ownerAvatar(e.owner),
+  tags: e.tags,
+  side: e.side,
+  platform: e.platform,
+  gameVersions: e.gameVersions,
+  deps: e.deps,
+  stars: e.stars,
+  ...(e.license ? { license: e.license } : {}),
+  updated: e.updated,
+  ...(e.created ? { created: e.created } : {}),
+  url: url(modPath(e.id)),
+  json: url(modJsonPath(e.id)),
+  requiredBy: e.requiredBy ?? 0,
+});
 
 export async function catalogJson(): Promise<CatalogJson> {
   const { catalog } = await loadBuildData();
@@ -35,26 +60,45 @@ export async function catalogJson(): Promise<CatalogJson> {
     url: url(BASE),
     stats: catalog.stats,
     sort: DEFAULT_STATE.sort as "relevance",
-    mods: matched.map((e) => ({
-      id: e.id,
-      name: e.name,
-      description: e.description,
-      owner: e.owner,
-      logo: e.logo ?? ownerAvatar(e.owner),
-      tags: e.tags,
-      side: e.side,
-      platform: e.platform,
-      gameVersions: e.gameVersions,
-      deps: e.deps,
-      stars: e.stars,
-      ...(e.license ? { license: e.license } : {}),
-      updated: e.updated,
-      ...(e.created ? { created: e.created } : {}),
-      url: url(modPath(e.id)),
-      json: url(modJsonPath(e.id)),
-      requiredBy: e.requiredBy ?? 0,
-    })),
+    mods: matched.map(entryJson),
   };
+}
+
+/**
+ * `/mods/index.json`: the listing before version 4. It also has the mods that
+ * are unlisted only because they do not depend on LeviLamina (after the
+ * listed ones, most stars first), as the listing before version 4 had them.
+ */
+export async function legacyCatalogJson(): Promise<LegacyCatalogJson> {
+  const { catalog, byId, listings } = await loadBuildData();
+  const listed = (await catalogJson()).mods;
+  const extra = [...byId.values()]
+    .filter((e) => {
+      const l = listings.get(e.id);
+      return l?.status === "unlisted" && l.reason === "no-levilamina";
+    })
+    .sort((a, b) => b.stars - a.stars || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+    .map(entryJson);
+  return {
+    url: url(BASE),
+    stats: catalog.stats,
+    sort: "relevance",
+    mods: await Promise.all(
+      [...listed, ...extra].map(async (e) =>
+        legacyCatalogEntry(e, url(legacyModJsonPath(e.id)), (await legacyModJsonOf(e.id))?.env ?? e.side),
+      ),
+    ),
+  };
+}
+
+/** `/mods/<id>/index.json`: a mod page's JSON before version 4; `null` when `id` has no page. */
+export async function legacyModJsonOf(id: string): Promise<LegacyModJson | null> {
+  const json = await modJson(id);
+  if (!json) return null;
+  const { lipr } = await loadBuildData();
+  const packages = lipr.launcher.packages;
+  const pkg = packages[id] ?? Object.entries(packages).find(([tooth]) => tooth.toLowerCase() === id.toLowerCase())?.[1];
+  return legacyModJson(json, pkg);
 }
 
 /** A mod page's JSON; `null` when `id` has no page. */
@@ -164,15 +208,20 @@ export async function liprFiles(): Promise<Map<string, string>> {
   ]);
 }
 
-/** Every JSON file, by its path under `/mods/`. */
+/** Every JSON file, by its path on the site without the leading `/` (`api/v4/mods/…`, `mods/…`). */
 export async function jsonFiles(): Promise<Map<string, string>> {
-  const files = new Map<string, string>([[CATALOG_JSON.slice(BASE.length), JSON.stringify(await catalogJson())]]);
+  const files = new Map<string, string>([
+    [CATALOG_JSON.slice(1), JSON.stringify(await catalogJson())],
+    [LEGACY_CATALOG_JSON.slice(1), JSON.stringify(await legacyCatalogJson())],
+  ]);
   for (const route of await listRoutes()) {
     if (route === BASE) continue;
     const id = route.slice(BASE.length, -1);
     const json = await modJson(id);
-    if (json) files.set(modJsonPath(id).slice(BASE.length), JSON.stringify(json));
+    if (!json) continue;
+    files.set(modJsonPath(id).slice(1), JSON.stringify(json));
+    files.set(legacyModJsonPath(id).slice(1), JSON.stringify(await legacyModJsonOf(id)));
   }
-  for (const [path, body] of await liprFiles()) files.set(path, body);
+  for (const [path, body] of await liprFiles()) files.set(`${BASE.slice(1)}${path}`, body);
   return files;
 }

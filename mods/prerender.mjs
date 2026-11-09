@@ -1,7 +1,8 @@
 // Prerenders every page into dist/ after `vite build` and the SSR build:
 // `/mods/`, one page per mod, and 404.html, each page's index.json next to it;
 // then writes sitemap.xml. See README.md.
-// dist/ is the site's /mods/ folder: the levimc.org build copies it there.
+// dist/ is the site's /mods/ folder and dist-api/ its /api/ folder: the
+// levimc.org build copies them there.
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { prerenderRoutes } from "./kit/ssg/prerender.mjs";
@@ -43,11 +44,19 @@ for (const [path, body] of ssr.iconFiles()) {
   writeFileSync(`dist/${path}`, body);
 }
 
-// The pages' JSON: /mods/index.json and /mods/<id>/index.json (see src/server/api.ts).
+// The JSON: /api/v4/mods/index.json and /api/v4/mods/<id>/index.json, and the
+// JSON from before version 4 next to the pages (see src/server/api.ts).
 const json = await ssr.jsonFiles();
-for (const [path, body] of json) {
-  mkdirSync(dirname(`dist/${path}`), { recursive: true });
-  writeFileSync(`dist/${path}`, body);
+rmSync("dist-api", { recursive: true, force: true });
+for (const [sitePath, body] of json) {
+  const file = sitePath.startsWith("mods/")
+    ? `dist/${sitePath.slice("mods/".length)}`
+    : sitePath.startsWith("api/")
+      ? `dist-api/${sitePath.slice("api/".length)}`
+      : null;
+  if (!file) throw new Error(`${sitePath}: not under /mods/ or /api/`);
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, body);
 }
 
 // The home page's painted strip, one file per theme (see src/server/hero.ts).

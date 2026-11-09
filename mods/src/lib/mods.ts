@@ -68,12 +68,27 @@ export function toothFromPath(pathname: string): string | null {
   }
 }
 
-/** The listing's data: `/mods/index.json` (see `server/api.ts`). */
-export const CATALOG_JSON = `${BASE}index.json`;
+/**
+ * Where the site's JSON is (see `server/api.ts`): version 4, with lip v0.40's
+ * keys. The pages stay under {@link BASE}; next to them is the JSON from
+ * before version 4, for older launchers (see `server/legacy-json.ts`).
+ */
+export const API_BASE = "/api/v4/mods/";
 
-/** A mod's data, every version's included: `/mods/github.com/LiteLDev/LeviLamina/index.json`. */
-export function modJsonPath(tooth: string): string {
-  return `${modPath(tooth)}index.json`;
+/** The listing's data: `/api/v4/mods/index.json`. */
+export const CATALOG_JSON = `${API_BASE}index.json`;
+
+/** A mod's data, every version's included: `/api/v4/mods/github.com/LiteLDev/LeviLamina/index.json`. */
+export function modJsonPath(id: string): string {
+  return `${API_BASE}${id}/index.json`;
+}
+
+/** The listing's data before version 4: `/mods/index.json`. */
+export const LEGACY_CATALOG_JSON = `${BASE}index.json`;
+
+/** A mod's data before version 4: `/mods/github.com/LiteLDev/LeviLamina/index.json`. */
+export function legacyModJsonPath(id: string): string {
+  return `${modPath(id)}index.json`;
 }
 
 export interface RepoBaseUrls {

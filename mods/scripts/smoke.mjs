@@ -56,7 +56,9 @@ const browser = await chromium.launch({
 async function newContext(options, { fonts = false } = {}) {
   const ctx = await browser.newContext(options);
   // Layout checks load the web fonts too: the fallback fonts are narrower and can hide an overflow.
-  const allowed = (url) => url.href.startsWith(root) || (fonts && /^https:\/\/fonts\.(googleapis|gstatic)\.com\//.test(url.href));
+  // The JSON is under /api/v4/mods/, outside the pages' root.
+  const allowed = (url) =>
+    url.href.startsWith(root) || url.href.startsWith(new URL("/api/", root).href) || (fonts && /^https:\/\/fonts\.(googleapis|gstatic)\.com\//.test(url.href));
   await ctx.route((url) => !allowed(url), (route) => route.abort());
   return ctx;
 }

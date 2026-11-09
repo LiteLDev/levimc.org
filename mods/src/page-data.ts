@@ -1,6 +1,6 @@
 import { BASE } from "./base-path";
 import type { RepositoryRenames } from "./lib/markdown";
-import type { ModSelection } from "./lib/mods";
+import { CATALOG_JSON, modJsonPath, type ModSelection } from "./lib/mods";
 import type { Readme } from "./lib/readme-language";
 import type {
   Catalog,
@@ -111,7 +111,7 @@ export interface PageMeta {
   description: string;
   /** Absolute URL of the page; absent on the 404 page. */
   canonical?: string;
-  /** The page's JSON (`index.json` next to it); absent on the 404 page. */
+  /** The page's JSON (under `/api/v4/mods/`); absent on the 404 page. */
   json?: string;
 }
 
@@ -122,14 +122,14 @@ export function pageMeta(data: PageData): PageMeta {
         title: titled("Mods"),
         description: siteDescription(data.catalog.stats.projects),
         canonical: `${SITE_ORIGIN}${BASE}`,
-        json: `${SITE_ORIGIN}${BASE}index.json`,
+        json: `${SITE_ORIGIN}${CATALOG_JSON}`,
       };
     case "mod":
       return {
         title: titled(data.entry.name, "Mods"),
         description: data.mod.info.description || `${data.entry.name} on ${SITE_NAME}`,
         canonical: `${SITE_ORIGIN}${BASE}${data.canonical ?? data.id}/`,
-        json: `${SITE_ORIGIN}${BASE}${data.id}/index.json`,
+        json: `${SITE_ORIGIN}${modJsonPath(data.id)}`,
       };
     case "not-found":
       return { title: titled("Page not found"), description: `${SITE_NAME} — ${SITE_TAGLINE}` };

@@ -19,12 +19,12 @@ built with Vite `base: '/mods/'`: every page and file is under `/mods/`.
 - **Mod pages** (`/mods/<id>/`, e.g. `/mods/github.com/LiteLDev/LegacyScriptEngine/`) are prerendered with the README and
   package file of the default variant's latest version; other variants and
   versions (`?variant=&version=`) are fetched in the browser: the package file's data from the mod's
-  `index.json`, the README from GitHub. Tabs: Description, Gallery (`?tab=gallery`, when the mod has one, see
+  JSON, the README from GitHub. Tabs: Description, Gallery (`?tab=gallery`, when the mod has one, see
   [Galleries](#galleries)), Versions (`?tab=versions`), Dependencies
   (`?tab=dependencies`). The sidebar shows the sides and platforms of the selection, the author (the repository
   owner, with "More by …" setting `?author=`), the license's family and SPDX id, and the tags.
-- **JSON**: every page has its data next to it as `index.json` (linked from the page as
-  `rel="alternate"`), see [JSON](#json).
+- **JSON**: every page has its data under `/api/v4/mods/` (linked from the page as `rel="alternate"`), see
+  [JSON](#json); the JSON from before version 4 stays next to the pages for older launchers.
 - **lipr**: `/mods/lipr/index.json` and `/mods/lipr/levilauncher.json` are lipr's two indexes, in lipr's format, with
   every package of the registry that has `tooth.json` files (a package with only `lip.toml` files is not in them; a
   version's `lip.toml` does not change what lipr gets); `/mods/lipr/sources.json` says where each version's `tooth.json`
@@ -62,11 +62,12 @@ something: `env=` is read as `side=`, `sort=downloads` sorts by stars, and `tags
 reference LeviLauncher follows (it forces `side=client` and its own platform).
 ## JSON
 
-Every page has its data next to it as `index.json`. Both are written by `src/server/api.ts`; the shapes are
-`CatalogJson` and `ModJson` in `src/types.ts`. Keys whose value is unknown are left out (marked `?`). Ids are
+Every page has its data under `/api/v4/mods/` (version 4: lip v0.40's keys). Both are written by
+`src/server/api.ts`; the shapes are `CatalogJson` and `ModJson` in `src/types.ts`. There is no file at
+`/api/v4/mods/` itself (GitHub Pages serves a folder's `index.html` only): read `index.json`. Keys whose value is unknown are left out (marked `?`). Ids are
 `github.com/<owner>/<repo>`; a variant's name is `""` for the default one.
 
-[`/mods/index.json`](https://levimc.org/mods/index.json) is the listing as `/mods/` shows it, unfiltered and in the
+[`/api/v4/mods/index.json`](https://levimc.org/api/v4/mods/index.json) is the listing as `/mods/` shows it, unfiltered and in the
 default order (a query string does not reach the host, so filtering is left to the reader, by the rules of
 [Filters](#filters)):
 
@@ -84,7 +85,7 @@ default order (a query string does not reach the host, so filtering is left to t
 - `license`: the SPDX id GitHub reports (`NOASSERTION` when it cannot tell); absent without one.
 - `requiredBy`: how many listed mods' latest versions depend on it.
 
-`/mods/<id>/index.json` is the mod page, every version included:
+`/api/v4/mods/<id>/index.json` is the mod page, every version included:
 
 ```
 { url, id, canonical?, name, description, owner, logo, repository, issues?, releases, stars, updated, published?,
@@ -103,6 +104,17 @@ default order (a query string does not reach the host, so filtering is left to t
   (`<id>[#variant]` → range).
 - `dependencies` names the ids the versions' `deps` use; `requiredBy` lists the listed mods whose latest version
   depends on this one.
+
+### Before version 4
+
+`/mods/index.json` and `/mods/<id>/index.json`, next to the pages, keep the shape they had before version 4, for the
+launchers that read them there (LeviLauncher 1.0.6 to 1.1.0-beta.3): `tooth` for `id`, `icon` for `logo`, `env` for
+`side`, `dependsOn` (the keys of `deps`), and each version's `variants` as
+`[ { label, platform?, dependencies, leviLamina?, install } ]`, with a top-level `variants: [ { label, versions } ]`.
+They are made from the version 4 JSON and lipr's `tooth.json` data (`src/server/legacy-json.ts`), so a version
+without a `tooth.json` is not in them (lip before v0.40 cannot read it). The listing also has the mods unlisted only
+because they do not depend on LeviLamina, after the listed ones. `categories` and `platforms` stay empty. Frozen:
+new keys go to version 4 only.
 
 ## Registry
 
@@ -253,7 +265,7 @@ pnpm dev        # http://localhost:5173/mods/, every page rendered on request
 
 | Command          | What it does                                                              |
 | ---------------- | ------------------------------------------------------------------------- |
-| `pnpm build`     | client build, SSR build, then `prerender.mjs` writes every page and its `index.json`, the hero paintings and `sitemap.xml` to `dist/` |
+| `pnpm build`     | client build, SSR build, then `prerender.mjs` writes every page, the JSON from before version 4, the hero paintings and `sitemap.xml` to `dist/` (the site's `/mods/`), and the JSON to `dist-api/` (the site's `/api/`) |
 | `pnpm preview`   | serves `dist/` at `/mods/` the way GitHub Pages does, on <http://127.0.0.1:4173/mods/> |
 | `pnpm lint`      | ESLint (typescript-eslint, React hooks)                                    |
 | `pnpm typecheck` | `tsc --noEmit`                                                             |
@@ -266,7 +278,7 @@ pnpm dev        # http://localhost:5173/mods/, every page rendered on request
 
 ```
 index.html          page template (the kit's pre-paint script and fonts, the listing's view/pending script)
-prerender.mjs       renders /mods/, /mods/<id>/ and 404.html into dist/, plus their index.json, the hero paintings and sitemap.xml
+prerender.mjs       renders /mods/, /mods/<id>/ and 404.html into dist/, plus the JSON (dist-api/), the hero paintings and sitemap.xml
 repos.txt           the repositories the catalogue is built from (see Registry)
 scripts/discover.mjs  proposes new repositories in pull requests
 src/

@@ -95,6 +95,32 @@ function devServerRender(): Plugin {
     name: "mods:dev-render",
     apply: "serve",
     configureServer(server: ViteDevServer) {
+      // The JSON is written by prerender.mjs; built on request here: version 4
+      // under /api/v4/mods/ (outside the base, so before Vite's own handling),
+      // the one from before it next to the pages.
+      server.middlewares.use(async (req, res, next) => {
+        const url = req.originalUrl ?? "/";
+        const json = /^\/(api\/v4\/)?mods\/(?:(.+)\/)?index\.json$/.exec(url.split("?")[0] ?? "");
+        if (json) {
+          const entry = await server.ssrLoadModule("/src/entry-server.tsx");
+          const id = json[2] ? decodeURIComponent(json[2]) : undefined;
+          const body = json[1]
+            ? id
+              ? await entry.modJson(id)
+              : await entry.catalogJson()
+            : id
+              ? await entry.legacyModJsonOf(id)
+              : await entry.legacyCatalogJson();
+          if (!body) {
+            next();
+            return;
+          }
+          res.setHeader("Content-Type", "application/json; charset=utf-8");
+          res.end(JSON.stringify(body));
+          return;
+        }
+        next();
+      });
       return () => {
         server.middlewares.use(async (req, res, next) => {
           const url = req.originalUrl ?? "/";
@@ -131,19 +157,6 @@ function devServerRender(): Plugin {
             }
             res.setHeader("Content-Type", file.type);
             res.end(file.body);
-            return;
-          }
-          // The JSON is written by prerender.mjs; built on request here.
-          const json = /^\/mods\/(?:(.+)\/)?index\.json$/.exec(url.split("?")[0] ?? "");
-          if (json) {
-            const entry = await server.ssrLoadModule("/src/entry-server.tsx");
-            const body = json[1] ? await entry.modJson(decodeURIComponent(json[1])) : await entry.catalogJson();
-            if (!body) {
-              next();
-              return;
-            }
-            res.setHeader("Content-Type", "application/json; charset=utf-8");
-            res.end(JSON.stringify(body));
             return;
           }
           const accept = req.headers.accept ?? "";
