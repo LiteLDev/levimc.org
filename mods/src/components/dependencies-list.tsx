@@ -1,6 +1,6 @@
 import { useI18n } from "../i18n";
-import { modPath, type ModSelection } from "../lib/mods";
-import type { ManifestVariant, RelatedMod } from "../types";
+import { modPath, variantDeps, type ModSelection } from "../lib/mods";
+import type { EntryJson, RelatedMod } from "../types";
 import { ProjectIcon } from "./project-icon";
 import { RouterLink } from "./router-link";
 
@@ -8,12 +8,12 @@ function RelatedCard({ mod, range, notListed }: { mod: RelatedMod; range?: strin
   return (
     <li className="px-card mods-dep">
       <span className="kit-slot mods-dep-icon">
-        <ProjectIcon icon={mod.icon} iconId={mod.iconId} owner={mod.listed ? mod.owner : ""} size={40} />
+        <ProjectIcon icon={mod.logo} iconId={mod.logoId} owner={mod.listed ? mod.owner : ""} size={40} />
       </span>
       <span className="mods-dep-text">
         <span className="mods-dep-title">
           {mod.listed ? (
-            <RouterLink href={modPath(mod.tooth)} className="mods-dep-name">
+            <RouterLink href={modPath(mod.id)} className="mods-dep-name">
               {mod.name}
             </RouterLink>
           ) : (
@@ -25,8 +25,8 @@ function RelatedCard({ mod, range, notListed }: { mod: RelatedMod; range?: strin
         ) : (
           <span className="mods-dep-meta mods-dep-unlisted">
             <span className="kit-badge kit-badge-stone">{notListed}</span>
-            <span className="mods-dep-tooth" title={mod.tooth}>
-              {mod.tooth}
+            <span className="mods-dep-id" title={mod.id}>
+              {mod.id}
             </span>
           </span>
         )}
@@ -42,8 +42,8 @@ function RelatedCard({ mod, range, notListed }: { mod: RelatedMod; range?: strin
 
 interface DependenciesListProps {
   selection: ModSelection;
-  /** The selected version's manifest variants (`undefined` while loading, `null` without a manifest). */
-  variants: ManifestVariant[] | null | undefined;
+  /** The selected version's variants: name → entries (`undefined` while loading, `null` without a package file). */
+  variants: Record<string, EntryJson[]> | null | undefined;
   related: Record<string, RelatedMod>;
   dependents: RelatedMod[];
 }
@@ -51,13 +51,13 @@ interface DependenciesListProps {
 /** What the selected version needs, and which mods need this one. */
 export function DependenciesList({ selection, variants, related, dependents }: DependenciesListProps) {
   const { t } = useI18n();
-  const variant = variants?.find((v) => v.label === selection.variant);
-  const deps = Object.entries(variant?.dependencies ?? {});
+  // every entry's (one per side and platform), together
+  const deps = Object.entries(variantDeps(variants?.[selection.variant]));
   const relatedOf = (key: string): RelatedMod => {
-    const [tooth = key, label] = key.split("#");
-    const found = related[tooth.toLowerCase()];
+    const [id = key, label] = key.split("#");
+    const found = related[id.toLowerCase()];
     // a mod outside the index is shown as the manifest spells it
-    const base = found?.listed ? found : { tooth: key, name: tooth.split("/").at(-1) ?? tooth, owner: "" };
+    const base = found?.listed ? found : { id: key, name: id.split("/").at(-1) ?? id, owner: "" };
     return label ? { ...base, name: `${base.name} #${label}` } : base;
   };
   return (
@@ -87,7 +87,7 @@ export function DependenciesList({ selection, variants, related, dependents }: D
         {dependents.length ? (
           <ul className="mods-deps">
             {dependents.map((d) => (
-              <RelatedCard key={d.tooth} mod={d} notListed={t.depsNotIndexed} />
+              <RelatedCard key={d.id} mod={d} notListed={t.depsNotIndexed} />
             ))}
           </ul>
         ) : (

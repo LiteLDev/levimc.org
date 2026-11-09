@@ -13,7 +13,7 @@ lip config list
 To get the value of a specific key:
 
 ```sh
-lip config get <key>
+lip config get <KEY>
 ```
 
 Example:
@@ -26,17 +26,16 @@ lip config get github_proxy
 To set a configuration value:
 
 ```sh
-lip config set <key> <value>
+lip config set <KEY> <VALUE>
 ```
 
 ### Common Settings
 
 -   `github_proxy`: A URL to use as a proxy for GitHub requests.
--   `go_module_proxy`: A URL for a Go module proxy (default: `https://goproxy.io`).
 
 Example:
 ```sh
-lip config set github_proxy https://ghproxy.com
+lip config set github_proxy https://mirror.ghproxy.com/
 ```
 
 ## Deleting Configuration
@@ -44,5 +43,5 @@ lip config set github_proxy https://ghproxy.com
 To remove a setting and revert to its default (if any):
 
 ```sh
-lip config delete <key>
+lip config delete <KEY>
 ```

@@ -1,4 +1,4 @@
-import type { SpriteName } from "../data/categories";
+import type { SpriteName } from "../data/sprites";
 
 /**
  * A kit sprite as a CSS background (`.mods-sprite-<name>` in styles.css): a
@@ -12,7 +12,7 @@ export function Sprite({ name, className }: { name: SpriteName; className?: stri
 }
 
 /** Kit sprites drawn in `currentColor` (as an image they would be black). */
-const MONO = new Set<SpriteName>(["apps", "menu", "hash", "quote", "globe", "history"]);
+const MONO = new Set<SpriteName>(["apps", "menu", "hash", "quote", "globe", "history", "arrowRight"]);
 
 export type MaskName = "close" | "check" | "chevronDown" | "arrowUp" | "external";
 

@@ -6,12 +6,15 @@
 // Needs Playwright: either in $LEVIMC_PW_DIR (a node_modules directory) or installed in the app
 // (`pnpm add -D playwright`). Checks the listing (default order, search as you type, filters and
 // their counts, exclusions, sort, page size, pagination, empty state, view mode, keyboard, the phone
-// drawer), the density targets (results above the fold), backward-compatible URLs, mod pages
+// drawer), the density targets (results above the fold), the listing URLs (and the old keys that
+// still work or are dropped), mod pages
 // (README, tabs, install dialog, variant/version switching, back to the listing), the 404 page, the shared theme/language preferences, phone
 // layouts without sideways scroll, layout shift, and that every mod page hydrates without
 // errors. Only the site itself is loaded: third-party requests (README images, avatars, fonts) are
 // blocked. Exit code 1 on any failure.
 import { createRequire } from "node:module";
+import { tagKeys } from "../src/data/featured-tags.ts";
+import { licenseFamily, licenseOf } from "../src/data/licenses.ts";
 
 const args = process.argv.slice(2);
 const opt = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
@@ -23,6 +26,7 @@ const { chromium } = require("playwright");
 const HOME_TITLE = "Mods - LeviMC";
 // the site's path (/mods/ on levimc.org)
 const base = new URL(root).pathname;
+// a mod page (LeviLamina itself is the platform: it has a page, but is not in the listing)
 const LEVILAMINA = "github.com/LiteLDev/LeviLamina/";
 const results = [];
 async function check(name, fn) {
@@ -52,7 +56,9 @@ const browser = await chromium.launch({
 async function newContext(options, { fonts = false } = {}) {
   const ctx = await browser.newContext(options);
   // Layout checks load the web fonts too: the fallback fonts are narrower and can hide an overflow.
-  const allowed = (url) => url.href.startsWith(root) || (fonts && /^https:\/\/fonts\.(googleapis|gstatic)\.com\//.test(url.href));
+  // The JSON is under /api/v4/mods/, outside the pages' root.
+  const allowed = (url) =>
+    url.href.startsWith(root) || url.href.startsWith(new URL("/api/", root).href) || (fonts && /^https:\/\/fonts\.(googleapis|gstatic)\.com\//.test(url.href));
   await ctx.route((url) => !allowed(url), (route) => route.abort());
   return ctx;
 }
@@ -128,12 +134,21 @@ const settled = async (page) => {
   await page.waitForTimeout(250);
 };
 const entries = (page) => page.evaluate(() => JSON.parse(document.getElementById("mods-page-data").textContent).catalog.entries);
+/** The ids of the rows shown. */
+const rowIds = (page) => page.locator(".mods-results-list .mods-row").evaluateAll((els) => els.map((e) => e.dataset.id));
+/** The filter option whose name starts with `name` (case-sensitive: plain tags are written "#tag"). */
+const optionNamed = (page, scope, name) =>
+  page.locator(`${scope} .mods-opt-btn`).filter({ has: page.locator(".mods-opt-label", { hasText: new RegExp(`^${name}`) }) });
+/** Does a mod have a tag key (`tags=` value: a featured tag takes its aliases along, see src/data/featured-tags.ts)? */
+const tagged = (e, key) => tagKeys(e.tags).includes(key);
 
 console.log(`smoke: ${root}`);
 
 const { page: home, errors: homeErrors } = await open("");
 const catalog = await entries(home);
 const total = catalog.length;
+// the mod with the most stars: search and sort checks look for it
+const TOP = [...catalog].sort((a, b) => b.stars - a.stars)[0];
 
 await check("home renders and hydrates without errors; title and status", async () => {
   assert((await home.title()) === HOME_TITLE, `title "${await home.title()}"`);
@@ -145,13 +160,18 @@ await check("home renders and hydrates without errors; title and status", async 
   return `${total} projects; ${status}`;
 });
 
-await check("default order: by stars — LeviLamina in the top 3", async () => {
-  const names = await rowNames(home);
-  assert(names.slice(0, 3).includes("LeviLamina"), `top 3: ${names.slice(0, 3)}`);
-  const stars = catalog.map((e) => e.stars).sort((a, b) => b - a);
-  const first = catalog.find((e) => e.name === names[0]);
-  assert(first?.stars === stars[0], `first row has ${first?.stars} stars, the most is ${stars[0]}`);
-  return names.slice(0, 3).join(", ");
+await check("default order: by rank, at most three mods of one author on page 1", async () => {
+  const ids = await rowIds(home);
+  const best = [...catalog].sort((a, b) => b.rank - a.rank)[0];
+  assert(ids[0] === best.id, `first row ${ids[0]}, the highest rank is ${best.id}`);
+  const owners = new Map();
+  for (const id of ids) {
+    const owner = catalog.find((e) => e.id === id).owner.toLowerCase();
+    owners.set(owner, (owners.get(owner) ?? 0) + 1);
+  }
+  const most = Math.max(...owners.values());
+  assert(most <= 3, `${most} rows of one author`);
+  return (await rowNames(home)).slice(0, 3).join(", ");
 });
 
 await check("hero is compact and the results start above the fold (1440×900, list)", async () => {
@@ -162,7 +182,9 @@ await check("hero is compact and the results start above the fold (1440×900, li
   });
   assert(m.hero <= 112, `hero ${m.hero}px`);
   assert(m.first <= 320, `first result at ${m.first}px`);
-  assert(m.full >= 5, `${m.full} fully visible rows`);
+  // Four at least: a row is 124–144px tall depending on whether its description wraps, so five fit only when the
+  // top rows' descriptions are short.
+  assert(m.full >= 4, `${m.full} fully visible rows`);
   return `hero ${Math.round(m.hero)}px, first row ${Math.round(m.first)}px, ${m.full} rows visible`;
 });
 
@@ -170,10 +192,11 @@ await check("search as you type: no Enter, URL replaced, no page load", async ()
   await markLoad(home);
   const length = await home.evaluate(() => history.length);
   await home.click(searchBox);
-  await home.keyboard.type("levilamina", { delay: 20 });
+  const typed = TOP.name.toLowerCase();
+  await home.keyboard.type(typed, { delay: 20 });
   const started = Date.now();
-  await home.waitForFunction(() => new URL(location.href).searchParams.get("q") === "levilamina");
-  await home.waitForFunction(() => document.querySelector(".mods-results-list .mods-row-name")?.textContent === "LeviLamina", null, { timeout: 2000 });
+  await home.waitForFunction((q) => new URL(location.href).searchParams.get("q") === q, typed);
+  await home.waitForFunction((name) => document.querySelector(".mods-results-list .mods-row-name")?.textContent === name, TOP.name, { timeout: 2000 });
   const took = Date.now() - started;
   assert(took <= 500, `took ${took}ms`);
   assert((await home.evaluate(() => history.length)) === length, "a history entry was added");
@@ -220,47 +243,80 @@ await check("press / to focus the search field", async () => {
   return "ok";
 });
 
-await check("category Economy: ?cat=economy, a chip, YEssential among the results", async () => {
+await check("featured tag Economy: ?tags=economy, a chip, its aliases match too", async () => {
   await home.goto(root, { waitUntil: "networkidle" });
-  const option = home.locator(".mods-sidebar .mods-opt-btn", { hasText: "Economy" });
-  if (!(await option.isVisible())) await home.locator(".mods-sidebar .mods-group-more").click();
-  await home.locator(".mods-sidebar .mods-opt-btn", { hasText: "Economy" }).click();
-  await home.waitForURL((u) => new URL(u).searchParams.get("cat") === "economy");
+  const option = () => optionNamed(home, ".mods-sidebar", "Economy");
+  assert(await option().isVisible(), "Economy is not among the featured tags");
+  assert((await option().locator(".mods-raw-tag").innerText()) === "economy", "no raw tag beside the name");
+  await option().click();
+  await home.waitForURL((u) => new URL(u).searchParams.get("tags") === "economy");
   await settled(home);
-  const names = await rowNames(home);
-  assert(names.includes("YEssential"), `results: ${names}`);
-  const expected = catalog.filter((e) => e.categories.includes("economy")).length;
-  assert(names.length === expected, `${names.length} results, ${expected} expected`);
+  const ids = await rowIds(home);
+  const expected = catalog.filter((e) => tagged(e, "economy")).map((e) => e.id);
+  assert(ids.length === Math.min(20, expected.length) && ids.every((id) => expected.includes(id)), `${ids} for ${expected}`);
   assert((await home.locator(".mods-active .mods-chip-active", { hasText: "Economy" }).count()) === 1, "no chip");
-  assert((await home.locator('.mods-sidebar .mods-opt-btn[aria-pressed="true"]', { hasText: "Economy" }).count()) === 1, "option not pressed");
-  return `${names.length}: ${names.join(", ")}`;
+  assert((await option().getAttribute("aria-pressed")) === "true", "option not pressed");
+  // an alias selects the whole group
+  await home.goto(`${root}?tags=money`, { waitUntil: "networkidle" });
+  await settled(home);
+  assert(JSON.stringify((await rowIds(home)).sort()) === JSON.stringify([...ids].sort()), "?tags=money differs from ?tags=economy");
+  return `${ids.length}: ${(await rowNames(home)).join(", ")}`;
 });
 
-await check("platform LSE + environment Client combine (OR inside, AND across); counts dim empty options", async () => {
-  await home.goto(`${root}?platform=lse&env=client`, { waitUntil: "networkidle" });
+await check("side Client + platform win-x64 combine (OR inside, AND across); counts dim empty options", async () => {
+  await home.goto(`${root}?side=client&platform=win-x64`, { waitUntil: "networkidle" });
   await settled(home);
-  const names = await rowNames(home);
-  const expected = catalog.filter((e) => e.platforms.includes("lse") && e.env.includes("client")).map((e) => e.name);
-  assert(names.length === Math.min(20, expected.length), `${names.length} rows, ${expected.length} expected`);
-  assert(names.every((n) => expected.includes(n)), `unexpected: ${names.filter((n) => !expected.includes(n))}`);
+  const ids = await rowIds(home);
+  const expected = catalog.filter((e) => e.side.includes("client") && e.platform.includes("win-x64")).map((e) => e.id);
+  assert(ids.length === Math.min(20, expected.length), `${ids.length} rows, ${expected.length} expected`);
+  assert(ids.every((id) => expected.includes(id)), `unexpected: ${ids.filter((id) => !expected.includes(id))}`);
+  const status = await statusText(home);
+  assert(status.startsWith(`${expected.length} result`), `status "${status}", ${expected.length} expected`);
   const dimmed = await home.locator(".mods-sidebar .mods-opt.is-dimmed").count();
   assert(dimmed > 0, "no dimmed option");
-  return `${names.length} results, ${dimmed} dimmed options`;
+  return `${expected.length} results, ${dimmed} dimmed options`;
+});
+
+await check("license: a family matches its SPDX ids; the ids open under it", async () => {
+  await home.goto(`${root}?license=copyleft`, { waitUntil: "networkidle" });
+  await settled(home);
+  const ids = await rowIds(home);
+  const expected = catalog.filter((e) => licenseFamily(licenseOf(e)) === "copyleft").map((e) => e.id);
+  assert(expected.length > 0, "no copyleft mod");
+  assert(ids.length === Math.min(20, expected.length) && ids.every((id) => expected.includes(id)), `${ids.length} rows, ${expected.length} expected`);
+  // (not "Weak copyleft")
+  const family = home.locator(".mods-sidebar .mods-opt").filter({ has: home.locator(".mods-opt-label", { hasText: /^Copyleft/ }) });
+  await family.locator(".mods-opt-expand").click();
+  const spdx = await home.locator(".mods-sidebar .mods-opt.is-nested .mods-opt-label").allInnerTexts();
+  assert(spdx.length > 0 && spdx.every((id) => /^A?GPL-/.test(id)), `ids under Copyleft: ${spdx}`);
+  return `${expected.length} copyleft (${spdx.join(", ")})`;
+});
+
+await check("author: ?author= keeps one owner's mods (any case)", async () => {
+  const owner = TOP.owner;
+  await home.goto(`${root}?author=${owner.toLowerCase()}`, { waitUntil: "networkidle" });
+  await settled(home);
+  const ids = await rowIds(home);
+  const expected = catalog.filter((e) => e.owner.toLowerCase() === owner.toLowerCase()).map((e) => e.id);
+  assert(ids.length === Math.min(20, expected.length) && ids.every((id) => expected.includes(id)), `${ids.length} rows, ${expected.length} expected`);
+  assert((await home.locator(".mods-active .mods-chip-active", { hasText: `by ${owner.toLowerCase()}` }).count()) === 1, "no chip");
+  return `${owner}: ${expected.length}`;
 });
 
 await check("Clear all removes the filters and keeps the search", async () => {
-  await home.goto(`${root}?q=a&cat=utility&platform=levilamina`, { waitUntil: "networkidle" });
+  await home.goto(`${root}?q=a&tags=utility&side=server`, { waitUntil: "networkidle" });
   await settled(home);
   await home.locator(".mods-active .mods-chip-clear").click();
   await home.waitForURL((u) => new URL(u).search === "?q=a");
   return "?q=a";
 });
 
-await check("exclusion: ?cat=-library hides every library; the chip says so", async () => {
-  await home.goto(`${root}?cat=-library`, { waitUntil: "networkidle" });
+await check("exclusion: ?tags=-library hides every library; the chip says so", async () => {
+  await home.goto(`${root}?tags=-library`, { waitUntil: "networkidle" });
   await settled(home);
-  const shown = await home.locator(".mods-results-list .mods-row").evaluateAll((els) => els.map((e) => e.dataset.tooth));
-  const libraries = new Set(catalog.filter((e) => e.categories.includes("library")).map((e) => e.tooth));
+  const shown = await rowIds(home);
+  const libraries = new Set(catalog.filter((e) => tagged(e, "library")).map((e) => e.id));
+  assert(libraries.size > 0, "no library");
   assert(shown.length > 0 && !shown.some((t) => libraries.has(t)), "a library is listed");
   const chip = await home.locator(".mods-active .mods-chip-active.is-excluded").innerText();
   assert(/not Library/.test(chip), `chip "${chip}"`);
@@ -274,8 +330,8 @@ await check("sort by stars (hotbar, arrow keys) orders the rows", async () => {
   await home.waitForURL((u) => new URL(u).searchParams.get("sort") === "stars");
   await settled(home);
   assert((await home.locator('.mods-sort [aria-checked="true"]').innerText()) === "Stars", "Stars not checked");
-  const order = await home.locator(".mods-results-list .mods-row").evaluateAll((els) => els.map((e) => e.dataset.tooth));
-  const stars = order.map((t) => catalog.find((e) => e.tooth === t).stars);
+  const order = await rowIds(home);
+  const stars = order.map((id) => catalog.find((e) => e.id === id).stars);
   assert(stars.every((n, i) => i === 0 || stars[i - 1] >= n), `not descending: ${stars.slice(0, 6)}`);
   return `top: ${stars.slice(0, 3).join(", ")}`;
 });
@@ -328,16 +384,30 @@ await check("empty state: one message, no pagers, Clear search works", async () 
   return "ok";
 });
 
-await check("backward-compatible listing URLs", async () => {
+await check("listing URLs, and old ones: kept keys work, removed keys and values are dropped", async () => {
+  const all = (n, t) => n.length === Math.min(20, total) && t.length === 0;
+  const count = (filter) => Math.min(20, catalog.filter(filter).length);
   const cases = [
     ["?q=land", (n) => n.some((x) => /land/i.test(x))],
     ["?q=%E9%A2%86%E5%9C%B0", (n) => n.some((x) => /PLand/i.test(x))],
-    ["?tags=economy", (n, t) => n.length === catalog.filter((e) => e.tags.includes("economy")).length && t.length > 0],
-    ["?tags=platform:levilamina,type:mod", (n) => n.length === Math.min(20, catalog.filter((e) => e.tags.includes("platform:levilamina") && e.tags.includes("type:mod")).length)],
-    ["?tags=platform%3Alevilamina%2Ctype%3Amod", (n) => n.length === Math.min(20, catalog.filter((e) => e.tags.includes("platform:levilamina") && e.tags.includes("type:mod")).length)],
-    ["?sort=stars", (n) => n[0] === "LeviLamina"],
+    ["?tags=economy", (n, t) => n.length === count((e) => tagged(e, "economy")) && t.length === 1],
+    // a category: prefix and upper case are normalised away
+    ["?tags=Category:Economy", (n, t) => n.length === count((e) => tagged(e, "economy")) && t.length === 1],
+    // hidden tags (loader, kind) filter nothing
+    ["?tags=platform:levilamina,type:mod", all],
+    ["?tags=platform%3Alevilamina%2Ctype%3Amod", all],
+    // env= is the old name of side=
+    ["?env=client", (n, t) => n.length === count((e) => e.side.includes("client")) && t.length === 1],
+    ["?side=server&platform=win-x64", (n, t) => n.length === count((e) => e.side.includes("server") && e.platform.includes("win-x64")) && t.length === 2],
+    ["?license=permissive,GPL-3.0", (n, t) => n.length === count((e) => licenseFamily(licenseOf(e)) === "permissive" || licenseOf(e) === "GPL-3.0") && t.length === 2],
+    // removed: categories, loader platforms, "open source"
+    ["?cat=economy", all],
+    ["?platform=lse", all],
+    ["?platform=endstone", all],
+    ["?license=oss", all],
+    [`?sort=stars`, (n) => n[0] === TOP.name],
     ["?sort=updated&page=2", (n) => n.length > 0],
-    ["?sort=downloads", (n) => n[0] === "LeviLamina"],
+    ["?sort=downloads", (n) => n[0] === TOP.name],
     ["?page=99", (n) => n.length > 0],
   ];
   const ctx = await newContext(DESKTOP);
@@ -346,8 +416,8 @@ await check("backward-compatible listing URLs", async () => {
     assert(response.status() === 200, `${query}: ${response.status()}`);
     await settled(page);
     const names = await rowNames(page);
-    const tags = await page.locator(".mods-active .mods-chip-active").allInnerTexts();
-    assert(ok(names, tags), `${query}: ${names.slice(0, 4).join(", ")} (${names.length})`);
+    const chips = await page.locator(".mods-active .mods-chip-active").allInnerTexts();
+    assert(ok(names, chips), `${query}: ${names.slice(0, 4).join(", ")} (${names.length}); chips: ${chips.join(", ")}`);
     if (query === "?page=99") {
       const current = await page.locator('.mods-pager-top [aria-current="page"]').innerText();
       assert(current === String(Math.ceil(total / 20)), `?page=99 shows page ${current}`);
@@ -369,23 +439,26 @@ await check("backward-compatible listing URLs", async () => {
 });
 
 await check("a row opens its mod without a page load; Back to search returns to the listing", async () => {
-  await home.goto(`${root}?cat=library&sort=stars`, { waitUntil: "networkidle" });
+  const listing = "?tags=library&sort=stars";
+  await home.goto(`${root}${listing}`, { waitUntil: "networkidle" });
   await settled(home);
   await markLoad(home);
-  await home.locator(".mods-card-link", { hasText: /^LeviLamina$/ }).click();
-  await home.waitForURL((u) => u.pathname === `${base}${LEVILAMINA}`);
-  await home.waitForSelector("[data-mods-detail] [data-doc-content]");
+  const [id] = await rowIds(home);
+  const { name } = catalog.find((e) => e.id === id);
+  await home.locator(".mods-results-list .mods-row").first().locator(".mods-card-link").click();
+  await home.waitForURL((u) => u.pathname === `${base}${id}/`);
+  await home.waitForSelector("[data-mods-detail] [data-doc-content], [data-mods-detail] .mods-readme-empty");
   assert(await sameDocument(home), "page reloaded");
-  assert((await home.title()) === "LeviLamina - Mods - LeviMC", `title ${await home.title()}`);
+  assert((await home.title()) === `${name} - Mods - LeviMC`, `title ${await home.title()}`);
   assert((await home.evaluate(() => window.scrollY)) === 0, "not scrolled to the top");
   await home.locator(".mods-back").click();
-  await home.waitForURL((u) => u.pathname === base && u.search === "?cat=library&sort=stars");
+  await home.waitForURL((u) => u.pathname === base && u.search === listing);
   assert(await sameDocument(home), "back reloaded the page");
   // opened directly: the link goes to the last listing of this tab
   await home.goto(root + LEVILAMINA, { waitUntil: "networkidle" });
   const href = await home.locator(".mods-back").getAttribute("href");
-  assert(href === `${base}?cat=library&sort=stars`, `back link ${href}`);
-  return "and back";
+  assert(href === `${base}${listing}`, `back link ${href}`);
+  return `${name} and back`;
 });
 
 const { page: mod, errors: modErrors } = await open(LEVILAMINA);
@@ -401,7 +474,7 @@ await check("mod page: header, README, sidebar; no errors", async () => {
 });
 
 await check("install dialog: the command for the selection, copied to the clipboard", async () => {
-  const latest = catalog.find((e) => e.tooth === "github.com/LiteLDev/LeviLamina") && (await mod.locator(".mods-project-version").innerText()).trim();
+  const latest = (await mod.locator(".mods-project-version").innerText()).trim();
   await mod.click(".mods-install-btn");
   await mod.waitForSelector(".mods-dialog[open] .mods-install-command");
   const command = (await mod.locator(".mods-dialog .mods-install-command").innerText()).replace(/\s+/g, " ").trim();
@@ -629,7 +702,7 @@ await check("phones (390/360/320px): no sideways scroll on the listing and 3 mod
   const seen = [];
   for (const width of [390, 360, 320]) {
     const phone = await newContext({ ...PHONE, viewport: { width, height: 844 } }, { fonts: true });
-    for (const path of ["", "?cat=economy", "?q=zzzzqqq", LEVILAMINA, "github.com/IceBlcokMC/PLand/", "github.com/qing85566/ChiyanMap/", `${LEVILAMINA}?tab=versions`, "no/such/page/"]) {
+    for (const path of ["", "?tags=economy", "?q=zzzzqqq", LEVILAMINA, "github.com/IceBlcokMC/PLand/", "github.com/qing85566/ChiyanMap/", `${LEVILAMINA}?tab=versions`, "no/such/page/"]) {
       const { page, errors, response } = await open(path, phone);
       assert(response.status() === (path.startsWith("no/") ? 404 : 200), `/${path}: status ${response.status()}`);
       await fontsReady(page);
@@ -671,9 +744,9 @@ await check("phones: the Filters drawer traps focus, closes with Escape and retu
   assert(await page.evaluate(() => document.activeElement?.classList.contains("mods-filters-btn")), "focus did not return to the Filters button");
   // filters apply live; "Show N results" closes
   await page.click(".mods-filters-btn");
-  await page.locator(".mods-filter-drawer .mods-opt-btn", { hasText: "LegacyScriptEngine" }).click();
-  await page.waitForURL((u) => new URL(u).searchParams.get("platform") === "lse");
-  const expected = catalog.filter((e) => e.platforms.includes("lse")).length;
+  await optionNamed(page, ".mods-filter-drawer", "Client").click();
+  await page.waitForURL((u) => new URL(u).searchParams.get("side") === "client");
+  const expected = catalog.filter((e) => e.side.includes("client")).length;
   await page.waitForFunction((n) => document.querySelector(".mods-drawer-show")?.textContent === `Show ${n} results`, expected, { timeout: 3000 }).catch(() => {});
   const label = await page.locator(".mods-drawer-show").innerText();
   assert(label === `Show ${expected} results`, `"${label}", expected ${expected}`);
@@ -723,30 +796,30 @@ await check("no layout shift on load (CLS ≤ 0.05)", async () => {
 // READMEs are third-party text and change with every hourly build.
 if (!args.includes("--skip-all-pages")) {
   await check("every mod page hydrates without errors", async () => {
-    const tooths = catalog.map((e) => e.tooth);
+    const ids = catalog.map((e) => e.id);
     const ctx = await newContext({ viewport: { width: 1280, height: 800 }, colorScheme: "light" });
-    const queue = [...tooths];
+    const queue = [...ids];
     const failures = [];
     await Promise.all(
       Array.from({ length: 6 }, async () => {
-        for (let tooth = queue.shift(); tooth; tooth = queue.shift()) {
+        for (let id = queue.shift(); id; id = queue.shift()) {
           const page = await ctx.newPage();
           const errors = [];
           page.on("pageerror", (e) => errors.push(e.message));
           page.on("console", (m) => {
             if (m.type() === "error" && !/Failed to load resource|ERR_FAILED/.test(m.text())) errors.push(m.text());
           });
-          const response = await page.goto(`${root}${tooth}/`, { waitUntil: "networkidle" });
+          const response = await page.goto(`${root}${id}/`, { waitUntil: "networkidle" });
           await page.waitForSelector("[data-mods-detail]");
           if (response?.status() !== 200) errors.push(`status ${response?.status()}`);
-          if (errors.length) failures.push(`${tooth}: ${errors[0].split("\n")[0]}`);
+          if (errors.length) failures.push(`${id}: ${errors[0].split("\n")[0]}`);
           await page.close();
         }
       }),
     );
     await ctx.close();
     assert(!failures.length, `${failures.length} pages: ${failures.slice(0, 3).join(" | ")}`);
-    return `${tooths.length} pages`;
+    return `${ids.length} pages`;
   });
 }
 

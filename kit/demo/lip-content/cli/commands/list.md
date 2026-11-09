@@ -5,14 +5,26 @@ List installed packages.
 ## Synopsis
 
 ```shell
-lip list
+lip list [options]
 ```
+
+## Options
+
+| Option | Description |
+| --- | --- |
+| `--json` | Output as JSON. |
 
 ## Description
 
-Displays installed packages in two groups:
+Reads the workspace's [state file](../../concepts/lockfiles.md) and displays the installed packages as `<identity>@<version>` in two groups:
 
 - **User-Requested** — Packages explicitly installed by the user.
 - **Dependencies** — Packages installed as dependencies.
 
-Packages are topologically sorted by their dependency relationships.
+Packages are listed in installation order, dependencies first. The identity of a package is its package id, followed by `#<variant>` for a variant other than `""` (e.g. `github.com/LiteLDev/LegacyScriptEngine#lua`).
+
+With `--json`, the result is:
+
+```json
+{ "ExplicitInstalled": ["<identity>@<version>", ...], "ImplicitInstalled": ["<identity>@<version>", ...] }
+```

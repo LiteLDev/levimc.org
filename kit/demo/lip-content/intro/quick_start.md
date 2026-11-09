@@ -4,32 +4,32 @@ This guide will help you get started with `lip`, covering basic usage for managi
 
 ## Prerequisites
 
-Before proceeding, ensure that:
-1. You have [installed lip](installation.md).
-2. `git` is installed and available in your terminal.
+Before proceeding, ensure that you have [installed lip](installation.md). lip does not require `git` to be installed.
 
 ## Initializing a Project
 
-To start tracking packages, initialize a new project manifest. Run the following command in your project's root directory:
+If you are creating a mod or another package, initialize its `lip.toml`. Run the following command in your project's root directory:
 
 ```shell
 lip init
 ```
 
-This command creates a `tooth.json` file in the current directory. This file acts as a manifest, storing metadata about your project and its dependencies.
+This command asks for the package id of your package, such as `github.com/user/MyMod`, and creates a `lip.toml` file in the current directory (it fails if one already exists). This file describes your package to lip. You do not need it just to install packages.
 
 ## Installing Packages
 
-To install a package, use the `install` command followed by the package identifier. You can specify a version using the `@` symbol.
+Run lip in the root directory of your server (the workspace). To install a package, use the `install` command followed by the package id. You can specify a version using the `@` symbol.
 
 ```shell
 lip install github.com/LiteLDev/LeviLamina@1.0.0
 ```
 
-`lip` supports installing from various sources, including Git repositories. When you install a package:
+`lip` supports installing from various sources, including Git repositories, URLs, and ZIP files and directories on your disk. When you install a package:
 - It is downloaded to the local cache.
-- It is added to your `tooth.json` manifest.
 - Its dependencies are resolved and installed.
+- It is recorded in the [state file](../concepts/lockfiles.md), `.lip/state.json` in the workspace. Your `lip.toml` is not modified.
+
+lip manages server workspaces only. Client mods are managed by launchers such as LeviLauncher.
 
 ## Listing Installed Packages
 
@@ -65,11 +65,11 @@ To update a package to a newer version, use the `update` command.
 lip update github.com/LiteLDev/LeviLamina
 ```
 
-Alternatively, running `install` with a specific version will also update or downgrade the package.
+To change to a specific version, including an older one, add it with `@`, e.g. `lip update github.com/LiteLDev/LeviLamina@1.0.0`. This pins the package to that version until you update it by its path without `@`. Running `lip update` without arguments updates every package you installed explicitly.
 
 ## Uninstalling Packages
 
-To remove a package from your project and `tooth.json`:
+To remove a package and the files it installed from your project:
 
 ```shell
 lip uninstall github.com/LiteLDev/LeviLamina
@@ -94,4 +94,4 @@ lip config set github_proxy https://mirror.ghproxy.com/
 ## Next Steps
 
 - Explore the [CLI Overview](../cli/overview.md) for more advanced command usage.
-- Learn more about the [Package Manifest](../concepts/package_manifest.md) structure.
+- Learn more about the [lip.toml](../concepts/lip_toml.md) structure.

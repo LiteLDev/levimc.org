@@ -4,32 +4,32 @@
 
 ## 前置条件
 
-开始前请确保：
-1. 你已[安装 lip](installation.md)。
-2. 终端中已安装并可使用 `git`。
+开始前请确保你已[安装 lip](installation.md)。lip 不需要安装 `git`。
 
 ## 初始化项目
 
-要开始追踪包，请先初始化项目清单。在项目根目录运行：
+如果你要创建 mod 或其他包，请先初始化其 `lip.toml`。在项目根目录运行：
 
 ```shell
 lip init
 ```
 
-该命令会在当前目录创建 `tooth.json` 文件。这个文件是清单（manifest），用于保存项目及其依赖的元数据。
+该命令会询问你的包的包 ID（例如 `github.com/user/MyMod`），并在当前目录创建 `lip.toml` 文件（若已存在则失败）。这个文件向 lip 描述你的包。如果只是安装包，则不需要它。
 
 ## 安装包
 
-使用 `install` 命令并跟上包标识即可安装包，也可用 `@` 指定版本。
+在服务端的根目录（即工作区）中运行 lip。使用 `install` 命令并跟上包 ID 即可安装包，也可用 `@` 指定版本。
 
 ```shell
 lip install github.com/LiteLDev/LeviLamina@1.0.0
 ```
 
-`lip` 支持从多种来源安装（包括 Git 仓库）。安装时会：
+`lip` 支持从多种来源安装（包括 Git 仓库、URL，以及磁盘上的 ZIP 文件和目录）。安装时会：
 - 下载到本地缓存；
-- 加入你的 `tooth.json` 清单；
-- 解析并安装其依赖。
+- 解析并安装其依赖；
+- 记录到[状态文件](../concepts/lockfiles.md)（工作区中的 `.lip/state.json`）中。你的 `lip.toml` 不会被修改。
+
+lip 只管理服务端工作区。客户端 mod 由 LeviLauncher 等启动器管理。
 
 ## 查看已安装包
 
@@ -65,11 +65,11 @@ lip versions github.com/LiteLDev/LeviLamina
 lip update github.com/LiteLDev/LeviLamina
 ```
 
-另外，使用 `install` 并指定版本也可完成升级或降级。
+如需切换到某个特定版本（包括更旧的版本），请用 `@` 指定，例如 `lip update github.com/LiteLDev/LeviLamina@1.0.0`。这会把该包固定在该版本，直到你用不带 `@` 的路径更新它。不带参数运行 `lip update` 会更新所有你显式安装的包。
 
 ## 卸载包
 
-从项目和 `tooth.json` 中移除包：
+从项目中移除包及其安装的文件：
 
 ```shell
 lip uninstall github.com/LiteLDev/LeviLamina
@@ -94,4 +94,4 @@ lip config set github_proxy https://mirror.ghproxy.com/
 ## 下一步
 
 - 查看 [CLI 概览](../cli/overview.md) 了解更多高级命令用法。
-- 查看 [包清单](../concepts/package_manifest.md) 了解结构细节。
+- 查看 [lip.toml](../concepts/lip_toml.md) 了解结构细节。

@@ -1,5 +1,8 @@
 import { useId, useMemo, useState, type ReactNode } from "react";
-import { CATEGORIES, ENVIRONMENTS, PLATFORMS, type SpriteName } from "../data/categories";
+import { FEATURED_BY_ID } from "../data/featured-tags";
+import { LICENSE_FAMILY_BY_ID } from "../data/licenses";
+import { SIDES } from "../data/sides";
+import type { SpriteName } from "../data/sprites";
 import { formatNumber, useI18n } from "../i18n";
 import type { Facet, FacetCounts, FacetOptions, QueryState } from "../lib/catalog-query";
 import { PixelIcon } from "../kit-ui";
@@ -8,13 +11,12 @@ import { notifyStored, useStored } from "../lib/use-stored";
 import type { CatalogFeatures } from "../types";
 import { MaskIcon, Sprite } from "./sprite";
 
-/** Categories (and the options of the long groups) shown before "Show more". */
-const CATEGORY_LIMIT = 8;
+/** Options of the long groups shown before "Show more". */
+const OPTION_LIMIT = 8;
 
-type GroupId = "gameVersion" | "platform" | "category" | "environment" | "license" | "dependsOn" | "tags";
+type GroupId = "gameVersion" | "side" | "platform" | "tags" | "license" | "dependencies";
 
 const readCollapsed = () => readStorage(STORAGE_KEYS.groups) ?? "[]";
-const readMoreCategories = () => readStorage(STORAGE_KEYS.moreCategories);
 
 /** Collapsed groups, remembered per viewer (never URL state). */
 function useCollapsed(): [Set<GroupId>, (id: GroupId) => void] {
@@ -41,19 +43,28 @@ interface OptionProps {
   id: string;
   label: string;
   icon?: SpriteName;
+  /** Small grey text after the label: the tag a featured tag stands for, in manifests. */
+  raw?: string;
+  /** Monospace label (platforms, SPDX ids). */
+  mono?: boolean;
+  /** An option under another (an SPDX id under its family): indented. */
+  nested?: boolean;
   count: number;
   included: boolean;
   excluded?: boolean;
   onInclude: () => void;
   /** Absent: the group has no exclusions. */
   onExclude?: () => void;
+  /** Options under this one, shown or not (a license family's SPDX ids): a toggle in the exclude column. */
+  expand?: { open: boolean; label: string; onToggle: () => void };
 }
 
-function Option({ label, icon, count, included, excluded, onInclude, onExclude }: OptionProps) {
+function Option({ label, icon, raw, mono, nested, count, included, excluded, onInclude, onExclude, expand }: OptionProps) {
   const { t, locale } = useI18n();
   const dimmed = count === 0 && !included && !excluded;
+  const className = ["mods-opt", excluded && "is-excluded", dimmed && "is-dimmed", nested && "is-nested"].filter(Boolean).join(" ");
   return (
-    <li className={`mods-opt${excluded ? " is-excluded" : ""}${dimmed ? " is-dimmed" : ""}`}>
+    <li className={className}>
       <button
         type="button"
         className="mods-opt-btn"
@@ -64,10 +75,23 @@ function Option({ label, icon, count, included, excluded, onInclude, onExclude }
         <span className="mods-opt-mark" aria-hidden="true">
           {included ? <MaskIcon name="check" /> : icon ? <Sprite name={icon} /> : null}
         </span>
-        <span className="mods-opt-label">{label}</span>
+        <span className={mono ? "mods-opt-label mods-opt-mono" : "mods-opt-label"}>
+          {label}
+          {raw ? <span className="mods-raw-tag">{raw}</span> : null}
+        </span>
         <span className="mods-opt-count">{formatNumber(count, locale)}</span>
       </button>
-      {onExclude ? (
+      {expand ? (
+        <button
+          type="button"
+          className="mc-icon-btn mods-opt-expand"
+          aria-label={expand.label}
+          aria-expanded={expand.open}
+          onClick={expand.onToggle}
+        >
+          <MaskIcon name="chevronDown" />
+        </button>
+      ) : onExclude ? (
         <button
           type="button"
           className="mc-icon-btn mods-opt-exclude"
@@ -123,7 +147,11 @@ const exclude = (f: Facet, id: string): Facet => ({ inc: f.inc.filter((x) => x !
 interface LongOption {
   id: string;
   label: string;
+  icon?: SpriteName;
+  raw?: string;
+  mono?: boolean;
   selected: boolean;
+  excluded?: boolean;
 }
 
 /**
@@ -136,22 +164,25 @@ function LongOptions({
   counts,
   placeholder,
   onToggle,
+  onExclude,
 }: {
   options: LongOption[];
   counts: Record<string, number>;
   placeholder: string;
   onToggle: (id: string) => void;
+  /** Absent: the group has no exclusions. */
+  onExclude?: (id: string) => void;
 }) {
   const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [more, setMore] = useState(false);
   const q = query.trim().toLowerCase();
   const found = q ? options.filter((o) => o.label.toLowerCase().includes(q) || o.id.toLowerCase().includes(q)) : options;
-  const shown = q || more ? found : found.filter((o, i) => i < CATEGORY_LIMIT || o.selected);
+  const shown = q || more ? found : found.filter((o, i) => i < OPTION_LIMIT || o.selected || o.excluded);
   const hidden = found.length - shown.length;
   return (
     <>
-      {options.length > CATEGORY_LIMIT ? (
+      {options.length > OPTION_LIMIT ? (
         <label className="mc-input mods-group-search">
           <PixelIcon name="search" className="mods-search-icon" />
           <input
@@ -171,9 +202,14 @@ function LongOptions({
             key={o.id}
             id={o.id}
             label={o.label}
+            icon={o.icon}
+            raw={o.raw}
+            mono={o.mono}
             count={counts[o.id] ?? 0}
             included={o.selected}
+            excluded={o.excluded}
             onInclude={() => onToggle(o.id)}
+            onExclude={onExclude ? () => onExclude(o.id) : undefined}
           />
         ))}
       </ul>
@@ -187,38 +223,92 @@ function LongOptions({
   );
 }
 
+/**
+ * The License group: each family, and under it (behind a toggle, open while
+ * one of them is picked) the SPDX ids of the mods in it.
+ */
+function LicenseOptions({ state, counts, options, set }: { state: QueryState; counts: FacetCounts; options: FacetOptions; set: (patch: Partial<QueryState>) => void }) {
+  const { t, locale } = useI18n();
+  const [open, setOpen] = useState<ReadonlySet<string>>(new Set());
+  const picked = (v: string) => state.license.some((x) => x.toLowerCase() === v.toLowerCase());
+  const toggle = (v: string) => set({ license: picked(v) ? state.license.filter((x) => x.toLowerCase() !== v.toLowerCase()) : [...state.license, v] });
+  return (
+    <ul className="mods-opts">
+      {options.license.flatMap(({ family, ids }) => {
+        const label = LICENSE_FAMILY_BY_ID.get(family)!.label[locale];
+        const expanded = open.has(family) || ids.some(picked);
+        return [
+          <Option
+            key={family}
+            id={family}
+            label={label}
+            count={counts.license[family] ?? 0}
+            included={picked(family)}
+            onInclude={() => toggle(family)}
+            expand={
+              ids.length
+                ? {
+                    open: expanded,
+                    label: t.licenseIds(label),
+                    onToggle: () => {
+                      const next = new Set(open);
+                      if (expanded) next.delete(family);
+                      else next.add(family);
+                      setOpen(next);
+                    },
+                  }
+                : undefined
+            }
+          />,
+          ...(expanded
+            ? ids.map((id) => (
+                <Option
+                  key={`${family}/${id}`}
+                  id={id}
+                  label={id}
+                  mono
+                  nested
+                  count={counts.license[id] ?? 0}
+                  included={picked(id)}
+                  onInclude={() => toggle(id)}
+                />
+              ))
+            : []),
+        ];
+      })}
+    </ul>
+  );
+}
+
 interface FilterGroupsProps {
   state: QueryState;
   counts: FacetCounts;
-  /** The values of the Game Version, Depends On and Tags groups. */
+  /** The values of every group. */
   options: FacetOptions;
-  /** Mod names by tooth, for Depends On. */
+  /** Mod names by id, for Dependencies. */
   names: ReadonlyMap<string, string>;
   features: CatalogFeatures;
-  /** Category ids by how many mods they hold in the whole catalogue. */
-  categoryOrder: string[];
   /** Applies a new state (a new history entry; the page goes back to 1). */
   apply: (next: QueryState) => void;
   /** In the drawer: sections with dividers instead of cards. */
   flat?: boolean;
 }
 
-/** The filter groups of the sidebar and the phone drawer. */
-export function FilterGroups({ state, counts, options, names, features, categoryOrder, apply, flat = false }: FilterGroupsProps) {
+/**
+ * The filter groups of the sidebar and the phone drawer: Game version, Side,
+ * Platform, Tags (the featured ones first, see `data/featured-tags.ts`),
+ * License (families, then their SPDX ids) and Dependencies.
+ */
+export function FilterGroups({ state, counts, options, names, features, apply, flat = false }: FilterGroupsProps) {
   const { t, locale } = useI18n();
   const [collapsed, toggle] = useCollapsed();
-  const moreCats = useStored(readMoreCategories, null) === "1";
   const set = (patch: Partial<QueryState>) => apply({ ...state, ...patch, page: 1 });
-
-  const categories = categoryOrder
-    .map((id) => CATEGORIES.find((c) => c.id === id))
-    .filter((c): c is (typeof CATEGORIES)[number] => !!c);
-  const shownCategories = moreCats
-    ? categories
-    : categories.filter(
-        (c, i) => i < CATEGORY_LIMIT || state.cat.inc.includes(c.id) || state.cat.exc.includes(c.id),
-      );
-  const hiddenCount = categories.length - shownCategories.length;
+  const chosen = (tag: string) => state.tags.inc.includes(tag) || state.tags.exc.includes(tag);
+  // tags in the URL that no mod has stay, so they can be taken off
+  const tagOptions = [...options.tags, ...[...state.tags.inc, ...state.tags.exc].filter((tag) => !options.tags.includes(tag))];
+  // a featured tag is offered while it matches something (or is picked)
+  const featured = tagOptions.filter((tag) => FEATURED_BY_ID.has(tag) && ((counts.tags[tag] ?? 0) > 0 || chosen(tag)));
+  const plain = tagOptions.filter((tag) => !FEATURED_BY_ID.has(tag));
 
   const lower = (list: string[]) => list.map((x) => x.toLowerCase());
   const deps = lower(state.dep);
@@ -235,100 +325,88 @@ export function FilterGroups({ state, counts, options, names, features, category
           />
         </Group>
       ) : null}
-      <Group id="platform" title={t.groupPlatform} collapsed={collapsed.has("platform")} onToggle={() => toggle("platform")} flat={flat}>
-        {PLATFORMS.map((p) => (
+      <Group id="side" title={t.groupSide} collapsed={collapsed.has("side")} onToggle={() => toggle("side")} flat={flat}>
+        {SIDES.map((side) => (
           <Option
-            key={p.id}
-            id={p.id}
-            label={p.label[locale]}
-            icon={p.icon}
-            count={counts.platform[p.id] ?? 0}
-            included={state.platform.inc.includes(p.id)}
-            excluded={state.platform.exc.includes(p.id)}
-            onInclude={() => set({ platform: include(state.platform, p.id) })}
-            onExclude={() => set({ platform: exclude(state.platform, p.id) })}
+            key={side.id}
+            id={side.id}
+            label={side.label[locale]}
+            icon={side.icon}
+            count={counts.side[side.id] ?? 0}
+            included={state.side.includes(side.id)}
+            onInclude={() => set({ side: SIDES.map((x) => x.id).filter((id) => (id === side.id) !== state.side.includes(id)) })}
           />
         ))}
       </Group>
-      <Group
-        id="category"
-        title={t.groupCategory}
-        collapsed={collapsed.has("category")}
-        onToggle={() => toggle("category")}
-        flat={flat}
-        footer={
-          categories.length > CATEGORY_LIMIT ? (
-            <button
-              type="button"
-              className="mc-btn mc-btn-ghost mc-btn-sm mods-group-more"
-              aria-expanded={moreCats}
-              onClick={() => {
-                writeStorage(STORAGE_KEYS.moreCategories, moreCats ? null : "1");
-                notifyStored();
-              }}
-            >
-              <MaskIcon name={moreCats ? "arrowUp" : "chevronDown"} />
-              {moreCats ? t.showFewer : t.showMore(hiddenCount)}
-            </button>
-          ) : null
-        }
-      >
-        {shownCategories.map((c) => (
-          <Option
-            key={c.id}
-            id={c.id}
-            label={c.label[locale]}
-            icon={c.icon}
-            count={counts.cat[c.id] ?? 0}
-            included={state.cat.inc.includes(c.id)}
-            excluded={state.cat.exc.includes(c.id)}
-            onInclude={() => set({ cat: include(state.cat, c.id) })}
-            onExclude={() => set({ cat: exclude(state.cat, c.id) })}
-          />
-        ))}
-      </Group>
-      <Group id="environment" title={t.groupEnvironment} collapsed={collapsed.has("environment")} onToggle={() => toggle("environment")} flat={flat}>
-        {ENVIRONMENTS.map((e) => (
-          <Option
-            key={e.id}
-            id={e.id}
-            label={e.label[locale]}
-            icon={e.icon}
-            count={counts.env[e.id] ?? 0}
-            included={state.env.includes(e.id)}
-            onInclude={() => set({ env: toggleIn(state.env, e.id) })}
-          />
-        ))}
-      </Group>
-      {features.license ? (
-        <Group id="license" title={t.groupLicense} collapsed={collapsed.has("license")} onToggle={() => toggle("license")} flat={flat}>
-          <Option
-            id="oss"
-            label={t.openSource}
-            icon="paper"
-            count={counts.license}
-            included={state.license}
-            onInclude={() => set({ license: !state.license })}
-          />
+      {options.platform.length ? (
+        <Group id="platform" title={t.groupPlatform} collapsed={collapsed.has("platform")} onToggle={() => toggle("platform")} flat={flat}>
+          {options.platform.map((p) => (
+            <Option
+              key={p}
+              id={p}
+              label={p}
+              mono
+              count={counts.platform[p] ?? 0}
+              included={state.platform.includes(p)}
+              onInclude={() => set({ platform: toggleIn(state.platform, p) })}
+            />
+          ))}
+        </Group>
+      ) : null}
+      {tagOptions.length ? (
+        <Group id="tags" title={t.tags} collapsed={collapsed.has("tags")} onToggle={() => toggle("tags")} flat={flat} list={false}>
+          {featured.length ? (
+            <ul className="mods-opts">
+              {featured.map((tag) => {
+                const f = FEATURED_BY_ID.get(tag)!;
+                return (
+                  <Option
+                    key={tag}
+                    id={tag}
+                    label={f.label[locale]}
+                    icon={f.icon}
+                    raw={tag}
+                    count={counts.tags[tag] ?? 0}
+                    included={state.tags.inc.includes(tag)}
+                    excluded={state.tags.exc.includes(tag)}
+                    onInclude={() => set({ tags: include(state.tags, tag) })}
+                    onExclude={() => set({ tags: exclude(state.tags, tag) })}
+                  />
+                );
+              })}
+            </ul>
+          ) : null}
+          {plain.length ? (
+            <>
+              {featured.length ? <h4 className="mods-group-sub">{t.groupOtherTags}</h4> : null}
+              <LongOptions
+                options={plain.map((tag) => ({
+                  id: tag,
+                  label: `#${tag}`,
+                  selected: state.tags.inc.includes(tag),
+                  excluded: state.tags.exc.includes(tag),
+                }))}
+                counts={counts.tags}
+                placeholder={t.searchTags}
+                onToggle={(tag) => set({ tags: include(state.tags, tag) })}
+                onExclude={(tag) => set({ tags: exclude(state.tags, tag) })}
+              />
+            </>
+          ) : null}
+        </Group>
+      ) : null}
+      {features.license && options.license.length ? (
+        <Group id="license" title={t.groupLicense} collapsed={collapsed.has("license")} onToggle={() => toggle("license")} flat={flat} list={false}>
+          <LicenseOptions state={state} counts={counts} options={options} set={set} />
         </Group>
       ) : null}
       {options.dep.length ? (
-        <Group id="dependsOn" title={t.groupDependsOn} collapsed={collapsed.has("dependsOn")} onToggle={() => toggle("dependsOn")} flat={flat} list={false}>
+        <Group id="dependencies" title={t.groupDependencies} collapsed={collapsed.has("dependencies")} onToggle={() => toggle("dependencies")} flat={flat} list={false}>
           <LongOptions
             options={options.dep.map((d) => ({ id: d, label: names.get(d) ?? d.split("/").at(-1)!, selected: deps.includes(d.toLowerCase()) }))}
             counts={counts.dep}
             placeholder={t.searchMods}
             onToggle={(d) => set({ dep: deps.includes(d.toLowerCase()) ? state.dep.filter((x) => x.toLowerCase() !== d.toLowerCase()) : [...state.dep, d] })}
-          />
-        </Group>
-      ) : null}
-      {options.tags.length ? (
-        <Group id="tags" title={t.tags} collapsed={collapsed.has("tags")} onToggle={() => toggle("tags")} flat={flat} list={false}>
-          <LongOptions
-            options={[...options.tags, ...state.tags.filter((tag) => !options.tags.includes(tag))].map((tag) => ({ id: tag, label: tag, selected: state.tags.includes(tag) }))}
-            counts={counts.tags}
-            placeholder={t.searchTags}
-            onToggle={(tag) => set({ tags: toggleIn(state.tags, tag) })}
           />
         </Group>
       ) : null}

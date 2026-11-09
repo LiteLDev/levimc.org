@@ -13,13 +13,13 @@ function selectionKey({ variant, version }: ModSelection): string {
  * Only the latest version's Description is prerendered; another variant or
  * version (`?variant=&version=`) fetches that version's manifest and README
  * here, and the other tabs (`?tab=versions|dependencies`) render from the
- * page data once hydrated. The manifest comes from the mod's index.json, the
+ * page data once hydrated. The package file comes from the mod's index.json, the
  * README from GitHub (which allows cross-origin reads).
- * (The app renders one of these per tooth, so its state never outlives the
+ * (The app renders one of these per mod, so its state never outlives the
  * mod.)
  */
 export function ModPage({ data }: { data: ModPageData }) {
-  const { tooth, mod, repository, prerendered, readmeFiles } = data;
+  const { id: modId, mod, repository, prerendered, readmeFiles } = data;
   const [searchParams] = useSearchParams();
   const hydrated = useHydrated();
   const selection =
@@ -35,7 +35,7 @@ export function ModPage({ data }: { data: ModPageData }) {
 
     let cancelled = false;
     const [variant, version] = [selection.variant, selection.version];
-    Promise.all([fetchManifest(tooth, version), fetchReadmes(repository, version, readmeFiles)]).then(([manifest, readmes]) => {
+    Promise.all([fetchManifest(modId, version), fetchReadmes(repository, version, readmeFiles)]).then(([manifest, readmes]) => {
       if (cancelled) return;
       setFetched({
         key: selectionKey({ variant, version }),
@@ -47,7 +47,7 @@ export function ModPage({ data }: { data: ModPageData }) {
     return () => {
       cancelled = true;
     };
-  }, [tooth, repository, readmeFiles, isPrerendered, selection.variant, selection.version]);
+  }, [modId, repository, readmeFiles, isPrerendered, selection.variant, selection.version]);
 
   let details: Partial<ModDetails> = {};
   if (isPrerendered) details = prerendered;

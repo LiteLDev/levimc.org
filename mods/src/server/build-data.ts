@@ -12,18 +12,18 @@ import {
 } from "../lib/mods";
 import { DEFAULT_README_FILES } from "../lib/readme-language.ts";
 import type { PageData } from "../page-data";
-import type { RelatedMod } from "../types";
-import { allDependencies, leviLaminaRanges, loadBuildData, related } from "./catalog";
+import type { EntryJson, LipDoc, RelatedMod } from "../types";
+import { allDependencies, loadBuildData, related, versionTargets } from "./catalog";
 import { loadShowcase } from "./showcase";
 
 /** `/mods/` and every listed or unlisted mod that has a version to show (see `lib/listing.ts`). */
 export async function listRoutes(): Promise<string[]> {
-  const { index, byTooth } = await loadBuildData();
+  const { index, byId } = await loadBuildData();
   return [
     BASE,
-    ...[...byTooth.keys()]
-      .filter((tooth) => getDefaultSelection(index.packages[tooth]!))
-      .map((tooth) => modPath(tooth)),
+    ...[...byId.keys()]
+      .filter((id) => getDefaultSelection(index.packages[id]!))
+      .map((id) => modPath(id)),
   ];
 }
 
@@ -31,9 +31,16 @@ export async function listRoutes(): Promise<string[]> {
 export async function listSitemapRoutes(): Promise<string[]> {
   const { listings } = await loadBuildData();
   const old = new Set(
-    [...listings].filter(([, l]) => l.status === "unlisted" && l.reason === "duplicate").map(([tooth]) => modPath(tooth)),
+    [...listings].filter(([, l]) => l.status === "unlisted" && l.reason === "duplicate").map(([id]) => modPath(id)),
   );
   return (await listRoutes()).filter((route) => !old.has(route));
+}
+
+/** A package file's variants as the JSON and the pages have them (name → entries). */
+export function variantsJson(doc: LipDoc): Record<string, EntryJson[]> {
+  return Object.fromEntries(
+    Object.entries(doc.variants).map(([name, entries]) => [name, entries.map(({ side, platform, deps }) => ({ side, platform, deps }))]),
+  );
 }
 
 const pages = new Map<string, Promise<PageData>>();
@@ -58,12 +65,12 @@ async function buildPageData(pathname: string): Promise<PageData> {
 
   const tooth = toothFromPath(pathname);
   const mod = tooth !== null ? index.packages[tooth] : undefined;
-  const entry = tooth !== null ? data.byTooth.get(tooth) : undefined;
+  const entry = tooth !== null ? data.byId.get(tooth) : undefined;
   const selection = mod && getDefaultSelection(mod);
   const listing = tooth !== null ? data.listings.get(tooth) : undefined;
   if (tooth !== null && mod && entry && selection) {
     const repository = getRepositoryUrl(tooth, data.meta.get(tooth)?.url);
-    const manifest = data.manifests.get(tooth) ?? null;
+    const doc = data.latest.get(tooth) ?? null;
     // without GitHub's file list, the usual names are tried on GitHub (README.md elsewhere)
     const readmeFiles =
       data.meta.get(tooth)?.readmeFiles ?? (repository.startsWith("https://github.com/") ? DEFAULT_README_FILES : ["README.md"]);
@@ -73,29 +80,30 @@ async function buildPageData(pathname: string): Promise<PageData> {
     ]);
     const relatedMap: Record<string, RelatedMod> = {};
     const deps = new Set(allDependencies(data, tooth));
-    for (const variant of manifest?.variants ?? []) {
-      for (const key of Object.keys(variant.dependencies ?? {})) deps.add(key.split("#")[0]!.toLowerCase());
+    for (const entries of Object.values(doc?.variants ?? {})) {
+      for (const e of entries) for (const key of Object.keys(e.deps)) deps.add(key.split("#")[0]!.toLowerCase());
     }
     for (const dep of deps) relatedMap[dep] = related(data, dep);
     return {
       kind: "mod",
-      tooth,
+      id: tooth,
       mod,
       entry,
       repository,
       prerendered: {
         ...selection,
-        info: manifest?.info ?? null,
-        variants: manifest?.variants ?? null,
+        info: doc?.info ?? null,
+        variants: doc ? variantsJson(doc) : null,
         readmes,
       },
       readmeFiles,
       releases: data.meta.get(tooth)?.releases ?? {},
-      llRanges: leviLaminaRanges(data, tooth),
+      targets: versionTargets(data, tooth),
+      lipToml: [...(data.origins.get(tooth) ?? [])].filter(([, o]) => o.file === "lip.toml").map(([version]) => version),
       dependents: (data.dependents.get(tooth.toLowerCase()) ?? []).map((t) => related(data, t)),
       related: relatedMap,
       hasIssues: data.meta.get(tooth)?.hasIssues ?? false,
-      ...(listing?.status === "unlisted" && listing.reason === "duplicate" ? { canonicalTooth: listing.canonical } : {}),
+      ...(listing?.status === "unlisted" && listing.reason === "duplicate" ? { canonical: listing.canonical } : {}),
       showcase,
       renames,
     };

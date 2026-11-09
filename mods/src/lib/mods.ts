@@ -1,5 +1,5 @@
 import { BASE } from "../base-path.ts";
-import type { Manifest, ModJson, RawModEntry } from "../types";
+import type { EntryJson, ModJson, RawModEntry, VersionJson } from "../types";
 import { labelReadmes, type Readme } from "./readme-language.ts";
 
 // ---------------------------------------------------------------------------
@@ -34,13 +34,18 @@ export function ownerOf(tooth: string): string {
   return tooth.split("/")[1] ?? tooth;
 }
 
-/** A GitHub user's or organisation's avatar (answers 200 directly, no redirect). */
+/** A mod's author (its repository's owner) on GitHub. */
+export function ownerUrl(owner: string): string {
+  return `https://github.com/${encodeURIComponent(owner)}`;
+}
+
 /** The widths a mod's icon is served at (scaled at build time, see server/icons.ts): 40, 72 and 96 px slots at 1x–3x. */
 export const ICON_WIDTHS = [96, 144, 288] as const;
 
 /** A scaled icon's file at `width` (`id`: `CatalogEntry.iconId`). */
 export const iconPath = (id: string, width: number) => `${BASE}icons/${id}-${width}.webp`;
 
+/** A GitHub user's or organisation's avatar (answers 200 directly, no redirect). */
 export function ownerAvatar(owner: string, size = 144): string {
   return `https://avatars.githubusercontent.com/${encodeURIComponent(owner)}?s=${size}`;
 }
@@ -63,12 +68,27 @@ export function toothFromPath(pathname: string): string | null {
   }
 }
 
-/** The listing's data: `/mods/index.json` (see `server/api.ts`). */
-export const CATALOG_JSON = `${BASE}index.json`;
+/**
+ * Where the site's JSON is (see `server/api.ts`): version 4, with lip v0.40's
+ * keys. The pages stay under {@link BASE}; next to them is the JSON from
+ * before version 4, for older launchers (see `server/legacy-json.ts`).
+ */
+export const API_BASE = "/api/v4/mods/";
 
-/** A mod's data, every version's included: `/mods/github.com/LiteLDev/LeviLamina/index.json`. */
-export function modJsonPath(tooth: string): string {
-  return `${modPath(tooth)}index.json`;
+/** The listing's data: `/api/v4/mods/index.json`. */
+export const CATALOG_JSON = `${API_BASE}index.json`;
+
+/** A mod's data, every version's included: `/api/v4/mods/github.com/LiteLDev/LeviLamina/index.json`. */
+export function modJsonPath(id: string): string {
+  return `${API_BASE}${id}/index.json`;
+}
+
+/** The listing's data before version 4: `/mods/index.json`. */
+export const LEGACY_CATALOG_JSON = `${BASE}index.json`;
+
+/** A mod's data before version 4: `/mods/github.com/LiteLDev/LeviLamina/index.json`. */
+export function legacyModJsonPath(id: string): string {
+  return `${modPath(id)}index.json`;
 }
 
 export interface RepoBaseUrls {
@@ -108,9 +128,9 @@ export function getReadmeUrl(repository: string, version: string, file = "README
   return `${getRepoBaseUrls(repository, version).raw}${file}`;
 }
 
-/** A version's `tooth.json`, as its repository has it. */
-export function getManifestUrl(repository: string, version: string): string {
-  return `${getRepoBaseUrls(repository, version).blob}tooth.json`;
+/** A version's package file (`lip.toml`, or `tooth.json`), as its repository has it. */
+export function getManifestUrl(repository: string, version: string, file: "lip.toml" | "tooth.json" = "tooth.json"): string {
+  return `${getRepoBaseUrls(repository, version).blob}${file}`;
 }
 
 /**
@@ -129,8 +149,8 @@ export function getReleaseUrl(repository: string, release: { tag: string } | und
 
 const modJsons = new Map<string, Promise<ModJson | null>>();
 
-/** A version's manifest, from the mod's index.json (read once per mod), or `null` when it cannot be loaded. */
-export async function fetchManifest(tooth: string, version: string): Promise<Manifest | null> {
+/** A version's package file (info and variants), from the mod's index.json (read once per mod), or `null` when it cannot be loaded. */
+export async function fetchManifest(tooth: string, version: string): Promise<Pick<VersionJson, "info" | "variants"> | null> {
   let json = modJsons.get(tooth);
   if (!json) {
     json = fetchWithRetry(modJsonPath(tooth))
@@ -145,6 +165,22 @@ export async function fetchManifest(tooth: string, version: string): Promise<Man
   }
   const found = (await json)?.versions.find((v) => v.version === version);
   return found ? { info: found.info, variants: found.variants } : null;
+}
+
+/**
+ * What a variant's entries depend on, together (an entry per side and
+ * platform may each depend on other things): dependency key → range, the
+ * different ranges of one key joined by ` || `.
+ */
+export function variantDeps(entries: readonly EntryJson[] | undefined): Record<string, string> {
+  const ranges = new Map<string, string[]>();
+  for (const e of entries ?? []) {
+    for (const [key, range] of Object.entries(e.deps)) {
+      const seen = ranges.get(key) ?? [];
+      if (!seen.includes(range)) ranges.set(key, [...seen, range]);
+    }
+  }
+  return Object.fromEntries([...ranges].map(([key, list]) => [key, list.join(" || ")]));
 }
 
 async function fetchReadme(repository: string, version: string, file: string): Promise<string | null> {
@@ -200,10 +236,16 @@ export interface ModSelection {
   version: string;
 }
 
-/** What a mod page shows when the URL asks for nothing in particular. */
+/**
+ * What a mod page shows when the URL asks for nothing in particular: the
+ * server's variant of the latest version (`defaultVariant`, see
+ * `lib/manifest.ts` preferredVariant), else the first variant with a version.
+ */
 export function getDefaultSelection(
   mod: RawModEntry,
 ): ModSelection | null {
+  const preferred = mod.defaultVariant !== undefined ? getVersionsForVariant(mod, mod.defaultVariant).at(-1) : undefined;
+  if (preferred) return { variant: mod.defaultVariant!, version: preferred };
   for (const variant of getSortedVariants(mod)) {
     const version = getVersionsForVariant(mod, variant).at(-1);
     if (version) return { variant, version };

@@ -12,10 +12,12 @@ import {
   isPrerelease,
   ownerAvatar,
   ownerOf,
+  ownerUrl,
   modPath,
   parseTab,
   resolveSelection,
   toothFromPath,
+  variantDeps,
 } from "./mods.ts";
 
 const TOOTH = "github.com/LiteLDev/LeviLamina";
@@ -112,4 +114,21 @@ test("install commands break between the tooth's parts, never inside a version",
     "@1.0.0-rc.1",
   ]);
   assert.equal(commandParts(installCommand(TOOTH, "", "1.1.0")).join(""), `lip install ${TOOTH}@1.1.0`);
+});
+
+test("variantDeps: every entry's dependencies together, different ranges of one key joined", () => {
+  const LL = "github.com/LiteLDev/LeviLamina";
+  assert.deepEqual(
+    variantDeps([
+      { side: "server", platform: "win-x64", deps: { [LL]: "1.*", "github.com/a/Lib": "2.*" } },
+      { side: "server", platform: "linux-x64", deps: { [LL]: "1.*" } },
+      { side: "client", platform: "win-x64", deps: { [`${LL}#client`]: "1.*", "github.com/a/Lib": ">=2.1.0" } },
+    ]),
+    { [LL]: "1.*", "github.com/a/Lib": "2.* || >=2.1.0", [`${LL}#client`]: "1.*" },
+  );
+  assert.deepEqual(variantDeps(undefined), {});
+});
+
+test("ownerUrl: the owner on GitHub", () => {
+  assert.equal(ownerUrl("LiteLDev"), "https://github.com/LiteLDev");
 });

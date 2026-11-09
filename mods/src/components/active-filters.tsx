@@ -1,4 +1,7 @@
-import { CATEGORY_BY_ID, ENV_BY_ID, PLATFORM_BY_ID, type SpriteName } from "../data/categories";
+import { FEATURED_BY_ID } from "../data/featured-tags";
+import { LICENSE_FAMILY_BY_ID } from "../data/licenses";
+import { SIDE_BY_ID } from "../data/sides";
+import type { SpriteName } from "../data/sprites";
 import { useI18n } from "../i18n";
 import { clearFilters, serializeQuery, type QueryState } from "../lib/catalog-query";
 import { RouterLink } from "./router-link";
@@ -21,33 +24,28 @@ export function useActiveChips(state: QueryState, names?: ReadonlyMap<string, st
   for (const v of state.gv) {
     chips.push({ key: `g${v}`, label: v, without: { ...state, ...reset, gv: state.gv.filter((x) => x !== v) } });
   }
-  for (const id of state.platform.inc) {
-    const p = PLATFORM_BY_ID.get(id as never);
-    if (p) chips.push({ key: `p+${id}`, label: p.label[locale], icon: p.icon, without: { ...state, ...reset, platform: { ...state.platform, inc: state.platform.inc.filter((x) => x !== id) } } });
+  for (const id of state.side) {
+    const side = SIDE_BY_ID.get(id);
+    if (side) chips.push({ key: `s${id}`, label: side.label[locale], icon: side.icon, without: { ...state, ...reset, side: state.side.filter((x) => x !== id) } });
   }
-  for (const id of state.platform.exc) {
-    const p = PLATFORM_BY_ID.get(id as never);
-    if (p) chips.push({ key: `p-${id}`, label: t.notLabel(p.label[locale]), icon: p.icon, excluded: true, without: { ...state, ...reset, platform: { ...state.platform, exc: state.platform.exc.filter((x) => x !== id) } } });
+  for (const id of state.platform) {
+    chips.push({ key: `p${id}`, label: id, without: { ...state, ...reset, platform: state.platform.filter((x) => x !== id) } });
   }
-  for (const id of state.cat.inc) {
-    const c = CATEGORY_BY_ID.get(id);
-    if (c) chips.push({ key: `c+${id}`, label: c.label[locale], icon: c.icon, without: { ...state, ...reset, cat: { ...state.cat, inc: state.cat.inc.filter((x) => x !== id) } } });
+  for (const key of state.tags.inc) {
+    const f = FEATURED_BY_ID.get(key);
+    chips.push({ key: `t+${key}`, label: f ? f.label[locale] : `#${key}`, icon: f?.icon, without: { ...state, ...reset, tags: { ...state.tags, inc: state.tags.inc.filter((x) => x !== key) } } });
   }
-  for (const id of state.cat.exc) {
-    const c = CATEGORY_BY_ID.get(id);
-    if (c) chips.push({ key: `c-${id}`, label: t.notLabel(c.label[locale]), icon: c.icon, excluded: true, without: { ...state, ...reset, cat: { ...state.cat, exc: state.cat.exc.filter((x) => x !== id) } } });
+  for (const key of state.tags.exc) {
+    const f = FEATURED_BY_ID.get(key);
+    chips.push({ key: `t-${key}`, label: t.notLabel(f ? f.label[locale] : `#${key}`), icon: f?.icon, excluded: true, without: { ...state, ...reset, tags: { ...state.tags, exc: state.tags.exc.filter((x) => x !== key) } } });
   }
-  for (const id of state.env) {
-    const e = ENV_BY_ID.get(id as never);
-    if (e) chips.push({ key: `e${id}`, label: e.label[locale], icon: e.icon, without: { ...state, ...reset, env: state.env.filter((x) => x !== id) } });
+  for (const v of state.license) {
+    const family = LICENSE_FAMILY_BY_ID.get(v as never);
+    chips.push({ key: `l${v}`, label: family ? family.label[locale] : v, without: { ...state, ...reset, license: state.license.filter((x) => x !== v) } });
   }
-  if (state.license) chips.push({ key: "license", label: t.openSource, icon: "paper", without: { ...state, ...reset, license: false } });
   for (const d of state.dep) {
     const name = [...(names ?? [])].find(([tooth]) => tooth.toLowerCase() === d.toLowerCase())?.[1] ?? d.split("/").at(-1)!;
     chips.push({ key: `d${d}`, label: t.dependsOnLabel(name), without: { ...state, ...reset, dep: state.dep.filter((x) => x !== d) } });
-  }
-  for (const tag of state.tags) {
-    chips.push({ key: `t${tag}`, label: `#${tag}`, without: { ...state, ...reset, tags: state.tags.filter((x) => x !== tag) } });
   }
   for (const a of state.author) {
     chips.push({ key: `a${a}`, label: t.byOwner(a), without: { ...state, ...reset, author: state.author.filter((x) => x !== a) } });

@@ -2,16 +2,16 @@ import { BASE } from "../base-path";
 import { useState, type MouseEvent } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { BrandIcon, PixelIcon } from "../kit-ui";
-import { CATEGORY_BY_ID } from "../data/categories";
+import { featuredTagsOf } from "../data/featured-tags";
 import { formatNumber, useI18n } from "../i18n";
 import { DEFAULT_STATE, serializeQuery } from "../lib/catalog-query";
-import { buildModUrl, getRepoBaseUrls, type ModSelection, type ModTab, getAllVersions } from "../lib/mods";
+import { buildModUrl, getAllVersions, getRepoBaseUrls, ownerUrl, variantDeps, type ModSelection, type ModTab } from "../lib/mods";
 import { pickReadme, readmeLabel, type Readme } from "../lib/readme-language";
 import { readStorage, STORAGE_KEYS } from "../lib/storage";
 import type { PageData } from "../page-data";
 import { useHydrated } from "../page-store";
 import { useRenames } from "../repository-renames";
-import type { ManifestVariant, ModInfo } from "../types";
+import type { EntryJson, LipInfo } from "../types";
 import { DependenciesList } from "./dependencies-list";
 import { HotbarRadio } from "./hotbar-radio";
 import { InstallDialog } from "./install-dialog";
@@ -55,10 +55,10 @@ interface ModDetailProps {
   data: ModPageData;
   selection: ModSelection;
   tab: ModTab;
-  /** The selected version's manifest info (`null`: use the index's). */
-  info: ModInfo | null;
-  /** The selected version's manifest variants (`undefined` while loading, `null` without a manifest). */
-  variants: ManifestVariant[] | null | undefined;
+  /** The selected version's package file info (`null`: use the index's). */
+  info: LipInfo | null;
+  /** The selected version's variants: name → entries (`undefined` while loading, `null` without a package file). */
+  variants: Record<string, EntryJson[]> | null | undefined;
   /** The version's README in each of its languages (empty: none), `undefined` while they load. */
   readmes: Readme[] | undefined;
 }
@@ -68,12 +68,12 @@ export function ModDetail({ data, selection, tab: requestedTab, info: manifestIn
   // the README in the interface language, unless the visitor picked another (kept across versions that have it)
   const [readmeFile, setReadmeFile] = useState<string>();
   const readme = readmes && (readmes.find((r) => r.file === readmeFile) ?? pickReadme(readmes, locale));
-  const { tooth, mod, entry, repository, releases } = data;
+  const { id: modId, mod, entry, repository, releases } = data;
   const renames = useRenames();
   const [installing, setInstalling] = useState(false);
   const info = manifestInfo || mod.info;
   const repoUrls = getRepoBaseUrls(repository, selection.version);
-  const depCount = variants?.find((v) => v.label === selection.variant)?.dependencies;
+  const depCount = variants ? Object.keys(variantDeps(variants[selection.variant])).length : 0;
   // a mod without a gallery has no Gallery tab (an old ?tab=gallery link shows the Description)
   const showcase = data.showcase ?? [];
   const tab = requestedTab === "gallery" && !showcase.length ? "description" : requestedTab;
@@ -81,7 +81,7 @@ export function ModDetail({ data, selection, tab: requestedTab, info: manifestIn
     { id: "description", label: t.tabDescription },
     ...(showcase.length ? [{ id: "gallery" as const, label: `${t.tabGallery} (${formatNumber(showcase.length, locale)})` }] : []),
     { id: "versions", label: `${t.tabVersions} (${formatNumber(getAllVersions(mod).length, locale)})` },
-    { id: "dependencies", label: depCount ? `${t.tabDependencies} (${Object.keys(depCount).length})` : t.tabDependencies },
+    { id: "dependencies", label: depCount ? `${t.tabDependencies} (${depCount})` : t.tabDependencies },
   ];
 
   return (
@@ -90,13 +90,15 @@ export function ModDetail({ data, selection, tab: requestedTab, info: manifestIn
 
       <header className="mods-project-head">
         <span className="kit-item-frame mods-project-icon">
-          <ProjectIcon icon={entry.icon} iconId={entry.iconId} owner={entry.owner} size={96} eager />
+          <ProjectIcon icon={entry.logo} iconId={entry.logoId} owner={entry.owner} size={96} eager />
         </span>
         <div className="mods-project-heading">
           <h1 className="mods-project-name">{info.name || entry.name}</h1>
           <p className="mods-project-by">
             {t.by}{" "}
-            <RouterLink href={serializeQuery({ ...DEFAULT_STATE, author: [entry.owner] })}>{entry.owner}</RouterLink>
+            <a href={ownerUrl(entry.owner)} target="_blank" rel="noopener noreferrer">
+              {entry.owner}
+            </a>
           </p>
           {info.description ? <p className="mods-project-summary">{info.description}</p> : null}
           <ul className="mods-project-stats">
@@ -119,17 +121,15 @@ export function ModDetail({ data, selection, tab: requestedTab, info: manifestIn
                 {t.requiredBy(entry.requiredBy ?? 0)}
               </li>
             ) : null}
-            {entry.categories.map((id) => {
-              const c = CATEGORY_BY_ID.get(id);
-              return c ? (
-                <li key={id} className="mods-project-cat">
-                  <RouterLink href={serializeQuery({ ...DEFAULT_STATE, cat: { inc: [id], exc: [] } })} className="mods-chip mods-chip-link">
-                    <Sprite name={c.icon} />
-                    {c.label[locale]}
-                  </RouterLink>
-                </li>
-              ) : null;
-            })}
+            {featuredTagsOf(entry.tags).map(({ tag, raw }) => (
+              <li key={tag.id} className="mods-project-cat">
+                <RouterLink href={serializeQuery({ ...DEFAULT_STATE, tags: { inc: [tag.id], exc: [] } })} className="mods-chip mods-chip-link">
+                  <Sprite name={tag.icon} />
+                  {tag.label[locale]}
+                  <span className="mods-raw-tag">{raw.join(" ")}</span>
+                </RouterLink>
+              </li>
+            ))}
           </ul>
         </div>
         <div className="mods-project-actions">
@@ -154,7 +154,7 @@ export function ModDetail({ data, selection, tab: requestedTab, info: manifestIn
           {tabs.map((tb) => (
             <RouterLink
               key={tb.id}
-              href={buildModUrl(tooth, mod, selection, tb.id)}
+              href={buildModUrl(modId, mod, selection, tb.id)}
               aria-current={tb.id === tab ? "page" : undefined}
             >
               {tb.label}
@@ -211,12 +211,12 @@ export function ModDetail({ data, selection, tab: requestedTab, info: manifestIn
           ) : tab === "versions" ? (
             <section className="px-card mods-panel" aria-label={t.tabVersions} id="versions">
               <VersionsTable
-                tooth={tooth}
+                modId={modId}
                 mod={mod}
                 repository={repository}
                 selection={selection}
                 releases={releases}
-                llRanges={data.llRanges}
+                targets={data.targets}
               />
             </section>
           ) : (
@@ -233,12 +233,13 @@ export function ModDetail({ data, selection, tab: requestedTab, info: manifestIn
 
         <aside className="mods-detail-side" aria-label={t.details}>
           <ProjectSidebar
-            tooth={tooth}
+            modId={modId}
             entry={entry}
             mod={mod}
             repository={repository}
             selection={selection}
-            variants={variants}
+            targets={data.targets}
+            lipToml={data.lipToml}
             releases={releases}
             hasIssues={data.hasIssues}
           />
@@ -249,11 +250,12 @@ export function ModDetail({ data, selection, tab: requestedTab, info: manifestIn
         open={installing}
         onClose={() => setInstalling(false)}
         name={info.name || entry.name}
-        tooth={tooth}
+        modId={modId}
         mod={mod}
         repository={repository}
         selection={selection}
         releases={releases}
+        targets={data.targets}
       />
     </div>
   );

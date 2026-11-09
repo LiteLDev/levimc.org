@@ -3,3 +3,6 @@
 
 # the registry cache (src/server/registry.ts; the Actions cache in CI)
 /.cache/
+
+# the /api/ folder prerender.mjs writes (dist/ is ignored at the root)
+/dist-api/

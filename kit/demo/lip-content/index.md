@@ -4,7 +4,10 @@ layout: home
 hero:
   name: "lip"
   text: "A general package installer"
-  tagline: Install packages from any Git repository
+  tagline: Install packages from public Git repositories
+  image:
+    src: /logo.webp
+    alt: lip
   actions:
     - theme: brand
       text: Getting Started
@@ -21,8 +24,6 @@ features:
     details: Install packages directly from Git repositories using Go module paths.
   - title: Dependency Resolution
     details: Automatic dependency solving with topological ordering.
-  - title: Built for Integration
-    details: Exposes a JSON-RPC daemon (lipd) for seamless integration with IDEs and tools.
   - title: Cross-Platform
-    details: Available on Windows, Linux, and macOS with platform-aware variants.
+    details: Available on Windows, Linux, and macOS with side- and platform-aware variants.
 ---

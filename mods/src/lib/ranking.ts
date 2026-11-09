@@ -9,7 +9,7 @@
 //   log link, fitted by IRLS with the dispersion profiled by maximum likelihood
 //   — the standard model for over-dispersed counts (Cameron & Trivedi,
 //   "Regression Analysis of Count Data"). Only pre-treatment covariates (age,
-//   owner, icon, license, category, platforms, environments): release counts,
+//   owner, icon, license, a featured tag, sides): release counts,
 //   commits or days since the last update are themselves driven by popularity,
 //   and controlling for them would remove part of what is measured (bad
 //   controls: Rosenbaum 1984; Angrist & Pischke 2009). Stars keep the
