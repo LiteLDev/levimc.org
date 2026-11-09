@@ -73,7 +73,6 @@ const en = {
   install: "Install",
   installTitle: (name: string) => `Install ${name}`,
   installHint: "Run this in your server folder with lip:",
-  installPlatforms: "Runs on",
   // lip manages server folders only; clients install packages through LeviLauncher
   clientHint: "On a client, install it through",
   clientHintUrl: "https://docs.levimc.org/LeviLauncher/guide/mods-integrations?platform=windows",
@@ -224,7 +223,6 @@ const zhCN: Strings = {
   install: "安装",
   installTitle: (name) => `安装 ${name}`,
   installHint: "在服务端目录中用 lip 运行：",
-  installPlatforms: "支持平台",
   clientHint: "在客户端上，请通过以下方式安装：",
   clientHintUrl: "https://docs.levimc.org/LeviLauncher/zh-CN/guide/mods-integrations?platform=windows",
   variant: "变体",
@@ -367,7 +365,6 @@ const zhHant: Strings = {
   install: "安裝",
   installTitle: (name) => `安裝 ${name}`,
   installHint: "在伺服器目錄中用 lip 執行：",
-  installPlatforms: "支援平台",
   clientHint: "在用戶端上，請透過以下方式安裝：",
   clientHintUrl: "https://docs.levimc.org/LeviLauncher/zh-HK/guide/mods-integrations?platform=windows",
   variant: "變體",

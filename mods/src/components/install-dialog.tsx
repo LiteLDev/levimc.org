@@ -100,9 +100,9 @@ export function InstallDialog({ open, onClose, name, modId, mod, repository, sel
             ))}
           </select>
         </div>
-        {target?.platform.length ? (
+        {target?.side.length ? (
           <div className="mods-dialog-field">
-            <span className="mods-dialog-label">{t.installPlatforms}</span>
+            <span className="mods-dialog-label">{t.side}</span>
             <ul className="mods-chips mods-dialog-targets">
               {target.side.map((id) => {
                 const side = SIDE_BY_ID.get(id)!;
@@ -115,6 +115,13 @@ export function InstallDialog({ open, onClose, name, modId, mod, repository, sel
                   </li>
                 );
               })}
+            </ul>
+          </div>
+        ) : null}
+        {target?.platform.length ? (
+          <div className="mods-dialog-field">
+            <span className="mods-dialog-label">{t.platform}</span>
+            <ul className="mods-chips mods-dialog-targets">
               {target.platform.map((id) => (
                 <li key={id}>
                   <span className="mods-chip mods-chip-mono">{id}</span>

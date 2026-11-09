@@ -141,12 +141,12 @@ test("lip.toml: what lip v0.40 does not read", () => {
   const error = (text: string) => parseLipToml(text).error ?? "";
   const swap = (from: string, to: string) => error(FILE.replace(from, to));
   // the keys of lip before v0.40, before anything else of the entry is read
-  for (const old of [
-    swap('side = "server"\nplatform = "win-x64"', 'platform = "server"\nruntime = "win-x64"'),
-    swap('side = "server"', 'side = "server"\nruntime = "win-x64"'),
-    swap('side = "client"\nplatform = "win-x64"', 'platform = "client"'),
+  for (const [old, path] of [
+    [swap('side = "server"\nplatform = "win-x64"', 'platform = "server"\nruntime = "win-x64"'), '$.variants[""][0]'],
+    [swap('side = "server"', 'side = "server"\nruntime = "win-x64"'), '$.variants[""][0]'],
+    [swap('side = "client"\nplatform = "win-x64"', 'platform = "client"'), '$.variants["client"][0]'],
   ]) {
-    assert.ok(old.includes(OLD_KEYS_MESSAGE), old);
+    assert.equal(old, `Invalid package file at ${path}: ${OLD_KEYS_MESSAGE}.`);
   }
   assert.match(swap('side = "server"', 'side = "both"'), /\$\.variants\[""\]\[0\]\.side: must be "server" or "client"/);
   assert.match(swap('side = "server"\n', ""), /side: is required/);

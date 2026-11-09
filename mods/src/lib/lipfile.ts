@@ -144,7 +144,7 @@ function readEntry(v: TemplateValue, path: string): LipEntry {
   const o = object(v, path);
   // before the keys are read: a file of an older lip fails with what to rename, not with "side is required"
   const platform = o.get("platform");
-  if (o.get("runtime") !== undefined || platform === "server" || platform === "client") throw new Invalid(`The package file ${OLD_KEYS_MESSAGE}`);
+  if (o.get("runtime") !== undefined || platform === "server" || platform === "client") throw invalid(path, OLD_KEYS_MESSAGE);
   const dests = readDests(o.get("assets"), `${path}.assets`);
   const side = required(o, "side", path);
   if (side !== "server" && side !== "client") throw invalid(`${path}.side`, 'must be "server" or "client"');
