@@ -63,8 +63,8 @@ reference LeviLauncher follows (it forces `side=client` and its own platform).
 ## JSON
 
 Every page has its data under `/api/v4/mods/` (version 4: lip v0.40's keys). Both are written by
-`src/server/api.ts`; the shapes are `CatalogJson` and `ModJson` in `src/types.ts`. There is no file at
-`/api/v4/mods/` itself (GitHub Pages serves a folder's `index.html` only): read `index.json`. Keys whose value is unknown are left out (marked `?`). Ids are
+`src/server/api.ts`; the shapes are `CatalogJson` and `ModJson` in `src/types.ts`. GitHub Pages also serves a
+folder's `index.json`, so `/api/v4/mods/` is the listing too (and `/api/v4/mods` redirects there). Keys whose value is unknown are left out (marked `?`). Ids are
 `github.com/<owner>/<repo>`; a variant's name is `""` for the default one.
 
 [`/api/v4/mods/index.json`](https://levimc.org/api/v4/mods/index.json) is the listing as `/mods/` shows it, unfiltered and in the
