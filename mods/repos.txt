@@ -147,6 +147,7 @@ ShrBox/BackupHelper
 ShrBox/ResourcePackEncryption
 Shulker-Studio/STweaks
 SkyEye-FAST/offer-flowers-faster-bedrock
+SnakyWarrior/SplitScreenMod
 spygamingog/Animated-Mojang-Android
 superx101/CALL
 SurvivalApparatusCommunication/BedrockBugFixes
