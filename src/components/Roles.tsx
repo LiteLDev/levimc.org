@@ -75,7 +75,7 @@ const DOWNLOADS = {
   // the asset name is stable across releases, so this starts the download right away
   windows: 'https://github.com/LiteLDev/LeviLauncher/releases/latest/download/LeviLauncher-amd64-installer.exe',
   // the APK's name carries its version: the release page lists it
-  android: 'https://github.com/LiteLDev/LeviLaunchroid/releases/latest',
+  android: 'https://github.com/LiteLDev/LeviLauncher-Android/releases/latest',
 } as const;
 const PLATFORM_NAMES = { windows: 'Windows', android: 'Android' } as const;
 

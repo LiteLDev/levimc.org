@@ -305,7 +305,7 @@ await check('hero role tabs: an Android phone is offered the Android download fi
   await page.goto(base + '#play', { waitUntil: 'networkidle' });
   const first = page.locator('.lm-role-panel .mc-btn').first();
   assert((await first.innerText()).includes('Download for Android'), `first button: ${await first.innerText()}`);
-  assert((await first.getAttribute('href')) === 'https://github.com/LiteLDev/LeviLaunchroid/releases/latest', 'wrong APK link');
+  assert((await first.getAttribute('href')) === 'https://github.com/LiteLDev/LeviLauncher-Android/releases/latest', 'wrong APK link');
   await ctx.close();
   return 'Download for Android';
 });
