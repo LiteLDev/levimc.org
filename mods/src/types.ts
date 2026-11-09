@@ -1,5 +1,7 @@
-import type { EnvId, PlatformId } from "./data/categories";
+/** Where an entry of a package file runs: the dedicated server or the client. */
+export type Side = "server" | "client";
 
+/** A `tooth.json`'s info (lip before v0.40, and lipr). */
 export interface ModInfo {
   name: string;
   description: string;
@@ -7,17 +9,61 @@ export interface ModInfo {
   avatar_url?: string;
 }
 
+/** A `lip.toml`'s info, as far as the site uses it (and a `tooth.json`'s, read as one). */
+export interface LipInfo {
+  name: string;
+  description: string;
+  tags: string[];
+  /** An `https://` URL. */
+  logo?: string;
+}
+
+/** An entry of a variant of a package file (`lip.toml`, or a `tooth.json` read as one, see `lib/manifest.ts`). */
+export interface LipEntry {
+  side: Side;
+  /** A .NET runtime identifier (`win-x64`). */
+  platform: string;
+  /** Dependency key (`<id>[#<variant>]`) → version range. */
+  deps: Record<string, string>;
+  /** Where its assets put files (`lib/listing.ts` tells mods by them); not in the site's JSON. */
+  dests: string[];
+}
+
+/** A version's package file, as far as the site uses it. */
+export interface LipDoc {
+  id: string;
+  version: string;
+  info: LipInfo;
+  /** Variant name (`""`: the default) → its entries. */
+  variants: Record<string, LipEntry[]>;
+}
+
+/** A package of the site's registry: every package with a version the site can read. */
 export interface RawModEntry {
+  info: LipInfo;
+  updated_at: string;
+  stargazer_count: number;
+  variants: Record<string, { versions: string[] }>;
+  /** The variant a page shows when its URL asks for none (the server's, see `lib/manifest.ts` preferredVariant). */
+  defaultVariant?: string;
+}
+
+export interface ModIndex {
+  packages: Record<string, RawModEntry>;
+}
+
+/** A package of lipr's index (tooth.json-sourced only, see `server/api.ts` liprFiles). */
+export interface LiprEntry {
   info: ModInfo;
   updated_at: string;
   stargazer_count: number;
   variants: Record<string, { versions: string[] }>;
 }
 
-export interface ModIndex {
+export interface LiprIndex {
   format_version: number;
   format_uuid: string;
-  packages: Record<string, RawModEntry>;
+  packages: Record<string, LiprEntry>;
 }
 
 /** One variant of a version's manifest (`tooth.json`), as far as the site uses it. */
@@ -39,28 +85,26 @@ export interface Manifest {
  * time (see `server/catalog.ts`) and embedded in the home page.
  */
 export interface CatalogEntry {
-  tooth: string;
+  id: string;
   name: string;
   /** Up to 200 characters. */
   description: string;
-  /** The repository owner, where the repository lives today. */
+  /** The repository owner, where the repository lives today (the author). */
   owner: string;
-  /** The mod's own icon, when the build could load it; else the owner's avatar is shown. */
-  icon?: string;
-  /** The icon scaled down at build time (`lib/mods.ts` iconPath): shown instead of `icon` (which stays the original). */
-  iconId?: string;
+  /** The mod's own logo, when the build could load it; else the owner's avatar is shown. */
+  logo?: string;
+  /** The logo scaled down at build time (`lib/mods.ts` iconPath): shown instead of `logo` (which stays the original). */
+  logoId?: string;
   /** Raw manifest tags. */
   tags: string[];
-  categories: string[];
-  platforms: PlatformId[];
-  /** The language of an LSE plugin (`js`, `nodejs`). */
-  lang?: string;
-  /** Empty when unknown. */
-  env: EnvId[];
+  /** Sides any entry of the latest version runs on (server first); empty when it has none. */
+  side: Side[];
+  /** Platforms (RIDs) any entry of the latest version runs on, sorted. */
+  platform: string[];
   /** Minecraft versions any version runs on (through its LeviLamina ranges), newest first; empty when unknown. */
   gameVersions: string[];
-  /** Listed mods the latest version depends on (as the index spells them). */
-  dependsOn: string[];
+  /** What the latest version depends on: bare id (as the index spells it) → range (several ranges joined by ` || `). */
+  deps: Record<string, string>;
   /** Mods whose latest version depends on this one (absent: none). */
   requiredBy?: number;
   stars: number;
@@ -72,6 +116,16 @@ export interface CatalogEntry {
   updated: string;
   /** Repository creation date (needs GitHub data). */
   created?: string;
+}
+
+/** What one version of a variant runs on, and the LeviLamina it needs (the versions table, the install dialog). */
+export interface VersionTarget {
+  /** Server first. */
+  side: Side[];
+  /** In the order pages list them (`lib/manifest.ts` comparePlatforms). */
+  platform: string[];
+  /** The LeviLamina range its entries depend on (several joined by ` || `). */
+  leviLamina?: string;
 }
 
 /** Totals shown in the home page's hero. */
@@ -105,11 +159,11 @@ export interface ReleaseInfo {
 
 /** A mod another one refers to (dependencies, dependents). */
 export interface RelatedMod {
-  tooth: string;
+  id: string;
   name: string;
   owner: string;
-  icon?: string;
-  iconId?: string;
+  logo?: string;
+  logoId?: string;
   /** The mod is in the index (it has a page here). */
   listed?: boolean;
 }
@@ -134,13 +188,14 @@ export interface ShowcaseItem {
 }
 
 // ---------------------------------------------------------------------------
-// The site's JSON (`/mods/index.json`, `/mods/<tooth>/index.json`): what each
-// page shows, for programs (see `server/api.ts`).
+// The site's JSON (`/mods/index.json`, `/mods/<id>/index.json`): what each
+// page shows, for programs (see `server/api.ts`). Launchers read it too
+// (LeviLauncher, LeviLaunchroid): its keys are a contract.
 // ---------------------------------------------------------------------------
 
 /** A mod the JSON refers to. */
 export interface ModRefJson {
-  tooth: string;
+  id: string;
   name: string;
   owner: string;
   /** Its page here, when it has one. */
@@ -148,11 +203,24 @@ export interface ModRefJson {
 }
 
 /** A mod in the listing's JSON: its row, and where its page and JSON are. */
-export interface CatalogEntryJson extends Omit<CatalogEntry, "rank" | "icon" | "iconId" | "requiredBy"> {
+export interface CatalogEntryJson {
+  id: string;
+  name: string;
+  description: string;
+  owner: string;
+  /** The mod's logo, else its owner's avatar (as the row shows). */
+  logo: string;
+  tags: string[];
+  side: Side[];
+  platform: string[];
+  gameVersions: string[];
+  deps: Record<string, string>;
+  stars: number;
+  license?: string;
+  updated: string;
+  created?: string;
   url: string;
   json: string;
-  /** The mod's icon, else its owner's avatar (as the row shows). */
-  icon: string;
   /** How many listed mods' latest versions depend on it. */
   requiredBy: number;
 }
@@ -166,12 +234,11 @@ export interface CatalogJson {
   mods: CatalogEntryJson[];
 }
 
-/** One variant of a version, as its manifest has it (where it puts its files aside). */
-export interface VersionVariantJson extends Omit<ManifestVariant, "assets"> {
-  /** The LeviLamina range it requires, when it requires LeviLamina. */
-  leviLamina?: string;
-  /** The `lip install` command. */
-  install: string;
+/** An entry of a variant, as the JSON has it. */
+export interface EntryJson {
+  side: Side;
+  platform: string;
+  deps: Record<string, string>;
 }
 
 /** A version of a mod, newest first in {@link ModJson.versions}. */
@@ -182,24 +249,25 @@ export interface VersionJson {
   released?: string;
   /** Its GitHub release, else the repository's releases. */
   releaseUrl: string;
-  /** Its `tooth.json` in the repository. */
+  /** Its `lip.toml` (or `tooth.json`) in the repository. */
   manifestUrl: string;
-  /** Name, description and tags as this version's manifest has them. */
-  info: ModInfo;
-  variants: VersionVariantJson[];
+  /** Name, description, tags and logo as this version's manifest has them. */
+  info: LipInfo;
+  /** Variant name → its entries. */
+  variants: Record<string, EntryJson[]>;
 }
 
-/** `/mods/<tooth>/index.json`: the mod page, every version included. */
+/** `/mods/<id>/index.json`: the mod page, every version included. */
 export interface ModJson {
   url: string;
-  tooth: string;
+  id: string;
   /** The page of the repository's current name, when this is an old one. */
   canonical?: string;
   name: string;
   description: string;
   owner: string;
-  /** The mod's icon, else its owner's avatar. */
-  icon: string;
+  /** The mod's logo, else its owner's avatar. */
+  logo: string;
   repository: string;
   issues?: string;
   releases: string;
@@ -211,10 +279,8 @@ export interface ModJson {
   /** Repository creation date (needs GitHub data). */
   created?: string;
   license?: string;
-  categories: string[];
-  platforms: PlatformId[];
-  lang?: string;
-  env: EnvId[];
+  side: Side[];
+  platform: string[];
   gameVersions: string[];
   tags: string[];
   /** What the page shows when its URL asks for nothing in particular. */
@@ -222,10 +288,8 @@ export interface ModJson {
   /** The latest version's README in each of its languages. */
   readmes: { file: string; lang: string | null; text: string }[];
   gallery: ShowcaseItem[];
-  /** Variants (the default `""` first), each with its versions, newest first. */
-  variants: { label: string; versions: string[] }[];
   versions: VersionJson[];
-  /** Mods any version depends on, by lower-case tooth (names for the variants' dependency keys). */
+  /** Mods any version depends on, by lower-case id (names for the entries' dependency keys). */
   dependencies: Record<string, ModRefJson>;
   /** Listed mods whose latest version depends on this one. */
   requiredBy: ModRefJson[];

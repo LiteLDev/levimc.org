@@ -162,7 +162,7 @@ function renderPage(data: PageData) {
       return (
         <>
           <Header />
-          <ModPage key={data.tooth} data={data} />
+          <ModPage key={data.id} data={data} />
         </>
       );
     case "not-found":

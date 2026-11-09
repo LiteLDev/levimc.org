@@ -12,8 +12,8 @@ export const initialFit = (count: number): boolean[] =>
 /**
  * Which chips to show in `room` pixels: all when they fit; else, in order,
  * each chip that still fits next to the "+N" chip — a long chip is skipped
- * rather than costing the shorter ones after it (a long category name must
- * not hide the platform). `widths` are the chips' widths, `gap` the space
+ * rather than costing the shorter ones after it (a long tag name must
+ * not hide the short ones after it). `widths` are the chips' widths, `gap` the space
  * between two chips. At least one chip is shown (shortened with an ellipsis
  * when even it does not fit).
  */

@@ -1,20 +1,20 @@
 # lip view
 
-Shows the manifest of a package.
+Shows the package file (`lip.toml`) of a package.
 
-The package argument can be a full package spec (e.g., `github.com/user/repo@1.0.0`) or just a package ID (e.g., `github.com/user/repo`). If only a package ID is provided, the latest version of the package will be resolved and its manifest shown.
+The package argument takes the same forms as [`lip install`](install.md#arguments). For a remote repository, the newest version is shown, the given version with `@<version>` (e.g., `github.com/user/repo@1.0.0`), or the commit a git ref names (e.g., `github.com/user/repo@branch:main`). A local ZIP file or directory, or a URL, is shown as it is.
 
 ## Synopsis
 
 ```sh
-lip view <package>
+lip view <PACKAGE>
 ```
 
 ## Arguments
 
 | Argument | Description |
 | --- | --- |
-| `<package>` | The package to view, specified as `<path>@<version>` or just `<path>`. |
+| `<PACKAGE>` | The package to view, e.g. `<path>`, `<path>@<version>`, `<path>@branch:<branch>`, `./package.zip`, `./MyTool` or an `https://` URL. |
 
 ## Examples
 
@@ -30,6 +30,14 @@ View the latest version:
 lip view github.com/user/repo
 ```
 
+View the head of a branch:
+
+```sh
+lip view github.com/user/repo@branch:main
+```
+
 ## Description
 
-Fetches the package manifest from the registry and displays it as JSON.
+Reads the `lip.toml` at the root of the archive the argument names and prints it as JSON. For a remote repository, the archive is the repository at the newest version tag, at the tag of the given version, or at the commit of the git ref. It changes nothing.
+
+A `tooth.json` of an [earlier format](../../concepts/lip_toml.md#earlier-formats) is printed as the package file lip reads from it, for the environment of the workspace: the side `server` and the platform the [state file](../../concepts/lockfiles.md) records, or else the platform lip runs on.

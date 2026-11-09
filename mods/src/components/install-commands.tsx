@@ -3,14 +3,14 @@ import { commandParts, installCommand } from "../lib/mods";
 import { CopyButton } from "./copy-button";
 
 interface InstallCommandProps {
-  tooth: string;
+  modId: string;
   version: string;
   variant: string;
 }
 
 /** `lip install …` in the kit's code frame, with a copy button. */
-export function InstallCommand({ tooth, version, variant }: InstallCommandProps) {
-  const command = installCommand(tooth, variant, version);
+export function InstallCommand({ modId, version, variant }: InstallCommandProps) {
+  const command = installCommand(modId, variant, version);
   return (
     <div className="kit-code mods-install-box">
       <code className="mods-install-command">

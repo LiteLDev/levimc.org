@@ -1,30 +1,36 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { BrandIcon, PixelIcon } from "../kit-ui";
+import { SIDE_BY_ID } from "../data/sides";
 import { useI18n } from "../i18n";
 import { getReleaseUrl, getSortedVariants, getVersionsForVariant, type ModSelection } from "../lib/mods";
-import type { RawModEntry, ReleaseInfo } from "../types";
+import type { RawModEntry, ReleaseInfo, VersionTarget } from "../types";
 import { HotbarRadio } from "./hotbar-radio";
 import { InstallCommand } from "./install-commands";
+import { Sprite } from "./sprite";
 
 interface InstallDialogProps {
   open: boolean;
   onClose: () => void;
   name: string;
-  tooth: string;
+  modId: string;
   mod: RawModEntry;
   repository: string;
   /** The page's selection: the dialog starts there. */
   selection: ModSelection;
   /** GitHub releases by version. */
   releases: Record<string, ReleaseInfo>;
+  /** What each version runs on, per variant. */
+  targets: Record<string, Record<string, VersionTarget>>;
 }
 
 /**
- * Modrinth's download dialog for a CLI: pick a variant and a version, copy
- * the `lip install` command, or open the release on GitHub.
+ * Modrinth's download dialog for a CLI: pick a variant and a version, see
+ * the sides and platforms it runs on, copy the `lip install` command (when it
+ * has a server entry: lip installs into server folders), follow the
+ * LeviLauncher hint (when it has a client entry), or open the release on GitHub.
  */
-export function InstallDialog({ open, onClose, name, tooth, mod, repository, selection, releases }: InstallDialogProps) {
-  const { t } = useI18n();
+export function InstallDialog({ open, onClose, name, modId, mod, repository, selection, releases, targets }: InstallDialogProps) {
+  const { t, locale } = useI18n();
   const ref = useRef<HTMLDialogElement>(null);
   const [variant, setVariant] = useState(selection.variant);
   const [version, setVersion] = useState(selection.version);
@@ -46,6 +52,10 @@ export function InstallDialog({ open, onClose, name, tooth, mod, repository, sel
   const versions = getVersionsForVariant(mod, variant).slice().reverse();
   const shownVersion = versions.includes(version) ? version : (versions[0] ?? version);
   const label = (v: string) => (v === "" ? t.defaultVariant : v);
+  // a version the build did not read shows both ways to install it
+  const target = targets[variant]?.[shownVersion];
+  const server = !target || target.side.includes("server");
+  const client = !target || target.side.includes("client");
 
   return (
     <dialog
@@ -90,14 +100,43 @@ export function InstallDialog({ open, onClose, name, tooth, mod, repository, sel
             ))}
           </select>
         </div>
-        <p className="mods-dialog-hint">{t.installHint}</p>
-        <InstallCommand tooth={tooth} variant={variant} version={shownVersion} />
-        <p className="mods-dialog-hint">
-          {t.clientHint}{" "}
-          <a href={t.clientHintUrl} target="_blank" rel="noopener noreferrer">
-            LeviLauncher
-          </a>
-        </p>
+        {target?.platform.length ? (
+          <div className="mods-dialog-field">
+            <span className="mods-dialog-label">{t.installPlatforms}</span>
+            <ul className="mods-chips mods-dialog-targets">
+              {target.side.map((id) => {
+                const side = SIDE_BY_ID.get(id)!;
+                return (
+                  <li key={id}>
+                    <span className="mods-chip">
+                      <Sprite name={side.icon} />
+                      {side.label[locale]}
+                    </span>
+                  </li>
+                );
+              })}
+              {target.platform.map((id) => (
+                <li key={id}>
+                  <span className="mods-chip mods-chip-mono">{id}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {server ? (
+          <>
+            <p className="mods-dialog-hint">{t.installHint}</p>
+            <InstallCommand modId={modId} variant={variant} version={shownVersion} />
+          </>
+        ) : null}
+        {client ? (
+          <p className="mods-dialog-hint">
+            {t.clientHint}{" "}
+            <a href={t.clientHintUrl} target="_blank" rel="noopener noreferrer">
+              LeviLauncher
+            </a>
+          </p>
+        ) : null}
         <a className="mc-btn mods-dialog-download" href={getReleaseUrl(repository, releases[shownVersion])} target="_blank" rel="noopener noreferrer">
           <BrandIcon name="github" size={16} />
           {t.downloadFromGitHub}

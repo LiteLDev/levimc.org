@@ -5,7 +5,6 @@
 export const STORAGE_KEYS = {
   view: "levimc-mods:view",
   groups: "levimc-mods:groups",
-  moreCategories: "levimc-mods:more",
   /** sessionStorage: the listing URL "Back to search" returns to. */
   lastSearch: "levimc-mods:last-search",
 } as const;

@@ -5,18 +5,20 @@ import type { Readme } from "./lib/readme-language";
 import type {
   Catalog,
   CatalogEntry,
-  ManifestVariant,
-  ModInfo,
+  EntryJson,
+  LipInfo,
   RawModEntry,
   RelatedMod,
   ReleaseInfo,
   ShowcaseItem,
+  VersionTarget,
 } from "./types";
 
-/** A version's manifest info and variants (`null`: it could not be loaded) and READMEs. */
+/** A version's package file info and variants (`null`: it could not be loaded) and READMEs. */
 export interface ModDetails {
-  info: ModInfo | null;
-  variants: ManifestVariant[] | null;
+  info: LipInfo | null;
+  /** Variant name → its entries. */
+  variants: Record<string, EntryJson[]> | null;
   /** The version's README in each of its languages; empty when it has none. */
   readmes: Readme[];
 }
@@ -30,7 +32,7 @@ export type PageData = (
   | { kind: "home"; catalog: Catalog }
   | {
       kind: "mod";
-      tooth: string;
+      id: string;
       mod: RawModEntry;
       entry: CatalogEntry;
       /** The mod's repository, where it lives today (see `getRepositoryUrl`). */
@@ -41,16 +43,18 @@ export type PageData = (
       readmeFiles: string[];
       /** GitHub releases by version (empty without GitHub data). */
       releases: Record<string, ReleaseInfo>;
-      /** The LeviLamina range of each version, per variant. */
-      llRanges: Record<string, Record<string, string>>;
+      /** What each version runs on, per variant (variant → version → target). */
+      targets: Record<string, Record<string, VersionTarget>>;
+      /** The versions read from a `lip.toml` (the others from a `tooth.json`). */
+      lipToml: string[];
       /** Mods whose latest version depends on this one. */
       dependents: RelatedMod[];
-      /** Mods any version depends on, by lower-case tooth (dependency cards). */
+      /** Mods any version depends on, by lower-case id (dependency cards). */
       related: Record<string, RelatedMod>;
       /** The repository takes issues (an Issues link); false when unknown. */
       hasIssues: boolean;
-      /** The repository is listed under another tooth, whose page is the canonical one (an old name). */
-      canonicalTooth?: string;
+      /** The repository is listed under another id, whose page is the canonical one (an old name). */
+      canonical?: string;
       /** The mod's gallery (the Gallery tab; empty: no tab). */
       showcase: ShowcaseItem[];
     }
@@ -75,7 +79,7 @@ export const SITE_ORIGIN = "https://levimc.org";
 
 /** The home page's description, with the live counts. */
 export function siteDescription(projects: number): string {
-  return `Browse ${projects} mods and plugins for Minecraft Bedrock — LeviLamina, LegacyScriptEngine and Endstone. Install any of them with lip.`;
+  return `Browse ${projects} mods and plugins for LeviLamina on Minecraft Bedrock. Install them with lip on servers and LeviLauncher on clients.`;
 }
 
 const PAGE_DATA_ID = "mods-page-data";
@@ -124,8 +128,8 @@ export function pageMeta(data: PageData): PageMeta {
       return {
         title: titled(data.entry.name, "Mods"),
         description: data.mod.info.description || `${data.entry.name} on ${SITE_NAME}`,
-        canonical: `${SITE_ORIGIN}${BASE}${data.canonicalTooth ?? data.tooth}/`,
-        json: `${SITE_ORIGIN}${BASE}${data.tooth}/index.json`,
+        canonical: `${SITE_ORIGIN}${BASE}${data.canonical ?? data.id}/`,
+        json: `${SITE_ORIGIN}${BASE}${data.id}/index.json`,
       };
     case "not-found":
       return { title: titled("Page not found"), description: `${SITE_NAME} — ${SITE_TAGLINE}` };

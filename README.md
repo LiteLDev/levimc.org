@@ -118,11 +118,12 @@ First paragraph (it is also the excerpt on the index and in the feeds) …
 
 The catalogue of mods at [levimc.org/mods/](https://levimc.org/mods/) (formerly pkg.levimc.org, the
 LiteLDev/pkg.levimc.org repository, merged here with its history) is its own app in [`mods/`](mods/README.md): pnpm,
-built from the repositories in [`mods/repos.txt`](mods/repos.txt) (their version tags) with this checkout's kit
-(`pnpm install` copies `../kit`) and Vite `base: '/mods/'`. The deploy builds it after the site and copies
-`mods/dist/` into `dist/mods/`; it also runs every hour, so the catalogue picks up new versions.
-`.github/workflows/mods-discover.yml` opens a pull request for each new mod repository it finds; merging one lists
-it. The `mods` job of `.github/workflows/ci.yml` lints, tests and builds it when a change touches `mods/` or `kit/`.
+built from the repositories in [`mods/repos.txt`](mods/repos.txt) (their version tags: each one's `lip.toml`, else its
+`tooth.json`) with this checkout's kit (`pnpm install` copies `../kit`) and Vite `base: '/mods/'`. The deploy builds it
+after the site and copies `mods/dist/` into `dist/mods/`; it also runs every hour, so the catalogue picks up new
+versions. `.github/workflows/mods-discover.yml` searches GitHub for repositories with a top-level `lip.toml` or
+`tooth.json` and opens a pull request for each new one it finds; merging one lists it (once its latest version depends
+on LeviLamina). The `mods` job of `.github/workflows/ci.yml` lints, tests and builds it when a change touches `mods/` or `kit/`.
 
 ```bash
 cd mods

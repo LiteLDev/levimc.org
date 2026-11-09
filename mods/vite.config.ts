@@ -28,7 +28,7 @@ const prefsScript = createThemeInitScript({
 
 /**
  * The listing's own pre-paint state: the viewer's list/grid choice, and
- * `data-mods-pending` while a query in the URL (`/mods/?cat=…`) is not applied yet —
+ * `data-mods-pending` while a query in the URL (`/mods/?tags=…`) is not applied yet —
  * the page is prerendered unfiltered, so its results stay hidden until the
  * app has applied the query (at most 4 s).
  */

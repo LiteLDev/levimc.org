@@ -4,7 +4,10 @@ layout: home
 hero:
   name: "lip"
   text: "通用包安装器"
-  tagline: 从任意 Git 仓库安装包
+  tagline: 从公开 Git 仓库安装包
+  image:
+    src: /logo.webp
+    alt: lip
   actions:
     - theme: brand
       text: 快速开始
@@ -21,8 +24,6 @@ features:
     details: 使用 Go module 路径，直接从 Git 仓库安装包。
   - title: 依赖解析
     details: 自动依赖求解并按拓扑顺序安装。
-  - title: 面向集成
-    details: 提供 JSON-RPC 守护进程（lipd），可无缝集成到 IDE 与工具。
   - title: 跨平台
-    details: 支持 Windows、Linux 和 macOS，并可根据平台选择变体。
+    details: 支持 Windows、Linux 和 macOS，并可根据运行端和平台选择变体。
 ---

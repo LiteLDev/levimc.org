@@ -80,6 +80,7 @@
   .mods-mask-globe { --mods-mask: var(--kit-icon-globe); }
   .mods-mask-menu { --mods-mask: var(--kit-icon-menu); }
   .mods-mask-history { --mods-mask: var(--kit-icon-history); }
+  .mods-mask-arrowRight { --mods-mask: var(--kit-icon-arrow-right); }
 
   /* ================================================================== icons (mod logo, owner avatar, chest) */
   .mods-icon {
@@ -476,6 +477,15 @@
   .mods-chip-mono {
     font-family: var(--font-mono);
     font-weight: 500;
+  }
+  /* the manifest's own tag behind a featured tag ("Teleport tp"): small, grey, as written */
+  .mods-raw-tag {
+    margin-left: 0.25rem;
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 400;
+    color: var(--color-muted);
   }
   .mods-chip-link {
     cursor: pointer;
@@ -1128,6 +1138,34 @@
     .mods-opt.is-dimmed .mods-opt-exclude {
       opacity: 0.45;
     }
+  }
+  .mods-opt-mono {
+    font-family: var(--font-mono);
+    font-weight: 500;
+  }
+  /* an SPDX id under its license family */
+  .mods-opt.is-nested {
+    padding-left: 1.5rem;
+  }
+  .mods-opt-expand {
+    flex: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--color-muted);
+  }
+  .mods-opt-expand .mods-mask {
+    transition: transform 0.15s steps(3, end);
+  }
+  .mods-opt-expand[aria-expanded="false"] .mods-mask {
+    transform: rotate(-90deg);
+  }
+  .mods-group-sub {
+    margin: 0.5rem 0.25rem 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
   }
   .mods-opt-exclude-spacer {
     flex: none;
@@ -1915,7 +1953,7 @@
     font-family: var(--font-mono);
     font-weight: 600;
     color: var(--color-link);
-    overflow-wrap: anywhere;
+    white-space: nowrap;
   }
   .mods-vt-version a:hover {
     text-decoration: underline;
@@ -1923,7 +1961,10 @@
   .mods-vt-version a[aria-current] {
     color: var(--color-ink);
   }
-  .mods-vt-variants {
+  .mods-vt-sides {
+    white-space: nowrap;
+  }
+  .mods-vt-platforms {
     max-width: 14rem;
   }
   .mods-vt-range code {
@@ -1983,11 +2024,16 @@
     .mods-vt-version {
       grid-area: version;
     }
+    .mods-vt-version a {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
     .mods-vt-actions {
       grid-area: actions;
       width: auto;
     }
-    .mods-vt-variants,
+    .mods-vt-sides,
+    .mods-vt-platforms,
     .mods-vt-range,
     .mods-vt-date {
       grid-column: 2 / -1;
@@ -2067,7 +2113,7 @@
     font-size: 0.8125rem;
     color: var(--color-muted);
   }
-  .mods-dep-tooth {
+  .mods-dep-id {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2193,6 +2239,24 @@
   }
   .mods-meta-mono {
     font-family: var(--font-mono);
+  }
+  /* the license's family (a filter link) and its SPDX id */
+  .mods-meta-license {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 0.25rem 0.5rem;
+  }
+  .mods-meta-license a {
+    color: var(--color-link);
+  }
+  .mods-meta-license a:hover {
+    text-decoration: underline;
+  }
+  .mods-meta-license code {
+    font-size: 0.8125rem;
+    font-weight: 500;
   }
   .mods-meta-stack {
     flex-direction: column;

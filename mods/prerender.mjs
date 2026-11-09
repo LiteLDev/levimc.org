@@ -43,7 +43,7 @@ for (const [path, body] of ssr.iconFiles()) {
   writeFileSync(`dist/${path}`, body);
 }
 
-// The pages' JSON: /mods/index.json and /mods/<tooth>/index.json (see src/server/api.ts).
+// The pages' JSON: /mods/index.json and /mods/<id>/index.json (see src/server/api.ts).
 const json = await ssr.jsonFiles();
 for (const [path, body] of json) {
   mkdirSync(dirname(`dist/${path}`), { recursive: true });

@@ -83,19 +83,14 @@ export function ModBrowser({ catalog }: { catalog: Catalog }) {
   const navigate = useNavigate();
   const hydrated = useHydrated();
   const key = hydrated ? params.toString() : "";
+  const options = useMemo(() => facetOptions(catalog.entries), [catalog.entries]);
   const state = useMemo(
-    () => (hydrated ? parseQuery(new URLSearchParams(key), catalog.features) : DEFAULT_STATE),
-    [hydrated, key, catalog.features],
+    () => (hydrated ? parseQuery(new URLSearchParams(key), catalog.features, options) : DEFAULT_STATE),
+    [hydrated, key, catalog.features, options],
   );
   const scores = useMemo(() => searchCatalog(catalog.entries, state.q), [catalog.entries, state.q]);
   const result = useMemo(() => runQuery(catalog.entries, state, scores), [catalog.entries, state, scores]);
-  const categoryOrder = useMemo(() => {
-    const totals = runQuery(catalog.entries, DEFAULT_STATE, null).counts.cat;
-    return Object.keys(totals).sort((a, b) => (totals[b] ?? 0) - (totals[a] ?? 0));
-  }, [catalog.entries]);
-
-  const options = useMemo(() => facetOptions(catalog.entries), [catalog.entries]);
-  const names = useMemo(() => new Map(catalog.entries.map((e) => [e.tooth, e.name])), [catalog.entries]);
+  const names = useMemo(() => new Map(catalog.entries.map((e) => [e.id, e.name])), [catalog.entries]);
 
   const [view, setView] = useViewMode();
   const [drawer, setDrawer] = useState(false);
@@ -126,12 +121,10 @@ export function ModBrowser({ catalog }: { catalog: Catalog }) {
       options={options}
       names={names}
       features={catalog.features}
-      categoryOrder={categoryOrder}
       apply={apply}
       flat={flat}
     />
   );
-  const ownerHref = (owner: string) => serializeQuery({ ...DEFAULT_STATE, author: [owner] });
 
   return (
     <>
@@ -145,7 +138,7 @@ export function ModBrowser({ catalog }: { catalog: Catalog }) {
             total={total}
             onSearch={(q) => {
               // the URL as it is now: a filter picked while the search was pending stays
-              const current = parseQuery(new URLSearchParams(window.location.search), catalog.features);
+              const current = parseQuery(new URLSearchParams(window.location.search), catalog.features, options);
               go(serializeQuery({ ...current, q, page: 1 }), true);
             }}
           />
@@ -173,8 +166,8 @@ export function ModBrowser({ catalog }: { catalog: Catalog }) {
             {items.length ? (
               <ol className="mods-results-list">
                 {items.map((entry, i) => (
-                  <li key={entry.tooth}>
-                    <ProjectRow entry={entry} eager={i < EAGER_ROWS} ownerHref={ownerHref(entry.owner)} />
+                  <li key={entry.id}>
+                    <ProjectRow entry={entry} eager={i < EAGER_ROWS} />
                   </li>
                 ))}
               </ol>

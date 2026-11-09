@@ -21,7 +21,7 @@ test("chips: all that fit, else those that fit next to +N", () => {
 });
 
 test("chips: a long chip is skipped, the shorter ones after it stay", () => {
-  // Glacie on a phone: Client & server, Protocol & multi-version, LeviLamina, Endstone in 334px
+  // a phone row: Client & server, Protocol & multi-version, #chat, #lse in 334px
   assert.deepEqual(fitChips([124, 178, 86, 73], 4, 34, 334), [Y, N, Y, Y]);
   // a very wide first chip does not hide the others
   assert.deepEqual(fitChips([300, 50], 4, 24, 120), [N, Y]);

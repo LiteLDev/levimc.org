@@ -4,8 +4,10 @@
 //
 //   node scripts/discover.mjs [--dry-run] [--max 20]
 //
-// A candidate is a repository GitHub's code search finds a tooth.json at the top of (what lipr searches for),
-// not a fork, with a `v<semver>` tag whose tooth.json lip can read. Merging the pull request lists it; closing it
+// A candidate is a repository GitHub's code search finds a lip.toml or a tooth.json at the top of (what lipr searched
+// for), not a fork, with a `v<semver>` tag whose package file lip can read: its lip.toml, else (only when it has none,
+// as lip does) its tooth.json. Whether it is a LeviLamina mod is left to the build (lib/listing.ts), which knows every
+// package it could depend on. Merging the pull request lists it; closing it
 // keeps it out: a repository that ever had a pull request (its branch, `mods/add/<owner>/<repo>`) is never
 // proposed again. Removing a line from repos.txt by hand works the same way only for repositories that came in
 // through a pull request, so close one rather than reverting it. A repository repos.txt names under a former name or
@@ -17,6 +19,7 @@
 // up before the first request, while a personal token has its own.
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { parseLipToml } from "../src/lib/lipfile.ts";
 import { migrateManifest } from "../src/lib/manifest.ts";
 import { addRepo, parseRepoList } from "../src/lib/repo-list.ts";
 
@@ -27,7 +30,8 @@ const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN;
 const searchToken = process.env.SEARCH_TOKEN || token;
 const target = process.env.GITHUB_REPOSITORY ?? "LiteLDev/levimc.org";
 const REPOS_PATH = "mods/repos.txt";
-const SEARCH = "format_version path:/ filename:tooth.json";
+/** Package files at the top of a repository: lip.toml (lip v0.40), and tooth.json (lip before it). */
+const SEARCHES = ["format path:/ filename:lip.toml", "format_version path:/ filename:tooth.json"];
 const SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 
 if (!token) {
@@ -79,13 +83,15 @@ async function api(path, init = {}, { auth = token, patience = 3 * 60_000 } = {}
   }
 }
 
-/** Repositories with a tooth.json at the top (search results stop at 1000). */
+/** Repositories with a lip.toml or a tooth.json at the top (each search's results stop at 1000). */
 async function search() {
   const repos = new Map();
-  for (let page = 1; page <= 10; page++) {
-    const data = await api(`search/code?q=${encodeURIComponent(SEARCH)}&per_page=100&page=${page}`, {}, { auth: searchToken, patience: 10 * 60_000 });
-    for (const { repository } of data.items) repos.set(repository.full_name.toLowerCase(), repository);
-    if (data.items.length < 100) break;
+  for (const query of SEARCHES) {
+    for (let page = 1; page <= 10; page++) {
+      const data = await api(`search/code?q=${encodeURIComponent(query)}&per_page=100&page=${page}`, {}, { auth: searchToken, patience: 10 * 60_000 });
+      for (const { repository } of data.items) repos.set(repository.full_name.toLowerCase(), repository);
+      if (data.items.length < 100) break;
+    }
   }
   return [...repos.values()];
 }
@@ -110,10 +116,23 @@ function tags(repo) {
   return { latest: versions.at(-1), count: versions.length };
 }
 
+/**
+ * The package file at a tag, as lip reads it: `{file, id, info}`, from its lip.toml, else (only when there is none)
+ * its tooth.json; `null` when it has none lip can read.
+ */
 async function manifestAt(repo, tag) {
+  const at = (file) => fetch(`https://raw.githubusercontent.com/${repo}/${encodeURIComponent(tag)}/${file}`);
   try {
-    const res = await fetch(`https://raw.githubusercontent.com/${repo}/${encodeURIComponent(tag)}/tooth.json`);
-    return res.ok ? migrateManifest(JSON.parse(await res.text())) : null;
+    const lip = await at("lip.toml");
+    if (lip.ok) {
+      const { doc, error } = parseLipToml(await lip.text());
+      if (error) console.log(`${repo}: ${error}`);
+      return doc ? { file: "lip.toml", id: doc.id, info: doc.info } : null;
+    }
+    if (lip.status !== 404) return null;
+    const res = await at("tooth.json");
+    const manifest = res.ok ? migrateManifest(JSON.parse(await res.text())) : null;
+    return manifest ? { file: "tooth.json", id: manifest.tooth, info: manifest.info } : null;
   } catch {
     // unreachable, or not JSON: the next run tries again
     return null;
@@ -135,15 +154,15 @@ const cell = (text) => String(text ?? "").replace(/\|/g, "\\|").replace(/\s+/g, 
 function body(repository, tag, count, manifest) {
   const repo = repository.full_name;
   return [
-    `Adds [${repo}](https://github.com/${repo}) to \`${REPOS_PATH}\`: GitHub's code search found a \`tooth.json\` there.`,
+    `Adds [${repo}](https://github.com/${repo}) to \`${REPOS_PATH}\`: GitHub's code search found a \`${manifest.file}\` there.`,
     "",
     "| | |",
     "| --- | --- |",
     `| Name | ${cell(manifest.info.name)} |`,
     `| Description | ${cell(manifest.info.description)} |`,
     `| Tags | ${manifest.info.tags.length ? manifest.info.tags.map((t) => `\`${cell(t)}\``).join(" ") : "—"} |`,
-    `| Tooth | \`${cell(manifest.tooth)}\` |`,
-    `| Latest version | [\`${tag}\`](https://github.com/${repo}/blob/${encodeURIComponent(tag)}/tooth.json) (${count} version tag${count === 1 ? "" : "s"}) |`,
+    `| Id | \`${cell(manifest.id)}\` |`,
+    `| Latest version | [\`${tag}\`](https://github.com/${repo}/blob/${encodeURIComponent(tag)}/${manifest.file}) (${count} version tag${count === 1 ? "" : "s"}) |`,
     `| Repository | ${cell(repository.description)} |`,
     "",
     "Merge it to list the repository's versions on LeviMC Mods at the next deploy. Close it to keep the repository out: the discovery never proposes a repository twice.",
@@ -157,7 +176,7 @@ async function propose(repository, tag, count, manifest) {
   const branch = `mods/add/${repo.toLowerCase()}`;
   const title = `LeviMC Mods: add ${repo}`;
   if (dryRun) {
-    console.log(`[dry run] ${title} (${tag}, ${manifest.tooth})`);
+    console.log(`[dry run] ${title} (${tag}, ${manifest.file}, ${manifest.id})`);
     return;
   }
   const { default_branch: base } = await api(`repos/${target}`);
@@ -204,11 +223,11 @@ async function resolve(path) {
 
 /**
  * The repos.txt line that is this repository under a former name or owner, if any: one with its name (a transfer), or
- * the one its tooth names (a rename that kept the old tooth) — when GitHub serves that address from the candidate.
+ * the one its id names (a rename that kept the old id) — when GitHub serves that address from the candidate.
  */
 async function listedAs(repository, manifest) {
   const name = repository.full_name.toLowerCase();
-  const tooth = manifest.tooth.match(/^github\.com\/([^/]+\/[^/]+)$/)?.[1]?.toLowerCase();
+  const tooth = manifest.id.match(/^github\.com\/([^/]+\/[^/]+)$/)?.[1]?.toLowerCase();
   const suspects = listed.filter((r) => r.split("/")[1].toLowerCase() === repository.name.toLowerCase() || r.toLowerCase() === tooth);
   for (const repo of suspects) if ((await resolve(repo)) === name) return repo;
   return null;
@@ -243,7 +262,7 @@ for (const repository of candidates) {
   }
   const manifest = await manifestAt(repository.full_name, latest);
   if (!manifest) {
-    console.log(`${repository.full_name}: no tooth.json lip can read at ${latest}`);
+    console.log(`${repository.full_name}: no lip.toml or tooth.json lip can read at ${latest}`);
     continue;
   }
   let as;

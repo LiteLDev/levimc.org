@@ -1,16 +1,12 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import {
-  CATEGORY_BY_ID,
-  ENV_BY_ID,
-  LSE_LANGUAGES,
-  PLATFORM_BY_ID,
-  type SpriteName,
-} from "../data/categories";
+import { featuredTagsOf, plainTagsOf } from "../data/featured-tags";
+import { SIDE_BY_ID } from "../data/sides";
+import type { SpriteName } from "../data/sprites";
 import { formatCompact, formatNumber, useI18n, type Strings } from "../i18n";
 import type { Locale } from "../locales";
 import { initialFit } from "../lib/chip-fit";
 import { watchChips } from "./chip-measure";
-import { modPath } from "../lib/mods";
+import { modPath, ownerUrl } from "../lib/mods";
 import type { CatalogEntry } from "../types";
 import { formatUtcDate, RelativeDate } from "./local-date";
 import { ProjectIcon } from "./project-icon";
@@ -24,34 +20,25 @@ export interface Chip {
   key: string;
   label: string;
   icon?: SpriteName;
-  tone?: string;
+  /** The manifest's own tags behind a featured tag, in small grey text after its name. */
+  raw?: string;
 }
 
-/**
- * Environment, the first category, the platforms, then the other categories
- * (Modrinth's order, except that the platform comes before a second category:
- * it is the first filter group, and a narrow row keeps only its first chips).
- */
+/** A chip's text, as the "+N" tooltip and its label read it. */
+const chipText = (c: Chip) => (c.raw ? `${c.label} (${c.raw})` : c.label);
+
+/** The side, the featured tags (`data/featured-tags.ts`, with the raw tags behind each), then the other tags. */
 export function entryChips(entry: CatalogEntry, locale: Locale, t: Strings): Chip[] {
   const chips: Chip[] = [];
-  if (entry.env.length === 2) chips.push({ key: "env", label: t.envBoth, icon: "menu" });
-  else if (entry.env.length === 1) {
-    const env = ENV_BY_ID.get(entry.env[0]!);
-    if (env) chips.push({ key: "env", label: env.label[locale], icon: env.icon });
+  if (entry.side.length === 2) chips.push({ key: "side", label: t.sideBoth, icon: "menu" });
+  else if (entry.side.length === 1) {
+    const side = SIDE_BY_ID.get(entry.side[0]!);
+    if (side) chips.push({ key: "side", label: side.label[locale], icon: side.icon });
   }
-  const categories: Chip[] = [];
-  for (const id of entry.categories) {
-    const c = CATEGORY_BY_ID.get(id);
-    if (c) categories.push({ key: `cat-${id}`, label: c.label[locale], icon: c.icon });
+  for (const { tag, raw } of featuredTagsOf(entry.tags)) {
+    chips.push({ key: `tag-${tag.id}`, label: tag.label[locale], icon: tag.icon, raw: raw.join(" ") });
   }
-  chips.push(...categories.slice(0, 1));
-  for (const id of entry.platforms) {
-    const p = PLATFORM_BY_ID.get(id);
-    if (!p) continue;
-    const lang = id === "lse" && entry.lang ? LSE_LANGUAGES[entry.lang] : undefined;
-    chips.push({ key: `platform-${id}`, label: lang ? `${p.short} · ${lang}` : p.short, tone: p.tone });
-  }
-  chips.push(...categories.slice(1));
+  for (const tag of plainTagsOf(entry.tags)) chips.push({ key: `tag-${tag}`, label: `#${tag}` });
   return chips;
 }
 
@@ -80,7 +67,7 @@ function ChipList({ chips }: { chips: Chip[] }) {
   const [fit, setFit] = useState<string | null>(null);
   const shown = fit ?? initialFit(chips.length).map(Number).join("");
   const rest = chips.filter((_, i) => shown[i] !== "1");
-  const signature = chips.map((c) => c.label).join("\n");
+  const signature = chips.map(chipText).join("\n");
 
   useLayoutEffect(() => {
     const ul = ref.current;
@@ -94,15 +81,13 @@ function ChipList({ chips }: { chips: Chip[] }) {
     });
   }, [signature]);
 
-  const chip = (c: Chip) =>
-    c.tone ? (
-      <span className={`kit-badge kit-badge-${c.tone} mods-row-platform`}>{c.label}</span>
-    ) : (
-      <span className="mods-chip">
-        {c.icon ? <Sprite name={c.icon} /> : null}
-        {c.label}
-      </span>
-    );
+  const chip = (c: Chip) => (
+    <span className="mods-chip">
+      {c.icon ? <Sprite name={c.icon} /> : null}
+      {c.label}
+      {c.raw ? <span className="mods-raw-tag">{c.raw}</span> : null}
+    </span>
+  );
   return (
     <ul ref={ref} className="mods-row-tags" data-fit={fit === null ? undefined : ""}>
       {chips.map((c, i) => (
@@ -122,7 +107,7 @@ function ChipList({ chips }: { chips: Chip[] }) {
               type="button"
               className="mods-chip mods-row-more"
               tabIndex={rest.length ? undefined : -1}
-              aria-label={`+${rest.length}: ${rest.map((c) => c.label).join(", ")}`}
+              aria-label={`+${rest.length}: ${rest.map(chipText).join(", ")}`}
             >
               +{Math.max(1, rest.length)}
             </button>
@@ -130,7 +115,7 @@ function ChipList({ chips }: { chips: Chip[] }) {
               <span className="mc-tooltip-title">{t.moreTags(rest.length)}</span>
               {rest.map((c) => (
                 <span key={c.key} className="mc-tooltip-lore">
-                  {c.label}
+                  {chipText(c)}
                 </span>
               ))}
             </span>
@@ -145,35 +130,33 @@ interface ProjectRowProps {
   entry: CatalogEntry;
   /** Rows near the top load their icon at once. */
   eager: boolean;
-  /** Where the owner link goes (the listing filtered by author). */
-  ownerHref: string;
 }
 
 /**
  * One result: icon, "Name by owner", description, chips and stats. The name
- * is the link and covers the whole row; the owner link and the "+N" chip sit
- * above it. List rows and grid cards are the same markup (see styles.css).
+ * is the link and covers the whole row; the owner link (to the owner on
+ * GitHub) and the "+N" chip sit above it. List rows and grid cards are the same markup (see styles.css).
  */
-export function ProjectRow({ entry, eager, ownerHref }: ProjectRowProps) {
+export function ProjectRow({ entry, eager }: ProjectRowProps) {
   const { t, locale } = useI18n();
   const chips = entryChips(entry, locale, t);
   const description = entry.description.trim();
   return (
-    <article className="px-card mods-row" data-tooth={entry.tooth}>
+    <article className="px-card mods-row" data-id={entry.id}>
       <span className="kit-slot mods-row-icon">
-        <ProjectIcon icon={entry.icon} iconId={entry.iconId} owner={entry.owner} size={72} eager={eager} />
+        <ProjectIcon icon={entry.logo} iconId={entry.logoId} owner={entry.owner} size={72} eager={eager} />
       </span>
       <div className="mods-row-head">
         <h3 className="mods-row-name">
-          <RouterLink href={modPath(entry.tooth)} className="mods-card-link" state={FROM_LISTING}>
+          <RouterLink href={modPath(entry.id)} className="mods-card-link" state={FROM_LISTING}>
             {entry.name}
           </RouterLink>
         </h3>
         <span className="mods-row-by">
           {t.by}{" "}
-          <RouterLink href={ownerHref} className="mods-row-owner">
+          <a href={ownerUrl(entry.owner)} className="mods-row-owner" target="_blank" rel="noopener noreferrer">
             {entry.owner}
-          </RouterLink>
+          </a>
         </span>
       </div>
       <p className={description ? "mods-row-desc" : "mods-row-desc mods-row-desc-empty"}>{description || t.noDescription}</p>
