@@ -3,9 +3,9 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { gunzipSync } from "node:zlib";
 import { parse as parseToml } from "smol-toml";
-import type { LipDoc } from "../types.ts";
+import type { LipDoc, LipEntry } from "../types.ts";
 import { installsMod } from "./listing.ts";
-import { comparePlatforms, migrateManifest, narrowSides, preferredVariant, targetOf, toothToV4, type RegistryManifest } from "./manifest.ts";
+import { comparePlatforms, isNativeFormat4, migrateManifest, narrowSides, preferredVariant, targetOf, toothToV4, type RegistryManifest } from "./manifest.ts";
 
 test("format 3 is read as it is, its templates filled in", () => {
   const manifest = migrateManifest({
@@ -183,6 +183,47 @@ test("the variant to install: client, then the default, then the others; for the
   assert.equal(preferredVariant(variants, "server", "linux-x64"), "a");
   assert.equal(preferredVariant(variants, "server", "android-arm64"), undefined);
   assert.equal(preferredVariant({ client: [entry("server")], "": [entry("server")] }, "server"), "client");
+});
+
+// Rule A2's shared fixture: the same package, version and variants as LeviLauncher's (internal/lipindex,
+// frontend/scripts/lipCatalog.test.mjs) and LeviLauncher-Android's (core/packages/Catalog.java) tests.
+const FORMAT_FOUR: { id: string; version: string; manifestUrl: string; variants: Record<string, LipEntry[]> } = {
+  id: "github.com/example/FormatFour",
+  version: "1.0.0",
+  manifestUrl: "https://github.com/example/FormatFour/blob/refs/tags/v1.0.0/lip.toml",
+  variants: {
+    "": [
+      { side: "server", platform: "win-x64", deps: { "github.com/LiteLDev/LeviLamina": "1.*" }, dests: [] },
+      { side: "client", platform: "win-x64", deps: { "github.com/LiteLDev/LeviLamina#client": "1.*" }, dests: [] },
+    ],
+    client: [{ side: "client", platform: "win-x64", deps: { "github.com/LiteLDev/LeviLamina#client": "1.*" }, dests: [] }],
+  },
+};
+
+test("isNativeFormat4: a version whose manifestUrl is a lip.toml", () => {
+  assert.equal(isNativeFormat4(FORMAT_FOUR.manifestUrl), true);
+  assert.equal(isNativeFormat4("https://github.com/o/r/blob/refs/tags/v1.0.0/tooth.json"), false);
+  assert.equal(isNativeFormat4("https://github.com/o/lip.toml/blob/refs/tags/v1.0.0/tooth.json"), false);
+  assert.equal(isNativeFormat4(""), false);
+});
+
+test("the variant to install, rule A2: a lip.toml version prefers its default variant, a tooth.json one client (shared fixture)", () => {
+  const format4 = isNativeFormat4(FORMAT_FOUR.manifestUrl);
+  assert.equal(preferredVariant(FORMAT_FOUR.variants, "client", "win-x64", format4), "");
+  assert.equal(preferredVariant(FORMAT_FOUR.variants, "client", undefined, format4), "");
+  assert.equal(preferredVariant(FORMAT_FOUR.variants, "server", "win-x64", format4), "");
+  // the same variants read from a tooth.json: client, as before
+  assert.equal(preferredVariant(FORMAT_FOUR.variants, "client", "win-x64", false), "client");
+  assert.equal(preferredVariant(FORMAT_FOUR.variants, "client", "win-x64"), "client");
+  // only among the variants with an entry for the side and platform: a lip.toml whose "" is the server's alone
+  const serverOnly = { "": [FORMAT_FOUR.variants[""]![0]!], client: FORMAT_FOUR.variants["client"]! };
+  assert.equal(preferredVariant(serverOnly, "client", "win-x64", true), "client");
+  assert.equal(preferredVariant(serverOnly, "server", "win-x64", true), "");
+  // then the others, by name (a role variant like client_lua is not client)
+  const alias = FORMAT_FOUR.variants["client"]!;
+  assert.equal(preferredVariant({ client_lua: alias, b: alias, client: alias }, "client", "win-x64", true), "client");
+  assert.equal(preferredVariant({ client_lua: alias, b: alias }, "client", "win-x64", true), "b");
+  assert.equal(preferredVariant(FORMAT_FOUR.variants, "client", "linux-x64", true), undefined);
 });
 
 // testdata/derive.jsonl.gz is LeviLauncher's (internal/lipcore/compat/testdata), its package files rewritten for lip

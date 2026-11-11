@@ -252,6 +252,12 @@ export interface VersionJson {
   releaseUrl: string;
   /** Its `lip.toml` (or `tooth.json`) in the repository. */
   manifestUrl: string;
+  /**
+   * `4` when its package file is a real `lip.toml` (lip v0.40's format 4), left
+   * out when it is read from a `tooth.json`. Says what `manifestUrl` ending in
+   * `/lip.toml` says (launchers read that, see `lib/manifest.ts` isNativeFormat4).
+   */
+  format?: 4;
   /** Name, description, tags and logo as this version's manifest has them. */
   info: LipInfo;
   /** Variant name → its entries. */

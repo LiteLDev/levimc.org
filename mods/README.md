@@ -92,15 +92,16 @@ default order (a query string does not reach the host, so filtering is left to t
   created?, license?, side, platform, gameVersions, tags,
   latest: { variant, version, install },
   readmes: [ { file, lang, text } ], gallery: [ … ],
-  versions: [ { version, prerelease, released?, releaseUrl, manifestUrl, info: { name, description, tags, logo? },
+  versions: [ { version, prerelease, released?, releaseUrl, manifestUrl, format?, info: { name, description, tags, logo? },
                 variants: { "<name>": [ { side, platform, deps } ] } } ],
   dependencies: { "<lower-case id>": { id, name, owner, url? } }, requiredBy: [ { id, name, owner, url? } ] }
 ```
 
 - `canonical`: the page of the repository's current id, when this is an old one.
 - `latest`: what the page shows by default: the default variant (see [Data](#data)), its latest version and the `lip install` command for it.
-- `versions`: newest first. `manifestUrl` is the version's `lip.toml`, or its `tooth.json` when it has none; a
-  variant's entries are lip v0.40's: one per side and platform it installs on, with the entry's `deps`
+- `versions`: newest first. `manifestUrl` is the version's `lip.toml`, or its `tooth.json` when it has none;
+  `format` is `4` when it is a `lip.toml` (lip v0.40's format 4), left out otherwise (the same as `manifestUrl`
+  ending in `/lip.toml`, which launchers read); a variant's entries are lip v0.40's: one per side and platform it installs on, with the entry's `deps`
   (`<id>[#variant]` → range).
 - `dependencies` names the ids the versions' `deps` use; `requiredBy` lists the listed mods whose latest version
   depends on this one.
@@ -155,7 +156,7 @@ At build time (`src/server/catalog.ts`) the registry is enriched with:
 
 | Source | Used for | Without it |
 | ------ | -------- | ---------- |
-| the latest version's package file | tags (shown as published; see [Tags](#tags)), sides and platforms (any entry's), dependencies, the default variant (among those with a `server` entry, else a `client` one: `client`, then the default `""`, then the others by name — the rule LeviLauncher uses for the client) | — |
+| the latest version's package file | tags (shown as published; see [Tags](#tags)), sides and platforms (any entry's), dependencies, the default variant (among those with a `server` entry, else a `client` one: for a `lip.toml` version the default `""`, then `client`, then the others by name; for a `tooth.json` version `client`, then `""`, then the others — rule A2, which LeviLauncher and LeviLauncher-Android use for the client) | — |
 | every version's package file | "Required by", Game Version (every version's dependency ranges, followed to LeviLamina and its `bds` version), each version's sides, platforms and LeviLamina range | — |
 | GitHub GraphQL (`GITHUB_TOKEN`) | where renamed repositories live, stars, release dates, creation date, license (SPDX id; `src/data/licenses.ts` overrides the few GitHub cannot tell), organization owner | links keep the id's path, no stars, dates are when the build first saw a version, no "Newest" sort and no License filter |
 | `docs/showcase/showcase.json` on each mod's default branch | the Gallery tab (`src/server/showcase.ts`) | no Gallery tab |

@@ -461,6 +461,17 @@ export function narrowRegistrySides(docs: Map<string, Map<string, LipDoc>>, kind
   return changed;
 }
 
+/**
+ * The variant a mod page shows by default (and `latest.variant` of its JSON):
+ * rule A2 (lib/manifest.ts preferredVariant) among the latest version's
+ * variants with a server entry, else among those with a client one. For a
+ * `lip.toml` version that is its default `""` (its bare identity), not a
+ * legacy `client` alias of it.
+ */
+export function defaultVariantOf(latest: LipDoc, lipToml: boolean): string | undefined {
+  return preferredVariant(latest.variants, "server", undefined, lipToml) ?? preferredVariant(latest.variants, "client", undefined, lipToml);
+}
+
 /** Assembles the site's index and lipr's two indexes (`generate-indexes.py`) from the manifests. */
 function assemble(filed: ReturnType<typeof fileManifests>): Registry {
   const { docs, sources, origins, seen, lipr } = filed;
@@ -487,7 +498,7 @@ function assemble(filed: ReturnType<typeof fileManifests>): Registry {
     if (!Object.keys(variants).length) continue;
     const ordered = Object.keys(variants).sort(variantOrder);
     const latest = versions.at(-1)!;
-    const defaultVariant = preferredVariant(latest.variants, "server") ?? preferredVariant(latest.variants, "client");
+    const defaultVariant = defaultVariantOf(latest, kinds(id, latest.version) === "lip");
     index.packages[id] = {
       info: { ...latest.info },
       // filled in from GitHub; without it, when the build first saw the latest version

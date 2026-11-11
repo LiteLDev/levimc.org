@@ -116,13 +116,15 @@ export async function modJson(id: string): Promise<ModJson | null> {
       const doc = docs?.get(version);
       if (!doc) return [];
       const release = releases[version];
+      const file = origins?.get(version)?.file;
       return [
         {
           version,
           prerelease: release?.prerelease ?? isPrerelease(version),
           ...(release ? { released: release.date } : {}),
           releaseUrl: getReleaseUrl(repository, release),
-          manifestUrl: getManifestUrl(repository, version, origins?.get(version)?.file),
+          manifestUrl: getManifestUrl(repository, version, file),
+          ...(file === "lip.toml" ? { format: 4 as const } : {}),
           info: doc.info,
           variants: variantsJson(doc),
         },

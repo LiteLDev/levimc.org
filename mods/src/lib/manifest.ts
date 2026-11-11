@@ -354,12 +354,35 @@ export function targetOf(entries: readonly Pick<LipEntry, "side" | "platform" | 
 }
 
 /**
- * The variant to install for a side (and a platform, when one is forced):
- * among those with an entry for it, `client`, then the default `""`, then the
- * others in alphabetical order. `undefined`: none has one.
+ * Whether a version's package file is a real `lip.toml` (lip v0.40's format 4),
+ * not one derived from a `tooth.json` ({@link toothToV4}): its `manifestUrl`
+ * ends in `/lip.toml`. That is what launchers key rule A2 on (the mod page's
+ * `versions[i].format` says the same, but launchers read the URL).
  */
-export function preferredVariant(variants: Record<string, readonly LipEntry[]>, side: Side, platform?: string): string | undefined {
+export const isNativeFormat4 = (manifestUrl: string): boolean => /\/lip\.toml$/.test(manifestUrl);
+
+/**
+ * The variant to install for a side (and a platform, when one is forced),
+ * among those with an entry for it — rule A2 of the catalogue contract, shared
+ * with LeviLauncher (internal/lipindex, frontend/src/utils/lipCatalog.ts) and
+ * LeviLauncher-Android (core/packages/Catalog.java):
+ *
+ * - a native `lip.toml` version ({@link isNativeFormat4}): the default `""`,
+ *   then `client`, then the others in alphabetical order — its `""` is the
+ *   bare identity both sides install, `client` a legacy alias of it;
+ * - a `tooth.json` version: `client`, then `""`, then the others (there, a
+ *   label applies to any side, and `""` is usually the server's build).
+ *
+ * `undefined`: none has one.
+ */
+export function preferredVariant(
+  variants: Record<string, readonly LipEntry[]>,
+  side: Side,
+  platform?: string,
+  nativeFormat4 = false,
+): string | undefined {
   const qualifying = Object.keys(variants).filter((name) => variants[name]!.some((e) => e.side === side && (platform === undefined || e.platform === platform)));
-  const rank = (name: string) => (name === "client" ? 0 : name === "" ? 1 : 2);
+  const [first, second] = nativeFormat4 ? ["", "client"] : ["client", ""];
+  const rank = (name: string) => (name === first ? 0 : name === second ? 1 : 2);
   return qualifying.sort((a, b) => rank(a) - rank(b) || (a < b ? -1 : a > b ? 1 : 0))[0];
 }
