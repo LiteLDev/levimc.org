@@ -10,6 +10,7 @@
 import { BASE } from "../base-path";
 import { DEFAULT_STATE, runQuery } from "../lib/catalog-query";
 import { compareVersions } from "../lib/game-versions";
+import { versionFormat } from "../lib/manifest";
 import {
   CATALOG_JSON,
   getAllVersions,
@@ -116,13 +117,15 @@ export async function modJson(id: string): Promise<ModJson | null> {
       const doc = docs?.get(version);
       if (!doc) return [];
       const release = releases[version];
+      const file = origins?.get(version)?.file;
       return [
         {
           version,
           prerelease: release?.prerelease ?? isPrerelease(version),
           ...(release ? { released: release.date } : {}),
           releaseUrl: getReleaseUrl(repository, release),
-          manifestUrl: getManifestUrl(repository, version, origins?.get(version)?.file),
+          manifestUrl: getManifestUrl(repository, version, file),
+          ...versionFormat(file),
           info: doc.info,
           variants: variantsJson(doc),
         },
