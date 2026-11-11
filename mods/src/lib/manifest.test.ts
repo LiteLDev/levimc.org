@@ -5,7 +5,8 @@ import { gunzipSync } from "node:zlib";
 import { parse as parseToml } from "smol-toml";
 import type { LipDoc, LipEntry } from "../types.ts";
 import { installsMod } from "./listing.ts";
-import { comparePlatforms, isNativeFormat4, migrateManifest, narrowSides, preferredVariant, targetOf, toothToV4, type RegistryManifest } from "./manifest.ts";
+import { comparePlatforms, isNativeFormat4, migrateManifest, narrowSides, preferredVariant, targetOf, toothToV4, versionFormat, type RegistryManifest } from "./manifest.ts";
+import { getManifestUrl, installCommand } from "./mods.ts";
 
 test("format 3 is read as it is, its templates filled in", () => {
   const manifest = migrateManifest({
@@ -185,20 +186,36 @@ test("the variant to install: client, then the default, then the others; for the
   assert.equal(preferredVariant({ client: [entry("server")], "": [entry("server")] }, "server"), "client");
 });
 
-// Rule A2's shared fixture: the same package, version and variants as LeviLauncher's (internal/lipindex,
-// frontend/scripts/lipCatalog.test.mjs) and LeviLauncher-Android's (core/packages/Catalog.java) tests.
-const FORMAT_FOUR: { id: string; version: string; manifestUrl: string; variants: Record<string, LipEntry[]> } = {
-  id: "github.com/example/FormatFour",
-  version: "1.0.0",
-  manifestUrl: "https://github.com/example/FormatFour/blob/refs/tags/v1.0.0/lip.toml",
-  variants: {
-    "": [
-      { side: "server", platform: "win-x64", deps: { "github.com/LiteLDev/LeviLamina": "1.*" }, dests: [] },
-      { side: "client", platform: "win-x64", deps: { "github.com/LiteLDev/LeviLamina#client": "1.*" }, dests: [] },
-    ],
-    client: [{ side: "client", platform: "win-x64", deps: { "github.com/LiteLDev/LeviLamina#client": "1.*" }, dests: [] }],
-  },
+// Rule A2's shared fixture: testdata/github.com/example/FormatFour/index.json, a mod page of api/v4 with a lip.toml
+// version 1.0.0 ("" with a server and a client entry, client a legacy alias of it) and a tooth.json version 0.9.0 with
+// the same variants. It is the agreed definition of the fixture LeviLauncher (internal/lipindex/testdata, read by
+// frontend/scripts/lipCatalog.test.mjs too) and LeviLauncher-Android (test/resources/catalog/site) copy byte for byte;
+// expected there as here: 1.0.0 → "", 0.9.0 → client, for the client on win-x64.
+const FORMAT_FOUR_PAGE = JSON.parse(readFileSync(new URL("./testdata/github.com/example/FormatFour/index.json", import.meta.url), "utf8")) as {
+  id: string;
+  repository: string;
+  latest: { variant: string; version: string; install: string };
+  versions: { version: string; manifestUrl: string; format?: 4; variants: Record<string, Omit<LipEntry, "dests">[]> }[];
 };
+const fixtureVersion = (version: string) => {
+  const v = FORMAT_FOUR_PAGE.versions.find((v) => v.version === version)!;
+  const variants = Object.fromEntries(Object.entries(v.variants).map(([name, list]) => [name, list.map((e) => ({ ...e, dests: [] }))]));
+  return { ...v, variants: variants as Record<string, LipEntry[]> };
+};
+const FORMAT_FOUR = fixtureVersion("1.0.0");
+const FORMAT_FOUR_TOOTH = fixtureVersion("0.9.0");
+
+test("the shared A2 fixture is a mod page as the site writes it: manifestUrl, format and latest agree", () => {
+  for (const v of FORMAT_FOUR_PAGE.versions) {
+    const file = v.format === 4 ? "lip.toml" : "tooth.json";
+    assert.equal(v.manifestUrl, getManifestUrl(FORMAT_FOUR_PAGE.repository, v.version, file));
+    assert.equal(isNativeFormat4(v.manifestUrl), v.format === 4);
+    assert.deepEqual(versionFormat(file), v.format === 4 ? { format: 4 } : {});
+  }
+  const { latest } = FORMAT_FOUR_PAGE;
+  assert.equal(latest.variant, preferredVariant(FORMAT_FOUR.variants, "server", undefined, true));
+  assert.equal(latest.install, installCommand(FORMAT_FOUR_PAGE.id, latest.variant, latest.version));
+});
 
 test("isNativeFormat4: a version whose manifestUrl is a lip.toml", () => {
   assert.equal(isNativeFormat4(FORMAT_FOUR.manifestUrl), true);
@@ -212,8 +229,9 @@ test("the variant to install, rule A2: a lip.toml version prefers its default va
   assert.equal(preferredVariant(FORMAT_FOUR.variants, "client", "win-x64", format4), "");
   assert.equal(preferredVariant(FORMAT_FOUR.variants, "client", undefined, format4), "");
   assert.equal(preferredVariant(FORMAT_FOUR.variants, "server", "win-x64", format4), "");
-  // the same variants read from a tooth.json: client, as before
-  assert.equal(preferredVariant(FORMAT_FOUR.variants, "client", "win-x64", false), "client");
+  // the same variants read from a tooth.json (the fixture's 0.9.0): client, as before
+  assert.equal(preferredVariant(FORMAT_FOUR_TOOTH.variants, "client", "win-x64", isNativeFormat4(FORMAT_FOUR_TOOTH.manifestUrl)), "client");
+  assert.equal(preferredVariant(FORMAT_FOUR_TOOTH.variants, "client", "win-x64"), "client");
   assert.equal(preferredVariant(FORMAT_FOUR.variants, "client", "win-x64"), "client");
   // only among the variants with an entry for the side and platform: a lip.toml whose "" is the server's alone
   const serverOnly = { "": [FORMAT_FOUR.variants[""]![0]!], client: FORMAT_FOUR.variants["client"]! };

@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { toothToV4, type RegistryManifest } from "../lib/manifest.ts";
 import type { LipDoc } from "../types.ts";
 import { installCommand } from "../lib/mods.ts";
-import { defaultVariantOf, fileManifests, narrowRegistrySides, ownTooths, readTag, type CachedTag, type RegistryCache, type RepoResolver } from "./registry.ts";
+import { assemble, defaultVariantOf, fileManifests, narrowRegistrySides, ownTooths, readTag, type CachedTag, type RegistryCache, type RepoResolver } from "./registry.ts";
 
 const manifest = (tooth: string, version: string) =>
   ({ tooth, version, info: { name: "X", description: "", tags: [], avatar_url: "" }, variants: [{ label: "", platform: "win-x64", dependencies: {}, assets: [] }] }) as RegistryManifest;
@@ -208,4 +208,27 @@ test("the default variant (latest.variant, latest.install): a lip.toml version's
   assert.equal(defaultVariantOf(ll, true), "");
   const llTooth = lipDoc(LL, "26.60.6", { "": [server({})], client: [client({})] });
   assert.equal(defaultVariantOf(llTooth, false), "");
+});
+
+test("the default variant through the build: the latest version's file (lip.toml or tooth.json) decides, as on its mod page", async () => {
+  const LL = "github.com/LiteLDev/LeviLamina";
+  const client = { side: "client" as const, platform: "win-x64", deps: { [`${LL}#client`]: "1.*" }, dests: [] };
+  const server = { side: "server" as const, platform: "win-x64", deps: { [LL]: "1.*" }, dests: [] };
+  // rule A2's shared fixture (lib/testdata/github.com/example/FormatFour): "" for both sides, client an alias of it
+  const variants = { "": [server, client], client: [client] };
+  const tag = (kind: "lip" | "tooth", id: string, version: string): CachedTag => ({ sha: version, kind, v4: lipDoc(id, version, variants), seen: "2026-01-01T00:00:00Z" });
+  // client-only, so the client side decides: "" for a lip.toml, client for a tooth.json
+  const clientOnly = { "": [client], client: [client] };
+  const clientTag = (kind: "lip" | "tooth", id: string, version: string): CachedTag => ({ ...tag(kind, id, version), v4: lipDoc(id, version, clientOnly) });
+  const read = readOf({
+    "example/FormatFour": { "v0.9.0": tag("tooth", "github.com/example/FormatFour", "0.9.0"), "v1.0.0": tag("lip", "github.com/example/FormatFour", "1.0.0") },
+    "example/NowLip": { "v1.0.0": clientTag("tooth", "github.com/example/NowLip", "1.0.0"), "v2.0.0": clientTag("lip", "github.com/example/NowLip", "2.0.0") },
+    "example/StillTooth": { "v1.0.0": clientTag("lip", "github.com/example/StillTooth", "1.0.0"), "v2.0.0": clientTag("tooth", "github.com/example/StillTooth", "2.0.0") },
+  });
+  const repos = ["example/FormatFour", "example/NowLip", "example/StillTooth"];
+  const own = await ownTooths(read, { version: 3, repos: {}, aliases: {} }, resolver);
+  const { index } = assemble(fileManifests(read, repos, own));
+  assert.equal(index.packages["github.com/example/FormatFour"]!.defaultVariant, "");
+  assert.equal(index.packages["github.com/example/NowLip"]!.defaultVariant, "");
+  assert.equal(index.packages["github.com/example/StillTooth"]!.defaultVariant, "client");
 });

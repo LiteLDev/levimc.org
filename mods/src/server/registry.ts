@@ -36,6 +36,7 @@ import {
   sidesIn,
   splitDependency,
   toothToV4,
+  versionFormat,
   type RegistryManifest,
   type SideResolver,
 } from "../lib/manifest.ts";
@@ -473,7 +474,7 @@ export function defaultVariantOf(latest: LipDoc, lipToml: boolean): string | und
 }
 
 /** Assembles the site's index and lipr's two indexes (`generate-indexes.py`) from the manifests. */
-function assemble(filed: ReturnType<typeof fileManifests>): Registry {
+export function assemble(filed: ReturnType<typeof fileManifests>): Registry {
   const { docs, sources, origins, seen, lipr } = filed;
   const kinds = (id: string, version: string) => {
     const file = origins.get(id)?.get(version)?.file;
@@ -498,7 +499,7 @@ function assemble(filed: ReturnType<typeof fileManifests>): Registry {
     if (!Object.keys(variants).length) continue;
     const ordered = Object.keys(variants).sort(variantOrder);
     const latest = versions.at(-1)!;
-    const defaultVariant = defaultVariantOf(latest, kinds(id, latest.version) === "lip");
+    const defaultVariant = defaultVariantOf(latest, versionFormat(origins.get(id)?.get(latest.version)?.file).format === 4);
     index.packages[id] = {
       info: { ...latest.info },
       // filled in from GitHub; without it, when the build first saw the latest version

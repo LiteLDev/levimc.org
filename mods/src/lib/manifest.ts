@@ -357,9 +357,19 @@ export function targetOf(entries: readonly Pick<LipEntry, "side" | "platform" | 
  * Whether a version's package file is a real `lip.toml` (lip v0.40's format 4),
  * not one derived from a `tooth.json` ({@link toothToV4}): its `manifestUrl`
  * ends in `/lip.toml`. That is what launchers key rule A2 on (the mod page's
- * `versions[i].format` says the same, but launchers read the URL).
+ * `versions[i].format` says the same, but launchers read the URL). The site
+ * itself knows the file a version was read from (`ManifestOrigin.file`) and
+ * decides through {@link versionFormat}; `manifestUrl` ends in that file name
+ * (lib/mods.ts getManifestUrl), so the two agree.
  */
 export const isNativeFormat4 = (manifestUrl: string): boolean => /\/lip\.toml$/.test(manifestUrl);
+
+/**
+ * The format of a version read from `file`, as its mod page's JSON says it:
+ * `{ format: 4 }` for a real `lip.toml`, nothing for a `tooth.json` (or when
+ * unknown). The site's one place deciding "native format 4" from the file.
+ */
+export const versionFormat = (file: "lip.toml" | "tooth.json" | undefined): { format?: 4 } => (file === "lip.toml" ? { format: 4 } : {});
 
 /**
  * The variant to install for a side (and a platform, when one is forced),
