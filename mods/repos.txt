@@ -28,6 +28,7 @@ edshPC/PlayerRegister
 engsr6982/FastMiner
 engsr6982/TeleportSystem
 Eragon327/LazyBedrockBreaker2
+Eragon327/NeuroDragon
 FeixiangTMC/Stipuleroo
 GeneralUniversal/EnchantX
 GlacieTeam/AntiXray
