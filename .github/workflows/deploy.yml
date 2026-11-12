@@ -82,11 +82,15 @@ jobs:
           path: mods/.cache
           key: mods-registry-${{ hashFiles('mods/.cache/registry.json') }}
 
-      # The pages and the JSON from before version 4 at /mods/, the JSON (version 4) at /api/v4/mods/.
+      # The pages and the JSON from before version 4 at /mods/, the JSON (version 4) at /api/v4/mods/, and the
+      # release versions (versions/versions.json, kept by versions.yml) at /api/v4/mc/versions/.
       - run: |
           cp -r mods/dist dist/mods
           test ! -e dist/api
           cp -r mods/dist-api dist/api
+          test ! -e dist/api/v4/mc/versions
+          mkdir -p dist/api/v4/mc/versions
+          cp versions/versions.json dist/api/v4/mc/versions/index.json
 
       # Internal links, redirect-needing links and #anchors (GitHub Pages semantics).
       - run: npm run linkcheck
