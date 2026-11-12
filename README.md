@@ -136,8 +136,8 @@ The two apps share the origin: their bar and footer links into the other one are
 
 ## Versions
 
-[`/api/v4/versions/`](https://levimc.org/api/v4/versions/index.json) lists the release versions of the software lip
-installs, one key per lip `<side>/<platform>` (platform: a .NET RID), each newest first, spelled as the vendor spells
+[`/api/v4/mc/versions/`](https://levimc.org/api/v4/mc/versions/index.json) lists Minecraft's release versions (the software, not
+LeviMC's own projects), one key per lip `<side>/<platform>` (platform: a .NET RID), each newest first, spelled as Mojang spells
 them (`1.16.1.02` keeps its zero):
 
 ```

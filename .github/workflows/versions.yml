@@ -1,4 +1,4 @@
-# /api/v4/versions/: adds the release Mojang's download API names now to versions/versions.json (see
+# /api/v4/mc/versions/: adds the release Mojang's download API names now to versions/versions.json (see
 # versions/update.mjs), commits it and starts a deploy. A push made with the workflow token starts no workflows, so
 # the deploy is started by hand (workflow_dispatch is the exception); the hourly deploy would pick it up anyway.
 name: Versions

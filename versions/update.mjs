@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// The release versions behind /api/v4/versions/ (versions/versions.json, published as
-// /api/v4/versions/index.json by deploy.yml). Mojang's download API names only the latest release of each download,
+// Minecraft's release versions behind /api/v4/mc/versions/ (versions/versions.json, published as
+// /api/v4/mc/versions/index.json by deploy.yml). Mojang's download API names only the latest release of each download,
 // so the history is this file: every run adds the version Mojang names now, if it is new.
 //
 //   node versions/update.mjs            # fetch, merge, write versions/versions.json when it changed
