@@ -134,6 +134,22 @@ pnpm dev        # http://localhost:5173/mods/
 The two apps share the origin: their bar and footer links into the other one are ordinary links (`isAppPath`).
 `robots.txt` lists the mods sitemap.
 
+## Versions
+
+[`/api/v4/versions/`](https://levimc.org/api/v4/versions/index.json) lists the release versions of the software lip
+installs, one key per lip `<side>/<platform>` (platform: a .NET RID), each newest first, spelled as the vendor spells
+them (`1.16.1.02` keeps its zero):
+
+```
+{ "server/win-x64": ["1.26.63.1", "1.26.62.1", …], "server/linux-x64": ["1.26.63.1", …] }
+```
+
+Today these are Bedrock Dedicated Server's releases (no previews). The file is
+[`versions/versions.json`](versions/versions.json), published as it is by the deploy. Mojang's download API names only
+the latest release, so the history is that file: `.github/workflows/versions.yml` runs every hour,
+`node versions/update.mjs` adds the release Mojang names now, and a new one is committed and deployed. A new key is a
+line in `DOWNLOADS` in `versions/update.mjs` and a list in the file. `npm test` checks the file's shape.
+
 ## LeviChan
 
 A small LeviChan head peeks over the top edge of the home hero's showcase card (`src/levichan/LeviChanPeek.tsx`).
