@@ -30,6 +30,8 @@ export const isLicenseFamily = (value: string): value is LicenseFamilyId => LICE
 export const LICENSE_OVERRIDES: Readonly<Record<string, string>> = {
   "copper-lamp/bschat": "AGPL-3.0",
   "ieckseyr/hologramlib": "MIT",
+  "miracleforest/lepton": "CC-BY-NC-SA-4.0",
+  "miracleforest/natureslodestone": "CC-BY-NC-SA-4.0",
 };
 
 /** SPDX ids (upper case) and id patterns of each family; anything else is "other". */
