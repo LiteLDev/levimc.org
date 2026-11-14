@@ -1,12 +1,14 @@
 // What GitHub knows about each mod's repository: where it lives today (a
 // tooth keeps the path it was published under; GitHub redirects renamed and
 // transferred repositories from there), its stars, when it was created and
-// last updated, its license, its releases and its README files. One GraphQL
-// request per 50 mods.
+// last updated, its license, its releases and its README files (one GraphQL
+// request per 50 mods), and how many times its releases' files were downloaded
+// (one REST request per repository: GraphQL refuses release files for a whole
+// batch as too costly).
 //
 // Needs GITHUB_TOKEN (GitHub's GraphQL API requires one; the workflow passes
 // its own). Without a token, or if GitHub cannot be reached, the build goes on
-// without this data: links keep the tooth's address, there are no stars,
+// without this data: links keep the tooth's address, there are no stars or downloads,
 // dates are when the build first saw a version, and the "Newest" sort and the License filter are left out (also when
 // only some batches could be read).
 import type { RepositoryRenames } from "../lib/markdown";
@@ -22,6 +24,12 @@ export interface RepoMeta {
   /** Where the repository lives today. */
   url: string;
   stars: number;
+  /**
+   * How many times its releases' files were downloaded (lip and the launchers
+   * install from them), over every release; absent when no release has a
+   * file (the mod is installed some other way) or GitHub did not say.
+   */
+  downloads?: number;
   /** When anything about the repository last changed (lipr's `updated_at`). */
   updatedAt: string;
   createdAt?: string;
@@ -150,6 +158,45 @@ async function queryBatch(token: string, tooths: string[]): Promise<Map<string, 
   return out;
 }
 
+const DOWNLOAD_REQUESTS = 8;
+
+/** Downloads of a repository's release files, summed over every release; undefined when none has a file. */
+async function releaseDownloads(token: string, repoUrl: string): Promise<number | undefined> {
+  let total: number | undefined;
+  for (let page = 1; ; page++) {
+    const res = await fetch(`https://api.github.com/repos/${repoUrl.slice(GITHUB_URL.length)}/releases?per_page=100&page=${page}`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "User-Agent": "levimc.org-mods-build" },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const releases = (await res.json()) as { draft: boolean; assets: { download_count: number }[] }[];
+    for (const r of releases) if (!r.draft && r.assets.length) total = (total ?? 0) + r.assets.reduce((n, a) => n + a.download_count, 0);
+    if (releases.length < 100) return total;
+  }
+}
+
+/** Adds `downloads` to every repository, a few requests at a time; returns how many could not be read. */
+async function addDownloads(token: string, meta: Map<string, RepoMeta>): Promise<number> {
+  // one request per repository, not per tooth: a renamed one is listed under several
+  const byUrl = new Map<string, RepoMeta[]>();
+  for (const m of meta.values()) if (m.url.startsWith(GITHUB_URL)) byUrl.set(m.url, [...(byUrl.get(m.url) ?? []), m]);
+  const queue = [...byUrl.keys()];
+  let failed = 0;
+  await Promise.all(
+    Array.from({ length: DOWNLOAD_REQUESTS }, async () => {
+      for (let repoUrl = queue.shift(); repoUrl; repoUrl = queue.shift()) {
+        try {
+          const downloads = await releaseDownloads(token, repoUrl);
+          if (downloads !== undefined) for (const m of byUrl.get(repoUrl)!) m.downloads = downloads;
+        } catch (error) {
+          failed++;
+          console.warn(`::warning::Could not read the release downloads of ${repoUrl}: ${String(error)}`);
+        }
+      }
+    }),
+  );
+  return failed;
+}
+
 export interface RepoMetaResult {
   /** Tooth → what GitHub knows about its repository, for the tooths GitHub knows. */
   meta: Map<string, RepoMeta>;
@@ -187,7 +234,11 @@ export async function fetchRepoMeta(tooths: string[]): Promise<RepoMetaResult> {
     if (result) for (const [tooth, m] of result) meta.set(tooth, m);
     else complete = false;
   }
-  console.log(`GitHub: ${meta.size} of ${github.length} repositories (GraphQL cost ${cost})${complete ? "" : "; incomplete, so no License filter and no Newest sort"}`);
+  const downloadsFailed = await addDownloads(token, meta);
+  console.log(
+    `GitHub: ${meta.size} of ${github.length} repositories (GraphQL cost ${cost})${complete ? "" : "; incomplete, so no License filter and no Newest sort"}; ` +
+      `release downloads for ${[...meta.values()].filter((m) => m.downloads !== undefined).length}${downloadsFailed ? ` (${downloadsFailed} could not be read)` : ""}`,
+  );
   return { meta, complete };
 }
 

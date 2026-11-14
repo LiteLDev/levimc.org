@@ -113,6 +113,10 @@ export interface CatalogEntry {
   /** Mods whose latest version depends on this one (absent: none). */
   requiredBy?: number;
   stars: number;
+  /** How many times its GitHub releases' files were downloaded; absent when unknown (no release has a file, or no GitHub data). */
+  downloads?: number;
+  /** The "Popularity" sort's score (see `lib/popularity.ts`): higher first. */
+  popularity: number;
   /** The default-order score (see `lib/ranking.ts`): higher first. */
   rank: number;
   /** SPDX id; absent when GitHub reports none or was not asked. */
@@ -222,6 +226,8 @@ export interface CatalogEntryJson {
   gameVersions: string[];
   deps: Record<string, string>;
   stars: number;
+  /** How many times its GitHub releases' files were downloaded; absent when unknown. */
+  downloads?: number;
   license?: string;
   updated: string;
   created?: string;
@@ -284,6 +290,8 @@ export interface ModJson {
   issues?: string;
   releases: string;
   stars: number;
+  /** How many times its GitHub releases' files were downloaded; absent when unknown. */
+  downloads?: number;
   /** Latest release, else the registry's update. */
   updated: string;
   /** The first GitHub release (needs GitHub data). */

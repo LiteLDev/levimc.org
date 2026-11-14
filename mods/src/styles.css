@@ -752,6 +752,7 @@
     align-items: center;
     gap: 0.375rem;
   }
+  .mods-stat-downloads,
   .mods-stat-stars {
     font-weight: 650;
     color: var(--color-ink);

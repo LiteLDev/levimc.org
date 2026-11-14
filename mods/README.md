@@ -13,7 +13,7 @@ the shared LeviMC design system, levimc-kit, which `pnpm install` copies from
 built with Vite `base: '/mods/'`: every page and file is under `/mods/`.
 
 - **The listing** (`/mods/`) has the whole catalogue baked in: search as you type,
-  filters, sort (relevance — when nothing is searched, the default order below — stars,
+  filters, sort (relevance — when nothing is searched, the default order below — popularity,
   updated, newest), list or grid view and pagination all run in the browser and read the
   query string (see [Filters](#filters)). Results come 20 to a page.
 - **Mod pages** (`/mods/<id>/`, e.g. `/mods/github.com/LiteLDev/LegacyScriptEngine/`) are prerendered with the README and
@@ -52,12 +52,12 @@ The listing's state is its query string, written in this order:
 | `license` | License: a family (`permissive`, `weak-copyleft`, `copyleft`, `other`, `none`) or an SPDX id | any of them (OR), e.g. `license=permissive,GPL-3.0` |
 | `dep` | Dependencies | every one (AND), on the ids the latest version depends on, in any case |
 | `author` | author (set by "More by …" on a mod page) | any owner (OR), in any case |
-| `sort` | `relevance` (default), `stars`, `updated`, `newest` | |
+| `sort` | `relevance` (default), `popularity`, `updated`, `newest` | |
 | `page` | page | |
 
 Lists are comma-separated (`tags=economy,-library`); the groups combine with AND. Unknown keys and values are
 ignored, and a filter's count says how many mods it would leave. Older links keep working where they still mean
-something: `env=` is read as `side=`, `sort=downloads` sorts by stars, and `tags=` matches the normalised tags;
+something: `env=` is read as `side=`, `sort=stars` and `sort=downloads` sort by popularity, and `tags=` matches the normalised tags;
 `cat=`, `license=oss`, loader platforms (`platform=lse`) and `per=` are ignored. `src/lib/catalog-query.ts` is the
 reference LeviLauncher follows (it forces `side=client` and its own platform).
 ## JSON
@@ -73,8 +73,8 @@ default order (a query string does not reach the host, so filtering is left to t
 
 ```
 { url, stats: { projects, authors, versions }, sort: "relevance",
-  mods: [ { id, name, description, owner, logo, tags, side, platform, gameVersions, deps, stars, license?,
-            updated, created?, url, json, requiredBy } ] }
+  mods: [ { id, name, description, owner, logo, tags, side, platform, gameVersions, deps, stars, downloads?,
+            license?, updated, created?, url, json, requiredBy } ] }
 ```
 
 - `tags`: the latest version's `info.tags`, as published (normalising and grouping them is left to the reader).
@@ -84,11 +84,14 @@ default order (a query string does not reach the host, so filtering is left to t
 - `logo`: the mod's logo, else the one drawn for it (see [Drawn logos](#drawn-logos)). `owner` is the author.
 - `license`: the SPDX id GitHub reports (`NOASSERTION` when it cannot tell); absent without one.
 - `requiredBy`: how many listed mods' latest versions depend on it.
+- `downloads`: how many times the files of its GitHub releases were downloaded, over every release; absent when
+  no release has a file or the build had no GitHub data.
 
 `/api/v4/mods/<id>/index.json` is the mod page, every version included:
 
 ```
-{ url, id, canonical?, name, description, owner, logo, repository, issues?, releases, stars, updated, published?,
+{ url, id, canonical?, name, description, owner, logo, repository, issues?, releases, stars, downloads?, updated,
+  published?,
   created?, license?, side, platform, gameVersions, tags,
   latest: { variant, version, install },
   readmes: [ { file, lang, text } ], gallery: [ … ],
@@ -159,6 +162,7 @@ At build time (`src/server/catalog.ts`) the registry is enriched with:
 | the latest version's package file | tags (shown as published; see [Tags](#tags)), sides and platforms (any entry's), dependencies, the default variant (among those with a `server` entry, else a `client` one: for a `lip.toml` version the default `""`, then `client`, then the others by name; for a `tooth.json` version `client`, then `""`, then the others — rule A2, which LeviLauncher and LeviLauncher-Android use for the client) | — |
 | every version's package file | "Required by", Game Version (every version's dependency ranges, followed to LeviLamina and its `bds` version), each version's sides, platforms and LeviLamina range | — |
 | GitHub GraphQL (`GITHUB_TOKEN`) | where renamed repositories live, stars, release dates, creation date, license (SPDX id; `src/data/licenses.ts` overrides the few GitHub cannot tell), organization owner | links keep the id's path, no stars, dates are when the build first saw a version, no "Newest" sort and no License filter |
+| GitHub REST releases (`GITHUB_TOKEN`; one request per repository, as GraphQL refuses release files for a batch) | downloads: release files' download counts, over every release | no downloads (popularity is stars alone) |
 | `docs/showcase/showcase.json` on each mod's default branch | the Gallery tab (`src/server/showcase.ts`) | no Gallery tab |
 | each mod's logo (`info.logo`, a `tooth.json`'s `avatar_url`; `https://` only) | the icon in rows and on pages, downloaded once and scaled with [sharp](https://sharp.pixelplumbing.com) (a devDependency) to 96/144/288 px WebP under `/mods/icons/` (`src/server/icons.ts`), served with `srcset` | no logo, or one that does not load: a drawn one (see [Drawn logos](#drawn-logos)); one sharp cannot read: the original file |
 
@@ -226,6 +230,13 @@ only); a Poisson–Gamma model gives the posterior E[ln θ] of its quality from
 its actual stars and dependents against those; and each game version it is
 behind the newest costs ln q, q being how often the catalogue's mods keep
 supporting the next version. The build log prints the fitted model.
+
+**Popularity** (the Popularity sort, `src/lib/popularity.ts`): how widely a mod
+is used, from its release downloads (installs: lip and the launchers download
+release files) and its stars, each as ln(1 + n) standardised over the catalogue
+(one row per repository), averaged. A mod whose releases have no files has
+unknown downloads, not none: its stars stand for both. Rows show the downloads
+(the stars when there are none) and the tooltip both.
 
 ### Tags
 

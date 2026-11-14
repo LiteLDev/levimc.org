@@ -9,7 +9,7 @@ export type ViewMode = "list" | "grid";
 export function sortOptions(t: Strings, newest: boolean): { value: SortKey; label: string }[] {
   return [
     { value: "relevance", label: t.sortRelevance },
-    { value: "stars", label: t.sortStars },
+    { value: "popularity", label: t.sortPopularity },
     { value: "updated", label: t.sortUpdated },
     ...(newest ? [{ value: "newest" as const, label: t.sortNewest }] : []),
   ];

@@ -147,8 +147,8 @@ console.log(`smoke: ${root}`);
 const { page: home, errors: homeErrors } = await open("");
 const catalog = await entries(home);
 const total = catalog.length;
-// the mod with the most stars: search and sort checks look for it
-const TOP = [...catalog].sort((a, b) => b.stars - a.stars)[0];
+// the most popular mod: search and sort checks look for it
+const TOP = [...catalog].sort((a, b) => b.popularity - a.popularity || b.stars - a.stars)[0];
 
 await check("home renders and hydrates without errors; title and status", async () => {
   assert((await home.title()) === HOME_TITLE, `title "${await home.title()}"`);
@@ -323,17 +323,17 @@ await check("exclusion: ?tags=-library hides every library; the chip says so", a
   return `${libraries.size} libraries hidden`;
 });
 
-await check("sort by stars (hotbar, arrow keys) orders the rows", async () => {
+await check("sort by popularity (hotbar, arrow keys) orders the rows", async () => {
   await home.goto(root, { waitUntil: "networkidle" });
   await home.locator('.mods-sort [role="radio"]', { hasText: "Relevance" }).focus();
   await home.keyboard.press("ArrowRight");
-  await home.waitForURL((u) => new URL(u).searchParams.get("sort") === "stars");
+  await home.waitForURL((u) => new URL(u).searchParams.get("sort") === "popularity");
   await settled(home);
-  assert((await home.locator('.mods-sort [aria-checked="true"]').innerText()) === "Stars", "Stars not checked");
+  assert((await home.locator('.mods-sort [aria-checked="true"]').innerText()) === "Popularity", "Popularity not checked");
   const order = await rowIds(home);
-  const stars = order.map((id) => catalog.find((e) => e.id === id).stars);
-  assert(stars.every((n, i) => i === 0 || stars[i - 1] >= n), `not descending: ${stars.slice(0, 6)}`);
-  return `top: ${stars.slice(0, 3).join(", ")}`;
+  const scores = order.map((id) => catalog.find((e) => e.id === id).popularity);
+  assert(scores.every((n, i) => i === 0 || scores[i - 1] >= n), `not descending: ${scores.slice(0, 6)}`);
+  return `top: ${order.slice(0, 3).join(", ")}`;
 });
 
 await check("page size is fixed at 20: no control, ?per=50 is ignored", async () => {
@@ -405,6 +405,7 @@ await check("listing URLs, and old ones: kept keys work, removed keys and values
     ["?platform=lse", all],
     ["?platform=endstone", all],
     ["?license=oss", all],
+    [`?sort=popularity`, (n) => n[0] === TOP.name],
     [`?sort=stars`, (n) => n[0] === TOP.name],
     ["?sort=updated&page=2", (n) => n.length > 0],
     ["?sort=downloads", (n) => n[0] === TOP.name],
@@ -439,7 +440,7 @@ await check("listing URLs, and old ones: kept keys work, removed keys and values
 });
 
 await check("a row opens its mod without a page load; Back to search returns to the listing", async () => {
-  const listing = "?tags=library&sort=stars";
+  const listing = "?tags=library&sort=popularity";
   await home.goto(`${root}${listing}`, { waitUntil: "networkidle" });
   await settled(home);
   await markLoad(home);

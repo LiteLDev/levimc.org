@@ -102,6 +102,12 @@ export function ModDetail({ data, selection, tab: requestedTab, info: manifestIn
           </p>
           {info.description ? <p className="mods-project-summary">{info.description}</p> : null}
           <ul className="mods-project-stats">
+            {(entry.downloads ?? 0) > 0 ? (
+              <li>
+                <Sprite name="chest" />
+                {t.downloadsCount(formatNumber(entry.downloads!, locale))}
+              </li>
+            ) : null}
             {entry.stars > 0 ? (
               <li>
                 <Sprite name="diamond" />

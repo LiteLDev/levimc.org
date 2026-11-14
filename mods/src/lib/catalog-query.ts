@@ -26,7 +26,7 @@ import { spreadAuthors } from "./ranking.ts";
 /** Results per page: fixed (old `?per=` links are ignored). */
 export const PAGE_SIZE = 20;
 
-export const SORTS = ["relevance", "stars", "updated", "newest"] as const;
+export const SORTS = ["relevance", "popularity", "updated", "newest"] as const;
 export type SortKey = (typeof SORTS)[number];
 
 /** Values a filter group includes, and values it excludes (`-id` in the URL). */
@@ -127,8 +127,8 @@ export function parseQuery(
   vocabulary?: QueryVocabulary,
 ): QueryState {
   let sort = (params.get("sort") ?? "").toLowerCase();
-  // Download counts are not shown; links sorted by them get stars instead.
-  if (sort === "downloads") sort = "stars";
+  // Popularity replaced the Stars sort, and is what links sorted by downloads (lipr's site) meant.
+  if (sort === "stars" || sort === "downloads") sort = "popularity";
   if (sort === "newest" && !features.created) sort = "relevance";
   const page = parseInt(params.get("page") ?? "1", 10);
   const sides = list(params, "side", "env").map((v) => v.toLowerCase());
@@ -266,15 +266,16 @@ const time = (iso: string | undefined) => {
  * game version; see `lib/ranking.ts`), which also breaks search ties.
  */
 export function compareEntries(sort: SortKey, scores: Map<string, number> | null) {
-  const byStars = (a: CatalogEntry, b: CatalogEntry) => b.stars - a.stars || time(b.updated) - time(a.updated);
+  // popularity (release downloads and stars, see `lib/popularity.ts`), then stars, then the latest update
+  const byPopularity = (a: CatalogEntry, b: CatalogEntry) => b.popularity - a.popularity || b.stars - a.stars || time(b.updated) - time(a.updated);
   const byName = (a: CatalogEntry, b: CatalogEntry) =>
     a.id.toLowerCase() < b.id.toLowerCase() ? -1 : a.id.toLowerCase() > b.id.toLowerCase() ? 1 : 0;
   return (a: CatalogEntry, b: CatalogEntry): number => {
     let d: number;
-    if (sort === "relevance") d = (scores ? (scores.get(b.id) ?? 0) - (scores.get(a.id) ?? 0) : 0) || b.rank - a.rank || byStars(a, b);
-    else if (sort === "stars") d = byStars(a, b);
-    else if (sort === "updated") d = time(b.updated) - time(a.updated) || b.stars - a.stars;
-    else d = time(b.created) - time(a.created) || b.stars - a.stars;
+    if (sort === "relevance") d = (scores ? (scores.get(b.id) ?? 0) - (scores.get(a.id) ?? 0) : 0) || b.rank - a.rank || byPopularity(a, b);
+    else if (sort === "popularity") d = byPopularity(a, b);
+    else if (sort === "updated") d = time(b.updated) - time(a.updated) || b.popularity - a.popularity;
+    else d = time(b.created) - time(a.created) || b.popularity - a.popularity;
     return d || byName(a, b);
   };
 }

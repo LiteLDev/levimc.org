@@ -24,6 +24,7 @@ const entry = (id: string, over: Partial<CatalogEntry> = {}): CatalogEntry => ({
   gameVersions: [],
   deps: {},
   stars: 0,
+  popularity: 0,
   rank: 0,
   updated: "2026-01-01T00:00:00Z",
   ...over,
@@ -66,7 +67,7 @@ test("parse/serialize round-trip in a fixed parameter order", () => {
   const url = serializeQuery(state);
   assert.equal(
     url,
-    "/mods/?q=land%20claim&gv=1.21.0&side=client&platform=win-x64&tags=economy,-library&license=permissive,GPL-3.0&dep=github.com/LiteLDev/LeviLamina&author=LiteLDev&sort=stars&page=2",
+    "/mods/?q=land%20claim&gv=1.21.0&side=client&platform=win-x64&tags=economy,-library&license=permissive,GPL-3.0&dep=github.com/LiteLDev/LeviLamina&author=LiteLDev&sort=popularity&page=2",
   );
   assert.deepEqual(parse(url.split("?")[1]!), state);
 });
@@ -111,7 +112,8 @@ test("parse: dependencies and authors once each, in any case", () => {
 test("parse: sorts and pages fall back; the page size is fixed", () => {
   assert.equal(serializeQuery(parse("per=100")), "/mods/");
   assert.equal(parse("sort=bogus").sort, "relevance");
-  assert.equal(parse("sort=downloads").sort, "stars");
+  assert.equal(parse("sort=downloads").sort, "popularity");
+  assert.equal(parse("sort=stars").sort, "popularity");
   assert.equal(parse("sort=newest").sort, "newest");
   assert.equal(parseQuery(new URLSearchParams("sort=newest"), { created: false, license: false }).sort, "relevance");
   assert.equal(parse("page=0").page, 1);
@@ -126,9 +128,13 @@ test("without a search and without ranks, relevance falls back to stars, then th
   assert.deepEqual(run("sort=relevance").items, items);
 });
 
-test("sorting by stars, update and creation", () => {
-  const stars = run("sort=stars").matched.map((e) => e.stars);
+test("sorting by popularity, update and creation", () => {
+  // without popularity scores, by stars
+  const stars = run("sort=popularity").matched.map((e) => e.stars);
   assert.deepEqual(stars, [...stars].sort((x, y) => y - x));
+  // a library downloaded far more than starred comes first
+  const withPopularity = CATALOG.map((e) => (e.name === "PLand" ? { ...e, popularity: 2 } : e.name === "LeviLamina" ? { ...e, popularity: 1 } : e));
+  assert.deepEqual(names(runQuery(withPopularity, parse("sort=popularity"), null).matched).slice(0, 2), ["PLand", "LeviLamina"]);
   assert.equal(run("sort=updated").matched[0]?.name, "LeviLamina");
   assert.deepEqual(names(run("sort=newest").matched).slice(0, 2), ["Bank", "Money"]);
 });
@@ -257,7 +263,7 @@ test("pages are clamped to the last one", () => {
 test("filter count and clear all (search and sort stay)", () => {
   const s = parse("q=x&gv=1.21.0&side=client&platform=win-x64&tags=economy,-library&license=permissive,MIT&dep=a/b&author=a&sort=stars&page=2");
   assert.equal(filterCount(s), 9);
-  assert.equal(serializeQuery(clearFilters(s)), "/mods/?q=x&sort=stars");
+  assert.equal(serializeQuery(clearFilters(s)), "/mods/?q=x&sort=popularity");
 });
 
 test("game version (OR) and its counts", () => {

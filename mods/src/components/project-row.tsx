@@ -167,7 +167,13 @@ export function ProjectRow({ entry, eager }: ProjectRowProps) {
         data-placement="top"
         onClick={(e) => e.currentTarget.closest(".mods-row")?.querySelector<HTMLAnchorElement>(".mods-card-link")?.click()}
       >
-        {entry.stars > 0 ? (
+        {(entry.downloads ?? 0) > 0 ? (
+          <span className="mods-stat mods-stat-downloads">
+            <Sprite name="chest" />
+            <span aria-hidden="true">{formatCompact(entry.downloads!, locale)}</span>
+            <span className="kit-sr-only">{t.downloadsExact(formatNumber(entry.downloads!, locale))}</span>
+          </span>
+        ) : entry.stars > 0 ? (
           <span className="mods-stat mods-stat-stars">
             <Sprite name="diamond" />
             <span aria-hidden="true">{formatCompact(entry.stars, locale)}</span>
@@ -186,6 +192,7 @@ export function ProjectRow({ entry, eager }: ProjectRowProps) {
         ) : null}
         <span className="mc-tooltip kit-tooltip mods-row-stats-tip" aria-hidden="true">
           <span className="mc-tooltip-title">{entry.name}</span>
+          {(entry.downloads ?? 0) > 0 ? <span className="mc-tooltip-lore">{t.downloadsExact(formatNumber(entry.downloads!, locale))}</span> : null}
           {entry.stars > 0 ? <span className="mc-tooltip-lore">{t.starsExact(formatNumber(entry.stars, locale))}</span> : null}
           <span className="mc-tooltip-lore">{t.updatedExact(formatUtcDate(entry.updated, locale))}</span>
           {(entry.requiredBy ?? 0) > 0 ? <span className="mc-tooltip-lore">{t.requiredBy(entry.requiredBy ?? 0)}</span> : null}

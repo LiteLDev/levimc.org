@@ -7,6 +7,7 @@ import { hasFeaturedTag } from "../data/featured-tags";
 import { resolveGameVersions, type LauncherIndex } from "../lib/game-versions";
 import { classifyListings, type Listing } from "../lib/listing";
 import { LEVILAMINA_PATH, sidesIn, splitDependency, targetOf } from "../lib/manifest";
+import { popularityScores } from "../lib/popularity";
 import { rankScores, type RankRow } from "../lib/ranking";
 import { updateUrl, type RepositoryRenames } from "../lib/markdown";
 import { getAllVersions, getDefaultSelection, ownerOf } from "../lib/mods";
@@ -62,7 +63,7 @@ const DAY = 86_400_000;
  * covariates fixed before anyone could star it. Without GitHub data the age
  * runs from the index's update and the owner is not known.
  */
-function rankRow(e: Omit<CatalogEntry, "rank">, repo: RepoMeta | undefined, withOwner: boolean): RankRow {
+function rankRow(e: Omit<CatalogEntry, "rank" | "popularity">, repo: RepoMeta | undefined, withOwner: boolean): RankRow {
   const since = Date.parse(e.created ?? e.updated);
   const covariates: Record<string, number> = {
     icon: e.logo ? 1 : 0,
@@ -185,7 +186,7 @@ async function build(): Promise<BuildData> {
   );
   const gameVersions = resolveGameVersions(launcher);
 
-  const unranked: Omit<CatalogEntry, "rank">[] = paged.map((id) => {
+  const unranked: Omit<CatalogEntry, "rank" | "popularity">[] = paged.map((id) => {
     const mod = index.packages[id]!;
     const tags = Array.isArray(mod.info.tags) ? mod.info.tags : [];
     const entries = entriesOf(latest.get(id));
@@ -209,17 +210,19 @@ async function build(): Promise<BuildData> {
       deps: deps.get(id) ?? {},
       ...(dependents.get(id.toLowerCase())?.length ? { requiredBy: dependents.get(id.toLowerCase())!.length } : {}),
       stars: mod.stargazer_count ?? 0,
+      ...(repo?.downloads !== undefined ? { downloads: repo.downloads } : {}),
       ...(repo?.license ? { license: repo.license } : {}),
       updated: repo?.latestRelease ?? mod.updated_at,
       ...(repo?.createdAt ? { created: repo.createdAt } : {}),
     };
   });
 
-  // The default order is fitted to the listed mods; the unlisted ones are never sorted.
+  // The default order and popularity are fitted to the listed mods; the unlisted ones are never sorted.
   const ranked = unranked.filter((e) => status(e.id) === "listed");
   const { scores, model } = rankScores(ranked.map((e) => rankRow(e, meta.get(e.id), metaComplete)));
-  const entries: CatalogEntry[] = ranked.map((e, i) => ({ ...e, rank: scores[i]! }));
-  const unlisted: CatalogEntry[] = unranked.filter((e) => status(e.id) !== "listed").map((e) => ({ ...e, rank: 0 }));
+  const popularity = popularityScores(ranked.map((e) => ({ key: (meta.get(e.id)?.url ?? e.id).toLowerCase(), stars: e.stars, downloads: e.downloads })));
+  const entries: CatalogEntry[] = ranked.map((e, i) => ({ ...e, popularity: popularity[i]!, rank: scores[i]! }));
+  const unlisted: CatalogEntry[] = unranked.filter((e) => status(e.id) !== "listed").map((e) => ({ ...e, popularity: 0, rank: 0 }));
   const coef = (names: string[], beta: number[]) => ["const", ...names].map((k, j) => `${k} ${beta[j]!.toFixed(2)}`).join(", ");
   console.log(
     `rank: ${model.rows} repositories; stars ~ ${coef(model.starsCovariates, model.stars.beta)} (r ${model.stars.r.toFixed(2)}); ` +
