@@ -16,6 +16,8 @@ import {
   getAllVersions,
   getManifestUrl,
   getReleaseUrl,
+  ICON_WIDTHS,
+  iconPath,
   installCommand,
   isPrerelease,
   LEGACY_CATALOG_JSON,
@@ -34,12 +36,19 @@ const url = (path: string) => `${SITE_ORIGIN}${encodeURI(path)}`;
 
 const ref = ({ id, name, owner, listed }: RelatedMod): ModRefJson => ({ id, name, owner, ...(listed ? { url: url(modPath(id)) } : {}) });
 
+/**
+ * A mod's logo for launchers: its own, else the one the build drew (its largest
+ * size), else (a build without sharp) its owner's avatar.
+ */
+const logoUrl = (e: CatalogEntry) =>
+  e.logo ?? (e.logoGenerated && e.logoId ? url(iconPath(e.logoId, ICON_WIDTHS.at(-1)!)) : ownerAvatar(e.owner));
+
 const entryJson = (e: CatalogEntry): CatalogEntryJson => ({
   id: e.id,
   name: e.name,
   description: e.description,
   owner: e.owner,
-  logo: e.logo ?? ownerAvatar(e.owner),
+  logo: logoUrl(e),
   tags: e.tags,
   side: e.side,
   platform: e.platform,
@@ -139,7 +148,7 @@ export async function modJson(id: string): Promise<ModJson | null> {
     name: info.name || entry.name,
     description: info.description,
     owner: entry.owner,
-    logo: entry.logo ?? ownerAvatar(entry.owner),
+    logo: logoUrl(entry),
     repository,
     ...(page.hasIssues ? { issues: `${repository}/issues` } : {}),
     releases: `${repository}/releases`,

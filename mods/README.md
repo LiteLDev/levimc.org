@@ -81,7 +81,7 @@ default order (a query string does not reach the host, so filtering is left to t
 - `side` (`"server"`, `"client"`, server first) and `platform` (RIDs): what any entry of the latest version runs on.
 - `deps`: what the latest version depends on, by bare id (without `#variant`) → range; ranges of one id that
   differ are joined with ` || `.
-- `logo`: the mod's logo, else its owner's GitHub avatar. `owner` is the author.
+- `logo`: the mod's logo, else the one drawn for it (see [Drawn logos](#drawn-logos)). `owner` is the author.
 - `license`: the SPDX id GitHub reports (`NOASSERTION` when it cannot tell); absent without one.
 - `requiredBy`: how many listed mods' latest versions depend on it.
 
@@ -160,7 +160,25 @@ At build time (`src/server/catalog.ts`) the registry is enriched with:
 | every version's package file | "Required by", Game Version (every version's dependency ranges, followed to LeviLamina and its `bds` version), each version's sides, platforms and LeviLamina range | — |
 | GitHub GraphQL (`GITHUB_TOKEN`) | where renamed repositories live, stars, release dates, creation date, license (SPDX id; `src/data/licenses.ts` overrides the few GitHub cannot tell), organization owner | links keep the id's path, no stars, dates are when the build first saw a version, no "Newest" sort and no License filter |
 | `docs/showcase/showcase.json` on each mod's default branch | the Gallery tab (`src/server/showcase.ts`) | no Gallery tab |
-| each mod's logo (`info.logo`, a `tooth.json`'s `avatar_url`; `https://` only) | the icon in rows and on pages, downloaded once and scaled with [sharp](https://sharp.pixelplumbing.com) (a devDependency) to 96/144/288 px WebP under `/mods/icons/` (`src/server/icons.ts`), served with `srcset` | an icon that does not load: the owner's GitHub avatar; one sharp cannot read: the original file |
+| each mod's logo (`info.logo`, a `tooth.json`'s `avatar_url`; `https://` only) | the icon in rows and on pages, downloaded once and scaled with [sharp](https://sharp.pixelplumbing.com) (a devDependency) to 96/144/288 px WebP under `/mods/icons/` (`src/server/icons.ts`), served with `srcset` | no logo, or one that does not load: a drawn one (see [Drawn logos](#drawn-logos)); one sharp cannot read: the original file |
+
+### Drawn logos
+
+A mod without a logo that loads gets one drawn at build time (`src/server/logo-art.ts`), scaled like any other:
+a [Lucide](https://lucide.dev) icon (`lucide-static`, a devDependency) for what the mod is about, on a background
+coloured for it, and the owner's GitHub avatar as a round badge in the bottom-right corner. There is no text: the
+name is next to the logo wherever it is shown.
+
+- **Topic**: words in the name (and repository name) weigh most, then the tags, then the description; Latin words
+  match whole words (camelCase split, plurals and `-ing`/`-er`/`-ed` forms), Chinese anywhere. Each topic has a few
+  icons; a mod that matches none gets a general one.
+- **Everything else** is one choice per dimension, seeded by the id, so a mod keeps its logo from build to build:
+  the icon among its topic's and its stroke weight; the palette (the topic's hue nudged, a second hue, dark or
+  light); the backdrop (soft colour fields, rings, a diagonal split, a dot grid, waves or a plain glow); the
+  composition (the icon on its own, on a glass tile, in a disc, or large and tilted).
+- **No two alike**: in id order, a mod whose icon, composition and shade an earlier mod already has is planned
+  again (another seed, or its second topic) — up to a dozen times.
+- The API's `logo` for such a mod is the drawn logo's 288 px WebP (the owner's avatar only in a build without sharp).
 
 ### Galleries
 

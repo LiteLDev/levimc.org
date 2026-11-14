@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { ICON_WIDTHS, iconPath, ownerAvatar } from "../lib/mods";
+import { ICON_WIDTHS, iconPath } from "../lib/mods";
 
 interface ProjectIconProps {
   /** The mod's own icon (checked at build time), if any. */
   icon?: string;
-  /** The icon scaled down at build time (server/icons.ts): served instead of `icon`. */
+  /** The icon scaled down at build time (server/icons.ts), or the one drawn there: served instead of `icon`. */
   iconId?: string;
-  owner: string;
   /** Intrinsic size in CSS px; the stylesheet sizes the box per context. */
   size: number;
   /** Load at once (rows near the top) instead of when scrolled into view. */
@@ -20,11 +19,11 @@ interface Source {
 }
 
 /**
- * A mod's icon: its own (as the build scaled it, else as published), else its
- * owner's GitHub avatar, else the pixel chest. The box keeps its size whatever
+ * A mod's icon: its own (as the build scaled it, else as published), else the
+ * one the build drew for it (server/logo-art.ts), else the pixel chest. The box keeps its size whatever
  * loads, so nothing shifts.
  */
-export function ProjectIcon({ icon, iconId, owner, size, eager, className }: ProjectIconProps) {
+export function ProjectIcon({ icon, iconId, size, eager, className }: ProjectIconProps) {
   const sources: Source[] = [];
   if (iconId) {
     sources.push({
@@ -34,7 +33,6 @@ export function ProjectIcon({ icon, iconId, owner, size, eager, className }: Pro
     });
   }
   if (icon) sources.push({ src: icon });
-  if (owner) sources.push({ src: ownerAvatar(owner) });
   const [failed, setFailed] = useState<string[]>([]);
   const source = sources.find((s) => !failed.includes(s.src));
   const src = source?.src;

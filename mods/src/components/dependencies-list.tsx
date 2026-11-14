@@ -8,7 +8,7 @@ function RelatedCard({ mod, range, notListed }: { mod: RelatedMod; range?: strin
   return (
     <li className="px-card mods-dep">
       <span className="kit-slot mods-dep-icon">
-        <ProjectIcon icon={mod.logo} iconId={mod.logoId} owner={mod.listed ? mod.owner : ""} size={40} />
+        <ProjectIcon icon={mod.logo} iconId={mod.logoId} size={40} />
       </span>
       <span className="mods-dep-text">
         <span className="mods-dep-title">
