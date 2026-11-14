@@ -165,6 +165,7 @@ VincentZyuApps/levilamina-plugin-mclistener-ws-server
 wardenre/ModerationX
 wo55555/OptiPiston
 wo55555/Playback
+wx321awa/EnchantForge
 xianyubb/meshgate-agent
 xianyubb/org_out
 xianyubb/Organization
