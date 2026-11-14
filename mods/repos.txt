@@ -111,6 +111,7 @@ MiracleForest/Bearing
 MiracleForest/Bedstones
 MiracleForest/BeetrootSkin
 MiracleForest/Complementaries
+MiracleForest/GloamingForest
 MiracleForest/iAutomaticFishing
 MiracleForest/iDisableVanillaAntiCheat
 MiracleForest/iInfiniteNightVision
