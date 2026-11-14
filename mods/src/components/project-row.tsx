@@ -144,7 +144,7 @@ export function ProjectRow({ entry, eager }: ProjectRowProps) {
   return (
     <article className="px-card mods-row" data-id={entry.id}>
       <span className="kit-slot mods-row-icon">
-        <ProjectIcon icon={entry.logo} iconId={entry.logoId} owner={entry.owner} size={72} eager={eager} />
+        <ProjectIcon icon={entry.logo} iconId={entry.logoId} size={72} eager={eager} />
       </span>
       <div className="mods-row-head">
         <h3 className="mods-row-name">

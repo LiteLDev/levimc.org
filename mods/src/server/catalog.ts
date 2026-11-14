@@ -12,7 +12,7 @@ import { updateUrl, type RepositoryRenames } from "../lib/markdown";
 import { getAllVersions, getDefaultSelection, ownerOf } from "../lib/mods";
 import type { Catalog, CatalogEntry, LipDoc, LipEntry, ModIndex, RelatedMod, VersionTarget } from "../types";
 import { fetchRepoMeta, repositoryRenames, type RepoMeta } from "./github";
-import { checkIcons } from "./icons";
+import { checkIcons, generateLogos } from "./icons";
 import { loadRegistry, type LiprRegistry, type ManifestOrigin } from "./registry";
 
 const DESCRIPTION_MAX = 200;
@@ -154,7 +154,7 @@ async function build(): Promise<BuildData> {
     }
   }
 
-  // Logos: the manifest's where they load, else the owner's avatar (in the browser).
+  // Logos: the manifest's where they load, else one drawn here (server/logo-art.ts).
   const logoUrls = new Map<string, string>();
   for (const id of paged) {
     const url = index.packages[id]!.info.logo;
@@ -163,6 +163,26 @@ async function build(): Promise<BuildData> {
   }
   // the logos that load, each scaled down to the sizes the pages show (server/icons.ts)
   const loadable = await checkIcons(logoUrls.values());
+  const generated = await generateLogos(
+    new Map(
+      paged
+        .filter((id) => !loadable.has(logoUrls.get(id) ?? ""))
+        .map((id) => {
+          const { info } = index.packages[id]!;
+          const repo = meta.get(id);
+          return [
+            id,
+            {
+              id,
+              name: info.name || id.split("/").at(-1)!,
+              description: info.description ?? "",
+              tags: Array.isArray(info.tags) ? info.tags : [],
+              owner: repo ? (repo.url.split("/")[3] ?? ownerOf(id)) : ownerOf(id),
+            },
+          ];
+        }),
+    ),
+  );
   const gameVersions = resolveGameVersions(launcher);
 
   const unranked: Omit<CatalogEntry, "rank">[] = paged.map((id) => {
@@ -177,7 +197,11 @@ async function build(): Promise<BuildData> {
       name: mod.info.name || id.split("/").at(-1)!,
       description: truncate(mod.info.description ?? ""),
       owner,
-      ...(logo && loadable.has(logo) ? { logo, ...(loadable.get(logo)!.id ? { logoId: loadable.get(logo)!.id } : {}) } : {}),
+      ...(logo && loadable.has(logo)
+        ? { logo, ...(loadable.get(logo)!.id ? { logoId: loadable.get(logo)!.id } : {}) }
+        : generated.has(id)
+          ? { logoId: generated.get(id)!, logoGenerated: true as const }
+          : {}),
       tags,
       side: sidesIn(entries),
       platform: [...new Set(entries.map((e) => e.platform))].sort(),

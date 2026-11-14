@@ -91,10 +91,15 @@ export interface CatalogEntry {
   description: string;
   /** The repository owner, where the repository lives today (the author). */
   owner: string;
-  /** The mod's own logo, when the build could load it; else the owner's avatar is shown. */
+  /** The mod's own logo, when the build could load it. */
   logo?: string;
-  /** The logo scaled down at build time (`lib/mods.ts` iconPath): shown instead of `logo` (which stays the original). */
+  /**
+   * The logo scaled down at build time (`lib/mods.ts` iconPath): shown instead of `logo` (which stays the
+   * original); for a mod without a logo that loads, the one the build drew (`server/logo-art.ts`).
+   */
   logoId?: string;
+  /** `logoId` is a drawn logo, not the mod's own. */
+  logoGenerated?: true;
   /** Raw manifest tags. */
   tags: string[];
   /** Sides any entry of the latest version runs on (server first); empty when it has none. */
@@ -209,7 +214,7 @@ export interface CatalogEntryJson {
   name: string;
   description: string;
   owner: string;
-  /** The mod's logo, else its owner's avatar (as the row shows). */
+  /** The mod's logo, else the one the build drew for it (as the row shows; 288 px WebP). */
   logo: string;
   tags: string[];
   side: Side[];
@@ -273,7 +278,7 @@ export interface ModJson {
   name: string;
   description: string;
   owner: string;
-  /** The mod's logo, else its owner's avatar. */
+  /** The mod's logo, else the one the build drew for it (288 px WebP). */
   logo: string;
   repository: string;
   issues?: string;

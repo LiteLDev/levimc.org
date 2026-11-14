@@ -1,8 +1,9 @@
 // Mod icons are whatever a manifest's `avatar_url` says, and many of
 // those no longer load: template placeholders on example.com, deleted files,
 // GitHub pages instead of images. The build tries each one once; a mod
-// whose icon does not load as an image shows its owner's GitHub avatar
-// instead, so no visitor waits for a request that is bound to fail.
+// whose icon does not load as an image gets a generated one instead (see
+// `generateLogos` and `server/logo-art.ts`), so no visitor waits for a
+// request that is bound to fail.
 //
 // An icon that loads is also scaled down here, since the build has its bytes
 // anyway: manifests point at full-size artwork (up to 1 MB for a 72 px
@@ -11,7 +12,8 @@
 // Where it cannot be converted (sharp missing, an image it cannot read), the
 // page loads the original as before.
 import { createHash } from "node:crypto";
-import { ICON_WIDTHS } from "../lib/mods";
+import { ICON_WIDTHS, ownerAvatar } from "../lib/mods";
+import { catalogPlans, logoSvg, type LogoInput } from "./logo-art";
 
 const TIMEOUT = 10_000;
 const MAX_BYTES = 1024 * 1024;
@@ -78,6 +80,58 @@ async function scale(body: Buffer): Promise<string | undefined> {
   } catch {
     return undefined;
   }
+}
+
+const AVATAR_SIZE = 152;
+
+/** The owner's GitHub avatar as a PNG `data:` URL, for the badge of a generated logo; undefined when it does not load. */
+async function avatarDataUrl(sharp: Sharp, owner: string): Promise<string | undefined> {
+  const body = await download(ownerAvatar(owner, AVATAR_SIZE));
+  if (!body) return undefined;
+  try {
+    const png = await sharp(body, { animated: false }).resize(AVATAR_SIZE, AVATAR_SIZE, { fit: "cover" }).png().toBuffer();
+    return `data:image/png;base64,${png.toString("base64")}`;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Logos for the mods that have none that loads (`server/logo-art.ts`),
+ * scaled like any other icon: each mod's key → its scaled files' id. Empty
+ * without sharp (the pages then show the pixel chest). The owner's avatar,
+ * on the logo's badge, is downloaded here, once per owner.
+ */
+export async function generateLogos(mods: ReadonlyMap<string, Omit<LogoInput, "avatar">>): Promise<Map<string, string>> {
+  const sharp = await loadSharp();
+  const ids = new Map<string, string>();
+  if (!sharp || mods.size === 0) return ids;
+  const avatars = new Map<string, Promise<string | undefined>>();
+  const avatar = (owner: string) => {
+    const key = owner.toLowerCase();
+    if (!avatars.has(key)) avatars.set(key, avatarDataUrl(sharp, owner));
+    return avatars.get(key)!;
+  };
+  // each mod's choices, unlike every other's where they can be
+  const plans = catalogPlans([...mods.values()]);
+  const queue = [...mods];
+  await Promise.all(
+    Array.from({ length: CONCURRENCY }, async () => {
+      for (let next = queue.shift(); next; next = queue.shift()) {
+        const [key, mod] = next;
+        try {
+          const svg = logoSvg({ ...mod, avatar: await avatar(mod.owner) }, plans.get(mod.id));
+          const png = await sharp(Buffer.from(svg)).png().toBuffer();
+          const id = await scale(png);
+          if (id) ids.set(key, id);
+        } catch (error) {
+          console.warn(`icons: no logo generated for ${key}: ${String(error)}`);
+        }
+      }
+    }),
+  );
+  console.log(`icons: ${ids.size} of ${mods.size} logos generated (${[...avatars.values()].length} avatars)`);
+  return ids;
 }
 
 export interface IconCheck {
