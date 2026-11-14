@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { catalogPlans, logoPlan, logoSvg, planKey, topicsOf } from "./logo-art.ts";
+import { EMBLEMS, LAYOUT_KEYS, MATERIAL_KEYS, SKIES, catalogPlans, logoPlan, logoSvg, planKey, topicsOf } from "./logo-art.ts";
 
 const mod = (id: string, name: string, description = "", tags: string[] = []) => ({ id, name, description, tags });
 
@@ -44,4 +44,21 @@ test("the logo is an SVG with the icon and the avatar badge, and no text", () =>
   assert.doesNotMatch(svg, /<text/);
   // without an avatar the badge shows a person
   assert.doesNotMatch(logoSvg({ ...input, avatar: undefined }), /<image/);
+});
+
+test("every material, layout, emblem and sky draws", () => {
+  const seen = new Set<string>();
+  for (let i = 0; i < 400; i++) {
+    const input = { ...mod(`github.com/o/m${i}`, `m${i}`), owner: "o" };
+    const plan = logoPlan(input);
+    seen.add(plan.material).add(plan.layout).add(plan.emblem).add(plan.sky);
+    const svg = logoSvg(input, plan);
+    assert.doesNotMatch(svg, /NaN|undefined|Infinity/);
+  }
+  for (const key of [...MATERIAL_KEYS, ...LAYOUT_KEYS, ...EMBLEMS, ...SKIES]) assert.ok(seen.has(key), key);
+});
+
+test("a topic is built from its own materials", () => {
+  assert.ok(["gold", "quartz", "planks"].includes(logoPlan(mod("github.com/a/LegacyMoney", "LegacyMoney")).material));
+  for (let i = 0; i < 20; i++) assert.ok(["ore", "stone", "planks"].includes(logoPlan(mod(`github.com/o${i}/VeinMiner`, "VeinMiner")).material));
 });
