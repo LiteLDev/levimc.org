@@ -164,19 +164,24 @@ At build time (`src/server/catalog.ts`) the registry is enriched with:
 
 ### Drawn logos
 
-A mod without a logo that loads gets one drawn at build time (`src/server/logo-art.ts`), scaled like any other:
-a [Lucide](https://lucide.dev) icon (`lucide-static`, a devDependency) for what the mod is about, on a background
-coloured for it, and the owner's GitHub avatar as a round badge in the bottom-right corner. There is no text: the
-name is next to the logo wherever it is shown.
+A mod without a logo that loads gets one drawn at build time (`src/server/logo-art.ts`), scaled like any other,
+in the manner of the logos mods ship: a small vector scene of textured isometric blocks under a sky, with an emblem
+for what the mod is about, and the owner's GitHub avatar as a round badge in the bottom-right corner. There is no
+text: the name is next to the logo wherever it is shown.
 
 - **Topic**: words in the name (and repository name) weigh most, then the tags, then the description; Latin words
-  match whole words (camelCase split, plurals and `-ing`/`-er`/`-ed` forms), Chinese anywhere. Each topic has a few
-  icons; a mod that matches none gets a general one.
+  match whole words (camelCase split, plurals and `-ing`/`-er`/`-ed` forms), Chinese anywhere. A topic gives the
+  emblem's icon (a [Lucide](https://lucide.dev) icon, `lucide-static`, a devDependency) and the materials that suit
+  it (an economy mod: gold, quartz or planks; a script engine: circuitry, obsidian or quartz); a mod that matches
+  none gets a general icon and any material.
 - **Everything else** is one choice per dimension, seeded by the id, so a mod keeps its logo from build to build:
-  the icon among its topic's and its stroke weight; the palette (the topic's hue nudged, a second hue, dark or
-  light); the backdrop (soft colour fields, rings, a diagonal split, a dot grid, waves or a plain glow); the
-  composition (the icon on its own, on a glass tile, in a disc, or large and tilted).
-- **No two alike**: in id order, a mod whose icon, composition and shade an earlier mod already has is planned
+  the block that carries the emblem and what the others are made of (17 materials, each drawn with its own
+  texture: grass, stone, ore, planks, bricks, gold, crystal, obsidian, copper, ice, quartz, leaves, iron, circuitry,
+  magma, lamps, explosives); the layout (one block, two side by side, a tower, steps, a corner or a platform, on the
+  ground or floating over hanging rock); the emblem (on a plate on the block's face, in a coin floating above it, or
+  as a hologram over it); the sky (day, dusk, night, a studio light or pastel); and what is in the air (sparkles,
+  motes, small cubes, or nothing).
+- **No two alike**: in id order, a mod whose icon, material and emblem an earlier mod already has is planned
   again (another seed, or its second topic) — up to a dozen times.
 - The API's `logo` for such a mod is the drawn logo's 288 px WebP (the owner's avatar only in a build without sharp).
 
