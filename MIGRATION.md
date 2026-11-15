@@ -17,9 +17,8 @@ those URLs and wrongly cased project paths (`/levilamina/` → `/LeviLamina/`).
 
 **docs.levimc.org** is proxied by Cloudflare, and a Cloudflare redirect rule answers every request with a **308** to
 the same path and query on levimc.org (`https://docs.levimc.org/LeviLamina/x/?q=1` →
-`https://levimc.org/LeviLamina/x/?q=1`). Behind it, the old organisation repository, now **LiteLDev/docs.levimc.org**,
-holds the domain and publishes a fallback page that does the same with `location.replace` (it also keeps the
-`#anchor`). That page is reached only if the Cloudflare rule is turned off.
+`https://levimc.org/LeviLamina/x/?q=1`). Nothing on GitHub serves docs.levimc.org any more: keep the record proxied
+and the rule on, or docs.levimc.org answers with GitHub's 404.
 
 Things to know:
 
@@ -43,6 +42,7 @@ Things to know:
 5. Set the domain docs.levimc.org on LiteLDev/docs.levimc.org and deployed its forwarding page; docs.levimc.org
    was put behind Cloudflare with a 308 redirect rule.
 6. Merged the project PRs (the docs rebuild with their new canonical URLs).
+7. Deleted LiteLDev/docs.levimc.org (the old organisation repository; its legacy redirects live on in `legacy/`).
 
 ## Checks
 
@@ -61,8 +61,9 @@ answers with permanent redirects).
 
 ## Rolling back
 
-1. Remove the domain from LiteLDev/liteldev.github.io's Pages and from LiteLDev/docs.levimc.org's.
-2. Rename LiteLDev/liteldev.github.io back to `levimc.org`, and give it the domain levimc.org again.
-3. Rename LiteLDev/docs.levimc.org back to `liteldev.github.io`, revert its last commit, and set its domain to
-   docs.levimc.org.
+1. Turn off the Cloudflare rule and switch the `docs` record back to DNS only.
+2. Remove the domain from LiteLDev/liteldev.github.io's Pages, rename the repository back to `levimc.org`, and give
+   it the domain levimc.org again.
+3. Create a new organisation site, LiteLDev/liteldev.github.io, with the domain docs.levimc.org. It serves the
+   project docs at docs.levimc.org/<Project>/ again; publish `legacy/` from it for the old redirects.
 4. Revert LiteLDev/levimc.org#99 and the project PRs.
