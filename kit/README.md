@@ -965,7 +965,7 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 **The project docs move from docs.levimc.org to levimc.org.** Each project's docs stay in its own repository and
 keep their path: `https://docs.levimc.org/<Project>/…` becomes `https://levimc.org/<Project>/…`
-(levimc.org's `MIGRATION.md` has the switch-over steps; docs.levimc.org answers with a 301 to the same path).
+(levimc.org's `MIGRATION.md` has the switch-over steps; docs.levimc.org forwards every URL to the same path).
 * `PROJECTS[].docs` / `DOCS_PROJECTS[].url`, and so the Projects menu, the static chrome (`static/`), the Doxygen
   header and the 404 cards, link `https://levimc.org/<Project>/`.
 * Docs links are same-origin links on levimc.org now: an app that passes `siteOrigin` + `linkComponent` must exclude
