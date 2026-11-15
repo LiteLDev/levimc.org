@@ -173,7 +173,8 @@ export function ProjectRow({ entry, eager }: ProjectRowProps) {
             <span aria-hidden="true">{formatCompact(entry.downloads!, locale)}</span>
             <span className="kit-sr-only">{t.downloadsExact(formatNumber(entry.downloads!, locale))}</span>
           </span>
-        ) : entry.stars > 0 ? (
+        ) : null}
+        {entry.stars > 0 ? (
           <span className="mods-stat mods-stat-stars">
             <Sprite name="diamond" />
             <span aria-hidden="true">{formatCompact(entry.stars, locale)}</span>

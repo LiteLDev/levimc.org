@@ -235,8 +235,8 @@ supporting the next version. The build log prints the fitted model.
 is used, from its release downloads (installs: lip and the launchers download
 release files) and its stars, each as ln(1 + n) standardised over the catalogue
 (one row per repository), averaged. A mod whose releases have no files has
-unknown downloads, not none: its stars stand for both. Rows show the downloads
-(the stars when there are none) and the tooltip both.
+unknown downloads, not none: its stars stand for both. Rows show both counts
+(each only when above zero), as does the tooltip.
 
 ### Tags
 
