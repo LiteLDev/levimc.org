@@ -15,11 +15,11 @@ This repository took over what the old organisation site did: `legacy/` publishe
 docs sites (`/LeviLaunchroid/`, `/preloader-android/`, `/LiteXLoader/`), and `404.html` forwards other forms of
 those URLs and wrongly cased project paths (`/levilamina/` → `/LeviLamina/`).
 
-The old organisation repository is now **LiteLDev/docs.levimc.org**, a project site with the domain
-docs.levimc.org. It publishes only a page that forwards every URL to the same path, query and `#anchor` on
-levimc.org (`location.replace`). That is a client-side redirect, served with status 404. For a real 301, put the `docs`
-record behind Cloudflare's proxy and add a Redirect Rule: hostname equals `docs.levimc.org` → dynamic redirect
-`concat("https://levimc.org", http.request.uri.path)`, 301, preserve the query string.
+**docs.levimc.org** is proxied by Cloudflare, and a Cloudflare redirect rule answers every request with a **308** to
+the same path and query on levimc.org (`https://docs.levimc.org/LeviLamina/x/?q=1` →
+`https://levimc.org/LeviLamina/x/?q=1`). Behind it, the old organisation repository, now **LiteLDev/docs.levimc.org**,
+holds the domain and publishes a fallback page that does the same with `location.replace` (it also keeps the
+`#anchor`). That page is reached only if the Cloudflare rule is turned off.
 
 Things to know:
 
@@ -40,7 +40,8 @@ Things to know:
 3. Renamed LiteLDev/liteldev.github.io → LiteLDev/docs.levimc.org, and LiteLDev/levimc.org → LiteLDev/liteldev.github.io.
 4. Set the domain levimc.org on LiteLDev/liteldev.github.io and merged LiteLDev/levimc.org#99 (this change). After the
    certificate was issued, turned on *Enforce HTTPS*.
-5. Set the domain docs.levimc.org on LiteLDev/docs.levimc.org and deployed its forwarding page.
+5. Set the domain docs.levimc.org on LiteLDev/docs.levimc.org and deployed its forwarding page; docs.levimc.org
+   was put behind Cloudflare with a 308 redirect rule.
 6. Merged the project PRs (the docs rebuild with their new canonical URLs).
 
 ## Checks
@@ -51,11 +52,12 @@ for p in "" LeviLamina/ LeviLamina/api/ LegacyScriptEngine/ lip/ LeviLauncher/ B
 done
 curl -s https://levimc.org/LeviLaunchroid/api/hook | grep -o 'rel="canonical" href="[^"]*"'
 node legacy/build.test.mjs --live   # every legacy redirect target answers 200 without a redirect
-curl -s https://docs.levimc.org/LeviLamina/ | grep -o 'location.replace([^)]*)'
+curl -sI -A "Mozilla/5.0" "https://docs.levimc.org/LeviLamina/?q=1" | grep -i -E '^(HTTP|location)'   # 308, same path
 ```
 
 Then, in Google Search Console, submit the docs sitemaps (`https://levimc.org/<Project>/sitemap.xml`; `robots.txt`
-lists them too). *Change of Address* expects 301s from docs.levimc.org, so it needs the Cloudflare rule above.
+lists them too), and use *Change of Address* from the docs.levimc.org property to levimc.org (the Cloudflare rule
+answers with permanent redirects).
 
 ## Rolling back
 

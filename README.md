@@ -161,7 +161,7 @@ lip, LeviLauncher, BeDD, bedboo): GitHub Pages serves a project repository's sit
 domain, and this repository is the organisation site. A path that a project with Pages owns is never this site's, so
 no route here may start with a repository's name. `robots.txt` lists their sitemaps; the bar and footer load them
 in full (`isAppPath` in `src/components/SiteHeader.tsx`). They were at docs.levimc.org until the move described in
-[MIGRATION.md](MIGRATION.md); docs.levimc.org (LiteLDev/docs.levimc.org) forwards every URL to the same path here.
+[MIGRATION.md](MIGRATION.md); docs.levimc.org redirects every URL to the same path here (308, Cloudflare).
 
 ## LeviChan
 
