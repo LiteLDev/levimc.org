@@ -8,11 +8,11 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build && vite build --ssr src/entry-server.tsx --outDir .kit/ssr && node prerender.mjs",
+    "build": "vite build && vite build --ssr src/entry-server.tsx --outDir .kit/ssr && node prerender.mjs && node legacy/build.mjs dist",
     "preview": "node kit/scripts/serve-pages.mjs dist --base / --port 4173",
     "typecheck": "tsc --noEmit",
-    "test": "node --test \"blog/*.test.ts\" \"kit/tests/*.test.mjs\" \"versions/*.test.mjs\"",
-    "linkcheck": "node kit/scripts/linkcheck.mjs dist --base / --site-origin https://levimc.org",
+    "test": "node --test \"blog/*.test.ts\" \"kit/tests/*.test.mjs\" \"versions/*.test.mjs\" \"legacy/*.test.mjs\"",
+    "linkcheck": "node kit/scripts/linkcheck.mjs dist --base / --site-origin https://levimc.org --other-sites /LeviLamina/,/LegacyScriptEngine/,/lip/,/LeviLauncher/,/BeDD/,/bedboo/",
     "smoke": "node scripts/smoke.mjs --url http://127.0.0.1:4173/",
     "smoke:kit": "node kit/scripts/smoke.mjs --app --url http://127.0.0.1:4173/ --pages about/,community/,support/ --current about && node kit/scripts/smoke.mjs --app --url http://127.0.0.1:4173/ --pages blog/,blog/2023/07/26/original-fix-BeeCrash/,blog/archives/ --current blog"
   },

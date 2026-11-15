@@ -100,10 +100,10 @@ jobs:
         run: npm run build && npm run linkcheck
 
       - name: lip demo (VitePress-style, folder locales)
-        run: npm run build:lip && node kit/scripts/linkcheck.mjs dist-lip --base /lip/ --site-origin https://docs.levimc.org
+        run: npm run build:lip && node kit/scripts/linkcheck.mjs dist-lip --base /lip/ --site-origin https://levimc.org
 
       - name: single-locale docs demo
-        run: npm run build:single && node kit/scripts/linkcheck.mjs dist-single --base /Single/ --site-origin https://docs.levimc.org
+        run: npm run build:single && node kit/scripts/linkcheck.mjs dist-single --base /Single/ --site-origin https://levimc.org
 
       - name: plain app demo (levimc.org / levimc.org/mods shape)
         run: npm run build:app

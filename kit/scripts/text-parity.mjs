@@ -4,7 +4,7 @@
 // glyphs, line-number gutters, copy buttons, code title bars, tab label bars, footnote back-links),
 // normalises whitespace and runs a word-level diff (CJK is compared per character).
 //
-//   node text-parity.mjs --live https://docs.levimc.org/LeviLamina/ --local http://127.0.0.1:4173/Demo/
+//   node text-parity.mjs --live https://levimc.org/LeviLamina/ --local http://127.0.0.1:4173/Demo/
 //        [--paths a/,b/ | --paths-file list.txt] [--live-selector 'article.md-content__inner' | '.vp-doc']
 //        [--local-selector '[data-doc-content]'] [--json report.json] [--max-hunks 12]
 //

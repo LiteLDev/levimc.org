@@ -18,9 +18,9 @@ export interface GlobalBarLanguages {
 }
 
 export interface GlobalBarProps {
-  /** Which LeviMC site this is (highlights its tab; docs.levimc.org: 'projects'). */
+  /** Which LeviMC site this is (highlights its tab; a project's docs, levimc.org/<Project>/: 'projects'). */
   current?: SiteId;
-  /** On docs.levimc.org: which project's docs are open (marked in the Projects menu; implies current='projects'). */
+  /** On a project's docs (levimc.org/<Project>/): which project's docs are open (marked in the Projects menu; implies current='projects'). */
   currentProject?: ProjectId | string;
   /** @deprecated kit 1.x name of `currentProject`. */
   currentDocs?: ProjectId | string;
@@ -215,7 +215,7 @@ function chromeLanguageOptions(): LocaleOption[] {
 }
 
 /**
- * The bar at the very top of every LeviMC site (levimc.org, levimc.org/mods/, docs.levimc.org/*, the Doxygen API
+ * The bar at the very top of every LeviMC site (levimc.org, levimc.org/mods/, the project docs at levimc.org/<Project>/, the Doxygen API
  * pages and the static pages): the same brand, the same tabs (Home · Projects ▾ · Mods · Blog · Community · About)
  * and, on the right, the same controls (language, theme, GitHub → LiteLDev) everywhere. Only the current tab (and
  * on docs pages the current project in the Projects menu) and the language menu's options differ per site. Menus are <details>, so the bar works

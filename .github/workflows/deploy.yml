@@ -131,7 +131,6 @@ jobs:
             echo "→ $repo ($workflow)"
             gh workflow run "$workflow" -R "LiteLDev/$repo" || status=1
           done <<'EOF'
-          liteldev.github.io deploy.yml
           LeviLamina build-docs.yml
           LegacyScriptEngine build_docs.yml
           lip build-docs.yml

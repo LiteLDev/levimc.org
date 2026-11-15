@@ -18,7 +18,7 @@ import { KIT_VERSION } from '../components/version.ts';
 
 // ------------------------------------------------------------------ a tiny browser for the inline scripts
 /** Cookie jar with Domain / host-only semantics, as document.cookie exposes it to one host. */
-function browserEnv({ url = 'https://docs.levimc.org/', cookies = [], storage = {}, languages = ['en-US'], referrer = '', dark = false } = {}) {
+function browserEnv({ url = 'https://levimc.org/', cookies = [], storage = {}, languages = ['en-US'], referrer = '', dark = false } = {}) {
   const u = new URL(url);
   const jar = cookies.map((c) => ({ ...c }));
   const visible = () => jar.filter((c) => (c.domain ? u.hostname === c.domain || u.hostname.endsWith('.' + c.domain) : c.host === u.hostname) && (!c.secure || u.protocol === 'https:'));
@@ -177,7 +177,7 @@ test('pre-paint: the cookie wins over localStorage', () => {
   assert.ok(!env.classes.has('dark'));
 });
 test('pre-paint: a localStorage-only choice (kit 1.0) moves into the parent-domain cookie once', () => {
-  const env = run(init, browserEnv({ url: 'https://docs.levimc.org/lip/', storage: { 'levimc-theme': 'dark', 'levimc-lang': 'zh-CN' } }));
+  const env = run(init, browserEnv({ url: 'https://levimc.org/lip/', storage: { 'levimc-theme': 'dark', 'levimc-lang': 'zh-CN' } }));
   assert.equal(env.attrs['data-theme-pref'], 'dark');
   const theme = env.jar.find((c) => c.name === 'levimc_theme');
   assert.deepEqual([theme.value, theme.domain, theme.secure, theme.sameSite, theme.maxAge], ['dark', 'levimc.org', true, 'Lax', 31536000]);
@@ -251,7 +251,7 @@ const SITE = {
   ],
 };
 const redirect = localeRedirectScript(SITE);
-const at = (path, o = {}) => run(redirect, browserEnv({ url: 'https://docs.levimc.org' + path, ...o }));
+const at = (path, o = {}) => run(redirect, browserEnv({ url: 'https://levimc.org' + path, ...o }));
 const pref = (v) => [{ name: 'levimc_lang', value: v, domain: 'levimc.org' }];
 test('redirect: only the site root; the stored preference maps to the nearest locale', () => {
   assert.equal(at('/LeviLauncher/', { cookies: pref('zh-TW') }).replaced, '/LeviLauncher/zh-HK/');
@@ -262,9 +262,9 @@ test('redirect: only the site root; the stored preference maps to the nearest lo
   assert.equal(at('/LeviLauncher/', { cookies: pref('pt-BR'), languages: ['ja'] }).replaced, null, 'unmatched preference → English, not the browser');
 });
 test('redirect: the stored preference wins even after an in-site link (LeviLaunchroid patch 7)', () => {
-  assert.equal(at('/LeviLauncher/', { cookies: pref('ja-JP'), referrer: 'https://docs.levimc.org/LeviLauncher/zh-CN/' }).replaced, '/LeviLauncher/ja-JP/');
+  assert.equal(at('/LeviLauncher/', { cookies: pref('ja-JP'), referrer: 'https://levimc.org/LeviLauncher/zh-CN/' }).replaced, '/LeviLauncher/ja-JP/');
   // without a preference an in-site link to the root is followed as written
-  assert.equal(at('/LeviLauncher/', { languages: ['zh-CN'], referrer: 'https://docs.levimc.org/LeviLauncher/zh-CN/' }).replaced, null);
+  assert.equal(at('/LeviLauncher/', { languages: ['zh-CN'], referrer: 'https://levimc.org/LeviLauncher/zh-CN/' }).replaced, null);
   assert.equal(at('/LeviLauncher/', { languages: ['zh-CN'], referrer: 'https://levimc.org/' }).replaced, '/LeviLauncher/zh-CN/');
 });
 test('redirect: no preference → the first matching browser language; kit 1.0 per-site key is migrated', () => {

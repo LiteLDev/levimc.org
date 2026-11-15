@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// End-to-end check that theme + language preferences are shared across levimc.org and *.levimc.org, under
-// the browser's real cookie rules for those origins: Chromium loads https://levimc.org/ (a plain app build)
-// and https://docs.levimc.org/<base>/ (a docs build) and every request for those hosts is answered from the
+// End-to-end check that theme + language preferences are shared across the LeviMC sites, under the browser's
+// real cookie rules: Chromium loads https://levimc.org/ (a plain app build) and https://levimc.org/<base>/ (a docs
+// build, published by its own repository on the same origin) and every request for that host is answered from the
 // local builds with GitHub Pages semantics (Playwright request routing — no DNS, TLS or server needed;
 // anything else, e.g. Google Fonts, is blocked).
 //
@@ -25,15 +25,16 @@ if (!appDist || !docsDist) {
 const require = createRequire(process.env.LEVIMC_PW_DIR ? process.env.LEVIMC_PW_DIR + '/' : import.meta.url);
 const { chromium } = require('playwright');
 
-const SITES = { 'levimc.org': [appDist, '/'], 'docs.levimc.org': [docsDist, docsBase] };
+/** The build that serves a URL: the docs below their base, the app everywhere else (like GitHub Pages' project sites). */
+const siteOf = (url) => (url.hostname !== 'levimc.org' ? null : url.pathname.startsWith(docsBase) ? [docsDist, docsBase] : [appDist, '/']);
 const APP = 'https://levimc.org/';
-const DOCS = `https://docs.levimc.org${docsBase}`;
+const DOCS = `https://levimc.org${docsBase}`;
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ colorScheme: 'light', locale: 'en-US', viewport: { width: 1280, height: 800 } });
 await ctx.route('**/*', async (route) => {
   const url = new URL(route.request().url());
-  const site = SITES[url.hostname];
+  const site = siteOf(url);
   if (!site) return route.abort();
   const r = resolvePagesPath(site[0], site[1], url.pathname);
   if (r.status === 301) return route.fulfill({ status: 301, headers: { location: r.location } });
@@ -75,13 +76,13 @@ await check('levimc.org: Dark + 繁體中文 are stored on the parent domain (Do
     assert(days > 360 && days < 370, `${name} expires in ${days.toFixed(1)} days`);
   }
 });
-await check('docs.levimc.org: the next load is dark and the root redirects to the zh locale', async () => {
+await check(`levimc.org${docsBase}: the next load is dark and the root redirects to the zh locale`, async () => {
   await load(DOCS);
   const s = await page.evaluate(() => ({ dark: document.documentElement.classList.contains('dark'), pref: document.documentElement.dataset.themePref, lang: document.documentElement.lang, path: location.pathname }));
   assert(s.dark && s.pref === 'dark', `theme ${JSON.stringify(s)}`);
   assert(s.lang.startsWith('zh') && s.path !== new URL(DOCS).pathname, `language ${JSON.stringify(s)}`);
 });
-await check('docs.levimc.org: choosing English + Light there applies on levimc.org after reload', async () => {
+await check(`levimc.org${docsBase}: choosing English + Light there applies on levimc.org/ after reload`, async () => {
   await page.click('[data-kit-locale-switcher]');
   await page.click('.kit-gbar [role="menuitemradio"][hreflang^="en"]');
   await page.waitForFunction(() => document.documentElement.lang.startsWith('en'));

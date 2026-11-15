@@ -22,8 +22,8 @@ export default defineDocsConfig({
             : undefined,
   },
   contentDir: 'content',
-  hostname: 'https://docs.levimc.org',
-  sitemap: { hostname: 'https://docs.levimc.org' },
+  hostname: 'https://levimc.org',
+  sitemap: { hostname: 'https://levimc.org' },
   i18n: {
     mode: 'suffix',
     defaultLocale: 'en',

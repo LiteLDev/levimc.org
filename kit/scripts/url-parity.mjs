@@ -2,8 +2,8 @@
 // URL parity between the live site and a local build: every URL that exists today must still answer
 // 200 — with zero redirects — on the new build.
 //
-//   node url-parity.mjs --live https://docs.levimc.org/LeviLamina/ --local http://127.0.0.1:4173/LeviLamina/
-//        [--paths a/,b/c/ | --paths-file list.txt] [--extra https://docs.levimc.org/LeviLamina/x/ ...]
+//   node url-parity.mjs --live https://levimc.org/LeviLamina/ --local http://127.0.0.1:4173/LeviLamina/
+//        [--paths a/,b/c/ | --paths-file list.txt] [--extra https://levimc.org/LeviLamina/x/ ...]
 //        [--no-sitemap] [--max 1500] [--anchors] [--json report.json]
 //
 // --anchors also compares the heading ids of every page (old deep links like page/#some-heading must keep

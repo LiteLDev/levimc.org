@@ -3,7 +3,7 @@ import { HotbarTabs } from '../../kit/components';
 import { SHIKI_PALETTES } from '../../kit/docs/node/markdown/shiki-themes.ts';
 
 // Token colours come from the kit's Shiki palettes (the same ones the docs use), so the snippet matches
-// the code blocks on docs.levimc.org in both themes. A token only carries its role class; the palette is set
+// the code blocks of the project docs in both themes. A token only carries its role class; the palette is set
 // once on the block as custom properties, which src/styles.css maps onto --shiki-light / --shiki-dark.
 type Role = 'comment' | 'keyword' | 'type' | 'func' | 'string' | 'param' | 'punct';
 const PALETTE_KEY: Record<Role, keyof typeof SHIKI_PALETTES.light> = {

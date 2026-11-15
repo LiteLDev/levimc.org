@@ -5,7 +5,7 @@ import { pathOf } from '../routes';
 
 /**
  * Themed 404 (also prerendered to 404.html, which GitHub Pages serves for unknown paths). The same card as the
- * docs' 404 (red "Error 404" label, title, text, two actions) plus, like docs.levimc.org's 404, the projects with
+ * docs' 404 (red "Error 404" label, title, text, two actions) plus, like the docs' 404, the projects with
  * documentation, so a mistyped docs link still gets somewhere.
  */
 export default function NotFound() {

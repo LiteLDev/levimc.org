@@ -45,7 +45,7 @@ test("srcset URLs resolve like image sources", () => {
   assert.equal(resolveSrcSet(`${chart} 2x,docs/x.png`, BASES), `${chart} 2x, ${BASES.raw}docs/x.png`);
   assert.equal(
     resolveSrcSet("https://lamina.levimc.org/logo.svg", BASES),
-    "https://docs.levimc.org/LeviLamina/logo.svg",
+    "https://levimc.org/LeviLamina/logo.svg",
   );
 });
 
@@ -62,8 +62,8 @@ test("percent-encoded anchors are spelled like heading ids", () => {
   assert.equal(link("#%E0%A4%A"), "#%E0%A4%A");
 });
 
-test("retired documentation hosts point at pages that exist on docs.levimc.org", () => {
-  const LL = "https://docs.levimc.org/LeviLamina/";
+test("retired documentation hosts point at pages that exist on levimc.org", () => {
+  const LL = "https://levimc.org/LeviLamina/";
   const cases: [string, string][] = [
     ["https://lamina.levimc.org/", LL],
     ["https://lamina.levimc.org", LL],
@@ -79,23 +79,23 @@ test("retired documentation hosts point at pages that exist on docs.levimc.org",
     ],
     // A page that is not known to exist goes to the docs home, not to a 404.
     ["https://lamina.levimc.org/no/such/page/#x", LL],
-    ["http://lse.levimc.org", "https://docs.levimc.org/LegacyScriptEngine/"],
-    ["https://lse.liteldev.com", "https://docs.levimc.org/LegacyScriptEngine/"],
-    ["https://legacy-script-engine.levimc.org", "https://docs.levimc.org/LegacyScriptEngine/"],
-    ["https://lip.levimc.org/guide/", "https://docs.levimc.org/lip/"],
-    ["https://lip.futrime.com", "https://docs.levimc.org/lip/"],
+    ["http://lse.levimc.org", "https://levimc.org/LegacyScriptEngine/"],
+    ["https://lse.liteldev.com", "https://levimc.org/LegacyScriptEngine/"],
+    ["https://legacy-script-engine.levimc.org", "https://levimc.org/LegacyScriptEngine/"],
+    ["https://lip.levimc.org/guide/", "https://levimc.org/lip/"],
+    ["https://lip.futrime.com", "https://levimc.org/lip/"],
     [
       "https://lip.docs.litebds.com/en/#/tutorials/create_a_lip_tooth",
-      "https://docs.levimc.org/lip/guides/creating_packages.html",
+      "https://levimc.org/lip/guides/creating_packages.html",
     ],
-    ["https://lip.docs.litebds.com/zh-cn/#/", "https://docs.levimc.org/lip/"],
-    ["https://levilauncher.levimc.org/", "https://docs.levimc.org/LeviLauncher/"],
+    ["https://lip.docs.litebds.com/zh-cn/#/", "https://levimc.org/lip/"],
+    ["https://levilauncher.levimc.org/", "https://levimc.org/LeviLauncher/"],
     ["https://levimc.org/software/levilamina", LL],
   ];
   for (const [from, to] of cases) assert.equal(link(from), to, from);
   // Look-alikes stay as they are.
   assert.equal(link("https://lamina.levimc.org.example/"), "https://lamina.levimc.org.example/");
-  assert.equal(link("https://docs.levimc.org/LeviLamina/"), LL);
+  assert.equal(link("https://levimc.org/LeviLamina/"), LL);
 });
 
 test("LiteLDev repositories and pages that moved", () => {
@@ -214,7 +214,7 @@ test("links to renamed mod repositories skip GitHub's redirect", () => {
 });
 
 test("avatars on retired hosts and renamed repositories are rewritten, others kept", () => {
-  assert.equal(resolveAvatarUrl("https://lamina.levimc.org/logo.svg"), "https://docs.levimc.org/LeviLamina/logo.svg");
+  assert.equal(resolveAvatarUrl("https://lamina.levimc.org/logo.svg"), "https://levimc.org/LeviLamina/logo.svg");
   assert.equal(
     resolveAvatarUrl("https://github.com/lwenk/Stats/raw/main/logo.png", { "lwenk/stats": "LeafKnife/Stats" }),
     "https://raw.githubusercontent.com/LeafKnife/Stats/main/logo.png",

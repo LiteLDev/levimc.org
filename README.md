@@ -5,7 +5,7 @@ styled with the shared LeviMC design system, levimc-kit, which lives here in [`k
 
 **levimc-kit is the one source of the LeviMC chrome** — the bar on top (Home · Projects ▾ · Mods · Blog · Community ·
 About, language · theme · GitHub), the footer, the theme and the docs engine — for every LeviMC site: levimc.org
-(and LeviMC Mods at levimc.org/mods/, see below), docs.levimc.org and the project docs (LeviLamina with its Doxygen API, LegacyScriptEngine, lip,
+(and LeviMC Mods at levimc.org/mods/, see below) and the project docs at levimc.org/<Project>/ (LeviLamina with its Doxygen API, LegacyScriptEngine, lip,
 LeviLauncher for Windows and Android). Every deploy publishes it at <https://levimc.org/kit/v2/> (`kit/scripts/publish-kit.mjs`);
 the other sites fetch it when they build (`scripts/fetch-kit.mjs`, run by their package install) and never edit it.
 After a deploy that changed the kit, the `sync` job rebuilds every site (with the `KIT_SYNC_TOKEN` secret: a
@@ -74,6 +74,10 @@ npm run smoke:kit
 - `content/blog/`, `blog/`, `src/blog/` — the blog (see below)
 - `prerender.mjs` — writes `dist/<route>/index.html`, `404.html`, `sitemap.xml`, `robots.txt`; modulepreloads each
   page's chunk (from Vite's manifest) and a blog post's markdown chunk
+- `legacy/` — the redirect pages of retired docs sites (`/LeviLaunchroid/…`, `/preloader-android/…`,
+  `/LiteXLoader/…`) and the forwarding map at the top of `404.html` (other forms of those URLs, and wrongly cased
+  project paths like `/levilamina/` → `/LeviLamina/`). `node legacy/build.mjs dist` (the last step of `npm run build`)
+  writes them; the table is `legacy/redirects.mjs`. They moved here from LiteLDev/liteldev.github.io with the docs.
 
 ## Blog
 
@@ -149,6 +153,15 @@ Today these are Bedrock Dedicated Server's releases (no previews). The file is
 the latest release, so the history is that file: `.github/workflows/versions.yml` runs every hour,
 `node versions/update.mjs` adds the release Mojang names now, and a new one is committed and deployed. A new key is a
 line in `DOWNLOADS` in `versions/update.mjs` and a list in the file. `npm test` checks the file's shape.
+
+## Project docs
+
+Each project's docs are published by its own repository at `levimc.org/<Project>/` (LeviLamina, LegacyScriptEngine,
+lip, LeviLauncher, BeDD, bedboo): GitHub Pages serves a project repository's site below the organisation site's
+domain, and this repository is the organisation site. A path that a project with Pages owns is never this site's, so
+no route here may start with a repository's name. `robots.txt` lists their sitemaps; the bar and footer load them
+in full (`isAppPath` in `src/components/SiteHeader.tsx`). They were at docs.levimc.org until the move described in
+[MIGRATION.md](MIGRATION.md); docs.levimc.org answers with a 301 to the same path here.
 
 ## LeviChan
 

@@ -249,7 +249,7 @@ them untouched. Only the pages (and LeviLauncher) read them, through `src/data/f
 - the featured tags below come first, with an icon and a translated name, and each stands for its group: a few
   common tags that mean the same are shown and filtered as it, with the mod's own tag in grey beside the name.
 
-To be found under a featured tag, give the mod that tag — lip's [recommended tags](https://docs.levimc.org/lip/guides/creating_packages.html#recommended-tags)
+To be found under a featured tag, give the mod that tag — lip's [recommended tags](https://levimc.org/lip/guides/creating_packages.html#recommended-tags)
 are the same list. The other names are only how the site groups what mods already use; they are no reason to use
 them instead.
 

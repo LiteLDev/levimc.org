@@ -21,7 +21,7 @@ const OWN_RENAMES: RepositoryRenames = {
 
 /**
  * Retired documentation hosts of LeviMC projects. None of them resolves any
- * more; their pages live under docs.levimc.org now. Only pages known to exist
+ * more; their pages live under levimc.org/<Project>/ now. Only pages known to exist
  * there keep their path (`paths`: old path → new path); any other path goes to
  * the project's docs home, so a rewritten link never ends on a 404.
  */
@@ -34,7 +34,7 @@ interface RetiredDocs {
 const RETIRED_DOCS: RetiredDocs[] = [
   {
     hosts: ["lamina.levimc.org", "levilamina.liteldev.com"],
-    home: "https://docs.levimc.org/LeviLamina/",
+    home: "https://levimc.org/LeviLamina/",
     paths: {
       // The Quickstart became the install guide (LeviLamina's own README
       // switched to it in 1.9.3).
@@ -48,11 +48,11 @@ const RETIRED_DOCS: RetiredDocs[] = [
   },
   {
     hosts: ["lse.levimc.org", "lse.liteldev.com", "legacy-script-engine.levimc.org"],
-    home: "https://docs.levimc.org/LegacyScriptEngine/",
+    home: "https://levimc.org/LegacyScriptEngine/",
   },
   {
     hosts: ["lip.levimc.org", "lip.futrime.com", "lip.docs.litebds.com"],
-    home: "https://docs.levimc.org/lip/",
+    home: "https://levimc.org/lip/",
     paths: {
       // lip's old docs routed in the fragment: `/en/#/tutorials/…`.
       "en/#/tutorials/create_a_lip_tooth": "guides/creating_packages.html",
@@ -60,7 +60,7 @@ const RETIRED_DOCS: RetiredDocs[] = [
   },
   {
     hosts: ["levilauncher.levimc.org"],
-    home: "https://docs.levimc.org/LeviLauncher/",
+    home: "https://levimc.org/LeviLauncher/",
   },
 ];
 
@@ -69,7 +69,7 @@ const RETIRED_DOCS: RetiredDocs[] = [
  * paths in LiteLDev repositories, and a third-party host that is gone.
  */
 const MOVED_PAGES: [RegExp, string][] = [
-  [/^https?:\/\/levimc\.org\/software\/levilamina\/?(?=[?#]|$)/i, "https://docs.levimc.org/LeviLamina/"],
+  [/^https?:\/\/levimc\.org\/software\/levilamina\/?(?=[?#]|$)/i, "https://levimc.org/LeviLamina/"],
   // `develop` was merged into `main`; this one is a directory, which GitHub shows under `tree/`.
   [
     /^https?:\/\/(?:www\.)?github\.com\/LiteLDev\/LeviLamina\/(?:blob|tree)\/develop\/src\/ll\/api\/i18n\/?(?=[?#]|$)/i,

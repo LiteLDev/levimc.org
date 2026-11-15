@@ -1,7 +1,7 @@
 # levimc-kit
 
 The shared design system and static docs engine for every LeviMC website — levimc.org (with LeviMC Mods at /mods/) and
-the project docs at `docs.levimc.org/<Project>/` (LeviLamina, LegacyScriptEngine, lip, LeviLauncher — Windows and
+the project docs at `levimc.org/<Project>/` (LeviLamina, LegacyScriptEngine, lip, LeviLauncher — Windows and
 Android in one site — Be.D.D. and bedboo), plus the Doxygen API reference.
 
 **Design concept: "Impression, Craft".** Monet's Giverny rendered as if built in Minecraft.
@@ -96,14 +96,14 @@ levimc-kit/
 │   ├── kit.css  kit-chrome.css  kit-nojs-dark.css
 │   ├── kit.js (built from kit.src.js)  theme-init.js  theme-init-static.js  theme-init-doxygen.js
 │   ├── globalbar.html  footer.html  i18n/{globalbar,footer}.<locale>.html
-│   ├── pages/index.html  pages/404.html     docs.levimc.org root redirect + themed 404
+│   ├── pages/index.html  pages/404.html     former docs.levimc.org root redirect + themed 404
 │   ├── doxygen/header.html footer.html doxygen-kit.css gen-header.mjs header-parts.json patch-navtree.mjs
 │   └── icons/  grass.svg  levimc.svg  nojs-dark.mjs  snippets.tsx  build-static.mjs
 ├── scripts/               publish-kit · fetch-kit · chrome-parity · serve-pages · linkcheck · url-parity · text-parity · smoke · shot · vendor · mkdocs-nav
 ├── tests/                 prefs.test.mjs (node --test: cookies, locale mapping, inline scripts) ·
 │                          static.test.mjs (no-JS dark CSS, kit.js: footer year, chrome-only translation) ·
 │                          render.test.mjs (rendering budget of the CSS, backdrop tiles, hero files) ·
-│                          cross-site.e2e.mjs (Playwright: preferences shared by levimc.org + docs.levimc.org)
+│                          cross-site.e2e.mjs (Playwright: preferences shared by levimc.org and a docs site at levimc.org/<base>/)
 ├── demo/                  demo sites (not published): docs (suffix/directory/pymdownx), lip (folder/html/vitepress),
 │                          single (the docs as a single-locale site), app/ (plain Vite + React app, the
 │                          levimc.org / levimc.org/mods shape); pinned package-lock.json
@@ -266,7 +266,7 @@ GitHub Actions (Pages):
 - uses: actions/setup-node@v4
   with: { node-version: 24 }
 - run: npm ci && npm run build
-- run: node kit/scripts/linkcheck.mjs dist --base /<Project>/ --site-origin https://docs.levimc.org
+- run: node kit/scripts/linkcheck.mjs dist --base /<Project>/ --site-origin https://levimc.org
 - uses: actions/upload-pages-artifact@v5
   with: { path: dist }
 ```
@@ -328,7 +328,7 @@ export default defineDocsConfig({ … });
 | `sidebar` | `'tabs'` (default) \| `'tree'` \| `false` \| `SidebarConfig` \| `{ [locale]: SidebarConfig }` | `'tabs'` = the LeviMC model: every top-level `nav` entry is a section (a tab) and its tree is the sidebar of its pages. The object forms (VitePress array / `{ '/guide/': [...] }` multi-sidebar) are **deprecated** (kit 2.19, build warning) but keep working |
 | `layouts` | `{ name: './path/Component.tsx' }` | custom page layouts for `layout: <name>` frontmatter (props: `CustomLayoutProps` from `kit/docs/app/layout-api.ts`) |
 | `lastUpdated` | `true` | `git log` timestamp per file; silently absent without git history |
-| `hostname` | `'https://docs.levimc.org'` | canonical / og:url / hreflang origin (defaults to `sitemap.hostname`) |
+| `hostname` | `'https://levimc.org'` | canonical / og:url / hreflang origin (defaults to `sitemap.hostname`) |
 | `sitemap` | `{ hostname }` \| `false` | |
 | `head` | `[[tag, attrs, content?], …]` | extra head tags (VitePress format) |
 | `outline` | `[2, 4]` (python-markdown) / `[2, 3]` (commonmark) | "On this page" levels (`outline: false` in frontmatter hides it) |
@@ -349,7 +349,7 @@ export default defineDocsConfig({ … });
 { 'Install': 'user_guides/install.md' }                   // titled (translated via navTranslations)
 { 'User Guides': [ … ] }                                  // group
 { 'About': 'https://levimc.org/about/' }                  // external
-{ 'Doxygen API': 'https://docs.levimc.org/LeviLamina/api/' } // same site, no docs page (or '/LeviLamina/api/'):
+{ 'Doxygen API': 'https://levimc.org/LeviLamina/api/' } // same site, no docs page (or '/LeviLamina/api/'):
                                                           // opened in place like a page, no external mark
 { text: 'Guide', link: '/guide/quick-start' }             // VitePress (root-absolute, locale prefix allowed)
 { text: 'Developer', items: [ … ], collapsed: true }      // VitePress group / dropdown
@@ -624,7 +624,7 @@ Theme and language are one choice for all of levimc.org and *.levimc.org (`compo
   the base language, otherwise English. The same algorithm runs inline (`PREFS_CORE_JS`) in the docs root
   redirect and kit.js; `tests/prefs.test.mjs` keeps both in step.
 * `tests/cross-site.e2e.mjs` proves the sharing in Chromium with the real cookie rules of
-  https://levimc.org and https://docs.levimc.org (requests answered from local builds).
+  https://levimc.org and https://levimc.org (requests answered from local builds).
 
 ## Components
 
@@ -664,7 +664,7 @@ Canonical cross-site URLs (exact, no redirect): Home `https://levimc.org/`, Proj
 GitHub organisation) `https://github.com/LiteLDev`, Community `https://levimc.org/community/`, About `https://levimc.org/about/`,
 Mods (LeviMC Mods, id `mods`) `https://levimc.org/mods/`, Blog `https://levimc.org/blog/`, GitHub
 `https://github.com/LiteLDev`,
-Docs `https://docs.levimc.org/{LeviLamina,LegacyScriptEngine,lip,LeviLauncher,BeDD,bedboo}/`,
+Docs `https://levimc.org/{LeviLamina,LegacyScriptEngine,lip,LeviLauncher,BeDD,bedboo}/`,
 Discord `https://discord.gg/v5R5P4vRZk`, Telegram `https://t.me/LiteLoader`, X `https://x.com/levimc_org`,
 YouTube `https://www.youtube.com/@LeviLamina`, `mailto:contact@levimc.org`. lip's repository is
 `https://github.com/LiteLDev/lip` (`futrime/lip` redirects).
@@ -691,12 +691,12 @@ YouTube `https://www.youtube.com/@LeviLamina`, `mailto:contact@levimc.org`. lip'
   docs header and layout (below).
 * `theme-init.js` (React apps), `theme-init-static.js` (static pages: also hides the chrome for ≤ 1.5 s while
   kit.js translates it, so it never flashes in English), `theme-init-doxygen.js` — blocking head scripts.
-* `pages/index.html` (docs.levimc.org root → levimc.org redirect, redirect tags before any stylesheet, with
+* `pages/index.html` (the former docs.levimc.org root → levimc.org redirect, redirect tags before any stylesheet, with
   project cards) and `pages/404.html` (the one 404 of every site: `.kit-notfound` card with the red "Error 404"
   label, title `Page not found - LeviMC Docs`, the levimc.org action, then the projects with docs): skip link,
   generator meta, no-JS dark theme, footer year, the LeviMC mark as favicon; they reference assets under
-  `/levimc-kit/` (copy `kit.css`, `kit.js`, `kit-nojs-dark.css`, `icons/`, `levimc.svg` there; liteldev.github.io's
-  `scripts/build-site.mjs` copies exactly what they reference).
+  `/levimc-kit/` (copy `kit.css`, `kit.js`, `kit-nojs-dark.css`, `icons/`, `levimc.svg` there; levimc.org's
+  `legacy/build.mjs` builds its legacy redirect pages from `pages/404.html` and copies exactly what they reference).
 
 ### LeviLamina Doxygen (`docs/api/`)
 
@@ -776,15 +776,15 @@ All are Node ESM with no dependencies beyond Playwright (where noted).
 node kit/scripts/serve-pages.mjs dist --base /LeviLamina/ --port 4173
 
 # internal links (+ redirects + #anchors); --external checks every external URL with curl
-node kit/scripts/linkcheck.mjs dist --base /LeviLamina/ --site-origin https://docs.levimc.org \
+node kit/scripts/linkcheck.mjs dist --base /LeviLamina/ --site-origin https://levimc.org \
      [--external] [--allow-redirect-hosts aka.ms,discord.gg,qm.qq.com] [--ignore-paths /LeviLamina/api/] [--json out.json]
 
 # every live URL (sitemap.xml, else crawl) must answer 200 with 0 redirects locally;
 # --anchors also requires every live heading id (old #deep-links) to exist on the local page
-node kit/scripts/url-parity.mjs --live https://docs.levimc.org/LeviLamina/ --local http://127.0.0.1:4173/LeviLamina/ --anchors
+node kit/scripts/url-parity.mjs --live https://levimc.org/LeviLamina/ --local http://127.0.0.1:4173/LeviLamina/ --anchors
 
 # word-level text diff of the main content, live vs local (Playwright)
-node kit/scripts/text-parity.mjs --live https://docs.levimc.org/LeviLamina/ --local http://127.0.0.1:4173/LeviLamina/ \
+node kit/scripts/text-parity.mjs --live https://levimc.org/LeviLamina/ --local http://127.0.0.1:4173/LeviLamina/ \
      [--paths a/,b/ | --paths-file f] [--live-selector 'article.md-content__inner' | '.vp-doc'] [--json out.json]
      # a path may differ per side: --paths 'daemon/overview.html=>daemon/overview/'
 
@@ -870,13 +870,13 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 1. Vendor the kit; add `package.json` (template), `tsconfig.json`, `vite.config.ts`, `.gitignore`.
 2. `node kit/scripts/mkdocs-nav.mjs mkdocs.yml` → paste into `docs.config.ts`. Keep `urlStyle: 'directory'`,
    `i18n.mode: 'suffix'` (locales `en` default + `zh`, `lang: 'zh'` like the live site), `slug: 'pymdownx'`,
-   `markdown.compat: 'python-markdown'`, `sidebar: 'tabs'`, `hostname`/`sitemap: { hostname: 'https://docs.levimc.org' }`.
+   `markdown.compat: 'python-markdown'`, `sidebar: 'tabs'`, `hostname`/`sitemap: { hostname: 'https://levimc.org' }`.
 3. `exclude: ['overrides/**']` (theme overrides are not content). Delete `mkdocs.yml`, `requirements.txt`,
    `overrides/` once the port is merged (the language-redirect script there is replaced by the kit's).
 4. `logo`/`favicon` paths stay as in `theme.logo`/`theme.favicon` (they are copied verbatim).
 5. `editLink: 'https://github.com/LiteLDev/<Repo>/edit/<branch>/<docs_dir>/:path'`.
-6. Fix nav entries pointing at external own-site URLs: `https://docs.levimc.org/LeviLamina/api` →
-   `https://docs.levimc.org/LeviLamina/api/`; `https://levimc.org/about` → `https://levimc.org/about/`.
+6. Fix nav entries pointing at external own-site URLs: `https://levimc.org/LeviLamina/api` →
+   `https://levimc.org/LeviLamina/api/`; `https://levimc.org/about` → `https://levimc.org/about/`.
 7. `npm run build` — fix every warning (unresolved links, missing anchors). Known in LeviLamina today:
    `build_guide(.zh).md` links `architecture.md` (should be `../architecture.md`) and
    `how_to_guides/testing_guide.md` (missing page).
@@ -960,6 +960,22 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.20.0 — unreleased
+
+**The project docs move from docs.levimc.org to levimc.org.** Each project's docs stay in its own repository and
+keep their path: `https://docs.levimc.org/<Project>/…` becomes `https://levimc.org/<Project>/…`
+(levimc.org's `MIGRATION.md` has the switch-over steps; docs.levimc.org answers with a 301 to the same path).
+* `PROJECTS[].docs` / `DOCS_PROJECTS[].url`, and so the Projects menu, the static chrome (`static/`), the Doxygen
+  header and the 404 cards, link `https://levimc.org/<Project>/`.
+* Docs links are same-origin links on levimc.org now: an app that passes `siteOrigin` + `linkComponent` must exclude
+  the docs paths in `isAppPath` (levimc.org's does), or its router would render its own 404 for them. Docs sites pass
+  no `siteOrigin` and need no change.
+* `scripts/linkcheck.mjs --other-sites /mods/,/LeviLamina/`: own-origin paths that another build publishes are checked
+  as external URLs (with `--external`) instead of as files of this dist.
+* `tests/cross-site.e2e.mjs` serves the docs build at `https://levimc.org/<base>/`.
+* Migration for docs sites: set `hostname` / `sitemap.hostname` to `'https://levimc.org'` and
+  `linkcheck --site-origin https://levimc.org`, on the day of the switch (`demo/` and `package.template.json` show it).
 
 ### 2.19.1 — 2026-11-08
 
@@ -1051,7 +1067,7 @@ layout thrash, icons resized to WebP at build time.
 ### 2.18.0 — 2026-11-06
 
 **bedboo is back, with docs.** `LiteLDev/bedboo`, a Minecraft Bedrock Edition bot library with a mineflayer-compatible
-API, is documented at `https://docs.levimc.org/bedboo/`; it rejoins Core after LeviLauncher, so the Projects menu
+API, is documented at `https://levimc.org/bedboo/`; it rejoins Core after LeviLauncher, so the Projects menu
 (the projects with docs) lists it, and levimc.org has its project card again.
 * `ProjectId` `'bedboo'` (`projectBlurbs.bedboo` in every chrome language), with `docs`; `DocsProjectId` includes
   `'bedboo'`, so `DOCS_PROJECTS` (the docs.levimc.org root's cards) lists five projects. Its logo is
@@ -1079,7 +1095,7 @@ are no longer listed under Core or Official mods, nor as levimc.org project card
 ### 2.15.0 — 2026-10-30
 
 **Be.D.D. has its own docs and is no longer a mod.** Be.D.D. is a standalone testing toolkit now, documented at
-`https://docs.levimc.org/BeDD/`, and has left LeviMC Mods: its Projects menu row and project card lead to its docs.
+`https://levimc.org/BeDD/`, and has left LeviMC Mods: its Projects menu row and project card lead to its docs.
 * `PROJECTS`: `BeDD` has `docs` instead of `mod`; `DocsProjectId` includes `'BeDD'`, so `DOCS_PROJECTS` (the
   docs.levimc.org root's cards) lists it after LeviLauncher.
 * Compatible: sites only rebuild.
@@ -1171,7 +1187,7 @@ LeviLauncher card), its `projectBlurbs` says "Bedrock launcher for Windows and A
 ### 2.8.0 — 2026-10-29
 
 **The API reference is a tab of the docs.** A nav link to this site that is no docs page — e.g. LeviLamina's
-Doxygen output merged into `dist/api/`, written `https://docs.levimc.org/LeviLamina/api/` (own `hostname` + `base`)
+Doxygen output merged into `dist/api/`, written `https://levimc.org/LeviLamina/api/` (own `hostname` + `base`)
 or `/LeviLamina/api/` — is now a link of the site: opened in place like a page, without the external mark or a new
 tab (before, the first form was an external link and the second a build warning). Such links are not part of the
 previous / next page links.

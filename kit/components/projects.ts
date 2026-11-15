@@ -22,7 +22,7 @@ export const LINKS = {
 
 /**
  * Tabs of the GlobalBar. `projects` is the Projects menu (kit 2: it replaces the Docs menu and the former
- * levimc.org/projects/ page); on docs.levimc.org it is the current tab, with the open project marked in it.
+ * levimc.org/projects/ page); on a project's docs (levimc.org/<Project>/) it is the current tab, with the open project marked in it.
  */
 export type SiteId = 'home' | 'projects' | 'community' | 'about' | 'mods' | 'blog';
 
@@ -61,24 +61,24 @@ const modPage = (repo: string) => `${LINKS.mods}github.com/LiteLDev/${repo}/`;
 
 /**
  * Every LeviMC project, in the order of the Projects menu (grouped by `group`, see PROJECT_GROUPS). This is the one
- * list of projects: the bar's Projects menu, the docs.levimc.org root and levimc.org's project cards all read it.
+ * list of projects: the bar's Projects menu, the docs' 404 page and levimc.org's project cards all read it.
  */
 export const PROJECTS: readonly Project[] = [
-  { id: 'LeviLamina', name: 'LeviLamina', group: 'core', repo: 'https://github.com/LiteLDev/LeviLamina', docs: 'https://docs.levimc.org/LeviLamina/', logo: logo('LeviLamina'), icon: 'grass' },
+  { id: 'LeviLamina', name: 'LeviLamina', group: 'core', repo: 'https://github.com/LiteLDev/LeviLamina', docs: 'https://levimc.org/LeviLamina/', logo: logo('LeviLamina'), icon: 'grass' },
   {
     id: 'LegacyScriptEngine',
     name: 'LegacyScriptEngine',
     group: 'core',
     repo: 'https://github.com/LiteLDev/LegacyScriptEngine',
-    docs: 'https://docs.levimc.org/LegacyScriptEngine/',
+    docs: 'https://levimc.org/LegacyScriptEngine/',
     logo: logo('LegacyScriptEngine'),
     icon: 'bookQuill',
   },
   { id: 'LeviStone', name: 'LeviStone', group: 'core', repo: 'https://github.com/LiteLDev/LeviStone', logo: logo('LeviStone'), icon: 'emerald' },
-  { id: 'lip', name: 'lip', group: 'core', repo: 'https://github.com/LiteLDev/lip', docs: 'https://docs.levimc.org/lip/', logo: logo('lip'), icon: 'chest' },
-  { id: 'LeviLauncher', name: 'LeviLauncher', group: 'core', repo: 'https://github.com/LiteLDev/LeviLauncher', docs: 'https://docs.levimc.org/LeviLauncher/', logo: logo('LeviLauncher'), icon: 'map' },
-  { id: 'BeDD', name: 'Be.D.D.', group: 'core', repo: 'https://github.com/LiteLDev/BeDD', docs: 'https://docs.levimc.org/BeDD/', logo: logo('BeDD'), icon: 'monitor' },
-  { id: 'bedboo', name: 'bedboo', group: 'core', repo: 'https://github.com/LiteLDev/bedboo', docs: 'https://docs.levimc.org/bedboo/', logo: logo('bedboo'), icon: 'pickaxe' },
+  { id: 'lip', name: 'lip', group: 'core', repo: 'https://github.com/LiteLDev/lip', docs: 'https://levimc.org/lip/', logo: logo('lip'), icon: 'chest' },
+  { id: 'LeviLauncher', name: 'LeviLauncher', group: 'core', repo: 'https://github.com/LiteLDev/LeviLauncher', docs: 'https://levimc.org/LeviLauncher/', logo: logo('LeviLauncher'), icon: 'map' },
+  { id: 'BeDD', name: 'Be.D.D.', group: 'core', repo: 'https://github.com/LiteLDev/BeDD', docs: 'https://levimc.org/BeDD/', logo: logo('BeDD'), icon: 'monitor' },
+  { id: 'bedboo', name: 'bedboo', group: 'core', repo: 'https://github.com/LiteLDev/bedboo', docs: 'https://levimc.org/bedboo/', logo: logo('bedboo'), icon: 'pickaxe' },
   { id: 'LeviOptimize', name: 'LeviOptimize', group: 'mods', repo: 'https://github.com/LiteLDev/LeviOptimize', mod: modPage('LeviOptimize'), logo: logo('LeviOptimize'), icon: 'potion' },
   { id: 'LeviAntiCheat', name: 'LeviAntiCheat', group: 'mods', repo: 'https://github.com/LiteLDev/LeviAntiCheat', mod: modPage('LeviAntiCheat'), logo: logo('LeviAntiCheat'), icon: 'torch' },
   { id: 'MoreDimensions', name: 'MoreDimensions', group: 'mods', repo: 'https://github.com/LiteLDev/MoreDimensions', mod: modPage('MoreDimensions'), logo: logo('MoreDimensions'), icon: 'compass' },
@@ -91,7 +91,7 @@ export function projectHome(p: Project): string {
 
 export const PROJECT_GROUPS: readonly ProjectGroupId[] = ['core', 'mods'];
 
-/** The projects that have a documentation site (docs.levimc.org/<id>/). */
+/** The projects that have a documentation site (levimc.org/<id>/, published by the project's repository). */
 export type DocsProjectId = 'LeviLamina' | 'LegacyScriptEngine' | 'lip' | 'LeviLauncher' | 'BeDD' | 'bedboo';
 
 export interface DocsProject {
@@ -104,7 +104,7 @@ export interface DocsProject {
   icon: PixelIconName;
 }
 
-/** The projects with docs, in menu order (the docs.levimc.org root's cards). */
+/** The projects with docs, in menu order (the cards of the docs' 404 page). */
 export const DOCS_PROJECTS: readonly DocsProject[] = PROJECTS.filter((p) => p.docs).map((p) => ({
   id: p.id as DocsProjectId,
   name: p.name,

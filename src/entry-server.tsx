@@ -9,6 +9,7 @@ import { preloadBlogPath } from './blog/data';
 
 export { ROUTE_PATHS, NOT_FOUND_PATH, SITE_ORIGIN, MODS_PATH, ROUTE_MODULES, routeIdOf } from './routes';
 export { BLOG_ROUTES } from './blog/data';
+export { DOCS_PROJECTS } from '../kit/components';
 
 export async function render(url: string) {
   await Promise.all([preloadRoute(url), preloadBlogPath(url)]);

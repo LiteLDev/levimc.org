@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 // Link checker for a built static site, with GitHub Pages semantics.
 //
-//   node linkcheck.mjs <dist> --base /<Project>/ --site-origin https://docs.levimc.org
+//   node linkcheck.mjs <dist> --base /<Project>/ --site-origin https://levimc.org
 //        [--external] [--allow-redirect-hosts aka.ms,discord.gg,qm.qq.com]
-//        [--ignore-paths /LeviLamina/api/,/other/] [--json report.json] [--concurrency 8] [--quiet]
+//        [--ignore-paths /LeviLamina/api/,/other/] [--other-sites /mods/,/LeviLamina/]
+//        [--json report.json] [--concurrency 8] [--quiet]
 //
 // Internal links (relative, root-relative and absolute links to <site-origin><base>) are resolved against
 // the dist folder exactly like GitHub Pages serves it (see serve-pages.mjs): broken targets, targets that
 // only work through a redirect (e.g. missing trailing slash) and missing #anchors are errors.
+// --ignore-paths skips links below those paths; --other-sites treats them as external URLs (paths of the same
+// origin that another build publishes: levimc.org/<Project>/ is each project's docs, not part of levimc.org's dist).
 // With --external every external URL is fetched once with curl (honours HTTP(S)_PROXY), following
 // redirects manually; redirects are reported unless the URL ends in /releases/latest or the host is
 // allow-listed. Exit code is 1 when there are internal errors (external problems are reported only,
@@ -21,7 +24,7 @@ import { resolvePagesPath } from './serve-pages.mjs';
 const args = process.argv.slice(2);
 const opt = (n, d) => (args.includes(n) ? args[args.indexOf(n) + 1] : d);
 const flag = (n) => args.includes(n);
-const VALUE_OPTS = new Set(['--base', '--site-origin', '--allow-redirect-hosts', '--ignore-paths', '--json', '--concurrency']);
+const VALUE_OPTS = new Set(['--base', '--site-origin', '--allow-redirect-hosts', '--ignore-paths', '--other-sites', '--json', '--concurrency']);
 const positional = args.filter((a, i) => !a.startsWith('--') && !VALUE_OPTS.has(args[i - 1]));
 const dist = resolve(positional[0] ?? 'dist');
 let base = opt('--base', '/');
@@ -33,6 +36,7 @@ const allowHosts = (opt('--allow-redirect-hosts', 'aka.ms,discord.gg,qm.qq.com,t
   .map((s) => s.trim().toLowerCase())
   .filter(Boolean);
 const ignorePaths = (opt('--ignore-paths', '') || '').split(',').filter(Boolean);
+const otherSites = (opt('--other-sites', '') || '').split(',').filter(Boolean);
 const quiet = flag('--quiet');
 const concurrency = Number(opt('--concurrency', '8'));
 
@@ -116,8 +120,9 @@ for (const file of files) {
       continue;
     }
     const isOwn = u.origin === 'http://site.invalid' || (origin && u.origin === origin);
-    if (!isOwn || !u.pathname.startsWith(base) || ignorePaths.some((p) => u.pathname.startsWith(p))) {
-      if (isOwn && ignorePaths.some((p) => u.pathname.startsWith(p))) {
+    const other = isOwn && otherSites.some((p) => u.pathname.startsWith(p));
+    if (!isOwn || other || !u.pathname.startsWith(base) || ignorePaths.some((p) => u.pathname.startsWith(p))) {
+      if (isOwn && !other && ignorePaths.some((p) => u.pathname.startsWith(p))) {
         internal.ignored++;
         continue;
       }

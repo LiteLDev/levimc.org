@@ -1438,7 +1438,7 @@
     min-height: 60vh;
   }
 
-  /* the 404: the docs' card, wide enough for the projects grid under its actions (as docs.levimc.org's 404) */
+  /* the 404: the docs' card, wide enough for the projects grid under its actions (as the docs' 404) */
   .lm-notfound .kit-notfound-card {
     width: min(46rem, 100%);
     max-width: none;

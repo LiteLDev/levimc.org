@@ -4,7 +4,7 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { prerenderRoutes } from './kit/ssg/prerender.mjs';
 
-const { ROUTE_PATHS, NOT_FOUND_PATH, SITE_ORIGIN, MODS_PATH, ROUTE_MODULES, routeIdOf } = await import('./.kit/ssr/entry-server.js');
+const { ROUTE_PATHS, NOT_FOUND_PATH, SITE_ORIGIN, MODS_PATH, ROUTE_MODULES, routeIdOf, DOCS_PROJECTS } = await import('./.kit/ssr/entry-server.js');
 
 const { files } = await prerenderRoutes({ routes: ROUTE_PATHS, notFound: NOT_FOUND_PATH });
 
@@ -65,10 +65,9 @@ for (const route of ROUTE_PATHS) {
 
 const urls = ROUTE_PATHS.map((p) => `  <url><loc>${SITE_ORIGIN}${encodeURI(p)}</loc></url>`).join('\n');
 writeFileSync('dist/sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`);
-// LeviMC Mods writes its own sitemap (every mod page); its listing's query URLs (/mods/?cat=…) are all one page.
-writeFileSync(
-  'dist/robots.txt',
-  `User-agent: *\nAllow: /\nDisallow: ${MODS_PATH}*?*\n\nSitemap: ${SITE_ORIGIN}/sitemap.xml\nSitemap: ${SITE_ORIGIN}${MODS_PATH}sitemap.xml\n`,
-);
+// LeviMC Mods writes its own sitemap (every mod page); its listing's query URLs (/mods/?cat=…) are all one page. Each
+// project's docs (levimc.org/<Project>/, published by its repository) write theirs too: robots.txt exists only here.
+const sitemaps = [`${SITE_ORIGIN}/sitemap.xml`, `${SITE_ORIGIN}${MODS_PATH}sitemap.xml`, ...DOCS_PROJECTS.map((p) => `${p.url}sitemap.xml`)];
+writeFileSync('dist/robots.txt', `User-agent: *\nAllow: /\nDisallow: ${MODS_PATH}*?*\n\n${sitemaps.map((u) => `Sitemap: ${u}\n`).join('')}`);
 
 console.log(`prerendered ${files.length} pages (${preloaded} with modulepreloaded page/post chunks) + sitemap.xml (${ROUTE_PATHS.length} URLs), robots.txt`);

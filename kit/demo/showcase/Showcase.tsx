@@ -209,9 +209,9 @@ export default function Showcase({ route, page, site }: CustomLayoutProps) {
 
         <Section id="sc-cards" title={zh ? '卡片' : 'Cards'}>
           <div className="sc-cards">
-            <Card icon="grass" eyebrow="LeviLamina" title={zh ? '模组加载器' : 'Mod loader'} description={zh ? '为基岩版专用服务器提供 API。' : 'Essential APIs for Bedrock Dedicated Server.'} href="https://docs.levimc.org/LeviLamina/" />
-            <Card icon="bookQuill" eyebrow="LegacyScriptEngine" title={zh ? '脚本引擎' : 'Script engine'} description={zh ? '运行 JavaScript、Lua、Python 插件。' : 'Run JavaScript, Lua and Python plugins.'} href="https://docs.levimc.org/LegacyScriptEngine/" />
-            <Card icon="chest" eyebrow="lip" title={zh ? '包管理器' : 'Package manager'} description={zh ? '安装、更新和管理依赖。' : 'Install, update and manage dependencies.'} href="https://docs.levimc.org/lip/" />
+            <Card icon="grass" eyebrow="LeviLamina" title={zh ? '模组加载器' : 'Mod loader'} description={zh ? '为基岩版专用服务器提供 API。' : 'Essential APIs for Bedrock Dedicated Server.'} href="https://levimc.org/LeviLamina/" />
+            <Card icon="bookQuill" eyebrow="LegacyScriptEngine" title={zh ? '脚本引擎' : 'Script engine'} description={zh ? '运行 JavaScript、Lua、Python 插件。' : 'Run JavaScript, Lua and Python plugins.'} href="https://levimc.org/LegacyScriptEngine/" />
+            <Card icon="chest" eyebrow="lip" title={zh ? '包管理器' : 'Package manager'} description={zh ? '安装、更新和管理依赖。' : 'Install, update and manage dependencies.'} href="https://levimc.org/lip/" />
             <Card icon="map" title="Long text" description="https://github.com/LiteLDev/LeviLamina/blob/develop/src/mc/network/ServerNetworkHandler.h" />
           </div>
         </Section>

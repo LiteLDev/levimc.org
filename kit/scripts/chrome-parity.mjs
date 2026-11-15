@@ -14,12 +14,11 @@ const DEFAULT_URLS = [
   'https://levimc.org/',
   'https://levimc.org/blog/',
   'https://levimc.org/mods/',
-  'https://docs.levimc.org/',
-  'https://docs.levimc.org/LeviLamina/',
-  'https://docs.levimc.org/LeviLamina/api/index.html',
-  'https://docs.levimc.org/LegacyScriptEngine/',
-  'https://docs.levimc.org/lip/',
-  'https://docs.levimc.org/LeviLauncher/',
+  'https://levimc.org/LeviLamina/',
+  'https://levimc.org/LeviLamina/api/index.html',
+  'https://levimc.org/LegacyScriptEngine/',
+  'https://levimc.org/lip/',
+  'https://levimc.org/LeviLauncher/',
 ];
 const urls = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const list = urls.length ? urls : DEFAULT_URLS;
