@@ -87,7 +87,7 @@ levimc-kit/
 │   │   └── markdown/        preprocess.ts render.ts slug.ts shiki.ts shiki-themes.ts html-tags.ts
 │   ├── shared/              types.ts routing.ts head.ts search.ts (used by build and browser)
 │   ├── app/                 React app: index.html entry-client.tsx entry-server.tsx App.tsx data.ts enhance.ts
-│   │                        layouts/ (DocLayout HomeLayout NotFound) components/ (SiteHeader Sidebar Toc reveal
+│   │                        layouts/ (DocLayout HomeLayout NotFound) components/ (SiteNav Sidebar Toc reveal
 │   │                        SearchModal MobileDrawer DocFooter KitLink) docs.css styles.css layout-api.ts
 │   ├── build.mjs            client build → SSR build → prerender
 │   └── prerender.mjs
@@ -355,20 +355,23 @@ export default defineDocsConfig({ … });
 { text: 'Developer', items: [ … ], collapsed: true }      // VitePress group / dropdown
 ```
 
-### Navigation model (kit 2.19)
+### Navigation model (kit 2.22)
 
-One model on every docs site (and the Doxygen API, which generates its header from the LeviLamina docs' `dist/_kit/nav.json`):
+One model on every docs site (and the Doxygen API, which generates its chrome from the LeviLamina docs' `dist/_kit/nav.json`):
 
-* **Header row** = brand (logo + name: the **only** link to the docs home — no Home tab) + **2–5 section tabs** + search
-  + the **resources slot** (`header.links`, then the `repo` GitHub icon). Each tab is exactly one sidebar tree and links
-  to its first page: no dropdowns, no single-page tabs, no external links. A same-site reference that has its own tree
-  and no docs pages (LeviLamina's Doxygen API, `{ 'API Reference': '/LeviLamina/api/' }`) counts as a section.
-* **Sidebar** on every doc page: only the active section's tree, titled with the section's name. Every doc page belongs
+* **No header row of the docs' own.** Search is in the LeviMC bar (GlobalBar `search`), which sticks at the top.
+* **The site column** (SiteNav) on every page, home included: the brand (logo + name: the **only** link to the docs
+  home — no Home section), then **2–5 sections**, then the **resources** (`header.links`, then the `repo` GitHub
+  link). Each section is exactly one sidebar tree: the current one is open, the others open in place on a click. A
+  same-site reference that has its own tree and no docs pages (LeviLamina's Doxygen API,
+  `{ 'API Reference': '/LeviLamina/api/' }`) is a section that is a link.
+* **Sections' trees**: every doc page belongs
   to exactly one section — the build warns `nav: page '<key>' … is in no section` (home and 404 excepted; frontmatter
   `sidebar: false` opts a page out). Groups: all open when the section has ≤ 24 links, otherwise only the group holding
   the current page (`collapsed: false` keeps a group open, `collapsed: true` closed; `sidebarExpand` opens all).
 * **Prev / next** stays inside the active section, never targets the home page and behaves the same in every locale.
-* **Home** = `layout: home` (hero + features + optional markdown body below): no sidebar, no edit link, no active tab.
+* **Home** = `layout: home` (hero + features + optional markdown body below), beside the site column: no section tree,
+  no edit link, no current section.
   Its `<meta name="description">` is the config `description` unless the frontmatter sets one.
 * **Order**: sections — guides first, then topic guides, then reference (API, CLI, protocol), contributor material
   last; inside a section — getting started first, FAQ / troubleshooting / supported versions / privacy last, in a
@@ -415,29 +418,22 @@ Docusaurus (`groupId` tabs), Microsoft Learn (zone pivots) and most multi-platfo
 Generate a starting config from an existing `mkdocs.yml`:
 `node kit/scripts/mkdocs-nav.mjs path/to/mkdocs.yml > docs.config.generated.json`.
 
-### Header (the docs' own row)
+### Header (kit 2.22: the LeviMC bar only)
 
-The LeviMC bar (GlobalBar) is the top of every page and carries the language menu, the theme menu and the
-GitHub button (the LiteLDev organisation). Under it, the docs header is one light row on the page's own canvas:
-the project's logo and name (the home link), the section tabs (`nav`), search and the **resources slot** — never a
-second set of language/theme controls. The bar scrolls away, the row sticks.
+The LeviMC bar (GlobalBar) is the top of every page and carries the docs' search (a field-like trigger with the
+`Ctrl` `K` hint, an icon at ≤ 1180px), the language menu, the theme menu and the GitHub button (the LiteLDev
+organisation). On docs sites it sticks. There is no second row: the project's identity and sections are the site
+column's (SiteNav).
 
-* **Resources slot** (`header.links`, then `repo`): `header.links: [{ kind: 'download' | 'changelog', link, text?:
-  { [locale]: label } }]` — `download` is the accent button, `changelog` a text link; a `link` that is a page of the
-  site gets the locale's version of it ('download' → 'ja-JP/download'); labels default to the kit's
-  (Download / Changelog in 9 languages). Then the project's GitHub icon from `repo`. This is the only place for
-  links that leave the docs. Below 960px the slot moves into the drawer.
-* **Phones and tablets (≤ 960px)**: the docs row has no menu button. The LeviMC bar's menu button — the same button
-  in the same place on every LeviMC site — opens the docs drawer (`GlobalBar onMenu`): the sections, the current
-  section's tree titled with the section, **Resources**, then the LeviMC links. The drawer's body is rendered on
-  its first opening only.
-
-Long navs are measured once before the first paint (inline script after the header) and re-measured only when
-web fonts finish loading or the locale changes; a resize computes the state arithmetically from those natural
-widths (no DOM reads, no attribute toggling) and writes `html[data-kit-nav-fit]` only when it changes:
-`search` (icon-only search), `tabs` (the tabs move to a second row under brand + search — MkDocs Material's
-`navigation.tabs`), `drawer` (the tabs move into the drawer, opened by the bar's menu button). `header.tabsRow:
-true` starts in the two-row layout, `false` skips it.
+* **Resources** (`header.links`, then `repo`), at the end of the site column: `header.links: [{ kind: 'download' |
+  'changelog', link, text?: { [locale]: label } }]` — `download` is the accent button, `changelog` a text link; a
+  `link` that is a page of the site gets the locale's version of it ('download' → 'ja-JP/download'); labels default to
+  the kit's (Download / Changelog in 9 languages). Then the project's GitHub link from `repo`. This is the only place
+  for links that leave the docs.
+* **Phones and tablets (≤ 960px)**: the LeviMC bar's menu button — the same button in the same place on every LeviMC
+  site — opens the docs drawer (`GlobalBar onMenu`): the sections, the current section's tree titled with the
+  section, **Resources**, then the LeviMC links. The drawer's body is rendered on its first opening only.
+* `header.tabsRow` is ignored (there are no tabs to fit).
 
 ### Language behaviour
 
@@ -728,17 +724,15 @@ LeviMC links, sprites, chrome strings, the nav-fit script) — gen-header itself
 `doxygen-awesome-darkmode-toggle.js` (kit.js owns the theme and keeps `html.dark-mode` / `html.light-mode` in sync).
 
 **Header.** `<title>`: `$title - LeviLamina API`. The LeviMC bar (its language menu lists the docs' locales — the
-API is one English reference for all of them; a choice relabels the bar, footer and the project row in place and
-is stored like on the docs; a preference the docs have no locale for still translates the chrome), then `#top` is the
-docs header row itself (`.kit-site-header` markup and docs.css rules): brand → the docs home, the section tabs of
-nav.json with the tab under `<base>api/` current, search, the RESOURCES slot. Opaque once stuck, without blur
-(docs.css: opacity-only pseudo-elements on the root scroll timeline). The nav fit is the docs' (`search` → `tabs` →
-`drawer`), measured before the first paint by an inline script and computed arithmetically on resize (no root
-toggling). Search is Doxygen's box in the docs trigger's frame (same size, sprite, `Ctrl` `K` hint, icon-only where
-the docs trigger is; Ctrl/⌘+K and `/` focus it; the results open as a framed panel under it). Doxygen's own menubar
-and phone menu are hidden at every width.
+API is one English reference for all of them; a choice relabels the bar, footer and the site column in place and
+is stored like on the docs; a preference the docs have no locale for still translates the chrome). The bar sticks, and
+its search slot holds Doxygen's search box in the docs trigger's frame (same size, sprite, `Ctrl` `K` hint,
+icon-only at ≤ 1180px; Ctrl/⌘+K and `/` focus it; the results open as a framed panel under it). kit 2.22: no header
+row — `#top` only holds Doxygen's own menubar and phone menu, hidden at every width. The tree's column is headed by
+the docs' site column markup (`.kit-sitenav`: brand → the docs home, the sections of nav.json with the one under
+`<base>api/` current).
 
-**Drawer** (≤ 960px, and the nav-fit `drawer` state): the LeviMC bar's menu button (GlobalBar `onMenu` markup,
+**Drawer** (≤ 960px): the LeviMC bar's menu button (GlobalBar `onMenu` markup,
 `[data-kit-gbar-menu]`) opens the docs drawer markup — the sections, the API Reference tree (Doxygen's tree, moved in
 while open), Resources, the LeviMC links; focus trap, Escape, scrim click, scroll lock.
 
@@ -960,6 +954,24 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.22.0
+
+**No docs header row: search in the LeviMC bar, the sections in the left column.** Every docs site (and levimc.org/
+tutorials/, and the Doxygen API) loses its second row (brand, section tabs, search, resources):
+* GlobalBar gains `search?: { label, onOpen, onWarm? }`: a field-like trigger before the language menu (`Ctrl` `K`
+  hint; an icon at ≤ 1180px). The docs app passes it and makes the bar `sticky`; the sticky offset of the sidebar
+  and outline is now the bar's height.
+* New `SiteNav` (docs/app/components): the site column on every page, the home page included — brand → home, every
+  section (the current one open with its tree, the others open in place), resources (Download button, links,
+  repository). `SidebarTree` renders a section's tree without a title. `SiteHeader`, the nav fit
+  (`html[data-kit-nav-fit]`) and `header.tabsRow` are gone (the option is accepted and ignored).
+* Doxygen: no row; Doxygen's search box sits in the bar's search slot (`.kit-gbar-search.kit-dox-search`), the bar
+  sticks, and the tree's column is headed by the same site column markup. The view transition keeps the column
+  (`kit-sitenav`) in place between pages of a site.
+* Sites need no change; LeviLamina's `header: { tabsRow }` can go.
+* `scripts/smoke.mjs`: the docs checks follow (no `.kit-site-header`; one search trigger in the bar; the column's
+  sections, current section and pager).
 
 ### 2.21.2
 

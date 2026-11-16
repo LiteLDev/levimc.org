@@ -165,9 +165,10 @@ a.kit-skip-link:focus-visible {
 #doc-content:focus {
   outline: none;
 }
-/* the LeviMC bar: above the backdrop and the painted scene band, not sticky (it scrolls away, as on the docs) */
+/* the LeviMC bar: above the backdrop and the painted scene band, sticky like on the docs (kit 2.22) */
 body > .kit-gbar {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 60;
 }
 
@@ -180,72 +181,24 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
-/* ================================================================== header row: the docs' .kit-site-header
-   #top is the docs header (docs.css .kit-site-header / -inner / -brand / -nav / -actions); doxygen.css and
-   doxygen-awesome style #top by id, so the docs values are restated here with the id. Opaque once stuck, without
-   blur (kit 2.19 rendering budget): the canvas and the hairline are two pseudo-elements whose opacity alone follows
-   the page scroll over the height of the LeviMC bar (scroll-driven, on the compositor); without scroll timelines the
-   row is always opaque. The same rules as docs.css. */
-#top.kit-site-header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
+/* ================================================================== #top (kit 2.22: no header row)
+   Doxygen closes #top and puts its own menus in it (hidden below); it takes no room. */
+#top.kit-dox-top {
   display: block;
-  height: var(--spacing-header);
-  width: auto;
+  height: 0;
   margin: 0;
   padding: 0;
+  overflow: visible;
   background: none;
   border: 0;
   box-shadow: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  animation: none;
-}
-#top.kit-site-header::before,
-#top.kit-site-header::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  pointer-events: none;
-}
-#top.kit-site-header::before {
-  top: 0;
-  bottom: 0;
-  z-index: -1;
-  background: var(--color-canvas);
-}
-#top.kit-site-header::after {
-  bottom: -1px;
-  z-index: -1;
-  height: 1px;
-  background: color-mix(in srgb, var(--color-line) 70%, transparent);
-}
-@supports (animation-timeline: scroll()) {
-  #top.kit-site-header::before,
-  #top.kit-site-header::after {
-    animation: kit-header-stuck linear both;
-    animation-timeline: scroll(root);
-    animation-range: 0 var(--spacing-globalbar);
-  }
-}
-@keyframes kit-header-stuck {
-  from {
-    opacity: 0;
-  }
 }
 /* Doxygen's own menubar (Main Page, Classes, Files …) and its phone menu button + search holder (menu.js): the tree
-   lists the same pages, the bar's menu button opens the drawer, and kit.js moves the search box into the row */
+   lists the same pages, the bar's menu button opens the drawer, and kit.js moves the search box into the bar */
 #top > .sm-dox,
 #top > #main-nav,
 #main-menu-state {
   display: none !important;
-}
-#top .kit-site-header-inner {
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  line-height: 1.6;
 }
 /* the docs pages run on Tailwind's preflight: border-box everywhere in the parts that share their markup */
 #top,
@@ -261,48 +214,15 @@ input:focus-visible {
 .kit-dox-toc-mobile * {
   box-sizing: border-box;
 }
-/* doxygen-awesome colours every link with !important: the row's own colours */
-#top a.kit-site-brand:is(:link, :visited, :hover, :focus, :active) {
-  color: var(--color-ink) !important;
-  font-weight: inherit;
-  text-decoration: none;
-}
-#top a.kit-site-nav-link:is(:link, :visited, :focus, :active) {
-  color: var(--color-muted) !important;
-  font-weight: 500;
-  text-decoration: none;
-}
-#top a.kit-site-nav-link:hover,
-#top a.kit-site-nav-link.is-active:is(:link, :visited, :hover, :focus, :active) {
-  color: var(--color-ink) !important;
-  text-decoration: none;
-}
-#top a.kit-site-nav-link.is-active {
-  font-weight: 600;
-}
-#top .kit-site-resources a:is(:link, :visited, :hover, :focus, :active) {
-  text-decoration: none;
-}
-#top a.kit-site-social:is(:link, :visited, :focus, :active) {
-  color: var(--color-muted) !important;
-}
-#top a.kit-site-social:hover {
-  color: var(--color-ink) !important;
-}
-#top a.mc-btn-primary:is(:link, :visited, :hover, :focus, :active) {
-  color: var(--color-on-primary) !important;
-}
-#top .kit-site-nav ul,
-#top .kit-site-nav li,
 .kit-drawer ul,
 .kit-drawer li {
   font-size: inherit;
 }
 
-/* ---- search: Doxygen's search box in the frame of the docs' search trigger (.kit-search-trigger, docs.css):
-   the same size, frame, label, sprite and Ctrl K keys; icon-only where the docs trigger is (≤ 1180px, the nav-fit
-   states, the drawer widths), opening over the row while it is used. The placeholder (the trigger's sprite + label)
-   keeps the place until menu.js has made the box. */
+/* ---- search: Doxygen's search box in the frame of the bar's search trigger (.kit-gbar-search, chrome.css): the
+   same size, frame, label, sprite and Ctrl K keys; icon-only where the bar's trigger is (≤ 1180px), opening over the
+   end of the bar while it is used. The placeholder (the trigger's sprite + label) keeps the place until menu.js has
+   made the box. */
 .kit-dox-search {
   position: relative;
   cursor: text;
@@ -350,7 +270,7 @@ input:focus-visible {
   display: flex;
   align-items: center;
 }
-.kit-dox-search:has(.MSearchBoxActive) .kit-search-trigger-keys {
+.kit-dox-search:has(.MSearchBoxActive) .kit-gbar-search-keys {
   display: none;
 }
 /* the search sprite (Doxygen's magnifier-with-dropdown keeps its hover menu of result kinds) */
@@ -421,20 +341,12 @@ input:focus-visible {
     justify-content: center;
   }
 }
-@media (width > 960px) {
-  :root:is([data-kit-nav-fit="search"], [data-kit-nav-fit="tabs"], [data-kit-nav-fit="drawer"]) .kit-dox-search:not(:focus-within):not(:has(.MSearchBoxActive)) :is(#MSearchField, #MSearchBox .right) {
-    display: none;
-  }
-  :root:is([data-kit-nav-fit="search"], [data-kit-nav-fit="tabs"], [data-kit-nav-fit="drawer"]) .kit-dox-search:not(:focus-within):not(:has(.MSearchBoxActive)) #MSearchBox .left {
-    justify-content: center;
-  }
-}
 /* in use while compact: the full box over the end of the row (the row keeps its layout: the slot keeps 2rem) */
 .kit-dox-search:is(:focus-within, :has(.MSearchBoxActive)) {
   z-index: 2;
 }
 @media (max-width: 1180px) {
-  .kit-site-actions:has(.kit-dox-search:is(:focus-within, :has(.MSearchBoxActive))) {
+  .kit-gbar-end:has(.kit-dox-search:is(:focus-within, :has(.MSearchBoxActive))) {
     position: relative;
   }
   .kit-dox-search:is(:focus-within, :has(.MSearchBoxActive)) {
@@ -456,28 +368,12 @@ input:focus-visible {
       -1.5rem 0 1rem var(--color-canvas) !important;
   }
 }
-@media (width > 960px) {
-  :root:is([data-kit-nav-fit="search"], [data-kit-nav-fit="tabs"], [data-kit-nav-fit="drawer"]) .kit-dox-search:is(:focus-within, :has(.MSearchBoxActive)) #MSearchBox {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 16rem;
-    padding: 0 0.3125rem 0 0.625rem;
-    background: var(--color-surface) !important;
-    box-shadow:
-      0 -2px 0 0 var(--color-primary),
-      0 2px 0 0 var(--color-primary),
-      -2px 0 0 0 var(--color-primary),
-      2px 0 0 0 var(--color-primary),
-      -1.5rem 0 1rem var(--color-canvas) !important;
-  }
-}
 /* the results: a framed panel under the row, like the docs' search dialog (fixed: the row is sticky) */
 #MSearchResultsWindow,
 #MSearchSelectWindow {
   position: fixed !important;
   /* under the search box (kit.js keeps --kit-dox-search-top: the box moves while the bar scrolls away) */
-  top: var(--kit-dox-search-top, calc(var(--spacing-header) + 0.5rem)) !important;
+  top: var(--kit-dox-search-top, calc(var(--spacing-globalbar) + 0.5rem)) !important;
   left: auto !important;
   right: max(1rem, calc((100vw - 90rem) / 2 + 1.5rem)) !important;
   z-index: 60 !important;
@@ -503,7 +399,7 @@ html #powerTip {
 }
 #MSearchResultsWindow {
   width: min(28rem, calc(100vw - 2rem)) !important;
-  max-height: min(32rem, calc(100dvh - var(--kit-dox-search-top, var(--spacing-header)) - 1rem));
+  max-height: min(32rem, calc(100dvh - var(--kit-dox-search-top, var(--spacing-globalbar)) - 1rem));
   height: auto !important;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -563,7 +459,7 @@ html #powerTip {
 }
 
 /* ================================================================== the drawer (docs.css .kit-drawer*, MobileDrawer)
-   opened by the LeviMC bar's menu button up to 960px (and in the nav-fit "drawer" state); the API Reference
+   opened by the LeviMC bar's menu button up to 960px; the API Reference
    section's sidebar in it is Doxygen's tree (kit.js moves #nav-tree in while it is open). No blur: the head is
    opaque canvas. */
 .kit-dox-drawer-root[hidden] {
@@ -681,7 +577,7 @@ html #powerTip {
   overflow: visible;
 }
 html {
-  scroll-padding-top: calc(var(--spacing-header) + 1rem);
+  scroll-padding-top: calc(var(--spacing-globalbar) + 1rem);
 }
 /* doxygen-awesome's a.anchor scroll margin would add to the page's scroll padding */
 #doc-content a.anchor {
@@ -699,10 +595,10 @@ html {
   #side-nav {
     grid-column: 2;
     position: sticky !important;
-    top: var(--spacing-header);
+    top: var(--spacing-globalbar);
     left: auto;
     width: auto !important;
-    height: calc(100dvh - var(--spacing-header)) !important;
+    height: calc(100dvh - var(--spacing-globalbar)) !important;
     min-width: 0;
     max-width: none;
     margin-left: -0.75rem;
@@ -929,11 +825,11 @@ html {
    if navtree.js builds it, stays hidden); below 1281px the docs' "On this page" dropdown above the title */
 #page-nav {
   position: sticky !important;
-  top: var(--spacing-header);
+  top: var(--spacing-globalbar);
   align-self: start;
   width: auto !important;
   height: auto !important;
-  max-height: calc(100dvh - var(--spacing-header));
+  max-height: calc(100dvh - var(--spacing-globalbar));
   margin: 0;
   padding: 2.75rem 0 2rem;
   overflow-y: auto;
@@ -2230,4 +2126,72 @@ html.dark-mode div.center img[usemap] {
   .kit-dox-toc-mobile > summary .kit-dox-chevron {
     transition: none;
   }
+}
+
+/* ================================================================== kit 2.22: Doxygen's search box in the LeviMC bar
+   (the docs' .kit-gbar-search frame), the site's column head (docs.css .kit-sitenav) over the tree */
+.kit-gbar .kit-dox-search {
+  cursor: text;
+}
+.kit-gbar .kit-dox-search :is(#MSearchBox, #MSearchBox .left, #MSearchField) {
+  height: 1.625rem;
+}
+.kit-gbar .kit-dox-search #MSearchField {
+  line-height: 1.625rem;
+  color: #fff;
+}
+.kit-gbar .kit-dox-search #MSearchField::placeholder {
+  color: var(--gbar-muted);
+}
+.kit-gbar .kit-dox-search #MSearchClose {
+  color: var(--gbar-muted) !important;
+}
+@media (max-width: 1180px) {
+  .kit-gbar .kit-dox-search:is(:focus-within, :has(.MSearchBoxActive)) #MSearchBox {
+    height: 2rem;
+    background: var(--gbar-bg) !important;
+    box-shadow:
+      0 0 0 2px var(--color-primary),
+      -1.5rem 0 1rem var(--gbar-bg) !important;
+  }
+}
+#nav-tree .kit-dox-sitenav {
+  margin-bottom: 1rem;
+  font-family: var(--font-sans);
+  line-height: 1.5;
+}
+#nav-tree .kit-dox-sitenav ul,
+#nav-tree .kit-dox-sitenav li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#nav-tree .kit-dox-sitenav a.kit-site-brand:is(:link, :visited, :hover, :focus, :active) {
+  color: var(--color-ink) !important;
+  text-decoration: none;
+}
+#nav-tree .kit-dox-sitenav a.kit-sn-section-btn:is(:link, :visited, :focus, :active) {
+  color: var(--color-faint) !important;
+  font-weight: 700;
+  text-decoration: none;
+}
+#nav-tree .kit-dox-sitenav a.kit-sn-section-btn:hover,
+#nav-tree .kit-dox-sitenav a.kit-sn-section-btn.is-active:is(:link, :visited, :hover, :focus, :active) {
+  color: var(--color-ink) !important;
+}
+/* doxygen-awesome's #nav-tree a { padding: 0; margin … }: the column head keeps the docs' spacing */
+#nav-tree .kit-dox-sitenav a.kit-sn-brand {
+  margin: 0 0 1rem;
+  padding: 0.375rem 0.75rem 1rem;
+  font-size: inherit;
+  border-bottom: 2px dotted color-mix(in srgb, var(--color-line-strong) 80%, transparent);
+}
+#nav-tree .kit-dox-sitenav a.kit-sn-section-btn {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+#nav-tree .kit-dox-sitenav .kit-sn-section + .kit-sn-section {
+  margin-top: 0.25rem;
 }

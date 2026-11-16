@@ -67,6 +67,17 @@ function Item({ item, path, depth, onNavigate, idPath, openAll }: ItemProps) {
   );
 }
 
+/** A section's tree alone (no title, no landmark): the site sidebar (SiteNav) puts one under each section. */
+export function SidebarTree({ data, path, onNavigate, idPrefix = '' }: { data: SidebarData; path: string; onNavigate?: () => void; idPrefix?: string }) {
+  return (
+    <ul className="kit-sb-list kit-sb-root">
+      {data.items.map((it, i) => (
+        <Item key={i} item={it} path={path} depth={0} onNavigate={onNavigate} idPath={`${idPrefix}${i}`} openAll={data.openAll} />
+      ))}
+    </ul>
+  );
+}
+
 export function Sidebar({ data, path, label, onNavigate }: { data: SidebarData; path: string; label: string; onNavigate?: () => void }) {
   const ref = useRef<HTMLElement>(null);
   const revealed = useRef(false);

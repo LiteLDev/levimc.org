@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // Renders the Doxygen HTML_HEADER of a docs site's API reference (LeviLamina) from the docs build's navigation
 // (dist/_kit/nav.json, written by the kit docs engine for every docs build), so the API pages carry exactly the
-// docs pages' header: the LeviMC bar (its language menu lists the docs' locales, its menu button opens the drawer),
-// the project row (brand → the docs home, the section tabs — the tab whose link is under <base>api/ is current —,
-// search, the RESOURCES slot) and the docs drawer (sections, the API Reference tree, resources, LeviMC links).
+// docs pages' chrome: the LeviMC bar (its language menu lists the docs' locales, Doxygen's search box sits in its search
+// slot, its menu button opens the drawer), the site's column head over the tree (brand → the docs home, the sections —
+// the one whose link is under <base>api/ is current) and the docs drawer (sections, the API Reference tree,
+// resources, LeviMC links). kit 2.22: no header row of the docs' own.
 // Every other locale's labels and URLs ride along as data-kit-l10n (kit.js applies them for the visitor's language).
 //
 // No dependencies (runs in the Doxygen CI job right after `fetch-kit`): the React-rendered parts (bar, LeviMC
@@ -68,7 +69,7 @@ export function renderDoxygenHeader(nav, parts, opts = {}) {
   const tabAt = (n, i) => (n.tabs ?? [])[i];
   const resAt = (n, kind, i) => (n.resources ?? []).filter((r) => r.kind === kind)[i];
 
-  // ------------------------------------------------------------- the row (docs SiteHeader markup)
+  // ------------------------------------------------------------- links (docs SiteNav markup)
   const brandL10n = l10n((n) => [null, n.home], true);
   const tabLink = (t, i, cls) => {
     const on = i === activeIdx;
@@ -90,41 +91,21 @@ export function renderDoxygenHeader(nav, parts, opts = {}) {
     return { r, pick };
   });
   const extAttrs = (link) => (/^https?:/.test(link) ? ' target="_blank" rel="noopener"' : '');
-  // the RESOURCES slot (docs SiteHeader `Resource`): header.links (Download button, other links), then the repository
-  const rowResources = resourceItems
-    .map(({ r, pick }) => {
-      if (r.kind === 'github')
-        return `<a class="mc-icon-btn kit-site-social kit-site-repo" href="${esc(r.link)}"${extAttrs(r.link)} aria-label="${esc(r.text)}" title="${esc(r.text)}" data-kit-resource="github" data-kit-l10n-aria="${l10n(pick)}">${ico.github}</a>`;
-      const cls = r.kind === 'download' ? 'mc-btn mc-btn-primary kit-site-resource kit-site-download' : 'kit-site-nav-link kit-site-resource';
-      return `<a class="${cls}" href="${esc(r.link)}"${extAttrs(r.link)} data-kit-resource="${esc(r.kind)}" data-kit-l10n="${l10n(pick)}"><span data-kit-l10n-text="">${esc(r.text)}</span></a>`;
-    })
-    .join('');
-  const sectionTitle = activeIdx >= 0 ? tabs[activeIdx].text : 'API Reference';
-  const sectionTitleL10n = l10n((n) => {
-    const x = activeIdx >= 0 ? tabAt(n, activeIdx) : null;
-    return x ? [x.text, ''] : null;
-  });
   const textL10n = (key) => l10n((n, c) => [S(c)[key], '']);
 
-  const row = `<div id="top" class="kit-site-header kit-dox-header" data-kit-subnav=""><!-- do not remove this div, it is closed by doxygen! -->
-<header class="kit-site-header-inner kit-dox-row" data-kit-site-locales="${localesAttr}">
- <a class="kit-site-brand" href="${esc(def.home)}" data-kit-l10n="${brandL10n}">
-  <!--BEGIN PROJECT_LOGO--><img class="kit-site-logo" alt="" src="$relpath^$projectlogo" width="24" height="24"/><!--END PROJECT_LOGO-->
-  <span class="kit-site-title">${esc(def.title)}</span>
- </a>
- <nav class="kit-site-nav" aria-label="${esc(T.mainNav)}" data-kit-l10n-aria="${textL10n('mainNav')}">
-  <ul>
-   ${tabs.map((t, i) => `<li>${tabLink(t, i, 'kit-site-nav-link')}</li>`).join('\n   ')}
-  </ul>
- </nav>
- <div class="kit-site-actions">
-  <div class="kit-search-trigger kit-dox-search" data-kit-search-trigger="" aria-keyshortcuts="Control+K Meta+K /">
-   <span class="kit-dox-search-ph" aria-hidden="true">${ico.search}<span class="kit-search-trigger-label" data-kit-l10n="${textL10n('search')}">${esc(T.search)}</span></span>
-   <span class="kit-search-trigger-keys" aria-hidden="true"><kbd class="mc-kbd">Ctrl</kbd><kbd class="mc-kbd">K</kbd></span>
-  </div>${rowResources ? `\n  <span class="kit-site-resources" data-kit-resources="">${rowResources}</span>` : ''}
- </div>
-</header>
-<script type="text/javascript">${parts.fitScript}</script>`;
+  // kit 2.22: no header row. #top stays (Doxygen closes it and puts its own menus in it, all hidden); search is in the
+  // LeviMC bar (the docs' GlobalBar `search` slot), the brand and the sections head the tree's column (SiteNav).
+  const row = `<div id="top" class="kit-dox-top"><!-- do not remove this div, it is closed by doxygen! -->`;
+  const barSearch = `<div class="kit-gbar-search kit-dox-search" data-kit-search-trigger="" aria-keyshortcuts="Control+K Meta+K /" data-kit-site-locales="${localesAttr}">
+   <span class="kit-dox-search-ph" aria-hidden="true">${ico.search}<span class="kit-gbar-search-label" data-kit-l10n="${textL10n('search')}">${esc(T.search)}</span></span>
+   <span class="kit-gbar-search-keys" aria-hidden="true"><kbd>Ctrl</kbd><kbd>K</kbd></span>
+  </div>`;
+  const siteNav = `<nav class="kit-sitenav kit-dox-sitenav" aria-label="${esc(T.mainNav)}" data-kit-l10n-aria="${textL10n('mainNav')}">
+ <a class="kit-site-brand kit-sn-brand" href="${esc(def.home)}" data-kit-l10n="${brandL10n}"><!--BEGIN PROJECT_LOGO--><img class="kit-site-logo" alt="" src="$relpath^$projectlogo" width="28" height="28"/><!--END PROJECT_LOGO--><span class="kit-site-title">${esc(def.title)}</span></a>
+ <ul class="kit-sn-sections">
+  ${tabs.map((t, i) => `<li class="kit-sn-section${i === activeIdx ? ' is-active' : ''}">${tabLink(t, i, 'kit-sn-section-btn kit-sn-section-link')}</li>`).join('\n  ')}
+ </ul>
+</nav>`;
 
   // ------------------------------------------------------------- the drawer (docs MobileDrawer markup)
   // the drawer's Resources section (MobileDrawer): external links get the external mark, the repository its icon
@@ -164,7 +145,7 @@ ${parts.networkList}
 
   // the pane titles kit.js puts over the tree (the current tab's name, like the docs sidebar) and the outline
   const titles = `<div class="kit-dox-pane-titles" hidden="hidden" data-kit-site-locales="${localesAttr}">
- <p class="kit-sb-title" data-kit-l10n="${sectionTitleL10n}">${esc(sectionTitle)}</p>
+ ${siteNav}
  <p class="kit-toc-title" data-kit-l10n="${textL10n('onThisPage')}">${esc(T.onThisPage)}</p>
 </div>`;
 
@@ -182,7 +163,8 @@ ${parts.networkList}
   const gbar = parts.gbar
     .replace('<!--KIT:LANG-ITEMS-->', langItems)
     .replace('<!--KIT:LANG-LABEL-->', esc(def.label ?? def.lang))
-    .replace('data-kit-site-locales=""', `data-kit-site-locales="${localesAttr}"`);
+    .replace('data-kit-site-locales=""', `data-kit-site-locales="${localesAttr}"`)
+    .replace('<div class="kit-gbar-end">', () => `<div class="kit-gbar-end">${barSearch}`);
 
   return `<!-- levimc-kit ${parts.version} Doxygen HTML_HEADER (doxygen ≥ 1.10 + doxygen-awesome-css 2.4.1) — generated by static/doxygen/gen-header.mjs from ${esc(opts.source ?? 'nav.json')} -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

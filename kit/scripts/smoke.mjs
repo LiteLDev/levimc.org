@@ -11,10 +11,10 @@
 // the cross-site cookies (levimc_theme / levimc_lang) and applied again after a reload, no console or hydration
 // errors, the phone layout (one menu button, the bar's, at the same place on every site; on docs sites it opens
 // the drawer: sections → section tree → Resources → LeviMC links; no sideways scroll) and the themed 404.
-// Docs mode adds: the navigation IA (kit 2.19: brand = home, tabs = sections, the sidebar is the active section,
-// prev/next stays inside it), SPA navigation, Ctrl+K search, the language menu landing on the equivalent page, the
-// root-only language redirect (the stored preference wins), content tabs, copy buttons, no duplicated controls
-// in the docs header and its sticky behaviour. Exit code 1 on any failure.
+// Docs mode adds: the navigation IA (kit 2.22: no header row; the site column has the brand = home and the sections,
+// the current one holds the page, prev/next stays inside it), SPA navigation, Ctrl+K search (its trigger is in the
+// LeviMC bar, which sticks), the language menu landing on the equivalent page, the root-only language redirect (the
+// stored preference wins), content tabs, copy buttons and no duplicated controls in the site column. Exit code 1 on any failure.
 import { createRequire } from 'node:module';
 
 const args = process.argv.slice(2);
@@ -80,7 +80,7 @@ await page.goto(base, { waitUntil: 'networkidle' });
 // Pages to visit: --pages, else links found on the home page.
 let pages = (opt('--pages', '') || '').split(',').filter(Boolean).map((p) => base + p.replace(/^\//, ''));
 if (!pages.length) {
-  pages = await page.$$eval(APP ? 'main a[href], [data-kit-globalbar] a[href]' : '[data-kit-hero] a[href], .kit-site-nav a[href], [data-doc-content] a[href]', (as, b) => {
+  pages = await page.$$eval(APP ? 'main a[href], [data-kit-globalbar] a[href]' : '[data-kit-hero] a[href], .kit-sitenav a[href], [data-doc-content] a[href]', (as, b) => {
     const out = [];
     for (const a of as) {
       const h = a.href.split('#')[0];
@@ -353,7 +353,7 @@ if (!APP) {
     await page.goto(base, { waitUntil: 'networkidle' });
     await page.evaluate(() => (window.__kitSmokeMarker = 1));
     const cur = new URL(page.url()).pathname;
-    const candidates = page.locator('.kit-site-nav a[href]:not([target]), .kit-hero a[href]:not([target]), [data-doc-content] a[href^="/"]:not([target])');
+    const candidates = page.locator('.kit-sitenav a[href]:not([target]), .kit-hero a[href]:not([target]), [data-doc-content] a[href^="/"]:not([target])');
     let link = null;
     for (let i = 0; i < (await candidates.count()); i++) {
       const h = await candidates.nth(i).getAttribute('href');
@@ -371,65 +371,70 @@ if (!APP) {
     assert(!errs.length, errs.join(' | '));
     return href;
   });
-  await check('docs header: one row of identity + sections + search, no duplicated controls, sticky', async () => {
+  await check('docs chrome (kit 2.22): no header row; search in the LeviMC bar, which sticks; the site column', async () => {
     await page.goto(pages[0] ?? base, { waitUntil: 'networkidle' });
-    const dup = await page.evaluate(() => {
-      const h = document.querySelector('.kit-site-header');
-      // the bar has theme + language; the only GitHub link in the row is the project's repository (resources slot)
-      return h
-        ? ['[data-kit-theme-toggle]', '[data-kit-locale-switcher]', '[data-kit-nav-toggle]', '.kit-site-actions > a[href^="https://github.com/"]'].filter((s) => h.querySelector(s))
-        : null;
-    });
-    assert(dup, 'no .kit-site-header');
-    assert(!dup.length, `duplicated controls in the docs header: ${dup.join(', ')}`);
-    // a short page may not scroll far: make room below the content so the bar can scroll away
+    const r = await page.evaluate(() => ({
+      row: !!document.querySelector('.kit-site-header'),
+      search: document.querySelectorAll('[data-kit-globalbar] [data-kit-search-trigger]').length,
+      column: !!document.querySelector('.kit-doc-sidebar .kit-sitenav'),
+      // the column has no theme / language / LeviMC GitHub controls of its own (those are the bar's)
+      dup: ['[data-kit-theme-toggle]', '[data-kit-locale-switcher]', 'a[href="https://github.com/LiteLDev"]'].filter((x) => document.querySelector(`.kit-sitenav ${x}`)),
+    }));
+    assert(!r.row, 'a docs header row (.kit-site-header) is still rendered');
+    assert(r.search === 1, `${r.search} search triggers in the bar`);
+    assert(r.column, 'no site column (.kit-sitenav in .kit-doc-sidebar)');
+    assert(!r.dup.length, `duplicated controls in the site column: ${r.dup.join(', ')}`);
+    // a short page may not scroll far: make room below the content
     await page.evaluate(() => {
       document.querySelector('.kit-shell')?.style.setProperty('padding-bottom', '150vh');
       window.scrollTo(0, 1200);
     });
     await page.waitForTimeout(150);
-    const pos = await page.evaluate(() => ({ header: document.querySelector('.kit-site-header').getBoundingClientRect().top, bar: document.querySelector('[data-kit-globalbar]').getBoundingClientRect().bottom }));
-    assert(Math.abs(pos.header) < 1, `header not stuck (top ${pos.header})`);
-    assert(pos.bar <= 0, 'the LeviMC bar did not scroll away');
-    return `stuck at 0; bar scrolled away; fit=${await page.evaluate(() => document.documentElement.getAttribute('data-kit-nav-fit') ?? 'none')}`;
+    const bar = await page.evaluate(() => document.querySelector('[data-kit-globalbar]').getBoundingClientRect().top);
+    assert(Math.abs(bar) < 1, `the LeviMC bar is not stuck (top ${bar})`);
+    return 'bar stuck at 0, search in the bar, site column';
   });
-  await check('navigation IA: brand = home, tabs = sections, sidebar = the active section, pager inside it', async () => {
+  await check('navigation IA: brand = home, the site column lists the sections, the current one holds the page and the pager', async () => {
     const problems = [];
     let checked = 0;
     for (const u of [base, ...pages].slice(0, 12)) {
       await page.goto(u, { waitUntil: 'networkidle' });
       const r = await page.evaluate(() => {
-        const brand = document.querySelector('.kit-site-brand')?.getAttribute('href');
-        const tabs = [...document.querySelectorAll('.kit-site-nav > ul > li > :is(a, details)')];
-        const active = document.querySelector('.kit-site-nav-link.is-active');
-        const sb = document.querySelector('.kit-doc-sidebar');
-        const sbLinks = sb ? [...sb.querySelectorAll('a.kit-sb-link')].map((a) => a.getAttribute('href')) : [];
+        const nav = document.querySelector('.kit-doc-sidebar .kit-sitenav');
+        const brand = nav?.querySelector('.kit-sn-brand')?.getAttribute('href') ?? null;
+        const sections = nav ? [...nav.querySelectorAll('.kit-sn-sections > .kit-sn-section > .kit-sn-section-btn')] : [];
+        const active = nav?.querySelector('.kit-sn-section.is-active');
+        const activeLinks = active ? [...active.querySelectorAll('a.kit-sb-link')].map((a) => a.getAttribute('href')) : [];
         return {
-          home: !document.querySelector('.kit-doc-layout'),
+          home: !!document.querySelector('.kit-home'),
+          hasNav: !!nav,
           brand,
-          tabLinks: tabs.map((t) => t.getAttribute?.('href') ?? null),
-          dropdowns: document.querySelectorAll('.kit-site-nav details').length,
-          external: document.querySelectorAll('.kit-site-nav a[target="_blank"]').length,
-          activeText: active?.textContent.trim() ?? null,
-          sbTitle: sb?.querySelector('.kit-sb-title')?.textContent.trim() ?? null,
-          hasSidebar: !!sb,
+          sectionLinks: sections.map((x) => x.getAttribute('href')),
+          newTab: nav ? nav.querySelectorAll('.kit-sn-sections a[target="_blank"]').length : 0,
+          activeCount: nav ? nav.querySelectorAll('.kit-sn-section.is-active').length : 0,
+          current: nav?.querySelector('a.kit-sb-link.is-active')?.getAttribute('href') ?? null,
+          currentInActive: !!active?.querySelector('a.kit-sb-link.is-active'),
           pager: [...document.querySelectorAll('.kit-pager-link')].map((a) => a.getAttribute('href')),
-          sbLinks,
-          repo: document.querySelectorAll('.kit-site-actions [data-kit-resource="github"]').length,
+          activeLinks,
+          repo: nav ? nav.querySelectorAll('[data-kit-resource="github"]').length : 0,
         };
       });
       checked++;
       const at = new URL(u).pathname;
-      if (r.tabLinks.includes(r.brand)) problems.push(`${at}: a tab links the home page (the brand is the home link)`);
-      if (r.dropdowns || r.external) problems.push(`${at}: ${r.dropdowns} dropdown / ${r.external} external tab(s)`);
-      if (r.repo > 1) problems.push(`${at}: ${r.repo} repository icons`);
-      if (r.home) {
-        if (r.activeText) problems.push(`${at}: a tab is active on the home page`);
+      if (!r.hasNav) {
+        problems.push(`${at}: no site column`);
         continue;
       }
-      if (!r.hasSidebar) problems.push(`${at}: doc page without a sidebar (in no section)`);
-      else if (r.activeText !== r.sbTitle) problems.push(`${at}: active tab '${r.activeText}' ≠ sidebar title '${r.sbTitle}'`);
-      for (const h of r.pager) if (!r.sbLinks.includes(h)) problems.push(`${at}: pager link ${h} leaves the section`);
+      if (r.sectionLinks.includes(r.brand)) problems.push(`${at}: a section links the home page (the brand is the home link)`);
+      if (r.newTab) problems.push(`${at}: ${r.newTab} section(s) open in a new tab`);
+      if (r.repo > 1) problems.push(`${at}: ${r.repo} repository links`);
+      if (r.home) {
+        if (r.activeCount) problems.push(`${at}: a section is current on the home page`);
+        continue;
+      }
+      if (r.activeCount !== 1) problems.push(`${at}: ${r.activeCount} current sections`);
+      else if (r.current && !r.currentInActive) problems.push(`${at}: the current page is not in the current section`);
+      for (const h of r.pager) if (!r.activeLinks.includes(h)) problems.push(`${at}: pager link ${h} leaves the section`);
       if (r.pager.includes(r.brand)) problems.push(`${at}: the pager links the home page`);
     }
     assert(!problems.length, problems.slice(0, 6).join(' | '));

@@ -68,6 +68,11 @@ export interface GlobalBarProps {
   /** With `onMenu`: the id of the menu it opens (`aria-controls`, e.g. the drawer's dialog). */
   menuControls?: string;
   /** Keep the bar at the top while scrolling (sites where it is the only header). Docs headers scroll it away. */
+  /**
+   * The site's search (kit 2.22: docs sites put it here instead of in their own header row): a trigger before the
+   * language menu, labelled `label`, with the Ctrl K hint. `onWarm` (hover / focus) may start loading the index.
+   */
+  search?: { label: string; onOpen: () => void; onWarm?: () => void };
   sticky?: boolean;
   className?: string;
   /** @deprecated kit 1.0: extra controls. The bar's controls are fixed in 1.1 (language, theme, GitHub); ignored. */
@@ -246,6 +251,7 @@ export function GlobalBar({
   menuOpen = false,
   menuControls,
   sticky = false,
+  search,
   className,
 }: GlobalBarProps) {
   const t = uiStrings(locale, strings);
@@ -302,6 +308,27 @@ export function GlobalBar({
           </ul>
         </nav>
         <div className="kit-gbar-end">
+          {search ? (
+            <button
+              type="button"
+              className="kit-gbar-search"
+              data-kit-search-trigger=""
+              onClick={search.onOpen}
+              onPointerEnter={search.onWarm}
+              onFocus={search.onWarm}
+              aria-keyshortcuts="Control+K Meta+K /"
+              aria-label={search.label}
+            >
+              <PixelIcon name="search" />
+              <span className="kit-gbar-search-label" aria-hidden="true">
+                {search.label}
+              </span>
+              <span className="kit-gbar-search-keys" aria-hidden="true">
+                <kbd>Ctrl</kbd>
+                <kbd>K</kbd>
+              </span>
+            </button>
+          ) : null}
           <LocaleSwitcher
             options={langOptions}
             current={lang.current}

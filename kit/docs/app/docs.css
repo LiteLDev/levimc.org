@@ -10,72 +10,15 @@
     min-height: 100dvh;
   }
 
-  /* ================================================================== site header (the docs' own row) */
-  /* One header, two rows: the LeviMC bar (dark, scrolls away) and this light row of project identity +
-     section tabs + search, which sticks. It sits on the page's own canvas — no second bar, border or shadow;
-     a hairline fades in only once it is stuck over scrolled content. */
-  :root:has(.kit-site-header) {
-    --kit-sticky-offset: var(--spacing-header);
-  }
-  /* Opaque once stuck, with no blur (kit 2.19): transparent at the top of the page, then the canvas and a bottom
-     hairline fade in while the LeviMC bar scrolls away. Both are pseudo-elements whose opacity alone is animated on
-     the root scroll timeline, so the compositor runs it (no style, paint or backdrop-filter on any scroll frame).
-     Without scroll timelines they are simply shown. The Doxygen row (doxygen-kit.css #top) does the same. */
-  .kit-site-header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    height: var(--spacing-header);
-  }
-  .kit-site-header::before,
-  .kit-site-header::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    z-index: -1;
-    pointer-events: none;
-  }
-  .kit-site-header::before {
-    top: 0;
-    bottom: 0;
-    background: var(--color-canvas);
-  }
-  .kit-site-header::after {
-    bottom: -1px;
-    height: 1px;
-    background: color-mix(in srgb, var(--color-line) 70%, transparent);
-  }
-  @supports (animation-timeline: scroll()) {
-    .kit-site-header::before,
-    .kit-site-header::after {
-      animation: kit-subnav-stuck linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 var(--spacing-globalbar);
-    }
-  }
-  .kit-site-header-inner {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    height: 100%;
-    max-width: 90rem;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-  }
+  /* ================================================================== the site's brand (logo + name), kit 2.22: it
+     heads the site's column (SiteNav), the drawer and the Doxygen tree */
   .kit-site-brand {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    flex: 0 1 auto;
     min-width: 0;
-    height: 100%;
-    padding-right: 1rem;
-    margin-right: 0.5rem;
     color: var(--color-ink);
     text-decoration: none;
-    /* a short rule between the project and its sections */
-    background: linear-gradient(var(--color-line), var(--color-line)) right center / 1px 1.25rem no-repeat;
   }
   .kit-site-logo {
     width: 24px;
@@ -97,244 +40,6 @@
   }
   .dark .kit-site-brand:hover .kit-site-title {
     color: var(--color-primary);
-  }
-  .kit-site-spacer {
-    flex: 1;
-  }
-  .kit-site-nav {
-    flex: 1;
-    min-width: 0;
-    height: 100%;
-  }
-  .kit-site-nav > ul {
-    display: flex;
-    align-items: stretch;
-    gap: 0;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    /* without JS (or before the fit script runs) a nav that is too long scrolls instead of being cut off */
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  /* an open dropdown must not be clipped by the scrolling list (a scroll container clips both axes) */
-  .kit-site-nav > ul:has(> li > .kit-menu[open]) {
-    overflow-x: clip;
-    overflow-y: visible;
-  }
-  .kit-site-nav > ul > li {
-    display: flex;
-    flex: none; /* never squeeze items (and their external-link icons): see the nav fit in SiteHeader */
-  }
-  .kit-site-nav-link {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    height: 100%;
-    padding: 0 0.75rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--color-muted);
-    text-decoration: none;
-    white-space: nowrap;
-    transition: color 0.12s;
-  }
-  .kit-site-nav-link:hover,
-  .kit-menu[open] > .kit-site-nav-link {
-    color: var(--color-ink);
-  }
-  .kit-site-nav-link.is-active {
-    color: var(--color-ink);
-    font-weight: 600;
-  }
-  /* current section: a 2px pixel rule in the primary colour, flush with the row's bottom edge */
-  .kit-site-nav-link.is-active::after {
-    content: "";
-    position: absolute;
-    left: 0.75rem;
-    right: 0.75rem;
-    bottom: 0;
-    height: 2px;
-    background: var(--color-primary);
-  }
-  .kit-site-nav-ext {
-    flex: none;
-    width: 12px;
-    height: 12px;
-    opacity: 0.6;
-  }
-  .kit-site-nav-menu {
-    display: flex;
-  }
-  .kit-site-nav-menu .kit-menu-panel {
-    left: 0;
-    right: auto;
-    top: calc(100% + 2px);
-  }
-  .kit-site-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    margin-left: auto;
-    flex: none;
-  }
-  .kit-search-trigger {
-    --px-border: var(--color-line);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    height: 2rem;
-    min-width: 13rem;
-    margin: 0 2px 0 0.75rem;
-    padding: 0 0.3125rem 0 0.625rem;
-    font-size: 0.8125rem;
-    color: var(--color-muted);
-    background: color-mix(in srgb, var(--color-surface) 80%, transparent);
-    cursor: pointer;
-    box-shadow:
-      0 -2px 0 0 var(--px-border),
-      0 2px 0 0 var(--px-border),
-      -2px 0 0 0 var(--px-border),
-      2px 0 0 0 var(--px-border);
-    transition: color 0.12s;
-  }
-  .kit-search-trigger:hover {
-    --px-border: color-mix(in srgb, var(--color-primary) 55%, var(--color-line-strong));
-    color: var(--color-ink);
-  }
-  .kit-search-trigger:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 4px;
-  }
-  .kit-search-trigger-keys {
-    display: inline-flex;
-    margin-left: auto;
-  }
-  .kit-search-trigger-keys .mc-kbd {
-    height: 1.125rem;
-    min-width: 1.125rem;
-    font-size: 0.625rem;
-    padding: 0 0.25rem 0.1rem;
-  }
-  /* compact search: the icon only; "Search" stays the accessible name (visually hidden, not removed) */
-  .kit-search-trigger-label {
-    white-space: nowrap;
-  }
-  .kit-nav-toggle {
-    display: none;
-    margin-left: -0.5rem;
-  }
-  .kit-site-social {
-    width: 2rem;
-    height: 2rem;
-  }
-
-  /* ---- nav fit (html[data-kit-nav-fit], measured by SiteHeader before the first paint and on resize) */
-  @media (width > 960px) {
-    :root:is([data-kit-nav-fit="search"], [data-kit-nav-fit="tabs"], [data-kit-nav-fit="drawer"]) .kit-search-trigger {
-      width: 2rem;
-      min-width: 0;
-      padding: 0;
-      justify-content: center;
-    }
-    :root:is([data-kit-nav-fit="search"], [data-kit-nav-fit="tabs"], [data-kit-nav-fit="drawer"]) .kit-search-trigger-keys {
-      display: none;
-    }
-    :root:is([data-kit-nav-fit="search"], [data-kit-nav-fit="tabs"], [data-kit-nav-fit="drawer"]) .kit-search-trigger-label {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-    }
-    /* the tabs get their own row under brand + search (MkDocs Material navigation.tabs), still one light header */
-    :root[data-kit-nav-fit="tabs"],
-    :root:has(.kit-site-header.has-tabs-row) {
-      --spacing-header: 5.75rem;
-    }
-    :root[data-kit-nav-fit="tabs"] .kit-site-header-inner,
-    .kit-site-header.has-tabs-row .kit-site-header-inner {
-      flex-wrap: wrap;
-      align-content: flex-start;
-      row-gap: 0;
-    }
-    :root[data-kit-nav-fit="tabs"] .kit-site-header,
-    .kit-site-header.has-tabs-row {
-      height: 5.75rem;
-    }
-    :root[data-kit-nav-fit="tabs"] :is(.kit-site-brand, .kit-site-actions),
-    .kit-site-header.has-tabs-row :is(.kit-site-brand, .kit-site-actions) {
-      height: 3.25rem;
-    }
-    :root[data-kit-nav-fit="tabs"] .kit-site-brand,
-    .kit-site-header.has-tabs-row .kit-site-brand {
-      background: none;
-    }
-    :root[data-kit-nav-fit="tabs"] .kit-site-nav,
-    .kit-site-header.has-tabs-row .kit-site-nav {
-      order: 3;
-      flex: 1 0 100%;
-      height: 2.5rem;
-      margin: 0 -0.75rem;
-    }
-    :root[data-kit-nav-fit="drawer"] .kit-site-nav {
-      display: none;
-    }
-    :root[data-kit-nav-fit="drawer"] .kit-site-brand {
-      margin-right: auto;
-      background: none;
-    }
-    :root[data-kit-nav-fit="drawer"] .kit-nav-toggle {
-      display: inline-grid;
-    }
-  }
-  @media (max-width: 1180px) {
-    .kit-search-trigger {
-      width: 2rem;
-      min-width: 0;
-      padding: 0;
-      justify-content: center;
-    }
-    .kit-search-trigger-keys {
-      display: none;
-    }
-    .kit-search-trigger-label {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-    }
-  }
-  @media (max-width: 960px) {
-    .kit-site-nav {
-      display: none;
-    }
-    .kit-site-brand {
-      margin-right: auto;
-      padding-right: 0.5rem;
-      background: none;
-    }
-    .kit-nav-toggle {
-      display: inline-grid;
-    }
-    .kit-site-header-inner {
-      padding: 0 1rem;
-      gap: 0.25rem;
-    }
-  }
-  @media (max-width: 420px) {
-    .kit-site-header-inner {
-      padding: 0 0.75rem;
-    }
-    .kit-nav-toggle {
-      margin-left: -0.25rem;
-    }
-    .kit-site-brand {
-      gap: 0.5rem;
-    }
   }
 
   /* ================================================================== doc layout */
@@ -359,9 +64,9 @@
   }
   .kit-doc-sidebar {
     position: sticky;
-    top: var(--spacing-header);
+    top: var(--kit-sticky-offset, var(--spacing-globalbar));
     align-self: start;
-    height: calc(100dvh - var(--spacing-header));
+    height: calc(100dvh - var(--kit-sticky-offset, var(--spacing-globalbar)));
     margin-left: -0.75rem;
     overflow: hidden;
   }
@@ -390,9 +95,9 @@
   }
   .kit-doc-toc {
     position: sticky;
-    top: var(--spacing-header);
+    top: var(--kit-sticky-offset, var(--spacing-globalbar));
     align-self: start;
-    max-height: calc(100dvh - var(--spacing-header));
+    max-height: calc(100dvh - var(--kit-sticky-offset, var(--spacing-globalbar)));
     overflow-y: auto;
     padding: 2.75rem 0 2rem;
   }
@@ -428,6 +133,106 @@
   }
 
   /* ================================================================== sidebar */
+  /* the site's column (kit 2.22, SiteNav): brand, the sections (the current one open), the resources */
+  .kit-sitenav {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .kit-sitenav .kit-sn-brand {
+    display: flex;
+    height: auto;
+    gap: 0.625rem;
+    margin: 0 0 1rem;
+    padding: 0.375rem 0.75rem 1rem;
+    background: none;
+    border-bottom: 2px dotted color-mix(in srgb, var(--color-line-strong) 80%, transparent);
+  }
+  .kit-sitenav .kit-sn-brand .kit-site-logo {
+    width: 28px;
+    height: 28px;
+  }
+  .kit-sitenav .kit-sn-brand .kit-site-title {
+    font-size: 1.0625rem;
+    white-space: normal;
+  }
+  .kit-sn-sections {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .kit-sn-section + .kit-sn-section {
+    margin-top: 0.25rem;
+  }
+  .kit-sn-section-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.4;
+    text-align: left;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-faint);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    transition:
+      color 0.12s,
+      background-color 0.12s;
+  }
+  .kit-sn-section-btn:hover {
+    color: var(--color-ink);
+    background: color-mix(in srgb, var(--color-ink) 4%, transparent);
+  }
+  .kit-sn-section.is-active > .kit-sn-section-btn {
+    color: var(--color-ink);
+  }
+  .kit-sn-section-btn[aria-expanded="true"] .kit-sb-chevron {
+    transform: rotate(90deg);
+  }
+  .kit-sn-section-link.kit-sn-section-btn {
+    justify-content: flex-start;
+  }
+  .kit-sn-tree {
+    margin: 0.125rem 0 0.75rem;
+  }
+  .kit-sn-resources {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    margin-top: 1.25rem;
+    padding: 1rem 0.75rem 0;
+    border-top: 2px dotted color-mix(in srgb, var(--color-line-strong) 80%, transparent);
+  }
+  .kit-sn-download {
+    justify-content: center;
+    margin-bottom: 0.5rem;
+  }
+  .kit-sn-resource {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+  .kit-sn-resource:hover {
+    color: var(--color-ink);
+  }
+  /* the home page with the site's column: the hero and the cards share the main column */
+  .kit-home-layout > .kit-home {
+    min-width: 0;
+  }
   .kit-sb-title {
     margin: 0 0 0.75rem 0.75rem;
     font-size: 0.75rem;
@@ -1036,12 +841,6 @@
   }
 }
 
-/* the stuck look of .kit-site-header (its ::before canvas and ::after hairline): opacity only, compositor-driven */
-@keyframes kit-subnav-stuck {
-  from {
-    opacity: 0;
-  }
-}
 @keyframes kit-slide-in-end {
   from {
     transform: translateX(24px);
@@ -1068,30 +867,6 @@
 
 /* kit 2.19 nav (workstream docs-engine): resources slot, drawer resources, search containment, drawer state */
 @layer components {
-  /* the RESOURCES slot after search: header.links (Download = accent button, Changelog = text link), then the
-     project's GitHub icon (config repo) */
-  .kit-site-resources {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    margin-left: 0.5rem;
-  }
-  .kit-site-download {
-    height: 2rem;
-    min-height: 0;
-    padding: 0 0.75rem;
-    font-size: 0.8125rem;
-    white-space: nowrap;
-  }
-  .kit-site-resource.kit-site-nav-link {
-    height: 2rem;
-  }
-  @media (max-width: 960px) {
-    /* phones and tablets: the drawer lists the resources (Resources section) */
-    .kit-site-resources {
-      display: none;
-    }
-  }
   /* sections -> section tree -> Resources -> LeviMC: the drawer's own section heading */
   .kit-drawer-resources {
     margin: 1rem 0.75rem 0;
@@ -1128,12 +903,5 @@
   }
   .kit-search-item {
     contain: content;
-  }
-  /* above 960px the tabs only move into the drawer when even the tabs row cannot hold them (header.tabsRow:
-     false): the bar's menu button (GlobalBar onMenu, [data-kit-gbar-menu]) then opens the drawer */
-  @media (width > 960px) {
-    :root[data-kit-nav-fit="drawer"] .kit-gbar [data-kit-gbar-menu] {
-      display: inline-grid;
-    }
   }
 }

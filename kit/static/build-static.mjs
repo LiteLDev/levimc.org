@@ -156,10 +156,10 @@ writeFileSync(
 );
 
 // ---------------------------------------------------------------- 4. Doxygen header/footer templates
-// The API reference of LeviLamina (the only Doxygen site) carries the docs pages' header: the LeviMC bar (its
-// language menu lists the docs' locales, its menu button opens the drawer), the project row (the docs SiteHeader
-// markup: brand, section tabs with API Reference current, search = Doxygen's search box in the docs trigger's frame,
-// resources) and the docs drawer. doxygen/gen-header.mjs renders header.html from the docs build's
+// The API reference of LeviLamina (the only Doxygen site) carries the docs pages' chrome: the LeviMC bar (its
+// language menu lists the docs' locales, its search slot holds Doxygen's search box, its menu button opens the
+// drawer), the site's column head over the tree (the docs SiteNav markup: brand, sections with API Reference
+// current) and the docs drawer (kit 2.22: no header row). doxygen/gen-header.mjs renders header.html from the docs build's
 // dist/_kit/nav.json (CI); the React-rendered parts it needs are written to doxygen/header-parts.json here, and
 // doxygen/header.html is rendered from the fallback below (LeviLamina's sections) for local use.
 const DOX_PROJECT = 'LeviLamina';
@@ -236,21 +236,11 @@ const pickStrings = (loc) => {
   const d = docsStrings ? docsStrings(loc) : { resources: 'Resources' };
   return { mainNav: t.mainNav, search: t.search, menu: t.menu, close: t.close, onThisPage: t.onThisPage, network: t.network, skipToContent: t.skipToContent, resources: d.resources };
 };
-// inline after the row, before the first paint (the docs' navFitScript, measuring #top's row): the first state and
-// the natural widths (window.__kitNavFit) kit.js computes every later state from
-const doxFitScript =
-  `(function(){try{var d=document.documentElement,i=document.querySelector("#top > .kit-site-header-inner"),u=i&&i.querySelector(".kit-site-nav > ul"),` +
-  `t=i&&i.querySelector(".kit-search-trigger"),S=["search","tabs","drawer"],k,c,m,a,z;if(!u)return;d.removeAttribute("data-kit-nav-fit");a=u.firstElementChild;z=u.lastElementChild;` +
-  `if(u.clientWidth>0&&a&&z){c=getComputedStyle(i);m={w:i.clientWidth-parseFloat(c.paddingLeft)-parseFloat(c.paddingRight),need:z.getBoundingClientRect().right-a.getBoundingClientRect().left,have:u.clientWidth,` +
-  `trig:t?t.offsetWidth:0,rem:parseFloat(getComputedStyle(d).fontSize)||16,compact:matchMedia("(max-width: 1180px)").matches,` +
-  `loading:!!document.fonts&&document.fonts.status!=="loaded"};window.__kitNavFit=m}` +
-  `for(k=0;k<S.length;k++){if(u.scrollWidth<=u.clientWidth)return;d.setAttribute("data-kit-nav-fit",S[k])}}catch(e){}})();`;
 const headerParts = {
   version: VERSION,
   generator: version.KIT_GENERATOR,
   themeInit: doxygenInit,
   fontHead: fonts.FONT_HEAD_HTML.replace(/ \/>/g, '/>'),
-  fitScript: doxFitScript,
   uiLocales: i18n.UI_LOCALES,
   strings: Object.fromEntries(i18n.UI_LOCALES.map((loc) => [loc, pickStrings(loc)])),
   gbar: doxBar,

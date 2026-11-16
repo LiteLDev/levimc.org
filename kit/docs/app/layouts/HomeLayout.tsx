@@ -3,6 +3,7 @@ import type { HeroData, PageData, RouteMeta } from '../../shared/types';
 import { preferredPlatform, type DevicePlatform } from '../../shared/platform';
 import { langOf, site } from '../data';
 import { KitLink } from '../components/KitLink';
+import { SiteNav } from '../components/SiteNav';
 import { useContentEnhancements } from '../enhance';
 import { PaintedHero } from '../../../components/PaintedHero';
 import { Card } from '../../../components/Card';
@@ -21,7 +22,7 @@ function actionsForPlatform(actions: HeroActions, platform: DevicePlatform | und
   return [...mine, ...rest];
 }
 
-export function HomeLayout({ route, page }: { route: RouteMeta; page: PageData; t: UiStrings }) {
+export function HomeLayout({ route, page, t }: { route: RouteMeta; page: PageData; t: UiStrings }) {
   const contentRef = useRef<HTMLDivElement>(null);
   useContentEnhancements(contentRef, route.page);
   const hero = page.hero ?? {};
@@ -30,6 +31,13 @@ export function HomeLayout({ route, page }: { route: RouteMeta; page: PageData; 
   const [platform, setPlatform] = useState<DevicePlatform>();
   useEffect(() => setPlatform(preferredPlatform()), []);
   return (
+    // kit 2.22: the home page has the site's column too (the docs have no header row any more)
+    <div className="kit-doc-layout kit-home-layout" data-sidebar="">
+      <div className="kit-doc-sidebar">
+        <div className="kit-doc-sidebar-inner">
+          <SiteNav route={route} locale={route.locale} t={t} />
+        </div>
+      </div>
     <main id="kit-main" className="kit-home" tabIndex={-1}>
       <PaintedHero
         eyebrow={site.project && /^[\x00-\x7f]+$/.test(site.project) ? `LeviMC · Docs` : undefined}
@@ -70,5 +78,6 @@ export function HomeLayout({ route, page }: { route: RouteMeta; page: PageData; 
         <div ref={contentRef} data-doc-content="" hidden />
       )}
     </main>
+    </div>
   );
 }

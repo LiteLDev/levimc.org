@@ -325,12 +325,12 @@
   });
 
   // ------------------------------------------------------------------ Doxygen (static/doxygen/header.html)
-  // The API pages carry the docs header (#top is the docs' .kit-site-header), the docs drawer and the docs layout
-  // (doxygen-kit.css). Here: landmarks, Doxygen's search box in the row's search slot, the nav fit, the drawer (opened
-  // by the LeviMC bar's menu button), the tree (built lazily), the "On this page" outline and its scroll-spy.
+  // The API pages carry the docs chrome (kit 2.22: no header row; #top only holds Doxygen's hidden menus), the docs
+  // drawer and the docs layout (doxygen-kit.css). Here: landmarks, Doxygen's search box in the LeviMC bar's search
+  // slot, the site's column head over the tree, the drawer (opened by the bar's menu button), the tree (built lazily),
+  // the "On this page" outline and its scroll-spy.
   var dtop = document.getElementById('top');
-  var drow = dtop && dtop.querySelector('.kit-site-header-inner');
-  if (doxygen && dtop && drow) {
+  if (doxygen && dtop) {
     // tells the kit's navtree.js patch (doxygen/patch-navtree.mjs) that the kit lays the page out
     window.kitDoxygen = true;
     var DRAWER_MAX = '(max-width: 960px)'; // the docs' one breakpoint (docs.css, doxygen-kit.css)
@@ -354,8 +354,8 @@
     if (dmain && !dmain.hasAttribute('tabindex')) dmain.setAttribute('tabindex', '-1');
 
     // ---- search: menu.js builds Doxygen's search box (and rebuilds it when the window crosses 768px) in its own
-    // holders; it lives in the row's search slot (the docs trigger's frame). Ctrl/⌘+K and "/" focus it.
-    var dslot = drow.querySelector('.kit-dox-search');
+    // holders (in #top); it lives in the bar's search slot (the docs trigger's frame). Ctrl/⌘+K and "/" focus it.
+    var dslot = document.querySelector('.kit-dox-search');
     var adoptSearch = function () {
       if (!dslot) return;
       var boxes = document.querySelectorAll('#MSearchBox');
@@ -364,7 +364,7 @@
         if (box.parentNode === dslot) continue;
         var old = dslot.querySelector('#MSearchBox');
         if (old) dslot.removeChild(old);
-        dslot.insertBefore(box, dslot.querySelector('.kit-search-trigger-keys'));
+        dslot.insertBefore(box, dslot.querySelector('.kit-gbar-search-keys'));
       }
     };
     adoptSearch();
@@ -403,76 +403,8 @@
       }
     });
 
-    // ---- the nav fit: the docs header's states (html[data-kit-nav-fit]: "search", "tabs", "drawer"), computed from the
-    // natural widths the inline script after the row measured before the first paint (window.__kitNavFit) — the same
-    // arithmetic as the docs' useNavFit: a resize reads nothing and writes the root attribute only when the state
-    // changes. Re-measured when the web fonts arrive (if they were loading) and when the labels change language.
-    var dlist = drow.querySelector('.kit-site-nav > ul');
-    var FIT_STEPS = ['search', 'tabs', 'drawer'];
-    var fitM = window.__kitNavFit || null;
-    var fitW = fitM ? fitM.w : -1;
-    var fitSet = function (state) {
-      if (root.getAttribute('data-kit-nav-fit') === state) return;
-      if (state) root.setAttribute('data-kit-nav-fit', state);
-      else root.removeAttribute('data-kit-nav-fit');
-    };
-    var fitMeasure = function () {
-      if (!dlist || narrow()) return (fitM = null);
-      var had = root.getAttribute('data-kit-nav-fit');
-      if (had) root.removeAttribute('data-kit-nav-fit');
-      var cs = getComputedStyle(drow);
-      var trig = drow.querySelector('.kit-search-trigger');
-      var m = {
-        w: drow.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight),
-        // the tabs' natural width: scrollWidth is only the stretched (flex: 1) box while they fit
-        need: dlist.firstElementChild && dlist.lastElementChild ? dlist.lastElementChild.getBoundingClientRect().right - dlist.firstElementChild.getBoundingClientRect().left : dlist.scrollWidth,
-        have: dlist.clientWidth,
-        trig: trig ? trig.offsetWidth : 0,
-        rem: parseFloat(getComputedStyle(root).fontSize) || 16,
-        compact: window.matchMedia('(max-width: 1180px)').matches,
-        loading: false,
-      };
-      if (had) root.setAttribute('data-kit-nav-fit', had);
-      fitM = m.have > 0 ? m : null;
-      fitW = m.w;
-      return fitM;
-    };
-    var fitState = function (m, w) {
-      var delta = Math.max(0, (m.compact || !m.trig ? 13 * m.rem : m.trig) - 2 * m.rem);
-      var haveFull = m.have - (m.compact ? delta : 0) + (w - m.w);
-      var avail = {
-        '': haveFull + (window.matchMedia('(max-width: 1180px)').matches ? delta : 0),
-        search: haveFull + delta,
-        tabs: w + 1.5 * m.rem,
-        drawer: Infinity,
-      };
-      var state = '';
-      for (var si = 0; si < FIT_STEPS.length; si++) {
-        if (m.need <= avail[state] + 0.5) break;
-        state = FIT_STEPS[si];
-      }
-      return state || null;
-    };
-    var fitApply = function (w) {
-      fitW = w;
-      if (narrow()) return fitSet(null);
-      var m = fitM || fitMeasure();
-      if (m) fitSet(fitState(m, w));
-    };
-    var fitRemeasure = function () {
-      fitM = null;
-      var m = fitMeasure();
-      if (m) fitSet(fitState(m, m.w));
-    };
-    if (dlist && window.ResizeObserver) {
-      new ResizeObserver(function (entries) {
-        var w = entries[entries.length - 1].contentRect.width;
-        if (Math.abs(w - fitW) < 0.5) return;
-        fitApply(w);
-      }).observe(drow);
-    }
-    if (dlist && document.fonts && (fitM ? fitM.loading : document.fonts.status !== 'loaded')) document.fonts.ready.then(fitRemeasure);
-    siteFit = dlist ? fitRemeasure : null;
+    // (kit 2.22: no header row, so no nav fit: the sections are in the tree's column)
+    siteFit = null;
 
     // ---- the tree: navtree.js builds Doxygen's whole tree when the document is ready. Below 960px the tree lives in
     // the closed drawer, so it is built when the drawer first opens; on wide screens when the browser is idle.
@@ -510,7 +442,7 @@
     }
     // the tree's title (the current tab's name, like the docs sidebar) and the outline's title wait in the header
     var dtitles = document.querySelector('.kit-dox-pane-titles');
-    var sbTitle = dtitles && dtitles.querySelector('.kit-sb-title');
+    var sbTitle = dtitles && dtitles.querySelector('.kit-dox-sitenav, .kit-sb-title');
     var tocTitle = dtitles && dtitles.querySelector('.kit-toc-title');
     var dtree = document.getElementById('nav-tree');
     var dside = document.getElementById('side-nav');
@@ -621,11 +553,11 @@
           }
         }
       });
-      // wide again: the sidebar is back (unless the nav-fit "drawer" state keeps the drawer)
+      // wide again: the sidebar is back
       if (window.matchMedia) {
         var dmq = window.matchMedia(DRAWER_MAX);
         var onWide = function () {
-          if (!dmq.matches && root.getAttribute('data-kit-nav-fit') !== 'drawer') setDrawer(false);
+          if (!dmq.matches) setDrawer(false);
           if (!dmq.matches) buildTree();
         };
         if (dmq.addEventListener) dmq.addEventListener('change', onWide);

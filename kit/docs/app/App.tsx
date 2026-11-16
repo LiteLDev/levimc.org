@@ -4,7 +4,6 @@ import type { PageData, RouteMeta } from '../shared/types';
 import { href, langOf, loadPage, localeOf, matchPathname, site, stringsFor, withMeta } from './data';
 import { pageTitle } from '../shared/head';
 import { docsStrings } from '../shared/strings';
-import { SiteHeader } from './components/SiteHeader';
 import { KitLink } from './components/KitLink';
 import { MobileDrawer } from './components/MobileDrawer';
 import { SearchModal, preloadSearchIndex } from './components/SearchModal';
@@ -294,8 +293,10 @@ export function App() {
           onMenu={openDrawer}
           menuOpen={drawerOpen}
           menuControls="kit-drawer"
+          // kit 2.22: the docs have no header row of their own: search is in the bar, which stays at the top
+          search={{ label: t.search, onOpen: openSearch, onWarm: () => preloadSearchIndex(locale) }}
+          sticky
         />
-        <SiteHeader route={route} locale={locale} t={t} onOpenSearch={openSearch} onWarmSearch={() => preloadSearchIndex(locale)} />
         <Suspense fallback={<main id="kit-main" className="kit-loading" aria-busy="true" />}>
           <RoutePage route={route} t={t} onSearch={openSearch} locale={locale} />
         </Suspense>

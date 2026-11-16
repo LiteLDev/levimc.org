@@ -155,11 +155,9 @@ export interface DocsConfig {
    */
   sidebarExpand?: boolean;
   /**
-   * Docs header layout. `tabsRow`: 'auto' (default) keeps brand, section tabs and search in one row and, only
-   * when the tabs do not fit, first shortens search to its icon, then moves the tabs to a second row below,
-   * then into the drawer; true always uses the second row above 960px; false never does (icon search, then drawer).
-   * `links`: the RESOURCES slot after search (before the repository's GitHub icon) — the only place for links
-   * that leave the docs (a download page, release notes). See {@link HeaderLink}.
+   * `links`: the RESOURCES (a Download button, release notes …) at the end of the site's column, before the
+   * repository — the only place for links that leave the docs. See {@link HeaderLink}. `tabsRow` is ignored since
+   * kit 2.22 (the docs have no header row: the sections are in the site's column, search in the LeviMC bar).
    */
   header?: { tabsRow?: boolean | 'auto'; links?: HeaderLink[] };
   /** Globs (relative to contentDir) excluded from the build. */
