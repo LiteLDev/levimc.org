@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.kit/
+# levimc-kit, copied from ../../kit by the package install (npm run kit)
+/kit/
+vite.config.ts.timestamp-*
