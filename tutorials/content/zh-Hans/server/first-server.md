@@ -19,7 +19,7 @@
 :::
 
 1. 打开 [lip 的最新发行版](https://github.com/LiteLDev/lip/releases/latest)，下载 `lip-<version>-win-x64.msi`。电脑用的是 ARM 处理器的话，下载 `lip-<version>-win-arm64.msi`。
-2. 运行这个文件。Windows 会问你是否允许它进行更改：安装程序把 `lip` 放进 `C:\Program Files\lip`，并把这个文件夹加入 `PATH`。
+2. 运行这个文件。安装程序会询问把 `lip` 装到哪个文件夹（默认是 `C:\Program Files\lip`），点击 **Install** 并允许 Windows 进行更改后开始安装，并把这个文件夹加入 `PATH`。
 3. 打开一个**新的**终端窗口。安装前就开着的终端还不知道新的 `PATH`。
 4. 查看 `lip` 的版本：
 
