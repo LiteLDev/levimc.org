@@ -67,10 +67,9 @@ const docs = (project: 'LeviLamina' | 'LegacyScriptEngine' | 'lip' | 'LeviLaunch
   localizeNetworkUrl(`${PROJECTS.find((p) => p.id === project)!.docs}${path}`, locale);
 const tutorial = (locale: Locale, path: string) => localizeNetworkUrl(`${LINKS.tutorials}${path}`, locale);
 
+// both open the latest release's page, which lists its files, rather than one starting a download and the other not
 const DOWNLOADS = {
-  // the asset name is stable across releases, so this starts the download right away
-  windows: 'https://github.com/LiteLDev/LeviLauncher/releases/latest/download/LeviLauncher-amd64-installer.exe',
-  // the APK's name carries its version: the release page lists it
+  windows: 'https://github.com/LiteLDev/LeviLauncher/releases/latest',
   android: 'https://github.com/LiteLDev/LeviLauncher-Android/releases/latest',
 } as const;
 const PLATFORM_NAMES = { windows: 'Windows', android: 'Android' } as const;
