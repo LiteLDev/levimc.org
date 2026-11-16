@@ -58,7 +58,7 @@ export function modPath(tooth: string): string {
 
 const MOD_PAGE = new RegExp(`^${BASE}(.+)/$`);
 
-/** The tooth a mod page path names (in any language: `/mods/zh-Hans/<tooth>/`), or `null` for any other path. */
+/** The tooth a mod page path names (in any language: `/zh-Hans/mods/<tooth>/`), or `null` for any other path. */
 export function toothFromPath(pathname: string): string | null {
   const match = MOD_PAGE.exec(stripLocale(pathname));
   if (!match?.[1]) return null;
