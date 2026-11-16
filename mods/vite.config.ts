@@ -24,6 +24,8 @@ import { LOCALES } from "./src/locales.ts";
 const prefsScript = createThemeInitScript({
   appLocales: { locales: LOCALES, prerendered: "en" },
   chromeLocales: UI_LOCALES,
+  // prerender links to the other builds on levimc.org, not this app's own pages (its router serves those)
+  speculation: { exclude: [`${BASE}*`] },
 });
 
 /**

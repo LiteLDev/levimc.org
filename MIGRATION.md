@@ -23,11 +23,12 @@ and the rule on, or docs.levimc.org answers with GitHub's 404.
 Things to know:
 
 * **Project paths win.** A repository with Pages owns `/<repo name>/` on levimc.org. No route of this site may start
-  with a repository's name, and no repository named like a route (`blog`, `mods`, `api`, `kit`, `about`, …) may
-  turn Pages on. LiteLoader.NET and liteloaderbds-documentation have Pages on and appear at
+  with a repository's name, and no repository named like a route (`blog`, `mods`, `tutorials`, `zh-Hans`,
+  `zh-Hant`, `api`, `kit`, `about`, …) may turn Pages on. LiteLoader.NET and liteloaderbds-documentation have Pages on and appear at
   `levimc.org/LiteLoader.NET/` and `levimc.org/liteloaderbds-documentation/`.
 * **Same origin.** Docs and levimc.org share cookies and localStorage. levimc.org's router leaves the docs paths
-  alone (`isAppPath`, `src/components/SiteHeader.tsx`).
+  alone (`isAppPath`; the list of other builds is `OTHER_SITES` in `src/other-sites.ts`, which also scopes
+  cross-site prerendering).
 * Each project repository points its canonical URLs, sitemap and `linkcheck --site-origin` at `https://levimc.org`.
 
 ## What was done

@@ -31,6 +31,13 @@ export interface LocaleConfig {
    * opencc-js (devDependency). E.g. `{ code: 'zh-Hant', label: '繁體中文', lang: 'zh-Hant', convertFrom: 'zh' }`.
    */
   convertFrom?: string;
+  /**
+   * URL prefixes this locale was published under before (kit 2.21), e.g. `['zh/']` for a site moving its
+   * Simplified Chinese from /zh/ to `prefix: 'zh-Hans/'` (levimc.org's one scheme: /<base>/zh-Hans/, /<base>/zh-Hant/).
+   * Every page of the locale gets a redirect page at the same path under each former prefix. Keep `suffix` /
+   * `folder` as they were: the sources need not move.
+   */
+  formerPrefixes?: string[];
 }
 
 /**
@@ -207,6 +214,8 @@ export interface ResolvedLocale {
   isDefault: boolean;
   /** The locale this one is converted from (see `LocaleConfig.convertFrom`). */
   convertFrom?: string;
+  /** Former URL prefixes, each ending in '/' (see `LocaleConfig.formerPrefixes`). */
+  formerPrefixes: string[];
 }
 
 export interface ResolvedConfig extends Omit<DocsConfig, 'i18n' | 'outline' | 'logo' | 'editLink' | 'markdown'> {
@@ -255,6 +264,7 @@ export function resolveConfig(config: DocsConfig, root: string): ResolvedConfig 
       folder: l.folder ?? prefix.replace(/\/$/, ''),
       isDefault,
       ...(l.convertFrom ? { convertFrom: l.convertFrom } : {}),
+      formerPrefixes: (l.formerPrefixes ?? []).map((f) => (f.endsWith('/') ? f : f + '/')),
     };
   });
   for (const l of locales) {

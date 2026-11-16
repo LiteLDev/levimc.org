@@ -11,6 +11,8 @@ export const LINKS = {
   about: 'https://levimc.org/about/',
   /** Donations (linked from the footer: it has no bar tab). */
   support: 'https://levimc.org/support/',
+  /** Tutorials for every project, end to end (kit 2.21): a docs build of levimc.org's repository. */
+  tutorials: 'https://levimc.org/tutorials/',
   /** LeviMC Mods (it was pkg.levimc.org). */
   mods: 'https://levimc.org/mods/',
   /** The blog moved into levimc.org (blog.levimc.org no longer resolves). */
@@ -24,7 +26,7 @@ export const LINKS = {
  * Tabs of the GlobalBar. `projects` is the Projects menu (kit 2: it replaces the Docs menu and the former
  * levimc.org/projects/ page); on a project's docs (levimc.org/<Project>/) it is the current tab, with the open project marked in it.
  */
-export type SiteId = 'home' | 'projects' | 'community' | 'about' | 'mods' | 'blog';
+export type SiteId = 'home' | 'tutorials' | 'projects' | 'community' | 'about' | 'mods' | 'blog';
 
 export type ProjectGroupId = 'core' | 'mods';
 
@@ -144,11 +146,12 @@ export interface GlobalNavEntry {
 
 /**
  * The canonical tabs of the GlobalBar, identical on every LeviMC site (kit ≥ 2.0):
- * Home · Projects ▾ · Mods · Blog · Community · About.
+ * Home · Tutorials · Projects ▾ · Mods · Blog · Community · About.
  */
 export function globalNav(t: UiStrings): GlobalNavEntry[] {
   return [
     { id: 'home', label: t.home, url: LINKS.home },
+    { id: 'tutorials', label: t.tutorials, url: LINKS.tutorials },
     { id: 'projects', label: t.projects, url: LINKS.github },
     { id: 'mods', label: t.mods, url: LINKS.mods },
     { id: 'blog', label: t.blog, url: LINKS.blog },

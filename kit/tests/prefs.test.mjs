@@ -12,6 +12,7 @@ import {
   pickLocale,
   PREFS_CORE_JS,
   createPrefsInitScript,
+  speculationRules,
 } from '../components/prefs.ts';
 import { localeRedirectScript } from '../docs/shared/head.ts';
 import { KIT_VERSION } from '../components/version.ts';
@@ -253,6 +254,39 @@ const SITE = {
 const redirect = localeRedirectScript(SITE);
 const at = (path, o = {}) => run(redirect, browserEnv({ url: 'https://levimc.org' + path, ...o }));
 const pref = (v) => [{ name: 'levimc_lang', value: v, domain: 'levimc.org' }];
+// ------------------------------------------------------------------ cross-site prerendering (kit 2.21)
+function speculationEnv(supported) {
+  const env = browserEnv();
+  const added = [];
+  env.document.createElement = (tag) => ({ tag });
+  env.document.head = { appendChild: (el) => added.push(el) };
+  if (supported !== undefined) env.window.HTMLScriptElement = { supports: (t) => supported && t === 'speculationrules' };
+  return { env, added };
+}
+test('pre-paint: adds speculation rules where the browser supports them, never otherwise', () => {
+  const on = speculationEnv(true);
+  run(createPrefsInitScript({ speculation: { exclude: ['/lip/*'] } }), on.env);
+  assert.equal(on.added.length, 1);
+  assert.equal(on.added[0].type, 'speculationrules');
+  assert.deepEqual(JSON.parse(on.added[0].textContent), speculationRules({ exclude: ['/lip/*'] }));
+  for (const supported of [false, undefined]) {
+    const off = speculationEnv(supported);
+    run(createPrefsInitScript(), off.env);
+    assert.equal(off.added.length, 0);
+  }
+  const disabled = speculationEnv(true);
+  run(createPrefsInitScript({ speculation: false }), disabled.env);
+  assert.equal(disabled.added.length, 0);
+});
+test('speculation rules: same-origin by default, `include` narrows, `exclude` removes the build\'s own paths', () => {
+  const where = (scope) => speculationRules(scope).prerender[0].where.and;
+  assert.deepEqual(where()[0], { href_matches: '/*' });
+  assert.deepEqual(where({ include: ['/mods/*', '/lip/*'] })[0], { or: [{ href_matches: '/mods/*' }, { href_matches: '/lip/*' }] });
+  assert.deepEqual(where({ exclude: ['/lip/*'] }).at(-1), { not: { href_matches: '/lip/*' } });
+  assert.match(JSON.stringify(where()), /\[download\].*\[target=_blank\]/);
+  assert.equal(speculationRules().prerender[0].eagerness, 'moderate');
+});
+
 test('redirect: only the site root; the stored preference maps to the nearest locale', () => {
   assert.equal(at('/LeviLauncher/', { cookies: pref('zh-TW') }).replaced, '/LeviLauncher/zh-HK/');
   assert.equal(at('/LeviLauncher/index.html', { cookies: pref('zh') }).replaced, '/LeviLauncher/zh-CN/');

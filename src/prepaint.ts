@@ -10,6 +10,7 @@
 // The previous site's localStorage keys ("theme" = light | dark, "locale" = en | zh) are migrated once.
 import { createThemeInitScript } from '../kit/components/theme.ts';
 import { UI_LOCALES } from '../kit/components/i18n.ts';
+import { OTHER_SITES } from './other-sites.ts';
 import { DEFAULT_LOCALE, LEGACY_LOCALE_KEY, LEGACY_LOCALE_MAP, LOCALES } from './i18n/config.ts';
 
 export const PREPAINT_SCRIPT = createThemeInitScript({
@@ -17,4 +18,6 @@ export const PREPAINT_SCRIPT = createThemeInitScript({
   chromeLocales: UI_LOCALES,
   legacyTheme: ['theme'],
   legacyLang: [{ key: LEGACY_LOCALE_KEY, map: LEGACY_LOCALE_MAP }],
+  // prerender only the other builds' pages: the router serves this app's own without a navigation
+  speculation: { include: OTHER_SITES.map((p) => p + '*') },
 });

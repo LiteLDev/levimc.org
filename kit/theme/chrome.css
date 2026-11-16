@@ -1329,3 +1329,39 @@
     transform: none;
   }
 }
+
+/* ================================================================== cross-site navigation (kit 2.21)
+   levimc.org is one origin served by several builds (the site, /mods/, /tutorials/, every project's docs, the
+   Doxygen reference). Moving between them is a real document navigation; a cross-document view transition makes
+   it look like one app: the LeviMC bar and the docs' own header row keep their place while the page content
+   cross-fades. Same-document (router) navigations are unaffected. Browsers without cross-document view
+   transitions (Firefox today) navigate as before. */
+@view-transition {
+  navigation: auto;
+}
+[data-kit-globalbar] {
+  view-transition-name: kit-globalbar;
+}
+[data-kit-subnav] {
+  view-transition-name: kit-subnav;
+}
+::view-transition-group(root) {
+  animation-duration: 160ms;
+}
+::view-transition-group(kit-globalbar),
+::view-transition-group(kit-subnav) {
+  animation-duration: 160ms;
+}
+/* the bar is identical on every site: no cross-fade of its own (only its active tab may differ) */
+::view-transition-old(kit-globalbar) {
+  animation: none;
+  opacity: 0;
+}
+::view-transition-new(kit-globalbar) {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}

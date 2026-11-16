@@ -44,6 +44,8 @@ export {
   matchLocale,
   pickLocale,
   createPrefsInitScript,
+  speculationRules,
+  type SpeculationScope,
   type ThemeChoice,
   type PrefKind,
 } from './prefs';

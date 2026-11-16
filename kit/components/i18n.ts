@@ -10,6 +10,8 @@ export interface UiStrings {
   home: string;
   projects: string;
   docs: string;
+  /** The bar tab of levimc.org/tutorials/ (kit 2.21). */
+  tutorials: string;
   /** Top-bar / footer label of LeviMC Mods, levimc.org/mods/ ("Mods"). */
   mods: string;
   community: string;
@@ -74,6 +76,7 @@ const en: UiStrings = {
   home: 'Home',
   projects: 'Projects',
   docs: 'Docs',
+  tutorials: 'Tutorials',
   mods: 'Mods',
   community: 'Community',
   blog: 'Blog',
@@ -138,6 +141,7 @@ const zhCN: UiStrings = {
   home: '首页',
   projects: '项目',
   docs: '文档',
+  tutorials: '教程',
   mods: '模组',
   community: '社区',
   blog: '博客',
@@ -203,6 +207,7 @@ const zhHK: UiStrings = {
   home: '首頁',
   projects: '專案',
   docs: '文檔',
+  tutorials: '教學',
   mods: '模組',
   community: '社群',
   blog: '網誌',
@@ -265,6 +270,7 @@ const es: UiStrings = {
   home: 'Inicio',
   projects: 'Proyectos',
   docs: 'Documentación',
+  tutorials: 'Tutoriales',
   mods: 'Mods',
   community: 'Comunidad',
   blog: 'Blog',
@@ -329,6 +335,7 @@ const ru: UiStrings = {
   home: 'Главная',
   projects: 'Проекты',
   docs: 'Документация',
+  tutorials: 'Руководства',
   mods: 'Моды',
   community: 'Сообщество',
   blog: 'Блог',
@@ -393,6 +400,7 @@ const de: UiStrings = {
   home: 'Startseite',
   projects: 'Projekte',
   docs: 'Dokumentation',
+  tutorials: 'Tutorials',
   mods: 'Mods',
   community: 'Community',
   blog: 'Blog',
@@ -457,6 +465,7 @@ const ja: UiStrings = {
   home: 'ホーム',
   projects: 'プロジェクト',
   docs: 'ドキュメント',
+  tutorials: 'チュートリアル',
   mods: 'MOD',
   community: 'コミュニティ',
   blog: 'ブログ',
@@ -521,6 +530,7 @@ const ko: UiStrings = {
   home: '홈',
   projects: '프로젝트',
   docs: '문서',
+  tutorials: '튜토리얼',
   mods: '모드',
   community: '커뮤니티',
   blog: '블로그',
@@ -585,6 +595,7 @@ const fr: UiStrings = {
   home: 'Accueil',
   projects: 'Projets',
   docs: 'Documentation',
+  tutorials: 'Tutoriels',
   mods: 'Mods',
   community: 'Communauté',
   blog: 'Blog',

@@ -1,7 +1,8 @@
 import { Link } from 'react-router';
-import { DOCS_PROJECTS, GlobalBar, type LinkLikeProps, type SiteId } from '../../kit/components';
+import { GlobalBar, type LinkLikeProps, type SiteId } from '../../kit/components';
 import { useI18n, LOCALES } from '../i18n';
-import { MODS_PATH, SITE_ORIGIN, type RouteId } from '../routes';
+import { OTHER_SITES } from '../other-sites';
+import { SITE_ORIGIN, type RouteId } from '../routes';
 
 /** Same-site links of the bar and footer navigate inside the app (no full reload). */
 export function RouterLink({ href, children, ...rest }: LinkLikeProps) {
@@ -12,9 +13,6 @@ export function RouterLink({ href, children, ...rest }: LinkLikeProps) {
   );
 }
 
-/** Paths of this origin that other sites serve: LeviMC Mods (/mods/, a separate app) and each project's docs
- *  (/<Project>/, published by the project's repository). Their links load in full. */
-const OTHER_SITES = [MODS_PATH, ...DOCS_PROJECTS.map((p) => new URL(p.url).pathname)];
 export const isAppPath = (path: string) => !OTHER_SITES.some((prefix) => path.startsWith(prefix));
 
 /** The bar tab of each page (Support Us has none: it is linked from the footer). */

@@ -214,7 +214,8 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
         const redirect = localeRedirectScript(b.site);
         // the chrome language rule (App's useChromeLocale): a stored language none of the site's locales has moves
         // the chrome (bar, footer) to that language — hide it until the app has re-rendered it
-        const init = createThemeInitScript({ chromeLocales: chromeOnlyLocales(b.site) });
+        // cross-site prerendering: every same-origin link except this site's own pages (its router serves those)
+        const init = createThemeInitScript({ chromeLocales: chromeOnlyLocales(b.site), speculation: { exclude: [b.site.base + '*'] } });
         const favicon = b.site.favicon ?? b.site.logo?.src;
         const headExtra = (cfg.head ?? [])
           .map(([tag, attrs, content]) => {
@@ -292,10 +293,7 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
       this.emitFile({ type: 'asset', fileName: '_kit/nav.json', source: JSON.stringify(navJson(b.site), null, 2) + '\n' });
       // moved pages: a redirect page at each old URL
       const routeFiles = new Set(b.routes.map((r) => r.path));
-      for (const [from, to] of Object.entries(cfg.redirects ?? {})) {
-        const dir = from === '' || from.endsWith('/');
-        const fileName = dir ? `${from}index.html` : cfg.urlStyle === 'directory' ? `${from}/index.html` : `${from}.html`;
-        if (routeFiles.has(from) || routeFiles.has(dir ? from : `${from}.html`)) throw new Error(`redirects: ${from} is a page of the site`);
+      const redirectPage = (fileName: string, to: string) => {
         const url = /^[a-z]+:/i.test(to) ? to : `${cfg.hostname ?? ''}${cfg.base}${to}`;
         const attr = url.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
         const source =
@@ -304,6 +302,25 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
           `<script>location.replace(${JSON.stringify(url).replace(/</g, '\\u003c')}+location.hash);</script>\n</head>\n` +
           `<body><p>This page has moved to <a href="${attr}">${attr}</a>.</p></body>\n</html>\n`;
         this.emitFile({ type: 'asset', fileName, source });
+      };
+      for (const [from, to] of Object.entries(cfg.redirects ?? {})) {
+        const dir = from === '' || from.endsWith('/');
+        const fileName = dir ? `${from}index.html` : cfg.urlStyle === 'directory' ? `${from}/index.html` : `${from}.html`;
+        if (routeFiles.has(from) || routeFiles.has(dir ? from : `${from}.html`)) throw new Error(`redirects: ${from} is a page of the site`);
+        redirectPage(fileName, to);
+      }
+      // a locale's former URL prefixes (kit 2.21, LocaleConfig.formerPrefixes): each page also answers there
+      for (const loc of cfg.locales) {
+        for (const former of loc.formerPrefixes) {
+          if (former === loc.prefix) continue;
+          if (cfg.locales.some((l) => l.prefix === former)) throw new Error(`i18n: former prefix '${former}' of '${loc.code}' is the prefix of a locale`);
+          for (const r of b.routes) {
+            if (r.locale !== loc.code || !r.path.startsWith(loc.prefix)) continue;
+            const old = former + r.path.slice(loc.prefix.length);
+            const fileName = old.endsWith('/') ? `${old}index.html` : old.endsWith('.html') ? old : `${old}.html`;
+            redirectPage(fileName, r.path);
+          }
+        }
       }
       // page module → chunk (+ its static imports) for <link rel=modulepreload> during prerender
       const pages: Record<string, string[]> = {};

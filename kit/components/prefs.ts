@@ -216,6 +216,12 @@ export function createPrefsInitScript(
      * removes both classes right after its first sync, before the next paint (CSS fail-safe: 1.5 s).
      */
     appLocales?: { locales: readonly { code: string; lang: string }[]; prerendered: string };
+    /**
+     * Cross-site prerendering (kit 2.21, see {@link speculationRules}): on by default for every same-origin link.
+     * Narrow it to the paths other builds serve: `exclude` the URL patterns this build routes itself (the docs:
+     * their base + '*'), or list only the others in `include` (levimc.org, whose router owns '/'). false: off.
+     */
+    speculation?: false | SpeculationScope;
   } = {},
 ): string {
   const legacyTheme = opts.legacyTheme ?? [];
@@ -239,6 +245,49 @@ export function createPrefsInitScript(
     `if(p!=="light"&&p!=="dark")p="auto";var k=p==="dark"||(p==="auto"&&!!(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches));` +
     `d.classList.toggle("dark",k);` +
     (opts.doxygen ? `d.classList.toggle("dark-mode",k);d.classList.toggle("light-mode",!k);` : '') +
-    `d.setAttribute("data-theme-pref",p);d.style.colorScheme=k?"dark":"light";var l=rp("lang");if(l)d.setAttribute("data-kit-lang-pref",l);${chrome}${app}}catch(e){}})();`
+    `d.setAttribute("data-theme-pref",p);d.style.colorScheme=k?"dark":"light";var l=rp("lang");if(l)d.setAttribute("data-kit-lang-pref",l);${chrome}${app}}catch(e){}` +
+    (opts.speculation === false ? '' : speculationRulesJs(opts.speculation || {})) +
+    `})();`
+  );
+}
+
+/**
+ * Speculation rules (kit 2.21) for links between the builds that share levimc.org: the site, /mods/,
+ * /tutorials/, each project's docs and the Doxygen reference are separate documents, so following a link between
+ * them is a full navigation. Prerendering the target when the visitor hovers or presses the link (`moderate`)
+ * makes that navigation instant; together with the cross-document view transition (theme/chrome.css) it feels
+ * like one app. Only same-origin links; never downloads, new-tab links, rel=nofollow or [data-kit-no-prerender].
+ * `include` / `exclude` (URL patterns, relative to the page): see `createPrefsInitScript`'s `speculation`.
+ */
+export interface SpeculationScope {
+  /** Only links matching one of these (default: every same-origin link, '/*'). */
+  include?: readonly string[];
+  /** Never links matching one of these: the paths the current build's router serves itself. */
+  exclude?: readonly string[];
+}
+
+export function speculationRules({ include, exclude = [] }: SpeculationScope = {}): { prerender: object[] } {
+  return {
+    prerender: [
+      {
+        where: {
+          and: [
+            include?.length ? { or: include.map((p) => ({ href_matches: p })) } : { href_matches: '/*' },
+            { not: { selector_matches: '[download], [target=_blank], [rel~=nofollow], [data-kit-no-prerender], [data-kit-no-prerender] a' } },
+            ...exclude.map((p) => ({ not: { href_matches: p } })),
+          ],
+        },
+        eagerness: 'moderate',
+      },
+    ],
+  };
+}
+
+/** Inline-script part that adds {@link speculationRules} to <head> where the browser supports them. */
+export function speculationRulesJs(scope: SpeculationScope = {}): string {
+  return (
+    `try{var SH=window.HTMLScriptElement;if(SH&&SH.supports&&SH.supports("speculationrules")){` +
+    `var sr=document.createElement("script");sr.type="speculationrules";sr.textContent=${JSON.stringify(JSON.stringify(speculationRules(scope)))};` +
+    `(document.head||document.documentElement).appendChild(sr)}}catch(e){}`
   );
 }

@@ -18,7 +18,7 @@ the painting concentrated in two big moments (hero, footer) rather than sprinkle
 Docs sites are compiled at build time (unified/remark/rehype + Shiki) and statically prerendered — one real
 HTML file per URL for GitHub Pages — then hydrated into a SPA.
 
-Version: see `VERSION` (2.2.0) and the [Changelog](#changelog) (with migration notes for every site).
+Version: see `VERSION` (2.21.0) and the [Changelog](#changelog) (with migration notes for every site).
 
 ---
 
@@ -310,7 +310,7 @@ export default defineDocsConfig({ … });
 | `exclude` | globs relative to contentDir | e.g. `['overrides/**']`; `node_modules`, dot folders, `.vitepress`, `public` are always excluded |
 | `i18n.mode` | `'suffix'` \| `'folder'` | mkdocs-static-i18n (`x.md`, `x.zh.md`, `x.en.md` = default) / VitePress (`zh-CN/x.md`) |
 | `i18n.defaultLocale` | locale code | |
-| `i18n.locales[]` | `{ code, label, lang?, prefix?, suffix?, folder?, convertFrom? }` | `prefix` defaults to `''` (default) / `'<code>/'`; `lang` is used for `<html lang>`/hreflang; `convertFrom: '<zh locale>'` generates Traditional Chinese from that locale (see below) |
+| `i18n.locales[]` | `{ code, label, lang?, prefix?, suffix?, folder?, convertFrom?, formerPrefixes? }` | `prefix` defaults to `''` (default) / `'<code>/'`; `lang` is used for `<html lang>`/hreflang; `convertFrom: '<zh locale>'` generates Traditional Chinese from that locale (see below); `formerPrefixes: ['zh/']` puts a redirect page at each page's old URL after a prefix change (kit 2.21) |
 | `i18n.fallback` | default `true` (suffix) / `false` (folder) | build default-locale content at localized URLs when a translation is missing (static-i18n `fallback_to_default`) |
 | `urlStyle` | `'directory'` (default) \| `'html'` | MkDocs directory URLs / VitePress `.html` files |
 | `cleanUrls` | `false` | html style: link `a/b` instead of `a/b.html` |
@@ -960,6 +960,38 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.21.0 — unreleased
+
+**levimc.org feels like one site.** The site, /mods/, /tutorials/, every project's docs and the Doxygen reference are
+separate builds on one origin, so links between them are full navigations. Two additions make those navigations
+look like in-app ones; no site needs to change anything for them (they come with the kit):
+* **Cross-document view transitions** (`theme/chrome.css`, and so `static/kit.css` / `kit-chrome.css`):
+  `@view-transition { navigation: auto }`; the LeviMC bar (`[data-kit-globalbar]`) and the docs' own header row
+  (`[data-kit-subnav]`, Doxygen's too) keep their place while the content cross-fades (160 ms). Off with
+  `prefers-reduced-motion`. Browsers without them (Firefox today) navigate as before.
+* **Speculation rules** (`createPrefsInitScript`, i.e. every pre-paint script, `static/theme-init*.js` included):
+  same-origin links are prerendered when the visitor hovers or presses them (`eagerness: 'moderate'`); never
+  downloads, `target=_blank`, `rel=nofollow` or anything inside `[data-kit-no-prerender]`. New option
+  `speculation: { include?, exclude? } | false` scopes them to the other builds' paths: the docs engine excludes
+  the site's own base (its router serves those), LeviMC Mods excludes `/mods/*`, levimc.org includes only
+  `OTHER_SITES` (`src/other-sites.ts`). Exported: `speculationRules(scope)`.
+
+**Tutorials tab.** The bar reads Home · **Tutorials** · Projects ▾ · Mods · Blog · Community · About:
+`LINKS.tutorials` (`https://levimc.org/tutorials/`), `SiteId` `'tutorials'`, UI string `tutorials` in every chrome
+locale. The tutorials are a docs build of levimc.org's repository at `/tutorials/`; a site whose nav or router
+lists the other builds of levimc.org adds `/tutorials/` (levimc.org's linkcheck `--other-sites` does).
+
+**One locale scheme across levimc.org: `<base>zh-Hans/`, `<base>zh-Hant/`.** The docs engine already separates a
+locale's URL `prefix` from its sources (`suffix` / `folder`). New `formerPrefixes` keeps the old URLs working:
+* Suffix mode (LeviLamina, LegacyScriptEngine): `{ code: 'zh', label: '简体中文', lang: 'zh-Hans', prefix: 'zh-Hans/', formerPrefixes: ['zh/'] }`
+  and `{ code: 'zh-Hant', …, lang: 'zh-Hant', convertFrom: 'zh' }` (unchanged). Sources stay `*.zh.md`.
+* Folder mode (lip, BeDD, bedboo): the same plus `folder: 'zh'` so `zh/` stays where it is.
+* LeviLauncher: `zh-CN` → `lang: 'zh-Hans', prefix: 'zh-Hans/', folder: 'zh-CN', formerPrefixes: ['zh-CN/']`,
+  `zh-HK` → `lang: 'zh-Hant', prefix: 'zh-Hant/', folder: 'zh-HK', formerPrefixes: ['zh-HK/']`.
+Every page of the locale then also gets a redirect page at the same path under each former prefix; hreflang, the
+sitemap and `<html lang>` say `zh-Hans`. A stored `levimc_lang` of `zh-CN` still maps to the Simplified locale
+(`matchLocale`). Nav labels and `navTranslations` keyed by locale `code` need no change.
 
 ### 2.20.0 — unreleased
 
