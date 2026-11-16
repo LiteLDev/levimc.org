@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.kit/
+# levimc-kit, copied from ../../kit by the package install (npm run kit)
+/kit/
+vite.config.ts.timestamp-*
+# The Traditional Chinese pages, written from content/zh/ by scripts/zh-hant.mjs before every build (prebuild, predev)
+/content/zh-Hant/
