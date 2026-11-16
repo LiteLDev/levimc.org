@@ -1,0 +1,1159 @@
+[
+  {
+    "name": "play-with-mods-01-first-launch",
+    "title": {
+      "en": "The \"First Launch Setup\" of LeviLauncher: the \"Base Root\" is D:\\LeviLauncher, and \"Start using LeviLauncher\" finishes the setup.",
+      "zh-Hans": "LeviLauncher 的“首次启动引导”：“根目录”为 D:\\LeviLauncher，“开始使用 LeviLauncher”完成引导。",
+      "zh-Hant": "LeviLauncher 的「首次啟動引導」：「根目錄」為 D:\\LeviLauncher，「開始使用 LeviLauncher」完成引導。"
+    },
+    "image": {
+      "en": "captures/en/play-with-mods-01-first-launch.webp",
+      "zh-Hans": "captures/zh-Hans/play-with-mods-01-first-launch.webp",
+      "zh-Hant": "captures/zh-Hant/play-with-mods-01-first-launch.webp"
+    },
+    "scale": 2,
+    "frame": "windows",
+    "out": "../../../content/play/images",
+    "notes": [
+      {
+        "kind": "box",
+        "target": {
+          "en": {
+            "x": 97,
+            "y": 319,
+            "width": 886,
+            "height": 61
+          },
+          "zh-Hans": {
+            "x": 97,
+            "y": 319,
+            "width": 886,
+            "height": 61
+          },
+          "zh-Hant": {
+            "x": 97,
+            "y": 319,
+            "width": 886,
+            "height": 61
+          }
+        }
+      },
+      {
+        "kind": "callout",
+        "n": 1,
+        "side": "left",
+        "target": {
+          "en": {
+            "x": 97,
+            "y": 319,
+            "width": 886,
+            "height": 61
+          },
+          "zh-Hans": {
+            "x": 97,
+            "y": 319,
+            "width": 886,
+            "height": 61
+          },
+          "zh-Hant": {
+            "x": 97,
+            "y": 319,
+            "width": 886,
+            "height": 61
+          }
+        },
+        "label": {
+          "en": "Where LeviLauncher keeps the instances: a drive with a few GB free. \"Browse…\" to change it, then \"Apply\".",
+          "zh-Hans": "LeviLauncher 存放实例的位置：选一个还有几 GB 空间的磁盘。用“选择…”更改，再点“应用”。",
+          "zh-Hant": "LeviLauncher 存放實例的位置：選一個還有幾 GB 空間的磁碟。用「選擇…」更改，再按「套用」。"
+        }
+      },
+      {
+        "kind": "arrow",
+        "side": "right",
+        "target": {
+          "en": {
+            "x": 692.13,
+            "y": 109,
+            "width": 290.88,
+            "height": 48
+          },
+          "zh-Hans": {
+            "x": 712.52,
+            "y": 109,
+            "width": 270.48,
+            "height": 48
+          },
+          "zh-Hant": {
+            "x": 712.52,
+            "y": 109,
+            "width": 270.48,
+            "height": 48
+          }
+        },
+        "label": {
+          "en": "Finish the setup",
+          "zh-Hans": "完成引导",
+          "zh-Hant": "完成引導"
+        }
+      }
+    ]
+  },
+  {
+    "name": "play-with-mods-02-download",
+    "title": {
+      "en": "The \"Download\" page of LeviLauncher with \"GDK\" and the \"Release\" type: version 1.26.60.05 shows \"LeviLamina\" in the \"Loader\" column.",
+      "zh-Hans": "LeviLauncher 的“下载”页面，选了“GDK”和“正式版”类型：版本 1.26.60.05 的“加载器”一栏显示“LeviLamina”。",
+      "zh-Hant": "LeviLauncher 的「下載」頁面，選了「GDK」和「正式版」類型：版本 1.26.60.05 的「載入器」一欄顯示「LeviLamina」。"
+    },
+    "image": {
+      "en": "captures/en/play-with-mods-02-download.webp",
+      "zh-Hans": "captures/zh-Hans/play-with-mods-02-download.webp",
+      "zh-Hant": "captures/zh-Hant/play-with-mods-02-download.webp"
+    },
+    "scale": 2,
+    "frame": "windows",
+    "out": "../../../content/play/images",
+    "notes": [
+      {
+        "kind": "box",
+        "target": {
+          "en": {
+            "x": 622.31,
+            "y": 86,
+            "width": 140.33,
+            "height": 36
+          },
+          "zh-Hans": {
+            "x": 649.58,
+            "y": 86,
+            "width": 130.42,
+            "height": 36
+          },
+          "zh-Hant": {
+            "x": 649.58,
+            "y": 86,
+            "width": 130.42,
+            "height": 36
+          }
+        }
+      },
+      {
+        "kind": "callout",
+        "n": 1,
+        "side": "bottom",
+        "target": {
+          "en": {
+            "x": 622.31,
+            "y": 86,
+            "width": 140.33,
+            "height": 36
+          },
+          "zh-Hans": {
+            "x": 649.58,
+            "y": 86,
+            "width": 130.42,
+            "height": 36
+          },
+          "zh-Hant": {
+            "x": 649.58,
+            "y": 86,
+            "width": 130.42,
+            "height": 36
+          }
+        },
+        "label": {
+          "en": "The package type \"GDK\", and \"Release\" under \"Types\": both are already chosen when you open the page.",
+          "zh-Hans": "包类型“GDK”，以及“类型”中的“正式版”：打开页面时就已经选好了。",
+          "zh-Hant": "套件類型「GDK」，以及「類型」中的「正式版」：開啟頁面時就已經選好了。"
+        }
+      },
+      {
+        "kind": "box",
+        "target": {
+          "en": {
+            "x": 73,
+            "y": 315,
+            "width": 934,
+            "height": 57
+          },
+          "zh-Hans": {
+            "x": 73,
+            "y": 315,
+            "width": 934,
+            "height": 57
+          },
+          "zh-Hant": {
+            "x": 73,
+            "y": 315,
+            "width": 934,
+            "height": 57
+          }
+        }
+      },
+      {
+        "kind": "arrow",
+        "side": "right",
+        "target": {
+          "en": {
+            "x": 871,
+            "y": 327,
+            "width": 120,
+            "height": 32
+          },
+          "zh-Hans": {
+            "x": 871,
+            "y": 327,
+            "width": 120,
+            "height": 32
+          },
+          "zh-Hant": {
+            "x": 871,
+            "y": 327,
+            "width": 120,
+            "height": 32
+          }
+        },
+        "label": {
+          "en": "Download this version",
+          "zh-Hans": "下载这个版本",
+          "zh-Hant": "下載這個版本"
+        }
+      }
+    ]
+  },
+  {
+    "name": "play-with-mods-03-mirror",
+    "title": {
+      "en": "The dialog \"Select Download Mirror\" for Release 1.26.60.05: the fastest mirror is selected, and \"Download from Selected Mirror\" starts the download.",
+      "zh-Hans": "正式版 1.26.60.05 的“选择下载镜像”对话框：已选中最快的镜像，“用所选镜像下载”开始下载。",
+      "zh-Hant": "正式版 1.26.60.05 的「選擇下載鏡像」對話框：已選取最快的鏡像，「以所選鏡像下載」開始下載。"
+    },
+    "image": {
+      "en": "captures/en/play-with-mods-03-mirror.webp",
+      "zh-Hans": "captures/zh-Hans/play-with-mods-03-mirror.webp",
+      "zh-Hant": "captures/zh-Hant/play-with-mods-03-mirror.webp"
+    },
+    "scale": 2,
+    "frame": "windows",
+    "out": "../../../content/play/images",
+    "notes": [
+      {
+        "kind": "box",
+        "target": {
+          "en": {
+            "x": 97,
+            "y": 297,
+            "width": 830,
+            "height": 78
+          },
+          "zh-Hans": {
+            "x": 97,
+            "y": 297,
+            "width": 830,
+            "height": 78
+          },
+          "zh-Hant": {
+            "x": 97,
+            "y": 297,
+            "width": 830,
+            "height": 78
+          }
+        }
+      },
+      {
+        "kind": "callout",
+        "n": 1,
+        "side": "left",
+        "target": {
+          "en": {
+            "x": 97,
+            "y": 297,
+            "width": 830,
+            "height": 78
+          },
+          "zh-Hans": {
+            "x": 97,
+            "y": 297,
+            "width": 830,
+            "height": 78
+          },
+          "zh-Hant": {
+            "x": 97,
+            "y": 297,
+            "width": 830,
+            "height": 78
+          }
+        },
+        "label": {
+          "en": "LeviLauncher tests the mirrors and selects the fastest.",
+          "zh-Hans": "LeviLauncher 会测试各个镜像，并选中最快的那个。",
+          "zh-Hant": "LeviLauncher 會測試各個鏡像，並選取最快的那個。"
+        }
+      },
+      {
+        "kind": "arrow",
+        "side": "right",
+        "target": {
+          "en": {
+            "x": 667.56,
+            "y": 539,
+            "width": 259.44,
+            "height": 40
+          },
+          "zh-Hans": {
+            "x": 777,
+            "y": 539,
+            "width": 150,
+            "height": 40
+          },
+          "zh-Hant": {
+            "x": 777,
+            "y": 539,
+            "width": 150,
+            "height": 40
+          }
+        },
+        "label": {
+          "en": "Start the download",
+          "zh-Hans": "开始下载",
+          "zh-Hant": "開始下載"
+        }
+      }
+    ]
+  },
+  {
+    "name": "play-with-mods-04-download-complete",
+    "title": {
+      "en": "The dialog \"Download complete\" for \"Release 1.26.60.05.msixvc\", with the buttons \"Later\" and \"Install now\".",
+      "zh-Hans": "“Release 1.26.60.05.msixvc”的“下载完成”对话框，按钮为“稍后再说”和“立即安装”。",
+      "zh-Hant": "「Release 1.26.60.05.msixvc」的「下載完成」對話框，按鈕為「稍後再說」和「立即安裝」。"
+    },
+    "image": {
+      "en": "captures/en/play-with-mods-04-download-complete.webp",
+      "zh-Hans": "captures/zh-Hans/play-with-mods-04-download-complete.webp",
+      "zh-Hant": "captures/zh-Hant/play-with-mods-04-download-complete.webp"
+    },
+    "scale": 2,
+    "frame": "windows",
+    "out": "../../../content/play/images",
+    "notes": [
+      {
+        "kind": "arrow",
+        "side": "right",
+        "target": {
+          "en": {
+            "x": 724.5,
+            "y": 366,
+            "width": 102.5,
+            "height": 36
+          },
+          "zh-Hans": {
+            "x": 739,
+            "y": 366,
+            "width": 88,
+            "height": 36
+          },
+          "zh-Hant": {
+            "x": 739,
+            "y": 366,
+            "width": 88,
+            "height": 36
+          }
+        },
+        "label": {
+          "en": "Go on to install it",
+          "zh-Hans": "接着安装它",
+          "zh-Hant": "接著安裝它"
+        }
+      }
+    ]
+  },
+  {
+    "name": "play-with-mods-05-install",
+    "title": {
+      "en": "The page \"Install Instance\" for Release 1.26.60.05: the name \"Survival\", \"Install LeviLamina\" on with the newest \"LeviLamina Version\", \"Instance isolation\" on, and the button \"Install\".",
+      "zh-Hans": "正式版 1.26.60.05 的“安装实例”页面：名称为“Survival”，“安装 LeviLamina”已打开并选了最新的“LeviLamina 版本”，“实例隔离”已打开，还有“安装”按钮。",
+      "zh-Hant": "正式版 1.26.60.05 的「安裝實例」頁面：名稱為「Survival」，「安裝 LeviLamina」已開啟並選了最新的「LeviLamina 版本」，「實例隔離」已開啟，還有「安裝」按鈕。"
+    },
+    "image": {
+      "en": "captures/en/play-with-mods-05-install.webp",
+      "zh-Hans": "captures/zh-Hans/play-with-mods-05-install.webp",
+      "zh-Hant": "captures/zh-Hant/play-with-mods-05-install.webp"
+    },
+    "scale": 2,
+    "frame": "windows",
+    "out": "../../../content/play/images",
+    "notes": [
+      {
+        "kind": "callout",
+        "n": 1,
+        "side": "left",
+        "target": {
+          "en": {
+            "x": 97,
+            "y": 336,
+            "width": 886,
+            "height": 38
+          },
+          "zh-Hans": {
+            "x": 97,
+            "y": 336,
+            "width": 886,
+            "height": 38
+          },
+          "zh-Hant": {
+            "x": 97,
+            "y": 336,
+            "width": 886,
+            "height": 38
+          }
+        },
+        "label": {
+          "en": "The name of the instance: Survival.",
+          "zh-Hans": "实例的名称：Survival。",
+          "zh-Hant": "實例的名稱：Survival。"
+        }
+      },
+      {
+        "kind": "box",
+        "target": {
+          "en": {
+            "x": 97,
+            "y": 595,
+            "width": 886,
+            "height": 164
+          },
+          "zh-Hans": {
+            "x": 97,
+            "y": 595,
+            "width": 886,
+            "height": 164
+          },
+          "zh-Hant": {
+            "x": 97,
+            "y": 595,
+            "width": 886,
+            "height": 164
+          }
+        }
+      },
+      {
+        "kind": "callout",
+        "n": 2,
+        "side": "left",
+        "target": {
+          "en": {
+            "x": 97,
+            "y": 595,
+            "width": 886,
+            "height": 164
+          },
+          "zh-Hans": {
+            "x": 97,
+            "y": 595,
+            "width": 886,
+            "height": 164
+          },
+          "zh-Hant": {
+            "x": 97,
+            "y": 595,
+            "width": 886,
+            "height": 164
+          }
+        },
+        "label": {
+          "en": "On, with the newest version: LeviLamina is installed with the game.",
+          "zh-Hans": "保持打开，选最新版本：LeviLamina 会和游戏一起安装。",
+          "zh-Hant": "保持開啟，選最新版本：LeviLamina 會和遊戲一起安裝。"
+        }
+      },
+      {
+        "kind": "box",
+        "target": {
+          "en": {
+            "x": 97,
+            "y": 775,
+            "width": 886,
+            "height": 62
+          },
+          "zh-Hans": {
+            "x": 97,
+            "y": 775,
+            "width": 886,
+            "height": 62
+          },
+          "zh-Hant": {
+            "x": 97,
+            "y": 775,
+            "width": 886,
+            "height": 62
+          }
+        }
+      },
+      {
+        "kind": "callout",
+        "n": 3,
+        "side": "left",
+        "target": {
+          "en": {
+            "x": 97,
+            "y": 775,
+            "width": 886,
+            "height": 62
+          },
+          "zh-Hans": {
+            "x": 97,
+            "y": 775,
+            "width": 886,
+            "height": 62
+          },
+          "zh-Hant": {
+            "x": 97,
+            "y": 775,
+            "width": 886,
+            "height": 62
+          }
+        },
+        "label": {
+          "en": "On: the worlds and settings of the instance stay in its own folder.",
+          "zh-Hans": "保持打开：实例的世界和设置保存在它自己的文件夹里。",
+          "zh-Hant": "保持開啟：實例的世界和設定保存在它自己的資料夾裡。"
+        }
+      },
+      {
+        "kind": "arrow",
+        "side": "right",
+        "target": {
+          "en": {
+            "x": 912.31,
+            "y": 115,
+            "width": 70.69,
+            "height": 36
+          },
+          "zh-Hans": {
+            "x": 923,
+            "y": 115,
+            "width": 60,
+            "height": 36
+          },
+          "zh-Hant": {
+            "x": 923,
+            "y": 115,
+            "width": 60,
+            "height": 36
+          }
+        },
+        "label": {
+          "en": "Then install",
+          "zh-Hans": "然后安装",
+          "zh-Hant": "然後安裝"
+        }
+      }
+    ]
+  },
+  {
+    "name": "play-with-mods-06-launch",
+    "title": {
+      "en": "The \"Launch\" page of LeviLauncher: the \"Current Instance\" is \"Survival\", with LeviLamina, and \"Launch\" starts it.",
+      "zh-Hans": "LeviLauncher 的“启动”页面：“当前实例”为“Survival”，装有 LeviLamina，“启动”按钮启动它。",
+      "zh-Hant": "LeviLauncher 的「啟動」頁面：「目前實例」為「Survival」，裝有 LeviLamina，「啟動」按鈕啟動它。"
+    },
+    "image": {
+      "en": "captures/en/play-with-mods-06-launch.webp",
+      "zh-Hans": "captures/zh-Hans/play-with-mods-06-launch.webp",
+      "zh-Hant": "captures/zh-Hant/play-with-mods-06-launch.webp"
+    },
+    "scale": 2,
+    "frame": "windows",
+    "out": "../../../content/play/images",
+    "notes": [
+      {
+        "kind": "box",
+        "target": {
+          "en": {
+            "x": 583.42,
+            "y": 117,
+            "width": 191.84,
+            "height": 48
+          },
+          "zh-Hans": {
+            "x": 651.03,
+            "y": 117,
+            "width": 149.97,
+            "height": 48
+          },
+          "zh-Hant": {
+            "x": 651.03,
+            "y": 117,
+            "width": 149.97,
+            "height": 48
+          }
+        }
+      },
+      {
+        "kind": "arrow",
+        "side": "right",
+        "target": {
+          "en": {
+            "x": 837.27,
+            "y": 113,
+            "width": 145.73,
+            "height": 56
+          },
+          "zh-Hans": {
+            "x": 863,
+            "y": 113,
+            "width": 120,
+            "height": 56
+          },
+          "zh-Hant": {
+            "x": 863,
+            "y": 113,
+            "width": 120,
+            "height": 56
+          }
+        },
+        "label": {
+          "en": "Start the game",
+          "zh-Hans": "启动游戏",
+          "zh-Hant": "啟動遊戲"
+        }
+      },
+      {
+        "kind": "ellipse",
+        "target": {
+          "en": {
+            "x": 787.27,
+            "y": 125,
+            "width": 32,
+            "height": 32
+          },
+          "zh-Hans": {
+            "x": 813,
+            "y": 125,
+            "width": 32,
+            "height": 32
+          },
+          "zh-Hant": {
+            "x": 813,
+            "y": 125,
+            "width": 32,
+            "height": 32
+          }
+        }
+      },
+      {
+        "kind": "callout",
+        "n": 1,
+        "side": "bottom",
+        "target": {
+          "en": {
+            "x": 787.27,
+            "y": 125,
+            "width": 32,
+            "height": 32
+          },
+          "zh-Hans": {
+            "x": 813,
+            "y": 125,
+            "width": 32,
+            "height": 32
+          },
+          "zh-Hant": {
+            "x": 813,
+            "y": 125,
+            "width": 32,
+            "height": 32
+          }
+        },
+        "label": {
+          "en": "The quick actions of the instance; the first is \"Instance Settings\".",
+          "zh-Hans": "实例的快捷操作，第一项是“实例设置”。",
+          "zh-Hant": "實例的快捷操作，第一項是「實例設定」。"
+        }
+      }
+    ]
+  },
+  {
+    "name": "play-with-mods-07-gameinput",
+    "title": {
+      "en": "The dialog \"GameInput Component Missing\" on the Launch page, with the buttons \"Quit Launcher\" and \"Install Now\".",
+      "zh-Hans": "“启动”页面上的“缺少 GameInput 组件”对话框，按钮为“退出启动器”和“立即安装”。",
+      "zh-Hant": "「啟動」頁面上的「缺少 GameInput 元件」對話框，按鈕為「退出啟動器」和「立即安裝」。"
+    },
+    "image": {
+      "en": "captures/en/play-with-mods-07-gameinput.webp",
+      "zh-Hans": "captures/zh-Hans/play-with-mods-07-gameinput.webp",
+      "zh-Hant": "captures/zh-Hant/play-with-mods-07-gameinput.webp"
+    },
+    "scale": 2,
+    "frame": "windows",
+    "out": "../../../content/play/images",
+    "notes": [
+      {
+        "kind": "arrow",
+        "side": "right",
+        "target": {
+          "en": {
+            "x": 722.34,
+            "y": 366,
+            "width": 104.66,
+            "height": 36
+          },
+          "zh-Hans": {
+            "x": 739,
+            "y": 366,
+            "width": 88,
+            "height": 36
+          },
+          "zh-Hant": {
+            "x": 739,
+            "y": 366,
+            "width": 88,
+            "height": 36
+          }
+        },
+        "label": {
+          "en": "Install what is missing",
+          "zh-Hans": "安装缺少的组件",
+          "zh-Hant": "安裝缺少的元件"
+        }
+      }
+    ]
+  },
+  {
+    "name": "play-with-mods-08-levimc-mods",
+    "title": {
+      "en": "The page \"LeviMC Mods\" in LeviLauncher, searched for LeviOptimize: one result, by LiteLDev.",
+      "zh-Hans": "LeviLauncher 的“LeviMC 模组”页面，搜索了 LeviOptimize：一个结果，作者是 LiteLDev。",
+      "zh-Hant": "LeviLauncher 的「LeviMC 模組」頁面，搜尋了 LeviOptimize：一個結果，作者是 LiteLDev。"
+    },
+    "image": {
+      "en": "captures/en/play-with-mods-08-levimc-mods.webp",
+      "zh-Hans": "captures/zh-Hans/play-with-mods-08-levimc-mods.webp",
+      "zh-Hant": "captures/zh-Hant/play-with-mods-08-levimc-mods.webp"
+    },
+    "scale": 2,
+    "frame": "windows",
+    "out": "../../../content/play/images",
+    "notes": [
+      {
+        "kind": "box",
+        "target": {
+          "en": {
+            "x": 330.73,
+            "y": 91,
+            "width": 317.75,
+            "height": 36
+          },
+          "zh-Hans": {
+            "x": 315.14,
+            "y": 91,
+            "width": 412.86,
+            "height": 36
+          },
+          "zh-Hant": {
+            "x": 315.14,
+            "y": 91,
+            "width": 384.86,
+            "height": 36
+          }
+        }
+      },
+      {
+        "kind": "arrow",
+        "side": "bottom",
+        "target": {
+          "en": {
+            "x": 85,
+            "y": 243,
+            "width": 910,
+            "height": 142
+          },
+          "zh-Hans": {
+            "x": 85,
+            "y": 243,
+            "width": 910,
+            "height": 142
+          },
+          "zh-Hant": {
+            "x": 85,
+            "y": 243,
+            "width": 910,
+            "height": 142
+          }
+        },
+        "label": {
+          "en": "Open the mod",
+          "zh-Hans": "打开这个模组",
+          "zh-Hant": "打開這個模組"
+        }
+      }
+    ]
+  },
+  {
+    "name": "play-with-mods-09-mod-versions",
+    "title": {
+      "en": "The \"Versions\" tab of LeviOptimize in LeviLauncher: the \"client\" variant, and version 0.18.0 for Minecraft 1.26.60.05 with its \"Install\" button.",
+      "zh-Hans": "LeviLauncher 中 LeviOptimize 的“版本”标签页：“client”变体，以及适用于 Minecraft 1.26.60.05 的 0.18.0 版本和它的“安装”按钮。",
+      "zh-Hant": "LeviLauncher 中 LeviOptimize 的「版本」分頁：「client」變體，以及適用於 Minecraft 1.26.60.05 的 0.18.0 版本和它的「安裝」按鈕。"
+    },
+    "image": {
+      "en": "captures/en/play-with-mods-09-mod-versions.webp",
+      "zh-Hans": "captures/zh-Hans/play-with-mods-09-mod-versions.webp",
+      "zh-Hant": "captures/zh-Hant/play-with-mods-09-mod-versions.webp"
+    },
+    "scale": 2,
+    "frame": "windows",
+    "out": "../../../content/play/images",
+    "notes": [
+      {
+        "kind": "callout",
+        "n": 1,
+        "side": "right",
+        "target": {
+          "en": {
+            "x": 105,
+            "y": 205.5,
+            "width": 384,
+            "height": 52
+          },
+          "zh-Hans": {
+            "x": 105,
+            "y": 193.5,
+            "width": 384,
+            "height": 52
+          },
+          "zh-Hant": {
+            "x": 105,
+            "y": 193.5,
+            "width": 384,
+            "height": 52
+          }
+        },
+        "label": {
+          "en": "The build for the game client: keep it.",
+          "zh-Hans": "游戏客户端用的构建：保持不变。",
+          "zh-Hant": "遊戲客戶端用的建置：保持不變。"
+        }
+      },
+      {
+        "kind": "box",
+        "target": {
+          "en": {
+            "x": 118,
+            "y": 395.5,
+            "width": 844,
+            "height": 64
+          },
+          "zh-Hans": {
+            "x": 118,
+            "y": 383.5,
+            "width": 844,
+            "height": 64
+          },
+          "zh-Hant": {
+            "x": 118,
+            "y": 383.5,
+            "width": 844,
+            "height": 64
+          }
+        }
+      },
+      {
+        "kind": "arrow",
+        "side": "right",
+        "target": {
+          "en": {
+            "x": 879.31,
+            "y": 411.5,
+            "width": 82.69,
+            "height": 32
+          },
+          "zh-Hans": {
+            "x": 890,
+            "y": 399.5,
+            "width": 72,
+            "height": 32
+          },
+          "zh-Hant": {
+            "x": 890,
+            "y": 399.5,
+            "width": 72,
+            "height": 32
+          }
+        },
+        "label": {
+          "en": "Install this version",
+          "zh-Hans": "安装这个版本",
+          "zh-Hant": "安裝這個版本"
+        }
+      }
+    ]
+  },
+  {
+    "name": "play-with-mods-10-target-instance",
+    "title": {
+      "en": "The dialog \"Select Target Instance\": the instance \"Survival\" (1.26.60.05), the variant \"client\", version 0.18.0, and the button \"Install\".",
+      "zh-Hans": "“选择目标实例”对话框：实例“Survival”（1.26.60.05）、变体“client”、版本 0.18.0，以及“安装”按钮。",
+      "zh-Hant": "「選擇目標實例」對話框：實例「Survival」（1.26.60.05）、變體「client」、版本 0.18.0，以及「安裝」按鈕。"
+    },
+    "image": {
+      "en": "captures/en/play-with-mods-10-target-instance.webp",
+      "zh-Hans": "captures/zh-Hans/play-with-mods-10-target-instance.webp",
+      "zh-Hant": "captures/zh-Hant/play-with-mods-10-target-instance.webp"
+    },
+    "scale": 2,
+    "frame": "windows",
+    "out": "../../../content/play/images",
+    "notes": [
+      {
+        "kind": "box",
+        "target": {
+          "en": {
+            "x": 97,
+            "y": 239,
+            "width": 830,
+            "height": 52
+          },
+          "zh-Hans": {
+            "x": 97,
+            "y": 239,
+            "width": 830,
+            "height": 52
+          },
+          "zh-Hant": {
+            "x": 97,
+            "y": 239,
+            "width": 830,
+            "height": 52
+          }
+        }
+      },
+      {
+        "kind": "arrow",
+        "side": "right",
+        "target": {
+          "en": {
+            "x": 839,
+            "y": 493,
+            "width": 88,
+            "height": 36
+          },
+          "zh-Hans": {
+            "x": 839,
+            "y": 493,
+            "width": 88,
+            "height": 36
+          },
+          "zh-Hant": {
+            "x": 839,
+            "y": 493,
+            "width": 88,
+            "height": 36
+          }
+        },
+        "label": {
+          "en": "Install into Survival",
+          "zh-Hans": "安装到 Survival",
+          "zh-Hant": "安裝到 Survival"
+        }
+      }
+    ]
+  },
+  {
+    "name": "play-with-mods-11-manage-mods",
+    "title": {
+      "en": "The \"Mods\" page of the instance \"Survival\": LeviOptimize 0.18.0 is installed and on; \"Import .mcmod\" adds a mod from a file.",
+      "zh-Hans": "实例“Survival”的“模组”页面：LeviOptimize 0.18.0 已安装并启用；“导入 .mcmod”从文件添加模组。",
+      "zh-Hant": "實例「Survival」的「模組」頁面：LeviOptimize 0.18.0 已安裝並啟用；「匯入 .mcmod」從檔案加入模組。"
+    },
+    "image": {
+      "en": "captures/en/play-with-mods-11-manage-mods.webp",
+      "zh-Hans": "captures/zh-Hans/play-with-mods-11-manage-mods.webp",
+      "zh-Hant": "captures/zh-Hant/play-with-mods-11-manage-mods.webp"
+    },
+    "scale": 2,
+    "frame": "windows",
+    "out": "../../../content/play/images",
+    "notes": [
+      {
+        "kind": "box",
+        "target": {
+          "en": {
+            "x": 80,
+            "y": 360,
+            "width": 920,
+            "height": 84
+          },
+          "zh-Hans": {
+            "x": 80,
+            "y": 360,
+            "width": 920,
+            "height": 84
+          },
+          "zh-Hant": {
+            "x": 80,
+            "y": 360,
+            "width": 920,
+            "height": 84
+          }
+        }
+      },
+      {
+        "kind": "callout",
+        "n": 1,
+        "side": "left",
+        "target": {
+          "en": {
+            "x": 899,
+            "y": 394,
+            "width": 44,
+            "height": 16
+          },
+          "zh-Hans": {
+            "x": 899,
+            "y": 394,
+            "width": 44,
+            "height": 16
+          },
+          "zh-Hant": {
+            "x": 899,
+            "y": 394,
+            "width": 44,
+            "height": 16
+          }
+        },
+        "label": {
+          "en": "Turns the mod on or off.",
+          "zh-Hans": "启用或禁用这个模组。",
+          "zh-Hant": "啟用或停用這個模組。"
+        }
+      },
+      {
+        "kind": "arrow",
+        "side": "top",
+        "target": {
+          "en": {
+            "x": 709.13,
+            "y": 115,
+            "width": 152.56,
+            "height": 36
+          },
+          "zh-Hans": {
+            "x": 750.05,
+            "y": 115,
+            "width": 136.95,
+            "height": 36
+          },
+          "zh-Hant": {
+            "x": 750.05,
+            "y": 115,
+            "width": 136.95,
+            "height": 36
+          }
+        },
+        "label": {
+          "en": "Add a mod from a file",
+          "zh-Hans": "从文件添加模组",
+          "zh-Hant": "從檔案加入模組"
+        }
+      }
+    ]
+  },
+  {
+    "name": "play-with-mods-12-loader",
+    "title": {
+      "en": "The \"Loader\" tab of the \"Instance Settings\" of Survival: LeviLamina 26.60.7 is installed, with the buttons \"Remove\" and \"Reinstall\".",
+      "zh-Hans": "Survival 的“实例设置”中的“加载器”标签页：已安装 LeviLamina 26.60.7，有“移除”和“重装”按钮。",
+      "zh-Hant": "Survival 的「實例設定」中的「載入器」分頁：已安裝 LeviLamina 26.60.7，有「移除」和「重裝」按鈕。"
+    },
+    "image": {
+      "en": "captures/en/play-with-mods-12-loader.webp",
+      "zh-Hans": "captures/zh-Hans/play-with-mods-12-loader.webp",
+      "zh-Hant": "captures/zh-Hant/play-with-mods-12-loader.webp"
+    },
+    "scale": 2,
+    "frame": "windows",
+    "out": "../../../content/play/images",
+    "notes": [
+      {
+        "kind": "box",
+        "target": {
+          "en": {
+            "x": 452.2,
+            "y": 181,
+            "width": 175.61,
+            "height": 32
+          },
+          "zh-Hans": {
+            "x": 452.2,
+            "y": 181,
+            "width": 175.61,
+            "height": 32
+          },
+          "zh-Hant": {
+            "x": 452.2,
+            "y": 181,
+            "width": 175.61,
+            "height": 32
+          }
+        }
+      },
+      {
+        "kind": "box",
+        "target": {
+          "en": {
+            "x": 97,
+            "y": 283,
+            "width": 886,
+            "height": 48
+          },
+          "zh-Hans": {
+            "x": 97,
+            "y": 283,
+            "width": 886,
+            "height": 48
+          },
+          "zh-Hant": {
+            "x": 97,
+            "y": 283,
+            "width": 886,
+            "height": 48
+          }
+        }
+      },
+      {
+        "kind": "callout",
+        "n": 1,
+        "side": "left",
+        "target": {
+          "en": {
+            "x": 97,
+            "y": 283,
+            "width": 886,
+            "height": 48
+          },
+          "zh-Hans": {
+            "x": 97,
+            "y": 283,
+            "width": 886,
+            "height": 48
+          },
+          "zh-Hant": {
+            "x": 97,
+            "y": 283,
+            "width": 886,
+            "height": 48
+          }
+        },
+        "label": {
+          "en": "Install, reinstall or remove LeviLamina in this instance.",
+          "zh-Hans": "在这个实例里安装、重装或移除 LeviLamina。",
+          "zh-Hant": "在這個實例裡安裝、重裝或移除 LeviLamina。"
+        }
+      }
+    ]
+  }
+]

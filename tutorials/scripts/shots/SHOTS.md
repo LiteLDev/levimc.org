@@ -14,6 +14,7 @@ tutorials/scripts/shots/
   annotate.test.mjs   its tests: npm run shots:test
   demo/               capture.mjs (an example capture script, on mock pages), shots.json, captures/, out/
   <app>/              the capture script of each app, with its specs (added with the tutorials of the app)
+  levilauncher-windows/   LeviLauncher for Windows, for play/play-with-mods (its README.md says how to run it)
 tutorials/content/<section>/images/<lang>/<name>.svg     the pictures: en, zh-Hans, zh-Hant
 ```
 
@@ -130,19 +131,19 @@ read on a light and on a dark interface, and on the light and the dark theme of 
 
 ## Names and where pictures go
 
-- A picture is named `<topic>-<nn>-<what>`: `play-with-mods-02-new-instance`, `android-launcher-04-import`. The
+- A picture is named `<topic>-<nn>-<what>`: `play-with-mods-05-install`, `android-launcher-04-import`. The
   topic is the tutorial, `nn` the order within it from `01`. A name is used once in the tutorials.
 - The pictures of a page are in `tutorials/content/<section>/images/<lang>/<name>.svg`, next to the English page.
 - A page refers to them relatively. From `content/play/play-with-mods.md`:
 
   ```markdown
-  ![The Instances page of LeviLauncher: the instance "Survival" is selected and "Launch" starts it.](./images/en/play-with-mods-03-launch.svg)
+  ![The "Launch" page of LeviLauncher: the "Current Instance" is "Survival", with LeviLamina, and "Launch" starts it.](./images/en/play-with-mods-06-launch.svg)
   ```
 
   and from `content/zh-Hans/play/play-with-mods.md`:
 
   ```markdown
-  ![LeviLauncher 的“实例”页面：选中了实例“Survival”，“启动”按钮启动它。](../../play/images/zh-Hans/play-with-mods-03-launch.svg)
+  ![LeviLauncher 的“启动”页面：“当前实例”为“Survival”，装有 LeviLamina，“启动”按钮启动它。](../../play/images/zh-Hans/play-with-mods-06-launch.svg)
   ```
 
 - Nobody writes the Traditional Chinese pages: they are converted from the Simplified ones, and a separate change
