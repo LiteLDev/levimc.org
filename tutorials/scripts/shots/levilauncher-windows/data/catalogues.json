@@ -1,0 +1,291 @@
+{
+  "releaseVersions": [
+    {
+      "version": "Release 1.26.32.02",
+      "urls": [
+        "http://assets1.xboxlive.com/9/db5d4795-9b25-4cd1-989e-7024300cbe18/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3202.0.ec30be1b-5dc1-4b43-85a8-c717dcf363d9/Microsoft.MinecraftUWP_1.26.3202.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.com/9/db5d4795-9b25-4cd1-989e-7024300cbe18/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3202.0.ec30be1b-5dc1-4b43-85a8-c717dcf363d9/Microsoft.MinecraftUWP_1.26.3202.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets1.xboxlive.cn/9/db5d4795-9b25-4cd1-989e-7024300cbe18/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3202.0.ec30be1b-5dc1-4b43-85a8-c717dcf363d9/Microsoft.MinecraftUWP_1.26.3202.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.cn/9/db5d4795-9b25-4cd1-989e-7024300cbe18/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3202.0.ec30be1b-5dc1-4b43-85a8-c717dcf363d9/Microsoft.MinecraftUWP_1.26.3202.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.cn/9/db5d4795-9b25-4cd1-989e-7024300cbe18/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3202.0.ec30be1b-5dc1-4b43-85a8-c717dcf363d9/Microsoft.MinecraftUWP_1.26.3202.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf1.xboxlive.com/9/db5d4795-9b25-4cd1-989e-7024300cbe18/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3202.0.ec30be1b-5dc1-4b43-85a8-c717dcf363d9/Microsoft.MinecraftUWP_1.26.3202.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf2.xboxlive.com/9/db5d4795-9b25-4cd1-989e-7024300cbe18/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3202.0.ec30be1b-5dc1-4b43-85a8-c717dcf363d9/Microsoft.MinecraftUWP_1.26.3202.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.com/9/db5d4795-9b25-4cd1-989e-7024300cbe18/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3202.0.ec30be1b-5dc1-4b43-85a8-c717dcf363d9/Microsoft.MinecraftUWP_1.26.3202.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.com/9/db5d4795-9b25-4cd1-989e-7024300cbe18/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3202.0.ec30be1b-5dc1-4b43-85a8-c717dcf363d9/Microsoft.MinecraftUWP_1.26.3202.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.cn/9/db5d4795-9b25-4cd1-989e-7024300cbe18/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3202.0.ec30be1b-5dc1-4b43-85a8-c717dcf363d9/Microsoft.MinecraftUWP_1.26.3202.0_x64__8wekyb3d8bbwe.msixvc"
+      ],
+      "timestamp": 1782408373,
+      "md5": "13c5c890c639f822348d871976bfa5f5"
+    },
+    {
+      "version": "Release 1.26.33.01",
+      "urls": [
+        "http://assets1.xboxlive.com/10/1e7d62c3-960f-4386-81b1-1789edc683d1/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3301.0.2a4af946-1668-404e-8cc0-cb081f69103a/Microsoft.MinecraftUWP_1.26.3301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.com/10/1e7d62c3-960f-4386-81b1-1789edc683d1/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3301.0.2a4af946-1668-404e-8cc0-cb081f69103a/Microsoft.MinecraftUWP_1.26.3301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets1.xboxlive.cn/10/1e7d62c3-960f-4386-81b1-1789edc683d1/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3301.0.2a4af946-1668-404e-8cc0-cb081f69103a/Microsoft.MinecraftUWP_1.26.3301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.cn/10/1e7d62c3-960f-4386-81b1-1789edc683d1/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3301.0.2a4af946-1668-404e-8cc0-cb081f69103a/Microsoft.MinecraftUWP_1.26.3301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.cn/10/1e7d62c3-960f-4386-81b1-1789edc683d1/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3301.0.2a4af946-1668-404e-8cc0-cb081f69103a/Microsoft.MinecraftUWP_1.26.3301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf1.xboxlive.com/10/1e7d62c3-960f-4386-81b1-1789edc683d1/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3301.0.2a4af946-1668-404e-8cc0-cb081f69103a/Microsoft.MinecraftUWP_1.26.3301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf2.xboxlive.com/10/1e7d62c3-960f-4386-81b1-1789edc683d1/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3301.0.2a4af946-1668-404e-8cc0-cb081f69103a/Microsoft.MinecraftUWP_1.26.3301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.com/10/1e7d62c3-960f-4386-81b1-1789edc683d1/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3301.0.2a4af946-1668-404e-8cc0-cb081f69103a/Microsoft.MinecraftUWP_1.26.3301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.com/10/1e7d62c3-960f-4386-81b1-1789edc683d1/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3301.0.2a4af946-1668-404e-8cc0-cb081f69103a/Microsoft.MinecraftUWP_1.26.3301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.cn/10/1e7d62c3-960f-4386-81b1-1789edc683d1/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.3301.0.2a4af946-1668-404e-8cc0-cb081f69103a/Microsoft.MinecraftUWP_1.26.3301.0_x64__8wekyb3d8bbwe.msixvc"
+      ],
+      "timestamp": 1783618311,
+      "md5": "11dad2ffbb1612650ef5449fdb6a91e6"
+    },
+    {
+      "version": "Release 1.26.40.05",
+      "urls": [
+        "http://assets1.xboxlive.com/4/126a2a46-2f8e-407b-80f2-8560a63ce023/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4005.0.4c2b83a6-6147-4006-aa1b-1f494f17e026/Microsoft.MinecraftUWP_1.26.4005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.com/4/126a2a46-2f8e-407b-80f2-8560a63ce023/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4005.0.4c2b83a6-6147-4006-aa1b-1f494f17e026/Microsoft.MinecraftUWP_1.26.4005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets1.xboxlive.cn/4/126a2a46-2f8e-407b-80f2-8560a63ce023/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4005.0.4c2b83a6-6147-4006-aa1b-1f494f17e026/Microsoft.MinecraftUWP_1.26.4005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.cn/4/126a2a46-2f8e-407b-80f2-8560a63ce023/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4005.0.4c2b83a6-6147-4006-aa1b-1f494f17e026/Microsoft.MinecraftUWP_1.26.4005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.cn/4/126a2a46-2f8e-407b-80f2-8560a63ce023/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4005.0.4c2b83a6-6147-4006-aa1b-1f494f17e026/Microsoft.MinecraftUWP_1.26.4005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf1.xboxlive.com/4/126a2a46-2f8e-407b-80f2-8560a63ce023/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4005.0.4c2b83a6-6147-4006-aa1b-1f494f17e026/Microsoft.MinecraftUWP_1.26.4005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf2.xboxlive.com/4/126a2a46-2f8e-407b-80f2-8560a63ce023/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4005.0.4c2b83a6-6147-4006-aa1b-1f494f17e026/Microsoft.MinecraftUWP_1.26.4005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.com/4/126a2a46-2f8e-407b-80f2-8560a63ce023/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4005.0.4c2b83a6-6147-4006-aa1b-1f494f17e026/Microsoft.MinecraftUWP_1.26.4005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.com/4/126a2a46-2f8e-407b-80f2-8560a63ce023/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4005.0.4c2b83a6-6147-4006-aa1b-1f494f17e026/Microsoft.MinecraftUWP_1.26.4005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.cn/4/126a2a46-2f8e-407b-80f2-8560a63ce023/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4005.0.4c2b83a6-6147-4006-aa1b-1f494f17e026/Microsoft.MinecraftUWP_1.26.4005.0_x64__8wekyb3d8bbwe.msixvc"
+      ],
+      "timestamp": 1785860341,
+      "md5": "ed596f043f77a602f0067bb97ede8899"
+    },
+    {
+      "version": "Release 1.26.42.01",
+      "urls": [
+        "http://assets1.xboxlive.com/13/c385ae75-5cc0-4140-9b1f-7c24b8ec799b/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4201.0.4c345687-4f56-4eb5-b66f-4460f2f0fa62/Microsoft.MinecraftUWP_1.26.4201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.com/13/c385ae75-5cc0-4140-9b1f-7c24b8ec799b/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4201.0.4c345687-4f56-4eb5-b66f-4460f2f0fa62/Microsoft.MinecraftUWP_1.26.4201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets1.xboxlive.cn/13/c385ae75-5cc0-4140-9b1f-7c24b8ec799b/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4201.0.4c345687-4f56-4eb5-b66f-4460f2f0fa62/Microsoft.MinecraftUWP_1.26.4201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.cn/13/c385ae75-5cc0-4140-9b1f-7c24b8ec799b/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4201.0.4c345687-4f56-4eb5-b66f-4460f2f0fa62/Microsoft.MinecraftUWP_1.26.4201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.cn/13/c385ae75-5cc0-4140-9b1f-7c24b8ec799b/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4201.0.4c345687-4f56-4eb5-b66f-4460f2f0fa62/Microsoft.MinecraftUWP_1.26.4201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf1.xboxlive.com/13/c385ae75-5cc0-4140-9b1f-7c24b8ec799b/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4201.0.4c345687-4f56-4eb5-b66f-4460f2f0fa62/Microsoft.MinecraftUWP_1.26.4201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf2.xboxlive.com/13/c385ae75-5cc0-4140-9b1f-7c24b8ec799b/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4201.0.4c345687-4f56-4eb5-b66f-4460f2f0fa62/Microsoft.MinecraftUWP_1.26.4201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.com/13/c385ae75-5cc0-4140-9b1f-7c24b8ec799b/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4201.0.4c345687-4f56-4eb5-b66f-4460f2f0fa62/Microsoft.MinecraftUWP_1.26.4201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.com/13/c385ae75-5cc0-4140-9b1f-7c24b8ec799b/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4201.0.4c345687-4f56-4eb5-b66f-4460f2f0fa62/Microsoft.MinecraftUWP_1.26.4201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.cn/13/c385ae75-5cc0-4140-9b1f-7c24b8ec799b/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4201.0.4c345687-4f56-4eb5-b66f-4460f2f0fa62/Microsoft.MinecraftUWP_1.26.4201.0_x64__8wekyb3d8bbwe.msixvc"
+      ],
+      "timestamp": 1786217776,
+      "md5": "2896d795878490d0eb6ef725c0dcde8e"
+    },
+    {
+      "version": "Release 1.26.44.03",
+      "urls": [
+        "http://assets1.xboxlive.com/Z/343b46e3-cf8d-4d07-b95d-97578788d4ff/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4403.0.c576ef1b-0106-4b07-82d9-441f5b2eb985/Microsoft.MinecraftUWP_1.26.4403.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.com/Z/343b46e3-cf8d-4d07-b95d-97578788d4ff/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4403.0.c576ef1b-0106-4b07-82d9-441f5b2eb985/Microsoft.MinecraftUWP_1.26.4403.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets1.xboxlive.cn/Z/343b46e3-cf8d-4d07-b95d-97578788d4ff/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4403.0.c576ef1b-0106-4b07-82d9-441f5b2eb985/Microsoft.MinecraftUWP_1.26.4403.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.cn/Z/343b46e3-cf8d-4d07-b95d-97578788d4ff/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4403.0.c576ef1b-0106-4b07-82d9-441f5b2eb985/Microsoft.MinecraftUWP_1.26.4403.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.cn/Z/343b46e3-cf8d-4d07-b95d-97578788d4ff/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4403.0.c576ef1b-0106-4b07-82d9-441f5b2eb985/Microsoft.MinecraftUWP_1.26.4403.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf1.xboxlive.com/Z/343b46e3-cf8d-4d07-b95d-97578788d4ff/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4403.0.c576ef1b-0106-4b07-82d9-441f5b2eb985/Microsoft.MinecraftUWP_1.26.4403.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf2.xboxlive.com/Z/343b46e3-cf8d-4d07-b95d-97578788d4ff/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4403.0.c576ef1b-0106-4b07-82d9-441f5b2eb985/Microsoft.MinecraftUWP_1.26.4403.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.com/Z/343b46e3-cf8d-4d07-b95d-97578788d4ff/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4403.0.c576ef1b-0106-4b07-82d9-441f5b2eb985/Microsoft.MinecraftUWP_1.26.4403.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.com/Z/343b46e3-cf8d-4d07-b95d-97578788d4ff/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4403.0.c576ef1b-0106-4b07-82d9-441f5b2eb985/Microsoft.MinecraftUWP_1.26.4403.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.cn/Z/343b46e3-cf8d-4d07-b95d-97578788d4ff/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4403.0.c576ef1b-0106-4b07-82d9-441f5b2eb985/Microsoft.MinecraftUWP_1.26.4403.0_x64__8wekyb3d8bbwe.msixvc"
+      ],
+      "timestamp": 1786730710,
+      "md5": "91a5abae9202d9746f5411a5fe4dfa97"
+    },
+    {
+      "version": "Release 1.26.45.01",
+      "urls": [
+        "http://assets1.xboxlive.com/Z/8a3dfbab-b161-470f-8b42-c94f0b4f8f6f/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4501.0.8f39f343-cd87-4b76-8994-dc8310fc2f06/Microsoft.MinecraftUWP_1.26.4501.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.com/Z/8a3dfbab-b161-470f-8b42-c94f0b4f8f6f/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4501.0.8f39f343-cd87-4b76-8994-dc8310fc2f06/Microsoft.MinecraftUWP_1.26.4501.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets1.xboxlive.cn/Z/8a3dfbab-b161-470f-8b42-c94f0b4f8f6f/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4501.0.8f39f343-cd87-4b76-8994-dc8310fc2f06/Microsoft.MinecraftUWP_1.26.4501.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.cn/Z/8a3dfbab-b161-470f-8b42-c94f0b4f8f6f/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4501.0.8f39f343-cd87-4b76-8994-dc8310fc2f06/Microsoft.MinecraftUWP_1.26.4501.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.cn/Z/8a3dfbab-b161-470f-8b42-c94f0b4f8f6f/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4501.0.8f39f343-cd87-4b76-8994-dc8310fc2f06/Microsoft.MinecraftUWP_1.26.4501.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf1.xboxlive.com/Z/8a3dfbab-b161-470f-8b42-c94f0b4f8f6f/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4501.0.8f39f343-cd87-4b76-8994-dc8310fc2f06/Microsoft.MinecraftUWP_1.26.4501.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf2.xboxlive.com/Z/8a3dfbab-b161-470f-8b42-c94f0b4f8f6f/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4501.0.8f39f343-cd87-4b76-8994-dc8310fc2f06/Microsoft.MinecraftUWP_1.26.4501.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.com/Z/8a3dfbab-b161-470f-8b42-c94f0b4f8f6f/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4501.0.8f39f343-cd87-4b76-8994-dc8310fc2f06/Microsoft.MinecraftUWP_1.26.4501.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.com/Z/8a3dfbab-b161-470f-8b42-c94f0b4f8f6f/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4501.0.8f39f343-cd87-4b76-8994-dc8310fc2f06/Microsoft.MinecraftUWP_1.26.4501.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.cn/Z/8a3dfbab-b161-470f-8b42-c94f0b4f8f6f/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.4501.0.8f39f343-cd87-4b76-8994-dc8310fc2f06/Microsoft.MinecraftUWP_1.26.4501.0_x64__8wekyb3d8bbwe.msixvc"
+      ],
+      "timestamp": 1787965083,
+      "md5": "a0f488255a72400d20ae2203656f308f"
+    },
+    {
+      "version": "Release 1.26.50.04",
+      "urls": [
+        "http://assets1.xboxlive.com/15/889f0637-a9a1-481d-a019-789cfa3c8350/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5004.0.4df08a0f-ae5b-4ad1-8260-c6e0294856ab/Microsoft.MinecraftUWP_1.26.5004.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.com/15/889f0637-a9a1-481d-a019-789cfa3c8350/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5004.0.4df08a0f-ae5b-4ad1-8260-c6e0294856ab/Microsoft.MinecraftUWP_1.26.5004.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets1.xboxlive.cn/15/889f0637-a9a1-481d-a019-789cfa3c8350/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5004.0.4df08a0f-ae5b-4ad1-8260-c6e0294856ab/Microsoft.MinecraftUWP_1.26.5004.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.cn/15/889f0637-a9a1-481d-a019-789cfa3c8350/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5004.0.4df08a0f-ae5b-4ad1-8260-c6e0294856ab/Microsoft.MinecraftUWP_1.26.5004.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.cn/15/889f0637-a9a1-481d-a019-789cfa3c8350/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5004.0.4df08a0f-ae5b-4ad1-8260-c6e0294856ab/Microsoft.MinecraftUWP_1.26.5004.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf1.xboxlive.com/15/889f0637-a9a1-481d-a019-789cfa3c8350/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5004.0.4df08a0f-ae5b-4ad1-8260-c6e0294856ab/Microsoft.MinecraftUWP_1.26.5004.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf2.xboxlive.com/15/889f0637-a9a1-481d-a019-789cfa3c8350/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5004.0.4df08a0f-ae5b-4ad1-8260-c6e0294856ab/Microsoft.MinecraftUWP_1.26.5004.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.com/15/889f0637-a9a1-481d-a019-789cfa3c8350/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5004.0.4df08a0f-ae5b-4ad1-8260-c6e0294856ab/Microsoft.MinecraftUWP_1.26.5004.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.com/15/889f0637-a9a1-481d-a019-789cfa3c8350/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5004.0.4df08a0f-ae5b-4ad1-8260-c6e0294856ab/Microsoft.MinecraftUWP_1.26.5004.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.cn/15/889f0637-a9a1-481d-a019-789cfa3c8350/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5004.0.4df08a0f-ae5b-4ad1-8260-c6e0294856ab/Microsoft.MinecraftUWP_1.26.5004.0_x64__8wekyb3d8bbwe.msixvc"
+      ],
+      "timestamp": 1789490093,
+      "md5": "d10018a435dbe00a1da8cc411ebf309f"
+    },
+    {
+      "version": "Release 1.26.51.01",
+      "urls": [
+        "http://assets1.xboxlive.com/10/5e9a91e8-88d2-4e34-8751-0180989ce008/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5101.0.20150e80-9196-49cc-af90-b8cf9902a48a/Microsoft.MinecraftUWP_1.26.5101.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.com/10/5e9a91e8-88d2-4e34-8751-0180989ce008/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5101.0.20150e80-9196-49cc-af90-b8cf9902a48a/Microsoft.MinecraftUWP_1.26.5101.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets1.xboxlive.cn/10/5e9a91e8-88d2-4e34-8751-0180989ce008/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5101.0.20150e80-9196-49cc-af90-b8cf9902a48a/Microsoft.MinecraftUWP_1.26.5101.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.cn/10/5e9a91e8-88d2-4e34-8751-0180989ce008/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5101.0.20150e80-9196-49cc-af90-b8cf9902a48a/Microsoft.MinecraftUWP_1.26.5101.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.cn/10/5e9a91e8-88d2-4e34-8751-0180989ce008/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5101.0.20150e80-9196-49cc-af90-b8cf9902a48a/Microsoft.MinecraftUWP_1.26.5101.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf1.xboxlive.com/10/5e9a91e8-88d2-4e34-8751-0180989ce008/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5101.0.20150e80-9196-49cc-af90-b8cf9902a48a/Microsoft.MinecraftUWP_1.26.5101.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf2.xboxlive.com/10/5e9a91e8-88d2-4e34-8751-0180989ce008/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5101.0.20150e80-9196-49cc-af90-b8cf9902a48a/Microsoft.MinecraftUWP_1.26.5101.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.com/10/5e9a91e8-88d2-4e34-8751-0180989ce008/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5101.0.20150e80-9196-49cc-af90-b8cf9902a48a/Microsoft.MinecraftUWP_1.26.5101.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.com/10/5e9a91e8-88d2-4e34-8751-0180989ce008/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5101.0.20150e80-9196-49cc-af90-b8cf9902a48a/Microsoft.MinecraftUWP_1.26.5101.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.cn/10/5e9a91e8-88d2-4e34-8751-0180989ce008/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5101.0.20150e80-9196-49cc-af90-b8cf9902a48a/Microsoft.MinecraftUWP_1.26.5101.0_x64__8wekyb3d8bbwe.msixvc"
+      ],
+      "timestamp": 1789510348,
+      "md5": "ba41aee910a8579bd1f78e3297d07ab4"
+    },
+    {
+      "version": "Release 1.26.52.03",
+      "urls": [
+        "http://assets1.xboxlive.com/Z/80c6fe1f-3d12-47fe-ace0-1406ce1bc3c6/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5203.0.8faf62df-3520-469d-9462-64acfbabde93/Microsoft.MinecraftUWP_1.26.5203.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.com/Z/80c6fe1f-3d12-47fe-ace0-1406ce1bc3c6/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5203.0.8faf62df-3520-469d-9462-64acfbabde93/Microsoft.MinecraftUWP_1.26.5203.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets1.xboxlive.cn/Z/80c6fe1f-3d12-47fe-ace0-1406ce1bc3c6/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5203.0.8faf62df-3520-469d-9462-64acfbabde93/Microsoft.MinecraftUWP_1.26.5203.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.cn/Z/80c6fe1f-3d12-47fe-ace0-1406ce1bc3c6/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5203.0.8faf62df-3520-469d-9462-64acfbabde93/Microsoft.MinecraftUWP_1.26.5203.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.cn/Z/80c6fe1f-3d12-47fe-ace0-1406ce1bc3c6/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5203.0.8faf62df-3520-469d-9462-64acfbabde93/Microsoft.MinecraftUWP_1.26.5203.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf1.xboxlive.com/Z/80c6fe1f-3d12-47fe-ace0-1406ce1bc3c6/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5203.0.8faf62df-3520-469d-9462-64acfbabde93/Microsoft.MinecraftUWP_1.26.5203.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf2.xboxlive.com/Z/80c6fe1f-3d12-47fe-ace0-1406ce1bc3c6/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5203.0.8faf62df-3520-469d-9462-64acfbabde93/Microsoft.MinecraftUWP_1.26.5203.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.com/Z/80c6fe1f-3d12-47fe-ace0-1406ce1bc3c6/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5203.0.8faf62df-3520-469d-9462-64acfbabde93/Microsoft.MinecraftUWP_1.26.5203.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.com/Z/80c6fe1f-3d12-47fe-ace0-1406ce1bc3c6/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5203.0.8faf62df-3520-469d-9462-64acfbabde93/Microsoft.MinecraftUWP_1.26.5203.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.cn/Z/80c6fe1f-3d12-47fe-ace0-1406ce1bc3c6/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.5203.0.8faf62df-3520-469d-9462-64acfbabde93/Microsoft.MinecraftUWP_1.26.5203.0_x64__8wekyb3d8bbwe.msixvc"
+      ],
+      "timestamp": 1790459907,
+      "md5": "bfa350ce68510f1263e308e5bcae369f"
+    },
+    {
+      "version": "Release 1.26.60.05",
+      "urls": [
+        "http://assets1.xboxlive.com/11/8f916a0e-7e5e-4021-86fd-166f7bc57ac3/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6005.0.6ae66bfb-f89b-4f8e-98a8-86212fe627f5/Microsoft.MinecraftUWP_1.26.6005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.com/11/8f916a0e-7e5e-4021-86fd-166f7bc57ac3/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6005.0.6ae66bfb-f89b-4f8e-98a8-86212fe627f5/Microsoft.MinecraftUWP_1.26.6005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets1.xboxlive.cn/11/8f916a0e-7e5e-4021-86fd-166f7bc57ac3/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6005.0.6ae66bfb-f89b-4f8e-98a8-86212fe627f5/Microsoft.MinecraftUWP_1.26.6005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.cn/11/8f916a0e-7e5e-4021-86fd-166f7bc57ac3/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6005.0.6ae66bfb-f89b-4f8e-98a8-86212fe627f5/Microsoft.MinecraftUWP_1.26.6005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.cn/11/8f916a0e-7e5e-4021-86fd-166f7bc57ac3/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6005.0.6ae66bfb-f89b-4f8e-98a8-86212fe627f5/Microsoft.MinecraftUWP_1.26.6005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf1.xboxlive.com/11/8f916a0e-7e5e-4021-86fd-166f7bc57ac3/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6005.0.6ae66bfb-f89b-4f8e-98a8-86212fe627f5/Microsoft.MinecraftUWP_1.26.6005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf2.xboxlive.com/11/8f916a0e-7e5e-4021-86fd-166f7bc57ac3/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6005.0.6ae66bfb-f89b-4f8e-98a8-86212fe627f5/Microsoft.MinecraftUWP_1.26.6005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.com/11/8f916a0e-7e5e-4021-86fd-166f7bc57ac3/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6005.0.6ae66bfb-f89b-4f8e-98a8-86212fe627f5/Microsoft.MinecraftUWP_1.26.6005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.com/11/8f916a0e-7e5e-4021-86fd-166f7bc57ac3/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6005.0.6ae66bfb-f89b-4f8e-98a8-86212fe627f5/Microsoft.MinecraftUWP_1.26.6005.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.cn/11/8f916a0e-7e5e-4021-86fd-166f7bc57ac3/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6005.0.6ae66bfb-f89b-4f8e-98a8-86212fe627f5/Microsoft.MinecraftUWP_1.26.6005.0_x64__8wekyb3d8bbwe.msixvc"
+      ],
+      "timestamp": 1793117671,
+      "md5": "95ba72c2ae7857687b29b19ee0d7ba65"
+    },
+    {
+      "version": "Release 1.26.62.01",
+      "urls": [
+        "http://assets1.xboxlive.com/10/90cabc1f-237a-477d-8c9d-38a76810a793/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6201.0.805550f5-bc84-493d-8f34-c57cadd9eccf/Microsoft.MinecraftUWP_1.26.6201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.com/10/90cabc1f-237a-477d-8c9d-38a76810a793/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6201.0.805550f5-bc84-493d-8f34-c57cadd9eccf/Microsoft.MinecraftUWP_1.26.6201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets1.xboxlive.cn/10/90cabc1f-237a-477d-8c9d-38a76810a793/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6201.0.805550f5-bc84-493d-8f34-c57cadd9eccf/Microsoft.MinecraftUWP_1.26.6201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.cn/10/90cabc1f-237a-477d-8c9d-38a76810a793/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6201.0.805550f5-bc84-493d-8f34-c57cadd9eccf/Microsoft.MinecraftUWP_1.26.6201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.cn/10/90cabc1f-237a-477d-8c9d-38a76810a793/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6201.0.805550f5-bc84-493d-8f34-c57cadd9eccf/Microsoft.MinecraftUWP_1.26.6201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf1.xboxlive.com/10/90cabc1f-237a-477d-8c9d-38a76810a793/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6201.0.805550f5-bc84-493d-8f34-c57cadd9eccf/Microsoft.MinecraftUWP_1.26.6201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf2.xboxlive.com/10/90cabc1f-237a-477d-8c9d-38a76810a793/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6201.0.805550f5-bc84-493d-8f34-c57cadd9eccf/Microsoft.MinecraftUWP_1.26.6201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.com/10/90cabc1f-237a-477d-8c9d-38a76810a793/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6201.0.805550f5-bc84-493d-8f34-c57cadd9eccf/Microsoft.MinecraftUWP_1.26.6201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.com/10/90cabc1f-237a-477d-8c9d-38a76810a793/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6201.0.805550f5-bc84-493d-8f34-c57cadd9eccf/Microsoft.MinecraftUWP_1.26.6201.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.cn/10/90cabc1f-237a-477d-8c9d-38a76810a793/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6201.0.805550f5-bc84-493d-8f34-c57cadd9eccf/Microsoft.MinecraftUWP_1.26.6201.0_x64__8wekyb3d8bbwe.msixvc"
+      ],
+      "timestamp": 1793827252,
+      "md5": "db2000665372eb84e036dab0136a8a81"
+    },
+    {
+      "version": "Release 1.26.63.01",
+      "urls": [
+        "http://assets1.xboxlive.com/3/dd09c79d-d421-4818-b01b-c9d6024e775d/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6301.0.8a81fbd1-766e-4975-92ad-ca1c81548fa1/Microsoft.MinecraftUWP_1.26.6301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.com/3/dd09c79d-d421-4818-b01b-c9d6024e775d/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6301.0.8a81fbd1-766e-4975-92ad-ca1c81548fa1/Microsoft.MinecraftUWP_1.26.6301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets1.xboxlive.cn/3/dd09c79d-d421-4818-b01b-c9d6024e775d/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6301.0.8a81fbd1-766e-4975-92ad-ca1c81548fa1/Microsoft.MinecraftUWP_1.26.6301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.cn/3/dd09c79d-d421-4818-b01b-c9d6024e775d/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6301.0.8a81fbd1-766e-4975-92ad-ca1c81548fa1/Microsoft.MinecraftUWP_1.26.6301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.cn/3/dd09c79d-d421-4818-b01b-c9d6024e775d/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6301.0.8a81fbd1-766e-4975-92ad-ca1c81548fa1/Microsoft.MinecraftUWP_1.26.6301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf1.xboxlive.com/3/dd09c79d-d421-4818-b01b-c9d6024e775d/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6301.0.8a81fbd1-766e-4975-92ad-ca1c81548fa1/Microsoft.MinecraftUWP_1.26.6301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://xvcf2.xboxlive.com/3/dd09c79d-d421-4818-b01b-c9d6024e775d/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6301.0.8a81fbd1-766e-4975-92ad-ca1c81548fa1/Microsoft.MinecraftUWP_1.26.6301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d1.xboxlive.com/3/dd09c79d-d421-4818-b01b-c9d6024e775d/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6301.0.8a81fbd1-766e-4975-92ad-ca1c81548fa1/Microsoft.MinecraftUWP_1.26.6301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://d2.xboxlive.com/3/dd09c79d-d421-4818-b01b-c9d6024e775d/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6301.0.8a81fbd1-766e-4975-92ad-ca1c81548fa1/Microsoft.MinecraftUWP_1.26.6301.0_x64__8wekyb3d8bbwe.msixvc",
+        "http://assets2.xboxlive.cn/3/dd09c79d-d421-4818-b01b-c9d6024e775d/7792d9ce-355a-493c-afbd-768f4a77c3b0/1.26.6301.0.8a81fbd1-766e-4975-92ad-ca1c81548fa1/Microsoft.MinecraftUWP_1.26.6301.0_x64__8wekyb3d8bbwe.msixvc"
+      ],
+      "timestamp": 1794003339,
+      "md5": "0a51108fc1bb2de066a0cadb796da0d6"
+    }
+  ],
+  "leviLaminaVersionDB": {
+    "1.21.124.02": [
+      "1.8.0-rc.1",
+      "1.8.0-rc.2"
+    ],
+    "1.21.132.01": [
+      "1.9.0",
+      "1.9.1",
+      "1.9.2",
+      "1.9.3",
+      "1.9.4",
+      "1.9.5",
+      "1.9.6",
+      "1.9.7",
+      "1.9.8",
+      "1.9.9"
+    ],
+    "1.26.10.04": [
+      "26.10.0",
+      "26.10.1",
+      "26.10.10",
+      "26.10.11",
+      "26.10.12",
+      "26.10.13",
+      "26.10.14",
+      "26.10.2",
+      "26.10.3",
+      "26.10.4",
+      "26.10.5",
+      "26.10.6",
+      "26.10.7",
+      "26.10.8",
+      "26.10.9"
+    ],
+    "1.26.20.04": [
+      "26.20.0",
+      "26.20.1",
+      "26.20.2",
+      "26.20.3",
+      "26.20.4",
+      "26.20.5",
+      "26.20.6",
+      "26.20.7"
+    ],
+    "1.26.32.02": [
+      "26.32.0",
+      "26.32.1",
+      "26.32.2",
+      "26.32.3",
+      "26.32.4"
+    ],
+    "1.26.40.05": [
+      "26.40.0",
+      "26.40.1",
+      "26.40.2",
+      "26.40.3",
+      "26.40.4",
+      "26.40.5",
+      "26.40.6"
+    ],
+    "1.26.51.01": [
+      "26.51.0",
+      "26.51.1",
+      "26.51.2",
+      "26.51.3",
+      "26.51.4",
+      "26.51.5",
+      "26.51.6",
+      "26.51.7",
+      "26.51.8",
+      "26.51.9"
+    ],
+    "1.26.60.05": [
+      "26.60.0",
+      "26.60.1",
+      "26.60.2",
+      "26.60.3",
+      "26.60.4",
+      "26.60.5",
+      "26.60.6",
+      "26.60.7"
+    ]
+  }
+}
