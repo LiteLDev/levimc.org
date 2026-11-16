@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.kit/
+# levimc-kit, copied from ../../kit by the package install (npm run kit)
+/kit/
+vite.config.ts.timestamp-*
+# the API reference (/LeviLamina/api/), made after the docs build: LiteLDev/LeviLamina checked out for its headers,
+# the header generated from the build's nav and doxygen-awesome-css (docs/README.md, "LeviLamina API reference")
+/.levilamina/
+/api/header.html
+/api/doxygen-awesome-css/
