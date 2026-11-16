@@ -452,7 +452,7 @@ export const STRINGS: Record<Locale, Strings> = { en, "zh-CN": zhCN, "zh-Hant": 
 export interface LocaleValue {
   locale: Locale;
   t: Strings;
-  /** A levimc.org link in the page's language: `/mods/x/` → `/mods/zh-Hans/x/`, `/about/` → `/zh-Hans/about/` (see router-link.tsx). */
+  /** A levimc.org link in the page's language: `/mods/x/` → `/zh-Hans/mods/x/`, `/about/` → `/zh-Hans/about/` (see router-link.tsx). */
   href: (path: string) => string;
 }
 

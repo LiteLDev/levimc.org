@@ -34,9 +34,9 @@ built with Vite `base: '/mods/'`: every page and file is under `/mods/`.
   prerendered HTML and reads its embedded data, so a page looks the same
   however it was reached.
 - The interface is in English, 简体中文 and 繁體中文, each at its own URLs: the
-  locale segment follows the base — `/mods/…`, `/mods/zh-Hans/…`, `/mods/zh-Hant/…`
-  (`src/locales.ts`) — and every page is prerendered in each language, with
-  hreflang alternates. `/mods/` alone redirects to the visitor's language preference
+  locale segment comes first, as everywhere on levimc.org — `/mods/…`, `/zh-Hans/mods/…`,
+  `/zh-Hant/mods/…` (`src/locales.ts`) — and every page is prerendered in each language, with
+  hreflang alternates. The old URLs (`/mods/zh-Hans/…`) are redirect pages to the new ones. `/mods/` alone redirects to the visitor's language preference
   shared by every LeviMC site (else the browser's); the LeviMC bar's language menu
   links to the same page in another language and stores the choice. The theme
   (Auto, Light, Dark) is shared the same way. Mod data is shown as published.
@@ -303,20 +303,21 @@ pnpm dev        # http://localhost:5173/mods/, every page rendered on request
 
 | Command          | What it does                                                              |
 | ---------------- | ------------------------------------------------------------------------- |
-| `pnpm build`     | client build, SSR build, then `prerender.mjs` writes every page, the JSON from before version 4, the hero paintings and `sitemap.xml` to `dist/` (the site's `/mods/`), and the JSON to `dist-api/` (the site's `/api/`) |
-| `pnpm preview`   | serves `dist/` at `/mods/` the way GitHub Pages does, on <http://127.0.0.1:4173/mods/> |
+| `pnpm build`     | client build, SSR build, then `prerender.mjs` writes every page, the JSON from before version 4, the hero paintings and `sitemap.xml` to `dist/` (the site's `/mods/`), the pages in the other languages to `dist-locales/<lang>/` (the site's `/<lang>/mods/`; the files they load stay under `/mods/`), and the JSON to `dist-api/` (the site's `/api/`) |
+| `pnpm preview`   | serves `dist/` at `/mods/`, `dist-locales/<lang>/` at `/<lang>/mods/` and `dist-api/` at `/api/` the way GitHub Pages does, on <http://127.0.0.1:4173/mods/> |
 | `pnpm lint`      | ESLint (typescript-eslint, React hooks)                                    |
 | `pnpm typecheck` | `tsc --noEmit`                                                             |
 | `pnpm test`      | unit tests (`node:test`): package files (against lip's golden data), query parsing and filters, tags, licenses, search, URLs, README rendering, prerendering |
 | `pnpm budget`    | checks the size budgets of the built home page, JavaScript and CSS         |
-| `pnpm linkcheck` | checks every internal link and anchor in `dist/` (add `--external` for the rest) |
+| `pnpm linkcheck` | checks every internal link and anchor in `dist/` and `dist-locales/` (add `--external` for the rest) |
 | `pnpm smoke`     | browser test of the built site against `pnpm preview` (needs Playwright), every mod page included |
 
 ## Layout
 
 ```
 index.html          page template (the kit's pre-paint script and fonts, the listing's view/pending script)
-prerender.mjs       renders /mods/, /mods/<id>/ and 404.html into dist/, plus the JSON (dist-api/), the hero paintings and sitemap.xml
+prerender.mjs       renders /mods/, /mods/<id>/ and 404.html into dist/ (and /<lang>/mods/… into dist-locales/<lang>/), plus the JSON
+                    (dist-api/), the hero paintings, sitemap.xml and the redirect pages of the old URLs (/mods/<lang>/…)
 repos.txt           the repositories the catalogue is built from (see Registry)
 scripts/discover.mjs  proposes new repositories in pull requests
 src/
@@ -341,12 +342,13 @@ public/             icon.png
 Colours, fonts, components and the whole LeviMC chrome (the bar on top, the footer) come from levimc-kit,
 which lives next to this app in [`../kit`](../kit/README.md). `pnpm install` runs `scripts/fetch-kit.mjs --source
 ../kit`, which copies it into `kit/`; `pnpm kit` refreshes the copy after a kit change. The bar and footer links
-into the rest of levimc.org (Home, Blog, …) are ordinary links (`isAppPath`): only `/mods/` is this app.
+into the rest of levimc.org (Home, Blog, …) are ordinary links (`isAppPath`): only `/mods/` and `/<lang>/mods/` are
+this app.
 
 ## Deployment
 
 levimc.org's `.github/workflows/deploy.yml` builds this app after the site and
-deploys `dist/` as levimc.org's `/mods/` on every push to `main` (a merged
+deploys `dist/` as levimc.org's `/mods/` and each `dist-locales/<lang>/` as its `/<lang>/mods/` on every push to `main` (a merged
 discovery pull request among them). It also rebuilds every hour, so the site
 picks up new versions.
 The `mods` job of `.github/workflows/ci.yml` lints, tests and builds it when a change touches `mods/` or `kit/`.

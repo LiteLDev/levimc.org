@@ -28,7 +28,7 @@ export async function listPageRoutes(): Promise<string[]> {
   ];
 }
 
-/** Every page in every language (`/mods/…`, `/mods/zh-Hans/…`, `/mods/zh-Hant/…`). */
+/** Every page in every language (`/mods/…`, `/zh-Hans/mods/…`, `/zh-Hant/mods/…`). */
 export async function listRoutes(): Promise<string[]> {
   const pages = await listPageRoutes();
   return LOCALES.flatMap((l) => pages.map((route) => withLocale(route, l.code)));

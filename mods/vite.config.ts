@@ -1,24 +1,24 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { join } from "node:path";
-import { defineConfig, type Plugin, type ViteDevServer } from "vite";
+import { defineConfig, type Connect, type Plugin, type ViteDevServer } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { createThemeInitScript } from "./kit/components/theme.ts";
 import { FONT_HEAD_HTML } from "./kit/components/fonts.ts";
 import { UI_LOCALES } from "./kit/components/i18n.ts";
 import { PREFS_CORE_JS } from "./kit/components/prefs.ts";
-import { localeRedirectScript } from "./kit/docs/shared/head.ts";
 import { noJsDarkCss } from "./kit/static/nojs-dark.mjs";
 import { BASE } from "./src/base-path.ts";
 import { LISTING_KEYS } from "./src/lib/catalog-query.ts";
 import { STORAGE_KEYS } from "./src/lib/storage.ts";
-import { DEFAULT_LOCALE, LOCALES } from "./src/locales.ts";
+import { isSitePath, legacyLocale, LOCALES, localeBase, withLocale } from "./src/locales.ts";
 
 /**
  * The kit's pre-paint script: the cross-site theme preference (cookie on
  * levimc.org). Every page is prerendered in the language of its URL
- * (`/mods/zh-Hans/…`), so nothing waits for the language — but a visitor
+ * (`/zh-Hans/mods/…`), so nothing waits for the language — but a visitor
  * whose stored language the site has no pages in while the kit has chrome
  * strings for it (de, ja …) sees the bar and footer only once they speak it
  * (`useChromeLocale`, src/chrome-locale.ts; html.kit-chrome-pending).
@@ -27,20 +27,32 @@ const contentBases = [...new Set(LOCALES.map((l) => l.lang.toLowerCase().split("
 const prefsScript =
   createThemeInitScript({
     // prerender links to the other builds on levimc.org, not this app's own pages (its router serves those)
-    speculation: { exclude: [`${BASE}*`] },
+    speculation: { exclude: LOCALES.map((l) => `${localeBase(l.code)}*`) },
   }) +
   `(function(){try{${PREFS_CORE_JS}var l=rp("lang");if(!l)return;var b=l.toLowerCase().split("-")[0];if(${JSON.stringify(contentBases)}.indexOf(b)>=0)return;` +
   `var C=${JSON.stringify(UI_LOCALES.map((c) => ({ c, l: c })))},a=ml(l,C);` +
   `if(a>=0&&C[a].l.toLowerCase().split("-")[0]===b)document.documentElement.classList.add("kit-chrome-pending")}catch(e){}})();`;
 
 /**
- * Only /mods/ itself redirects by language, like every LeviMC site's root (the docs' own script): to the
- * visitor's stored language, else the browser's, when it has pages (/mods/zh-Hans/ …). Deep links never do.
+ * Only /mods/ itself redirects by language, like every LeviMC site's root (the kit's localeRedirectScript, which
+ * puts the language after the base): to the visitor's stored language, else the browser's — unless they came from
+ * another page of this site — when it has pages (/zh-Hans/mods/ …). Deep links never do.
  */
-const redirectScript = localeRedirectScript({ base: BASE, siteKey: "mods", locales: [...LOCALES], defaultLocale: DEFAULT_LOCALE });
+const redirectLocales = LOCALES.map((l) => ({ c: l.code, l: l.lang, u: localeBase(l.code) }));
+const redirectScript =
+  `(function(){try{${PREFS_CORE_JS}var b=${JSON.stringify(BASE)},p=location.pathname;if(p!==b&&p!==b+"index.html")return;` +
+  `var L=${JSON.stringify(redirectLocales)},k="levimc-locale-mods",s=pls(),g=rp("lang"),o=null,x=-1,j;` +
+  // the language this site stored before the cross-site preference (kit < 2.10) becomes that preference, once
+  `try{o=s&&s.getItem(k)}catch(e){}` +
+  `if(o!==null){if(!g)for(j=0;j<L.length;j++)if(L[j].c===o){g=L[j].l;wp("lang",g)}try{s.removeItem(k)}catch(e){}}` +
+  `if(g){x=ml(g,L);if(x<0)x=0}` +
+  `else{try{var r=new URL(document.referrer);if(r.origin===location.origin)for(j=0;j<L.length;j++)if(r.pathname.indexOf(L[j].u)===0)return}catch(e){}` +
+  `var N=navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||""];` +
+  `for(j=0;j<N.length&&x<0;j++)x=ml(N[j],L)}` +
+  `if(x>=0&&L[x].u!==b)location.replace(L[x].u+location.search+location.hash)}catch(e){}})();`;
 
-/** The locale segment after BASE (the listing is /mods/, /mods/zh-Hans/ …). */
-const LOCALE_PREFIX = `^${BASE}(?:${LOCALES.filter((l) => l.prefix).map((l) => l.prefix).join("|")})`;
+/** The listing in any language (/mods/, /zh-Hans/mods/ …): its path with the locale segment taken off. */
+const LOCALE_PREFIX = `^/(?:${LOCALES.filter((l) => l.prefix).map((l) => l.prefix).join("|")})(?=${BASE.slice(1)})`;
 
 /**
  * The listing's own pre-paint state: the viewer's list/grid choice, and
@@ -50,7 +62,7 @@ const LOCALE_PREFIX = `^${BASE}(?:${LOCALES.filter((l) => l.prefix).map((l) => l
  */
 const listingScript =
   `(function(){var d=document.documentElement;try{if(localStorage.getItem(${JSON.stringify(STORAGE_KEYS.view)})==="grid")d.setAttribute("data-view","grid")}catch(e){}` +
-  `var p=location.pathname.replace(new RegExp(${JSON.stringify(LOCALE_PREFIX)}),${JSON.stringify(BASE)});if((p===${JSON.stringify(BASE)}||p===${JSON.stringify(`${BASE}index.html`)})&&/[?&](${LISTING_KEYS.join("|")})=/.test(location.search)){` +
+  `var p=location.pathname.replace(new RegExp(${JSON.stringify(LOCALE_PREFIX)}),"/");if((p===${JSON.stringify(BASE)}||p===${JSON.stringify(`${BASE}index.html`)})&&/[?&](${LISTING_KEYS.join("|")})=/.test(location.search)){` +
   `d.setAttribute("data-mods-pending","");setTimeout(function(){d.removeAttribute("data-mods-pending")},4000)}})()`;
 
 /**
@@ -111,11 +123,47 @@ function devServerRender(): Plugin {
     name: "mods:dev-render",
     apply: "serve",
     configureServer(server: ViteDevServer) {
+      /** A page, rendered like prerender.mjs renders it; anything but a GET for HTML goes on to `next`. */
+      const renderHtml = async (url: string, req: IncomingMessage, res: ServerResponse, next: Connect.NextFunction) => {
+        const accept = req.headers.accept ?? "";
+        if (req.method !== "GET" || !accept.includes("text/html")) {
+          next();
+          return;
+        }
+        try {
+          const template = await server.transformIndexHtml(url, readFileSync("index.html", "utf8"));
+          const entry = await server.ssrLoadModule("/src/entry-server.tsx");
+          const page = await entry.render(url);
+          // Functions, so `$&` and friends in a README stay as written.
+          const html = template
+            .replace("<!--app-head-->", () => page.head)
+            .replace("<!--app-html-->", () => page.html);
+          res.statusCode = page.status ?? 200;
+          res.setHeader("Content-Type", "text/html; charset=utf-8");
+          res.end(html);
+        } catch (error) {
+          server.ssrFixStacktrace(error as Error);
+          next(error);
+        }
+      };
       // The JSON is written by prerender.mjs; built on request here: version 4
       // under /api/v4/mods/ (outside the base, so before Vite's own handling),
       // the one from before it next to the pages.
       server.middlewares.use(async (req, res, next) => {
         const url = req.originalUrl ?? "/";
+        // the pages in the other languages (/zh-Hans/mods/…) are outside the base too
+        const path = url.split(/[?#]/)[0] ?? "";
+        // the old URLs (/mods/zh-Hans/…) redirect, like their redirect pages (prerender.mjs)
+        if (legacyLocale(path)) {
+          res.statusCode = 302;
+          res.setHeader("Location", withLocale(url, "en"));
+          res.end();
+          return;
+        }
+        if (!path.startsWith(BASE) && isSitePath(path)) {
+          await renderHtml(url, req, res, next);
+          return;
+        }
         const json = /^\/(api\/v4\/)?mods\/(?:(.+)\/)?index\.json$/.exec(url.split("?")[0] ?? "");
         if (json) {
           const entry = await server.ssrLoadModule("/src/entry-server.tsx");
@@ -175,29 +223,7 @@ function devServerRender(): Plugin {
             res.end(file.body);
             return;
           }
-          const accept = req.headers.accept ?? "";
-          if (req.method !== "GET" || !accept.includes("text/html")) {
-            next();
-            return;
-          }
-          try {
-            const template = await server.transformIndexHtml(
-              url,
-              readFileSync("index.html", "utf8"),
-            );
-            const entry = await server.ssrLoadModule("/src/entry-server.tsx");
-            const page = await entry.render(url);
-            // Functions, so `$&` and friends in a README stay as written.
-            const html = template
-              .replace("<!--app-head-->", () => page.head)
-              .replace("<!--app-html-->", () => page.html);
-            res.statusCode = page.status ?? 200;
-            res.setHeader("Content-Type", "text/html; charset=utf-8");
-            res.end(html);
-          } catch (error) {
-            server.ssrFixStacktrace(error as Error);
-            next(error);
-          }
+          await renderHtml(url, req, res, next);
         });
       };
     },

@@ -178,7 +178,7 @@ const isAppPath = () => true;
 
 /**
  * The LeviMC bar (the site's languages, the shared theme menu, GitHub), the
- * page and the LeviMC footer, in the language of the URL (`/mods/zh-Hans/…`):
+ * page and the LeviMC footer, in the language of the URL (`/zh-Hans/mods/…`):
  * each page is prerendered in each language.
  */
 function Shell({ initialLocale, children }: { initialLocale?: Locale; children: ReactNode }) {

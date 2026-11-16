@@ -122,7 +122,7 @@ export interface PageMeta {
   json?: string;
 }
 
-/** The page's meta data at `pathname` (`/mods/…`, `/mods/zh-Hans/…`: the language comes from the URL). */
+/** The page's meta data at `pathname` (`/mods/…`, `/zh-Hans/mods/…`: the language comes from the URL). */
 export function pageMeta(data: PageData, pathname: string = BASE): PageMeta {
   const { locale } = splitLocale(pathname);
   const t = STRINGS[locale];

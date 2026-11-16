@@ -6,3 +6,6 @@
 
 # the /api/ folder prerender.mjs writes (dist/ is ignored at the root)
 /dist-api/
+
+# the pages in the other languages prerender.mjs writes: dist-locales/<lang>/ is the site's /<lang>/mods/ folder
+/dist-locales/

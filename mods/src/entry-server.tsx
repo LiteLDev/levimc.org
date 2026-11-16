@@ -11,7 +11,7 @@ import { modulePreloadTags } from "./server/client-assets";
 
 // For prerender.mjs: the pages to write, a check of what was written, the JSON and the hero paintings.
 export { listRoutes, listSitemapRoutes, parsePageData };
-export { LOCALES, DEFAULT_LOCALE, localeAlternates } from "./locales";
+export { LOCALES, DEFAULT_LOCALE, localeAlternates, localeBase, localeInfo, splitLocale } from "./locales";
 export { catalogJson, jsonFiles, legacyCatalogJson, legacyModJsonOf, modJson } from "./server/api";
 export { HERO_FILES, heroSvg } from "./server/hero";
 export { showcaseFiles } from "./server/showcase";
@@ -19,7 +19,7 @@ export { iconFiles } from "./server/icons";
 
 /**
  * Renders one page for prerender.mjs (and the dev server): `/mods/`,
- * `/mods/<tooth>/` (and the same under `/mods/zh-Hans/`, `/mods/zh-Hant/`, in
+ * `/mods/<tooth>/` (and the same under `/zh-Hans/mods/`, `/zh-Hant/mods/`, in
  * that language), or anything else as the 404 page.
  */
 export async function render(url: string) {

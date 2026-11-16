@@ -15,6 +15,7 @@
 import { createRequire } from "node:module";
 import { tagKeys } from "../src/data/featured-tags.ts";
 import { licenseFamily, licenseOf } from "../src/data/licenses.ts";
+import { LOCALES } from "../src/locales.ts";
 
 const args = process.argv.slice(2);
 const opt = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
@@ -26,6 +27,8 @@ const { chromium } = require("playwright");
 const HOME_TITLE = "Mods - LeviMC";
 // the site's path (/mods/ on levimc.org)
 const base = new URL(root).pathname;
+// the site in another language: the language comes first (/zh-Hans/mods/ on levimc.org)
+const localeRoot = (lang) => new URL(`/${lang}${base}`, root).href;
 // a mod page (LeviLamina itself is the platform: it has a page, but is not in the listing)
 const LEVILAMINA = "github.com/LiteLDev/LeviLamina/";
 const results = [];
@@ -56,9 +59,11 @@ const browser = await chromium.launch({
 async function newContext(options, { fonts = false } = {}) {
   const ctx = await browser.newContext(options);
   // Layout checks load the web fonts too: the fallback fonts are narrower and can hide an overflow.
-  // The JSON is under /api/v4/mods/, outside the pages' root.
+  // The JSON is under /api/v4/mods/, the pages in the other languages under /zh-Hans/mods/ …, outside the pages' root.
   const allowed = (url) =>
-    url.href.startsWith(root) || url.href.startsWith(new URL("/api/", root).href) || (fonts && /^https:\/\/fonts\.(googleapis|gstatic)\.com\//.test(url.href));
+    url.href.startsWith(root) ||
+    LOCALES.some((l) => l.prefix && url.href.startsWith(localeRoot(l.prefix.slice(0, -1)))) ||
+    url.href.startsWith(new URL("/api/", root).href) || (fonts && /^https:\/\/fonts\.(googleapis|gstatic)\.com\//.test(url.href));
   await ctx.route((url) => !allowed(url), (route) => route.abort());
   return ctx;
 }
@@ -678,12 +683,12 @@ await check("theme: Auto by default; Dark is kept in the levimc_theme cookie", a
   return "auto → light (cookie)";
 });
 
-await check("language: 简体中文 links to /mods/zh-Hans/ (same page and query), is kept in the levimc_lang cookie; / follows it", async () => {
+await check("language: 简体中文 links to /zh-Hans/mods/ (same page and query), is kept in the levimc_lang cookie; / follows it", async () => {
   const ctx = await newContext(DESKTOP);
   const { page } = await open("?q=land", ctx);
   await page.click("[data-kit-locale-switcher]");
   await page.click('.kit-gbar [data-kit-lang-value="zh-Hans"]');
-  await page.waitForURL((u) => u.pathname === "/mods/zh-Hans/" && u.search === "?q=land");
+  await page.waitForURL((u) => u.href === `${localeRoot("zh-Hans")}?q=land`);
   await page.waitForFunction(() => document.querySelector(".kit-hero-name")?.textContent === "LeviMC 模组");
   const cookie = (await ctx.cookies(root)).find((c) => c.name === "levimc_lang")?.value;
   assert(cookie === "zh-Hans", `cookie ${cookie}`);
@@ -691,24 +696,28 @@ await check("language: 简体中文 links to /mods/zh-Hans/ (same page and query
   assert(ui.hero === "LeviMC 模组" && /搜索/.test(ui.placeholder) && /模组/.test(ui.tab) && ui.lang === "zh-Hans", JSON.stringify(ui));
   // a row leads to the mod page in the same language
   await page.click("a.mods-card-link");
-  await page.waitForURL((u) => u.pathname.startsWith("/mods/zh-Hans/github.com/"));
+  await page.waitForURL((u) => u.href.startsWith(`${localeRoot("zh-Hans")}github.com/`));
   await page.waitForSelector(".mods-install-btn");
   assert((await page.locator(".mods-install-btn").innerText()).includes("安装"), "mod page not translated");
   // the listing's root redirects to the stored language; deep links never redirect
   await page.goto(root, { waitUntil: "networkidle" });
-  assert(new URL(page.url()).pathname === "/mods/zh-Hans/", `/mods/ → ${page.url()}`);
+  assert(page.url() === localeRoot("zh-Hans"), `/mods/ → ${page.url()}`);
   await page.goto(root + LEVILAMINA, { waitUntil: "networkidle" });
-  assert(new URL(page.url()).pathname === `/mods/${LEVILAMINA}`, `${LEVILAMINA} → ${page.url()}`);
+  assert(page.url() === root + LEVILAMINA, `${LEVILAMINA} → ${page.url()}`);
+  // the old URL of a page in another language (/mods/zh-Hans/<page>, before the language came first) redirects
+  await page.goto(`${root}zh-Hans/${LEVILAMINA}`, { waitUntil: "networkidle" });
+  assert(page.url() === `${localeRoot("zh-Hans")}${LEVILAMINA}`, `old URL → ${page.url()}`);
   await ctx.close();
   return JSON.stringify(ui);
 });
 
-await check("every language is prerendered: /mods/zh-Hant/<mod>/ is static Traditional Chinese HTML with hreflang", async () => {
-  const html = await (await fetch(`${root}zh-Hant/${LEVILAMINA}`)).text();
+await check("every language is prerendered: /zh-Hant/mods/<mod>/ is static Traditional Chinese HTML with hreflang", async () => {
+  const html = await (await fetch(`${localeRoot("zh-Hant")}${LEVILAMINA}`)).text();
   assert(html.includes('<html lang="zh-Hant"'), "<html lang>");
   for (const [lang, prefix] of [["en", ""], ["zh-Hans", "zh-Hans/"], ["zh-Hant", "zh-Hant/"], ["x-default", ""]]) {
-    assert(html.includes(`<link rel="alternate" hreflang="${lang}" href="https://levimc.org/mods/${prefix}${LEVILAMINA}"`), `hreflang ${lang}`);
+    assert(html.includes(`<link rel="alternate" hreflang="${lang}" href="https://levimc.org/${prefix}mods/${LEVILAMINA}"`), `hreflang ${lang}`);
   }
+  assert(html.includes(`<link rel="canonical" href="https://levimc.org/zh-Hant/mods/${LEVILAMINA}"`), "canonical");
   assert(html.includes("安裝"), "not prerendered in Traditional Chinese");
   assert(!/class="[^"]*kit-(content|chrome)-pending/.test(html), "hidden until hydrated");
   return "zh-Hant";
