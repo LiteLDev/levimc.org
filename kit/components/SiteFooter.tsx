@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from 'react';
 import { PixelIcon, BrandIcon } from './PixelIcon';
 import { uiStrings, type UiStrings } from './i18n';
-import { LINKS, SOCIAL, COPYRIGHT_HOLDER, sameSitePath } from './projects';
+import { LINKS, SOCIAL, COPYRIGHT_HOLDER, localizeNetworkUrl, sameSitePath } from './projects';
 import { BrandMark } from './GlobalBar';
 import type { LinkLikeProps } from './LocaleSwitcher';
 
@@ -30,10 +30,13 @@ interface NavCtx {
   siteOrigin?: string;
   linkComponent?: ComponentType<LinkLikeProps>;
   isAppPath?: (path: string) => boolean;
+  /** The footer's language: its levimc.org links go to the target in it (kit 2.22.2). */
+  lang?: string;
 }
 
 /** An <a>, or the router link for same-site URLs (module level, so its type is stable across renders). */
-function FooterLink({ nav, url, className, children }: { nav: NavCtx; url: string; className?: string; children: ReactNode }) {
+function FooterLink({ nav, url: rawUrl, className, children }: { nav: NavCtx; url: string; className?: string; children: ReactNode }) {
+  const url = localizeNetworkUrl(rawUrl, nav.lang);
   const RouterLink = nav.linkComponent;
   let path = RouterLink ? sameSitePath(url, nav.siteOrigin) : undefined;
   if (path !== undefined && nav.isAppPath && !nav.isAppPath(path)) path = undefined;
@@ -55,7 +58,7 @@ function FooterLink({ nav, url, className, children }: { nav: NavCtx; url: strin
  */
 export function SiteFooter({ locale, strings, year = BUILD_YEAR, siteOrigin, linkComponent, isAppPath, className }: SiteFooterProps) {
   const t = uiStrings(locale, strings);
-  const nav: NavCtx = { siteOrigin, linkComponent, isAppPath };
+  const nav: NavCtx = { siteOrigin, linkComponent, isAppPath, lang: locale };
   const social = [...SOCIAL.filter((s) => s.id !== 'email'), { id: 'github' as const, label: 'GitHub', url: LINKS.github }, ...SOCIAL.filter((s) => s.id === 'email')];
   return (
     <footer className={className ? `kit-footer ${className}` : 'kit-footer'} data-kit-footer="" lang={locale}>

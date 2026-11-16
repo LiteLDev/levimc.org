@@ -264,8 +264,10 @@ test('every page: the kit chrome — skip link, no-JS dark theme, generator, foo
     assert.match(page, /<span>© <span data-kit-year="">\d{4}<\/span> LeviMC<\/span>/, f);
     // the GlobalBar: canonical tabs, Mods label, the blog on levimc.org, language + theme menus, GitHub
     const mods = { 'zh-CN': '模组', 'zh-HK': '模組' }[lang] ?? 'Mods';
-    assert.ok(page.includes(`<a class="kit-gbar-link" href="https://levimc.org/mods/"><span data-kit-t="mods">${mods}</span></a>`), `${f}: Mods tab`);
-    assert.ok(page.includes('<a class="kit-gbar-link" href="https://levimc.org/blog/">'), `${f}: Blog tab`);
+    // levimc.org links in the bar's language (kit 2.22.2): /mods/zh-Hans/, /zh-Hant/blog/
+    const seg = { 'zh-CN': 'zh-Hans/', 'zh-HK': 'zh-Hant/' }[lang] ?? '';
+    assert.ok(page.includes(`<a class="kit-gbar-link" href="https://levimc.org/mods/${seg}"><span data-kit-t="mods">${mods}</span></a>`), `${f}: Mods tab`);
+    assert.ok(page.includes(`<a class="kit-gbar-link" href="https://levimc.org/${seg}blog/">`), `${f}: Blog tab`);
     assert.ok(!page.includes('blog.levimc.org'), `${f}: blog.levimc.org`);
     for (const hook of ['data-kit-locale-switcher', 'data-kit-theme-toggle', 'data-kit-theme-value="auto"', 'data-kit-lang-value="zh-HK"', 'kit-gbar-github'])
       assert.ok(page.includes(hook), `${f}: ${hook}`);

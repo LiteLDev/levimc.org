@@ -1,6 +1,6 @@
 import type { AnchorHTMLAttributes } from "react";
 import { Link, useLocation } from "react-router";
-import { DOCS_PROJECTS } from "../../kit/components/projects";
+import { DOCS_PROJECTS, localizeNetworkUrl } from "../../kit/components/projects";
 import { BASE } from "../base-path";
 import { useI18n } from "../i18n";
 import type { LinkLikeProps } from "../kit-ui";
@@ -22,8 +22,8 @@ const LOCALE_SEGMENT = new RegExp(`^(?:${LOCALES.filter((l) => l.prefix).map((l)
 export function localizeHref(href: string, locale: Locale): string {
   const path = href.startsWith(`${SITE_ORIGIN}/`) ? href.slice(SITE_ORIGIN.length) : href;
   if (!path.startsWith("/") || path.startsWith("//")) return href;
-  // the projects' docs: their canonical absolute URL, like on every LeviMC site
-  if (PROJECT_PATHS.some((p) => path.startsWith(p))) return `${SITE_ORIGIN}${path}`;
+  // the projects' docs: their canonical absolute URL, in the page's language (their root would redirect otherwise)
+  if (PROJECT_PATHS.some((p) => path.startsWith(p))) return localizeNetworkUrl(`${SITE_ORIGIN}${path}`, locale);
   if (locale === DEFAULT_LOCALE) return path;
   if (path.startsWith(BASE)) return withLocale(path, locale);
   const base = path.startsWith(TUTORIALS) ? TUTORIALS : "/";

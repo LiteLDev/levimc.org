@@ -955,6 +955,17 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 ## Changelog
 
+### 2.22.2
+
+* **Links between LeviMC sites go straight to the reader's language.** The bar, the Projects menu, the footer and
+  the drawer's LeviMC list linked each site's root (`https://levimc.org/lip/`), whose language redirect then loaded a
+  second page — a flash on every cross-site click for non-English readers, and a wasted prerender. They now link
+  `…/lip/zh-Hans/` (`/zh-Hans/about/`, `/mods/zh-Hant/`, `/LeviLauncher/de-DE/` …) in the bar's language:
+  `localizeNetworkUrl(url, lang)` (components/projects.ts). Chinese goes to zh-Hans / zh-Hant on every site; other
+  languages only to docs that have them (new `Project.docsLocales`, LeviLauncher's six); `Project.docsUnlocalized`
+  keeps LeviLamina's Doxygen `api/` as is. The static chrome (kit.js) applies the same rule when it relabels the bar.
+* levimc.org and LeviMC Mods localize the project docs' URLs with it too (their project cards and in-page links).
+
 ### 2.22.1
 
 * **Home pages: the site column waits for the banner to leave.** The hero keeps the full width; the column starts

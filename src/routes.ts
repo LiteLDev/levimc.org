@@ -8,6 +8,7 @@ import type { Messages } from './i18n';
 import { DEFAULT_LOCALE, LOCALES, localeOfTag, splitLocale, withLocale, type Locale } from './i18n/config';
 import { BLOG_ROUTES, blog, resolveBlogPath, type BlogView } from './blog/data';
 import { MODS_PATH, OTHER_SITES, TUTORIALS_PATH } from './other-sites';
+import { localizeNetworkUrl } from '../kit/components/projects.ts';
 
 export const SITE_ORIGIN = 'https://levimc.org';
 
@@ -116,14 +117,15 @@ const LOCALE_SEGMENT = new RegExp(`^(?:${LOCALES.filter((l) => l.prefix).map((l)
 /**
  * A link on levimc.org in `locale`: the site's own pages get the locale prefix (/about/ → /zh-Hans/about/), LeviMC Mods
  * and the tutorials theirs after their base (/mods/ → /mods/zh-Hans/); a link that names a locale already, the
- * projects' docs (their own locale schemes; always absolute) and other origins stay as they are. Other levimc.org URLs come
+ * projects' docs (always absolute) get theirs from the kit (localizeNetworkUrl); other origins stay as they are. Other levimc.org URLs come
  * back root-relative.
  */
 export function localizeHref(href: string, locale: Locale): string {
   const path = href.startsWith(SITE_ORIGIN + '/') ? href.slice(SITE_ORIGIN.length) : href;
   if (!path.startsWith('/') || path.startsWith('//')) return href;
-  // the projects' docs: their canonical absolute URL, like on every LeviMC site
-  if (PROJECT_PATHS.some((p) => path.startsWith(p))) return SITE_ORIGIN + path;
+  // the projects' docs: their canonical absolute URL, in the page's language (kit localizeNetworkUrl: their root would
+  // redirect otherwise)
+  if (PROJECT_PATHS.some((p) => path.startsWith(p))) return localizeNetworkUrl(SITE_ORIGIN + path, locale);
   if (locale === DEFAULT_LOCALE) return path;
   const site = LOCALIZED_SITES.find((p) => path.startsWith(p));
   if (site) {

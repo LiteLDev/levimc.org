@@ -2,7 +2,7 @@ import { useRef, type ComponentType, type ReactNode } from 'react';
 import { PixelIcon, BrandIcon } from './PixelIcon';
 import { useDismissableDetails } from './menu';
 import { UI_LOCALES, UI_LOCALE_NAMES, resolveUiLocale, uiLocaleName, uiStrings, type UiStrings } from './i18n';
-import { LINKS, PROJECTS, globalNav, projectHome, sameSitePath, type Project, type ProjectId, type SiteId } from './projects';
+import { LINKS, PROJECTS, globalNav, localizeNetworkUrl, projectHome, sameSitePath, type Project, type ProjectId, type SiteId } from './projects';
 import { LocaleSwitcher, type LinkLikeProps, type LocaleOption } from './LocaleSwitcher';
 import { ThemeSwitcher } from './ThemeToggle';
 
@@ -83,10 +83,14 @@ interface LinkCtx {
   siteOrigin?: string;
   linkComponent?: ComponentType<LinkLikeProps>;
   isAppPath?: (path: string) => boolean;
+  /** The bar's language: its levimc.org links go to the target in it ({@link localizeNetworkUrl}). */
+  lang?: string;
 }
 
 /** An <a>, or the router link for same-site URLs. */
-function BarLink({ url, ctx, className, current, children }: { url: string; ctx: LinkCtx; className: string; current?: boolean; children: ReactNode }) {
+function BarLink({ url: rawUrl, ctx, className, current, children }: { url: string; ctx: LinkCtx; className: string; current?: boolean; children: ReactNode }) {
+  // kit 2.22.2: in the reader's language, so the target's root does not redirect (a second page load)
+  const url = localizeNetworkUrl(rawUrl, ctx.lang);
   let path = ctx.linkComponent ? sameSitePath(url, ctx.siteOrigin) : undefined;
   if (path !== undefined && ctx.isAppPath && !ctx.isAppPath(path)) path = undefined;
   const RouterLink = ctx.linkComponent;
@@ -199,7 +203,7 @@ export function GlobalNavList({ current, currentProject, currentDocs, locale, st
   const t = uiStrings(locale, strings);
   const project = currentProject ?? currentDocs;
   const tab = barTab(project, current);
-  const ctx: LinkCtx = { siteOrigin, linkComponent, isAppPath };
+  const ctx: LinkCtx = { siteOrigin, linkComponent, isAppPath, lang: locale };
   return (
     <div className={className ? `kit-gbar-list ${className}` : 'kit-gbar-list'} onClick={(e) => ((e.target as Element).closest('a') ? onNavigate?.() : undefined)}>
       {heading}
@@ -261,7 +265,7 @@ export function GlobalBar({
   const moreRef = useRef<HTMLDetailsElement>(null);
   useDismissableDetails(projRef);
   useDismissableDetails(moreRef);
-  const ctx: LinkCtx = { siteOrigin, linkComponent, isAppPath };
+  const ctx: LinkCtx = { siteOrigin, linkComponent, isAppPath, lang: locale };
   const items = globalNav(t);
   // the button that opens the site's own menu (docs drawer), else the bar's own dropdown (menu), else none
   const menuButton = onMenu !== undefined || menuControls !== undefined;

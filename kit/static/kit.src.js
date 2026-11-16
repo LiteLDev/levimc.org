@@ -11,6 +11,8 @@
   /*__PREFS_CORE__*/
   var STR = /*__STRINGS__*/ {};
   var NAMES = /*__NAMES__*/ {};
+  // the projects' docs: base, extra languages (base language → segment), paths without languages
+  var NET = /*__NETWORK__*/ [];
   var root = document.documentElement;
   var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
   var doxygen = root.classList.contains('dark-mode') || root.classList.contains('light-mode') || root.hasAttribute('data-kit-doxygen');
@@ -200,8 +202,34 @@
     });
     if (siteFit) siteFit();
   }
+  // levimc.org links of the bar, the footer and the drawer's LeviMC list in the reader's language (kit 2.22.2, the
+  // same rule as components/projects.ts localizeNetworkUrl): without it the target's root would redirect (a flash)
+  var ORIGIN = 'https://levimc.org';
+  function localizeUrl(url, lang) {
+    if (!lang) return url;
+    var abs = url.indexOf(ORIGIN + '/') === 0;
+    var path = abs ? url.slice(ORIGIN.length) : url;
+    if (path.charAt(0) !== '/' || path.charAt(1) === '/') return url;
+    var tag = String(lang).toLowerCase().replace(/_/g, '-');
+    var prim = tag.split('-')[0];
+    var proj = null;
+    for (var i = 0; i < NET.length; i++) if (path.indexOf(NET[i].b) === 0) proj = NET[i];
+    var base = proj ? proj.b : path.indexOf('/mods/') === 0 ? '/mods/' : path.indexOf('/tutorials/') === 0 ? '/tutorials/' : '/';
+    var rest = path.slice(base.length);
+    if (/^(?:zh-Hans|zh-Hant|zh|[a-z]{2}-[A-Z]{2})(?:\/|$)/.test(rest)) return url;
+    if (proj) for (var u = 0; u < proj.u.length; u++) if (rest.indexOf(proj.u[u]) === 0) return url;
+    var seg = prim === 'zh' ? (/^zh-(tw|hk|mo|hant)\b/.test(tag) ? 'zh-Hant' : 'zh-Hans') : proj ? proj.l[prim] : null;
+    return seg ? (abs ? ORIGIN : '') + base + seg + '/' + rest : url;
+  }
+  function localizeNetwork(lang) {
+    each('[data-kit-globalbar] a[href], [data-kit-footer] a[href], .kit-drawer-network a[href]', function (a) {
+      if (!a.hasAttribute('data-kit-net-default')) a.setAttribute('data-kit-net-default', a.getAttribute('href'));
+      a.setAttribute('href', localizeUrl(a.getAttribute('data-kit-net-default'), lang));
+    });
+  }
   function applyLanguagePref() {
     var p = rp('lang');
+    localizeNetwork(p);
     var code = p ? uiLocale(p) : null;
     if (code && document.querySelector('[data-kit-lang-value]')) translate(code, p);
     localizeSite(p);

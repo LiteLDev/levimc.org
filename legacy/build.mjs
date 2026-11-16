@@ -154,8 +154,9 @@ export function globalBar(locale, currentProject) {
   html = html.replace('<summary class="kit-gbar-link">', '<summary class="kit-gbar-link" aria-current="page">');
   html = html.replace('<summary class="kit-gbar-more-link">', '<summary class="kit-gbar-more-link" aria-current="page">');
   if (currentProject) {
-    const item = `<a class="kit-proj-main" href="${ORIGIN}/${currentProject}/">`;
-    html = html.split(item).join(`<a class="kit-proj-main" href="${ORIGIN}/${currentProject}/" aria-current="page">`);
+    // the project's docs, in the bar's language since kit 2.22.2 (…/LeviLauncher/zh-Hans/)
+    const item = new RegExp(`<a class="kit-proj-main" href="(${ORIGIN}/${currentProject}/(?:[A-Za-z]{2}(?:-[A-Za-z]{2,4})?/)?)">`, 'g');
+    html = html.replace(item, '<a class="kit-proj-main" href="$1" aria-current="page">');
   }
   return html;
 }
