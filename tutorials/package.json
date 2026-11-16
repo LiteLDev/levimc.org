@@ -15,7 +15,9 @@
     "preview": "node kit/scripts/serve-pages.mjs dist --base / --port 4177",
     "typecheck": "tsc --noEmit",
     "linkcheck": "node kit/scripts/linkcheck.mjs dist --base /tutorials/ --locale-first zh-Hans,zh-Hant --site-origin https://levimc.org",
-    "smoke": "node kit/scripts/smoke.mjs --url http://127.0.0.1:4177/tutorials/ --current tutorials"
+    "smoke": "node kit/scripts/smoke.mjs --url http://127.0.0.1:4177/tutorials/ --current tutorials",
+    "shots:annotate": "node scripts/shots/annotate.mjs",
+    "shots:test": "node --test \"scripts/shots/*.test.mjs\""
   },
   "dependencies": {
     "minisearch": "7.2.0",

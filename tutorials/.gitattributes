@@ -1,0 +1,3 @@
+# The pictures of the tutorials are written by scripts/shots/annotate.mjs, byte for byte: keep their line ends.
+*.svg text eol=lf
+*.png binary

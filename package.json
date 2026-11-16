@@ -11,7 +11,7 @@
     "build": "vite build && vite build --ssr src/entry-server.tsx --outDir .kit/ssr && node prerender.mjs && node legacy/build.mjs dist",
     "preview": "node kit/scripts/serve-pages.mjs dist --base / --port 4173",
     "typecheck": "tsc --noEmit",
-    "test": "node --test \"blog/*.test.ts\" \"kit/tests/*.test.mjs\" \"versions/*.test.mjs\" \"legacy/*.test.mjs\" \"scripts/*.test.mjs\"",
+    "test": "node --test \"blog/*.test.ts\" \"kit/tests/*.test.mjs\" \"versions/*.test.mjs\" \"legacy/*.test.mjs\" \"scripts/*.test.mjs\" \"tutorials/scripts/shots/*.test.mjs\"",
     "linkcheck": "node scripts/docs-sites.mjs linkcheck dist --base / --site-origin https://levimc.org --ignore-paths /LeviLamina/api/",
     "docs:build": "node scripts/docs-sites.mjs build",
     "docs:merge": "node scripts/docs-sites.mjs merge dist",

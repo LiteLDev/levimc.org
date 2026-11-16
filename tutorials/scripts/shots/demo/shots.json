@@ -1,0 +1,313 @@
+[
+  {
+    "name": "demo-01-windows",
+    "title": {
+      "en": "The Instances page of the launcher, with the instance \"Survival\" selected.",
+      "zh-Hans": "启动器的“实例”页面，选中了实例“Survival”。",
+      "zh-Hant": "啟動器的「實例」頁面，選取了實例「Survival」。"
+    },
+    "image": {
+      "en": "captures/en/demo-01-windows.png",
+      "zh-Hans": "captures/zh-Hans/demo-01-windows.png",
+      "zh-Hant": "captures/zh-Hant/demo-01-windows.png"
+    },
+    "scale": 2,
+    "frame": "windows",
+    "out": "out",
+    "notes": [
+      {
+        "kind": "box",
+        "target": {
+          "en": {
+            "x": 136,
+            "y": 92,
+            "width": 368,
+            "height": 54
+          },
+          "zh-Hans": {
+            "x": 136,
+            "y": 92,
+            "width": 368,
+            "height": 54
+          },
+          "zh-Hant": {
+            "x": 136,
+            "y": 92,
+            "width": 368,
+            "height": 54
+          }
+        }
+      },
+      {
+        "kind": "arrow",
+        "target": {
+          "en": {
+            "x": 413,
+            "y": 103.5,
+            "width": 78,
+            "height": 31
+          },
+          "zh-Hans": {
+            "x": 429,
+            "y": 103.5,
+            "width": 62,
+            "height": 31
+          },
+          "zh-Hant": {
+            "x": 429,
+            "y": 103.5,
+            "width": 62,
+            "height": 31
+          }
+        },
+        "side": "right",
+        "label": {
+          "en": "Starts the game",
+          "zh-Hans": "启动游戏",
+          "zh-Hant": "啟動遊戲"
+        }
+      },
+      {
+        "kind": "callout",
+        "n": 1,
+        "target": {
+          "en": {
+            "x": 8,
+            "y": 71,
+            "width": 103,
+            "height": 31
+          },
+          "zh-Hans": {
+            "x": 8,
+            "y": 71,
+            "width": 103,
+            "height": 31
+          },
+          "zh-Hant": {
+            "x": 8,
+            "y": 71,
+            "width": 103,
+            "height": 31
+          }
+        },
+        "label": {
+          "en": "Every instance is a game version with its own mods and worlds.",
+          "zh-Hans": "每个实例是一个游戏版本，有自己的模组和世界。",
+          "zh-Hant": "每個實例是一個遊戲版本，有自己的模組和世界。"
+        }
+      },
+      {
+        "kind": "callout",
+        "n": 2,
+        "side": "right",
+        "target": {
+          "en": {
+            "x": 136,
+            "y": 224,
+            "width": 368,
+            "height": 16
+          },
+          "zh-Hans": {
+            "x": 136,
+            "y": 224,
+            "width": 368,
+            "height": 16
+          },
+          "zh-Hant": {
+            "x": 136,
+            "y": 224,
+            "width": 368,
+            "height": 16
+          }
+        },
+        "label": {
+          "en": "Where the files of the instance are.",
+          "zh-Hans": "实例的文件所在的位置。",
+          "zh-Hant": "實例的檔案所在的位置。"
+        }
+      },
+      {
+        "kind": "keys",
+        "caption": {
+          "en": "Or press",
+          "zh-Hans": "或按",
+          "zh-Hant": "或按"
+        },
+        "keys": [
+          "Ctrl",
+          "Enter"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "demo-02-android",
+    "title": {
+      "en": "The home screen of the launcher on a phone, with the green \"Play\" button.",
+      "zh-Hans": "手机上启动器的主屏幕，带有绿色的“开始游戏”按钮。",
+      "zh-Hant": "手機上啟動器的主畫面，帶有綠色的「開始遊戲」按鈕。"
+    },
+    "image": {
+      "en": "captures/en/demo-02-android.png",
+      "zh-Hans": "captures/zh-Hans/demo-02-android.png",
+      "zh-Hant": "captures/zh-Hant/demo-02-android.png"
+    },
+    "scale": 2,
+    "frame": "android",
+    "out": "out",
+    "notes": [
+      {
+        "kind": "focus",
+        "target": {
+          "en": {
+            "x": 86,
+            "y": 18,
+            "width": 254,
+            "height": 224
+          },
+          "zh-Hans": {
+            "x": 86,
+            "y": 18,
+            "width": 254,
+            "height": 224
+          },
+          "zh-Hant": {
+            "x": 86,
+            "y": 18,
+            "width": 254,
+            "height": 224
+          }
+        }
+      },
+      {
+        "kind": "focus",
+        "target": {
+          "en": {
+            "x": 358,
+            "y": 189,
+            "width": 180,
+            "height": 53
+          },
+          "zh-Hans": {
+            "x": 358,
+            "y": 189,
+            "width": 180,
+            "height": 53
+          },
+          "zh-Hant": {
+            "x": 358,
+            "y": 189,
+            "width": 180,
+            "height": 53
+          }
+        }
+      },
+      {
+        "kind": "ellipse",
+        "target": {
+          "en": {
+            "x": 102,
+            "y": 65,
+            "width": 93.45,
+            "height": 17
+          },
+          "zh-Hans": {
+            "x": 102,
+            "y": 65,
+            "width": 77.25,
+            "height": 17
+          },
+          "zh-Hant": {
+            "x": 102,
+            "y": 65,
+            "width": 77.25,
+            "height": 17
+          }
+        }
+      },
+      {
+        "kind": "arrow",
+        "target": {
+          "en": {
+            "x": 358,
+            "y": 189,
+            "width": 180,
+            "height": 53
+          },
+          "zh-Hans": {
+            "x": 358,
+            "y": 189,
+            "width": 180,
+            "height": 53
+          },
+          "zh-Hant": {
+            "x": 358,
+            "y": 189,
+            "width": 180,
+            "height": 53
+          }
+        },
+        "side": "bottom",
+        "label": {
+          "en": "Tap to play",
+          "zh-Hans": "点这里开始",
+          "zh-Hant": "點這裡開始"
+        }
+      },
+      {
+        "kind": "arrow",
+        "target": {
+          "en": {
+            "x": 102,
+            "y": 100,
+            "width": 60.47,
+            "height": 29
+          },
+          "zh-Hans": {
+            "x": 102,
+            "y": 100,
+            "width": 54,
+            "height": 29
+          },
+          "zh-Hant": {
+            "x": 102,
+            "y": 100,
+            "width": 54,
+            "height": 29
+          }
+        },
+        "side": "left",
+        "label": {
+          "en": "Mods of this instance",
+          "zh-Hans": "本实例的模组",
+          "zh-Hant": "本實例的模組"
+        }
+      },
+      {
+        "kind": "callout",
+        "n": 1,
+        "side": "top",
+        "target": {
+          "en": {
+            "x": 17,
+            "y": 18,
+            "width": 30,
+            "height": 30
+          },
+          "zh-Hans": {
+            "x": 17,
+            "y": 18,
+            "width": 30,
+            "height": 30
+          },
+          "zh-Hant": {
+            "x": 17,
+            "y": 18,
+            "width": 30,
+            "height": 30
+          }
+        }
+      }
+    ]
+  }
+]
