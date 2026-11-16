@@ -678,25 +678,40 @@ await check("theme: Auto by default; Dark is kept in the levimc_theme cookie", a
   return "auto → light (cookie)";
 });
 
-await check("language: 简体中文 is kept in the levimc_lang cookie and applies to the whole interface", async () => {
+await check("language: 简体中文 links to /mods/zh-Hans/ (same page and query), is kept in the levimc_lang cookie; / follows it", async () => {
   const ctx = await newContext(DESKTOP);
-  const { page } = await open("", ctx);
+  const { page } = await open("?q=land", ctx);
   await page.click("[data-kit-locale-switcher]");
-  await page.click('.kit-gbar [data-kit-lang-value="zh-CN"]');
+  await page.click('.kit-gbar [data-kit-lang-value="zh-Hans"]');
+  await page.waitForURL((u) => u.pathname === "/mods/zh-Hans/" && u.search === "?q=land");
   await page.waitForFunction(() => document.querySelector(".kit-hero-name")?.textContent === "LeviMC 模组");
   const cookie = (await ctx.cookies(root)).find((c) => c.name === "levimc_lang")?.value;
-  assert(cookie === "zh-CN", `cookie ${cookie}`);
-  await page.evaluate(() => localStorage.clear());
-  await page.reload({ waitUntil: "networkidle" });
-  const ui = await page.evaluate(() => ({ hero: document.querySelector(".kit-hero-name")?.textContent, placeholder: document.querySelector(".mods-search-listing input")?.placeholder, tab: document.querySelector('.kit-gbar-nav [aria-current="page"]')?.textContent }));
-  assert(ui.hero === "LeviMC 模组" && /搜索/.test(ui.placeholder) && /模组/.test(ui.tab), JSON.stringify(ui));
-  const lang = await page.evaluate(() => document.documentElement.lang);
-  assert(lang === "zh-CN", `<html lang="${lang}">`);
-  // the mod page follows too
-  await page.goto(root + LEVILAMINA, { waitUntil: "networkidle" });
+  assert(cookie === "zh-Hans", `cookie ${cookie}`);
+  const ui = await page.evaluate(() => ({ hero: document.querySelector(".kit-hero-name")?.textContent, placeholder: document.querySelector(".mods-search-listing input")?.placeholder, tab: document.querySelector('.kit-gbar-nav [aria-current="page"]')?.textContent, lang: document.documentElement.lang }));
+  assert(ui.hero === "LeviMC 模组" && /搜索/.test(ui.placeholder) && /模组/.test(ui.tab) && ui.lang === "zh-Hans", JSON.stringify(ui));
+  // a row leads to the mod page in the same language
+  await page.click("a.mods-card-link");
+  await page.waitForURL((u) => u.pathname.startsWith("/mods/zh-Hans/github.com/"));
+  await page.waitForSelector(".mods-install-btn");
   assert((await page.locator(".mods-install-btn").innerText()).includes("安装"), "mod page not translated");
+  // the listing's root redirects to the stored language; deep links never redirect
+  await page.goto(root, { waitUntil: "networkidle" });
+  assert(new URL(page.url()).pathname === "/mods/zh-Hans/", `/mods/ → ${page.url()}`);
+  await page.goto(root + LEVILAMINA, { waitUntil: "networkidle" });
+  assert(new URL(page.url()).pathname === `/mods/${LEVILAMINA}`, `${LEVILAMINA} → ${page.url()}`);
   await ctx.close();
   return JSON.stringify(ui);
+});
+
+await check("every language is prerendered: /mods/zh-Hant/<mod>/ is static Traditional Chinese HTML with hreflang", async () => {
+  const html = await (await fetch(`${root}zh-Hant/${LEVILAMINA}`)).text();
+  assert(html.includes('<html lang="zh-Hant"'), "<html lang>");
+  for (const [lang, prefix] of [["en", ""], ["zh-Hans", "zh-Hans/"], ["zh-Hant", "zh-Hant/"], ["x-default", ""]]) {
+    assert(html.includes(`<link rel="alternate" hreflang="${lang}" href="https://levimc.org/mods/${prefix}${LEVILAMINA}"`), `hreflang ${lang}`);
+  }
+  assert(html.includes("安裝"), "not prerendered in Traditional Chinese");
+  assert(!/class="[^"]*kit-(content|chrome)-pending/.test(html), "hidden until hydrated");
+  return "zh-Hant";
 });
 
 await check("phones (390/360/320px): no sideways scroll on the listing and 3 mod pages", async () => {

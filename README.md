@@ -54,19 +54,27 @@ npm run smoke:kit
 - `src/App.tsx` — routes (`/`, `/community/`, `/about/`, `/support/`, `/blog/…`, and the 404 page); every page but
   the home and the 404 is its own chunk (`src/lazy-route.ts`): the page being opened is loaded before hydrating, the
   others when the browser is idle
+- Languages are URL prefixes (`src/i18n/config.ts`): English at `/`, `/about/` …, Simplified Chinese at `/zh-Hans/`,
+  `/zh-Hans/about/` …, Traditional Chinese at `/zh-Hant/…`; every page is prerendered in each, with `<html lang>`,
+  canonical and hreflang alternates (and the sitemap lists them all). The blog's listings exist in every locale; its
+  posts and pages, written in Chinese, keep their one URL (`/blog/2023/07/26/…`) and are shown in their own language.
+  Only `/` redirects (to the stored language, else the browser's: `ROOT_REDIRECT_SCRIPT` in `src/prepaint.ts`); the
+  bar's language menu links to the same page in the other language and stores the choice for every LeviMC site.
+  Same-site links carry the page's locale (`localizeHref` in `src/routes.ts`; LeviMC Mods and the tutorials get it
+  after their base: `/mods/zh-Hans/`)
 - `src/pages/`, `src/components/` — page content; `src/i18n/locales/{en,zh,zh-Hant}.ts` — all site text (English, Simplified and Traditional Chinese)
-- `src/routes.ts` — route list, titles ("<Page> - LeviMC", "<post> - Blog - LeviMC", "Page not found - LeviMC") and
+- `src/routes.ts` — route list (and each route in each locale), titles ("<Page> - LeviMC", "<post> - Blog - LeviMC", "Page not found - LeviMC") and
   descriptions; `src/head.ts` — per-page `<head>` tags (Open Graph with the social card `public/og/levimc.jpg`, made
   by `node scripts/build-og.mjs`)
 - `src/components/SiteHeader.tsx`, `src/components/Footer.tsx` — the kit GlobalBar and SiteFooter, the same on every
   LeviMC site (each project in the Projects menu leads to its home page: its LeviMC Mods page, docs or repository;
   the footer links Support us).
   The project list is `PROJECTS` in `kit/components/projects.ts`; the home page's project cards read it too.
-- `src/prepaint.ts` — the pre-paint script: theme and language come from the cross-site LeviMC preferences
+- `src/prepaint.ts` — the pre-paint script: the theme comes from the cross-site LeviMC preferences
   (cookies `levimc_theme` = auto | light | dark, Auto by default, and `levimc_lang`, shared by levimc.org and
-  every *.levimc.org site; see `kit/README.md`, "Cross-site preferences"). The bar and footer speak the page's
-  language, or a stored language the site has no pages in when the kit has chrome strings for it
-  (`chromeLocaleFor` in `src/i18n`)
+  every *.levimc.org site; see `kit/README.md`, "Cross-site preferences"), the language from the URL; the root's
+  language redirect. The bar and footer speak the page's language, or a stored language the site has no pages in
+  when the kit has chrome strings for it (`chromeLocaleFor` in `src/i18n`)
 - `src/hooks/useExternalData.ts`, `src/services/githubService.ts` — the live numbers (GitHub stars, the latest
   LeviLamina release, Discord presence): requested once the page is idle after hydration, kept for the visit in
   `sessionStorage` (30 minutes)
@@ -162,6 +170,38 @@ domain, and this repository is the organisation site. A path that a project with
 no route here may start with a repository's name. `robots.txt` lists their sitemaps; the bar and footer load them
 in full (`isAppPath` in `src/components/SiteHeader.tsx`). They were at docs.levimc.org until the move described in
 [MIGRATION.md](MIGRATION.md); docs.levimc.org redirects every URL to the same path here (308, Cloudflare).
+
+What goes where:
+
+* **Tutorials** (here, `tutorials/`): a newcomer starts from a clean PC and ends with one thing done end to end —
+  a server, a modded game, a first mod, a published package. Every project's tutorials live here, once, even when
+  they span projects (a server needs lip and LeviLamina: one tutorial, not one per project).
+* **Project docs** (each repository): the home page introduces the project; every other page is a guide (one
+  topic, assumes the basics), reference, or an explanation of how it works.
+* **Maintainer material** (each repository's `CONTRIBUTING.md` and the files it links): building the project
+  itself, code style, releasing. Never on a site.
+
+## Tutorials
+
+`levimc.org/tutorials/` is a docs build of `tutorials/` (levimc-kit's docs engine, with this checkout's kit: its
+`npm ci` vendors `../kit` into `tutorials/kit/`). The deploy builds it and copies it to `dist/tutorials/`.
+
+```sh
+cd tutorials
+npm ci
+npm run dev          # http://localhost:5173/tutorials/
+npm run build && npm run linkcheck
+```
+
+* Pages: `content/<section>/<page>.md` (English) and `content/zh-Hans/<section>/<page>.md`; Traditional Chinese is
+  converted from Simplified (`zh-Hant/`). The page list, nav labels and sections are in `docs.config.ts`
+  (`TUTORIALS`, `LABELS`). Project docs redirect their former tutorial pages to these URLs: rename a page only
+  with a redirect (`redirects` in `docs.config.ts`) and tell the projects.
+* Writing: say up front what the reader will have at the end and what they need; numbered steps, each one
+  checkable ("you should see …"); no step another tutorial already teaches — link it instead; end with "Next steps"
+  into the project docs (absolute `https://levimc.org/<Project>/…` URLs, `/zh-Hans/` for the Chinese pages).
+* Commands and screenshots follow the current releases; when a project changes how something is done, update the
+  tutorial in the same week.
 
 ## LeviChan
 

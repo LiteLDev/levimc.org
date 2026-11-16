@@ -961,6 +961,12 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 ## Changelog
 
+### 2.21.2
+
+* A docs build that is one of the bar's own sites marks its own tab: levimc.org/tutorials/ (`project: 'tutorials'`)
+  highlights **Tutorials**, not Projects.
+* `scripts/smoke.mjs` expects the Tutorials tab.
+
 ### 2.21.1
 
 * **Links to another LeviMC site stay in the tab.** An absolute `https://levimc.org/…` link (markdown, hero actions,

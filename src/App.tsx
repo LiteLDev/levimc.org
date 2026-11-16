@@ -1,15 +1,14 @@
 import { Suspense, useEffect, useRef } from 'react';
-import { Route, Routes, useLocation, useNavigationType } from 'react-router';
+import { useLocation, useNavigationType } from 'react-router';
 import { PaintedBackdrop, ThemeProvider, uiStrings } from '../kit/components';
 import SiteHeader from './components/SiteHeader';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
-import { resolveBlogPath } from './blog/data';
 import { lazyRoute } from './lazy-route';
-import { I18nProvider, useI18n } from './i18n';
+import { I18nProvider, useI18n, type Locale } from './i18n';
 import { markHydrated } from './hooks/useExternalData';
-import { canonicalPath, pathOf, routeIdOf, routeMeta, type RouteId } from './routes';
+import { pageInfo, routeIdOf, routeMeta, type PageInfo, type RouteId } from './routes';
 
 // The home (the landing page) and the 404 are in the entry chunk; every other page is its own chunk.
 const About = lazyRoute(() => import('./pages/About'));
@@ -33,10 +32,28 @@ function preloadAllRoutes() {
   else window.setTimeout(run, 2000);
 }
 
-function Shell() {
+/** The page of a route (every locale's: the language comes from the URL, see I18nProvider). */
+function Page({ id }: { id: RouteId | null }) {
+  switch (id) {
+    case 'home':
+      return <Home />;
+    case 'community':
+      return <Community.Component />;
+    case 'about':
+      return <About.Component />;
+    case 'support':
+      return <Support.Component />;
+    case 'blog':
+      return <Blog.Component />;
+    default:
+      return <NotFound />;
+  }
+}
+
+function Shell({ page }: { page: PageInfo }) {
   const { t, chrome } = useI18n();
   const { pathname } = useLocation();
-  const routeId = routeIdOf(pathname);
+  const routeId = page.id;
   // the skip link is part of the LeviMC chrome (its language, see chromeLocaleFor)
   const ui = uiStrings(chrome);
 
@@ -57,21 +74,14 @@ function Shell() {
   return (
     <div className="kit-shell">
       {/* pages with a painted hero (home, blog index) never also show the backdrop's scene band */}
-      <PaintedBackdrop scene={routeId !== 'home' && resolveBlogPath(canonicalPath(pathname))?.kind !== 'index'} />
+      <PaintedBackdrop scene={routeId !== 'home' && page.blogView?.kind !== 'index'} />
       <a className="kit-skip-link" href="#main">
         {ui.skipToContent}
       </a>
       <SiteHeader current={routeId} />
       <main id="main" className="kit-above-backdrop" tabIndex={-1}>
         <Suspense fallback={<div className="lm-route-loading" />}>
-          <Routes>
-            <Route caseSensitive path={pathOf('home')} element={<Home />} />
-            <Route caseSensitive path={pathOf('community')} element={<Community.Component />} />
-            <Route caseSensitive path={pathOf('about')} element={<About.Component />} />
-            <Route caseSensitive path={pathOf('support')} element={<Support.Component />} />
-            <Route caseSensitive path="/blog/*" element={<Blog.Component />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Page id={routeId} />
         </Suspense>
       </main>
       <Footer />
@@ -79,15 +89,18 @@ function Shell() {
   );
 }
 
-export function App() {
+/** `initialLocale`: the language of the prerendered HTML being hydrated (see I18nProvider). */
+export function App({ initialLocale }: { initialLocale?: Locale }) {
   useEffect(() => {
     markHydrated();
     preloadAllRoutes();
   }, []);
+  const { pathname } = useLocation();
+  const page = pageInfo(pathname);
   return (
     <ThemeProvider>
-      <I18nProvider>
-        <Shell />
+      <I18nProvider locale={page.locale} initial={initialLocale}>
+        <Shell page={page} />
       </I18nProvider>
     </ThemeProvider>
   );

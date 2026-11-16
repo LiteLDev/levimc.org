@@ -1,17 +1,25 @@
 // levimc.org/blog/ — the LeviMC blog (moved from blog.levimc.org): index, posts, tags, categories, archives and
 // the blog's own pages, in the kit's language (painted hero, pixel cards, hotbar, prose canvas).
-import { useEffect, useRef, type ReactNode } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router';
 import { Badge, PaintedHero, Pagination, PixelIcon, uiStrings, type PixelIconName } from '../../kit/components';
 import { useI18n, kitLocale, type Messages } from '../i18n';
+import { localeOfTag } from '../i18n/config';
+import { pageInfo } from '../routes';
 import NotFound from '../pages/NotFound';
 import { isLatin } from '../components/ui';
-import { blog, pageOf, pagedHref, resolveBlogPath, useBlogDoc, type BlogPost, type BlogTerm, type BlogView } from './data';
+import { blog, pageOf, pagedHref, useBlogDoc, type BlogPost, type BlogTerm, type BlogView } from './data';
 import Comments from './Comments';
 import { useProseEnhancements } from './enhance';
 import 'virtual:levimc-blog/tokens.css';
 
 type B = Messages['blog'];
+
+/** A link inside the blog, in the page's locale: the listings have one URL per locale, posts and pages one in all. */
+function Link({ to, ...rest }: ComponentProps<typeof RouterLink> & { to: string }) {
+  const { href } = useI18n();
+  return <RouterLink to={href(to)} {...rest} />;
+}
 
 /** The blog's sections, as a hotbar under the hero / page title. */
 function BlogNav({ view }: { view: BlogView }) {
@@ -225,9 +233,9 @@ function Sidebar({ b }: { b: B }) {
 /** Hotbar pagination (crawlable links, navigation inside the app). */
 function BlogPagination({ page, pageCount, base }: { page: number; pageCount: number; base: string }) {
   const navigate = useNavigate();
-  const { locale } = useI18n();
+  const { locale, href } = useI18n();
   const ui = uiStrings(kitLocale[locale]);
-  const hrefFor = (p: number) => pagedHref(base, p);
+  const hrefFor = (p: number) => href(pagedHref(base, p));
   return (
     <Pagination
       page={page}
@@ -425,7 +433,7 @@ function PostView({ post }: { post: BlogPost }) {
             <PostMeta post={post} b={b} />
             <div className="lm-blog-post-tags">
               <TermChips post={post} />
-              {locale !== 'zh' ? (
+              {locale !== localeOfTag(post.lang) ? (
                 <Badge tone="pond" className="lm-blog-lang">
                   {b.writtenIn}
                 </Badge>
@@ -491,7 +499,7 @@ export default function Blog() {
   const { pathname } = useLocation();
   const { t } = useI18n();
   const b = t.blog;
-  const view = resolveBlogPath(pathname);
+  const view = pageInfo(pathname).blogView;
   if (!view) return <NotFound />;
   switch (view.kind) {
     case 'index':

@@ -26,7 +26,7 @@ interface ListingSearchProps {
  * on the page jumps here.
  */
 export function ListingSearch({ query, total, onSearch }: ListingSearchProps) {
-  const { t } = useI18n();
+  const { t, href: localize } = useI18n();
   const [value, setValue] = useState(query);
   const input = useRef<HTMLInputElement>(null);
   const composing = useRef(false);
@@ -73,7 +73,7 @@ export function ListingSearch({ query, total, onSearch }: ListingSearchProps) {
     <form
       className="mods-search mods-search-listing"
       role="search"
-      action={BASE}
+      action={localize(BASE)}
       onSubmit={(e) => {
         e.preventDefault();
         commit(value);
@@ -140,18 +140,18 @@ export function ListingSearch({ query, total, onSearch }: ListingSearchProps) {
 
 /** The search form of the mod and 404 pages' header: Enter opens the listing with the query. */
 export function HeaderSearch() {
-  const { t } = useI18n();
+  const { t, href: localize } = useI18n();
   const navigate = useNavigate();
   const [value, setValue] = useState("");
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const q = value.trim();
-    navigate(q ? `${BASE}?q=${encodeURIComponent(q)}` : BASE);
+    navigate(localize(q ? `${BASE}?q=${encodeURIComponent(q)}` : BASE));
   }
 
   return (
-    <form className="mods-search mods-search-header" role="search" action={BASE} onSubmit={handleSubmit}>
+    <form className="mods-search mods-search-header" role="search" action={localize(BASE)} onSubmit={handleSubmit}>
       <label className="mc-input mods-search-field">
         <PixelIcon name="search" className="mods-search-icon" />
         <input

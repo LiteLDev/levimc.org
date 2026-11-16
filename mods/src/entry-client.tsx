@@ -5,6 +5,7 @@ import { App } from "./App";
 import { loadMarkdown } from "./components/lazy-markdown";
 import { readEmbeddedPageData } from "./page-data";
 import { PageStore } from "./page-store";
+import { LOCALES } from "./locales";
 import "./styles.css";
 
 async function hydrate() {
@@ -22,7 +23,7 @@ async function hydrate() {
     root,
     <StrictMode>
       <BrowserRouter>
-        <App store={store} />
+        <App store={store} initialLocale={LOCALES.find((l) => l.lang === document.documentElement.lang)?.code} />
       </BrowserRouter>
     </StrictMode>,
   );

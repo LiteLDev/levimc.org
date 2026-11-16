@@ -28,7 +28,7 @@ import {
 } from "../lib/mods";
 import { SITE_ORIGIN } from "../page-data";
 import type { CatalogEntry, CatalogEntryJson, CatalogJson, ModJson, ModRefJson, RelatedMod, VersionJson } from "../types";
-import { listRoutes, loadPageData, variantsJson } from "./build-data";
+import { listPageRoutes, loadPageData, variantsJson } from "./build-data";
 import { loadBuildData } from "./catalog";
 import { legacyCatalogEntry, legacyModJson, type LegacyCatalogJson, type LegacyModJson } from "./legacy-json";
 
@@ -228,7 +228,7 @@ export async function jsonFiles(): Promise<Map<string, string>> {
     [CATALOG_JSON.slice(1), JSON.stringify(await catalogJson())],
     [LEGACY_CATALOG_JSON.slice(1), JSON.stringify(await legacyCatalogJson())],
   ]);
-  for (const route of await listRoutes()) {
+  for (const route of await listPageRoutes()) {
     if (route === BASE) continue;
     const id = route.slice(BASE.length, -1);
     const json = await modJson(id);

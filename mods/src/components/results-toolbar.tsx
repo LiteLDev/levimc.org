@@ -59,8 +59,9 @@ interface PagerProps {
 
 /** The kit's hotbar pagination with real links, followed inside the app. */
 export function Pager({ state, page, pageCount, go, className }: PagerProps) {
-  const { t } = useI18n();
-  const hrefFor = (p: number) => serializeQuery({ ...state, page: p });
+  const { t, href } = useI18n();
+  // go() puts it in the page's language again: localizing is idempotent
+  const hrefFor = (p: number) => href(serializeQuery({ ...state, page: p }));
   return (
     <Pagination
       page={page}

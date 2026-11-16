@@ -8,6 +8,5 @@ export { PaintedBackdrop } from "../kit/components/PaintedBackdrop";
 export { Pagination } from "../kit/components/Hotbar";
 export { PixelIcon, BrandIcon } from "../kit/components/PixelIcon";
 export { ThemeProvider, useTheme } from "../kit/components/theme";
-export { usePreferredLocale } from "../kit/components/locale";
 export { useDismissableDetails } from "../kit/components/menu";
 export type { LinkLikeProps } from "../kit/components/LocaleSwitcher";

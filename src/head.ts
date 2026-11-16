@@ -1,26 +1,38 @@
-// Per-route <head> tags for the prerendered HTML (English, like the prerendered body).
-import { locales, DEFAULT_LOCALE } from './i18n';
-import { routeIdOf, routeMeta, SITE_ORIGIN } from './routes';
+// Per-route <head> tags for the prerendered HTML, in the page's language: title, description, canonical URL,
+// the page in the other locales (hreflang, x-default = English) and Open Graph.
+import { locales, DEFAULT_LOCALE, LOCALES, type Locale } from './i18n';
+import { localeAlternates, localeOfPath, routeIdOf, routeMeta, SITE_ORIGIN } from './routes';
 import { blog } from './blog/data';
 
 const BLOG_TITLE = "LeviMC's blog";
 /** The social card (scripts/build-og.mjs → public/og/levimc.jpg). */
 const OG_IMAGE = `${SITE_ORIGIN}/og/levimc.jpg`;
-/** The language pages are prerendered in (og:locale wants the underscore form). */
-const OG_LOCALE = 'en_US';
+/** og:locale of each locale (the underscore form, with a territory). */
+const OG_LOCALES: Record<Locale, string> = { en: 'en_US', 'zh-Hans': 'zh_CN', 'zh-Hant': 'zh_TW' };
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 export function buildHead(url: string): string {
   const id = routeIdOf(url);
-  const { title, description } = routeMeta(url, locales[DEFAULT_LOCALE]);
+  const locale = localeOfPath(url);
+  const OG_LOCALE = OG_LOCALES[locale];
+  const { title, description } = routeMeta(url, locales[locale]);
   const tags = [`<title>${esc(title)}</title>`, `<meta name="description" content="${esc(description)}" />`];
   if (id === null) {
     tags.push('<meta name="robots" content="noindex" />');
   } else {
     const canonical = SITE_ORIGIN + url;
+    const alternates = localeAlternates(url);
+    const others = alternates ? LOCALES.filter((l) => alternates[l.code] !== null) : [];
+    tags.push(`<link rel="canonical" href="${esc(canonical)}" />`);
+    // a page in every locale names each of them; a blog post (one language, one URL) none
+    if (alternates && others.length > 1) {
+      tags.push(
+        ...others.map((l) => `<link rel="alternate" hreflang="${l.lang}" href="${esc(SITE_ORIGIN + alternates[l.code]!)}" />`),
+        `<link rel="alternate" hreflang="x-default" href="${esc(SITE_ORIGIN + alternates[DEFAULT_LOCALE]!)}" />`,
+      );
+    }
     tags.push(
-      `<link rel="canonical" href="${esc(canonical)}" />`,
       '<meta property="og:type" content="website" />',
       '<meta property="og:site_name" content="LeviMC" />',
       `<meta property="og:title" content="${esc(title)}" />`,
@@ -30,6 +42,7 @@ export function buildHead(url: string): string {
       '<meta property="og:image:width" content="1200" />',
       '<meta property="og:image:height" content="630" />',
       `<meta property="og:locale" content="${OG_LOCALE}" />`,
+      ...(others.length > 1 ? others.filter((l) => l.code !== locale).map((l) => `<meta property="og:locale:alternate" content="${OG_LOCALES[l.code]}" />`) : []),
       '<meta name="twitter:card" content="summary_large_image" />',
       '<meta name="twitter:site" content="@levimc_org" />',
     );
@@ -42,7 +55,7 @@ export function buildHead(url: string): string {
           ...[post.category, ...post.tags].filter((x) => x !== null).map((x) => `<meta property="article:tag" content="${esc(x.name)}" />`),
         );
         tags[tags.indexOf('<meta property="og:type" content="website" />')] = '<meta property="og:type" content="article" />';
-        // a post is in its own language (most are Chinese), whatever the interface's
+        // a post is in its own language (most are Chinese)
         tags[tags.indexOf(`<meta property="og:locale" content="${OG_LOCALE}" />`)] = `<meta property="og:locale" content="${esc(post.lang.replace('-', '_'))}" />`;
       }
     }

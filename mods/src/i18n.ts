@@ -8,6 +8,9 @@ export type { Locale } from "./locales";
 const en = {
   siteName: "LeviMC Mods",
   tagline: "Mods & plugins for Minecraft Bedrock",
+  /** The listing's meta description, with the live count. */
+  siteDescription: (n: number) =>
+    `Browse ${n} mods and plugins for LeviLamina on Minecraft Bedrock. Install them with lip on servers and LeviLauncher on clients.`,
   skipToContent: "Skip to content",
   statProjects: (n: string) => `${n} projects`,
   statAuthors: (n: string) => `${n} authors`,
@@ -160,6 +163,7 @@ export type Strings = typeof en;
 const zhCN: Strings = {
   siteName: "LeviMC 模组",
   tagline: "Minecraft 基岩版的模组与插件",
+  siteDescription: (n) => `浏览 ${n} 个 Minecraft 基岩版 LeviLamina 模组与插件。服务端用 lip 安装，客户端用 LeviLauncher 安装。`,
   skipToContent: "跳到正文",
   statProjects: (n) => `${n} 个项目`,
   statAuthors: (n) => `${n} 位作者`,
@@ -309,6 +313,7 @@ const zhHant: Strings = {
   ...zhCN,
   siteName: "LeviMC 模組",
   tagline: "Minecraft 基岩版的模組與外掛",
+  siteDescription: (n) => `瀏覽 ${n} 個 Minecraft 基岩版 LeviLamina 模組與外掛。伺服器用 lip 安裝，用戶端用 LeviLauncher 安裝。`,
   statProjects: (n) => `${n} 個專案`,
   statAuthors: (n) => `${n} 位作者`,
   statVersions: (n) => `${n} 個版本`,
@@ -447,9 +452,11 @@ export const STRINGS: Record<Locale, Strings> = { en, "zh-CN": zhCN, "zh-Hant": 
 export interface LocaleValue {
   locale: Locale;
   t: Strings;
+  /** A levimc.org link in the page's language: `/mods/x/` → `/mods/zh-Hans/x/`, `/about/` → `/zh-Hans/about/` (see router-link.tsx). */
+  href: (path: string) => string;
 }
 
-export const LocaleContext = createContext<LocaleValue>({ locale: "en", t: en });
+export const LocaleContext = createContext<LocaleValue>({ locale: "en", t: en, href: (path) => path });
 
 /** The interface language and its strings. */
 export function useI18n(): LocaleValue {

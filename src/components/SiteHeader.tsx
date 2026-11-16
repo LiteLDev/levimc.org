@@ -1,19 +1,36 @@
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { GlobalBar, type LinkLikeProps, type SiteId } from '../../kit/components';
 import { useI18n, LOCALES } from '../i18n';
 import { OTHER_SITES } from '../other-sites';
-import { SITE_ORIGIN, type RouteId } from '../routes';
+import { localeAlternates, localizePath, SITE_ORIGIN, type RouteId } from '../routes';
 
-/** Same-site links of the bar and footer navigate inside the app (no full reload). */
-export function RouterLink({ href, children, ...rest }: LinkLikeProps) {
+/** Paths of this origin the app's router renders (everything but the other builds: /mods/, /tutorials/, the docs). */
+export const isAppPath = (path: string) => !OTHER_SITES.some((prefix) => path.startsWith(prefix));
+
+/**
+ * Same-site links of the bar and footer, in the page's locale (/about/ → /zh-Hans/about/, /mods/ → /mods/zh-Hans/):
+ * the app's own pages navigate inside the app (no full reload), the other builds' load in full.
+ */
+export function RouterLink({ href, ...rest }: LinkLikeProps) {
+  const { href: localize } = useI18n();
+  return <ExactLink href={localize(href)} {...rest} />;
+}
+
+/** A same-site link to exactly `href` (already in the locale it should be: the language menu's options). */
+function ExactLink({ href: to, children, ...rest }: LinkLikeProps) {
+  // other builds (and absolute URLs: the projects' docs) load in full
+  if (!to.startsWith('/') || !isAppPath(to))
+    return (
+      <a href={to} {...(rest as Record<string, unknown>)}>
+        {children}
+      </a>
+    );
   return (
-    <Link to={href} {...(rest as Record<string, unknown>)}>
+    <Link to={to} {...(rest as Record<string, unknown>)}>
       {children}
     </Link>
   );
 }
-
-export const isAppPath = (path: string) => !OTHER_SITES.some((prefix) => path.startsWith(prefix));
 
 /** The bar tab of each page (Support Us has none: it is linked from the footer). */
 const BAR_TAB: Partial<Record<RouteId, SiteId>> = {
@@ -23,18 +40,26 @@ const BAR_TAB: Partial<Record<RouteId, SiteId>> = {
   blog: 'blog',
 };
 
-const LANGUAGE_OPTIONS = LOCALES.map(({ code, label, lang }) => ({ code, label, lang }));
-
 /**
  * levimc.org is the home of the LeviMC network and of the kit: the GlobalBar — identical on every LeviMC site
- * (Home · Projects ▾ · Mods · Blog · Community · About, then language · theme · GitHub) — is the site's only header.
- * Its language menu switches this site's own languages (app state, stored as the cross-site preference); the bar
- * itself speaks the chrome language (`chromeLocaleFor`: the content language, or a stored language the kit has
- * strings for and the site has no content in). It is sticky because it is the page's only header — on the docs the
- * project row is the sticky header and the bar scrolls away (kit Design rules).
+ * (Home · Tutorials · Projects ▾ · Mods · Blog · Community · About, then language · theme · GitHub) — is the site's
+ * only header. Its language menu links each language to the same page in it (a blog post, written in one language,
+ * to the blog in the others) and stores the choice as the cross-site preference; the bar itself speaks the chrome
+ * language (`chromeLocaleFor`: the content language, or a stored language the kit has strings for and the site has
+ * no content in). It is sticky because it is the page's only header — on the docs the project row is the sticky
+ * header and the bar scrolls away (kit Design rules).
  */
 export default function SiteHeader({ current }: { current: RouteId | null }) {
-  const { locale, setLocale, chrome } = useI18n();
+  const { locale, chrome } = useI18n();
+  const { pathname } = useLocation();
+  const alternates = localeAlternates(pathname);
+  const options = LOCALES.map(({ code, label, lang }) => ({
+    code,
+    label,
+    lang,
+    // the page in that language; else (a blog post in another one) its blog, (an unknown URL) its home
+    href: alternates?.[code] ?? localizePath(current === 'blog' ? '/blog/' : '/', code),
+  }));
 
   return (
     <GlobalBar
@@ -43,8 +68,9 @@ export default function SiteHeader({ current }: { current: RouteId | null }) {
       sticky
       siteOrigin={SITE_ORIGIN}
       linkComponent={RouterLink}
-      isAppPath={isAppPath}
-      languages={{ options: LANGUAGE_OPTIONS, current: locale, onSelect: (code) => setLocale(code as typeof locale) }}
+      // every same-site link goes through RouterLink, which adds the locale (the other builds' too)
+      isAppPath={() => true}
+      languages={{ options, current: locale, linkComponent: ExactLink }}
     />
   );
 }

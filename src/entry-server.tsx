@@ -4,10 +4,12 @@ import { renderToString } from 'react-dom/server';
 import { StaticRouter } from 'react-router';
 import { App, preloadRoute } from './App';
 import { buildHead } from './head';
-import { DEFAULT_LOCALE } from './i18n';
+import { localeInfo } from './i18n/config';
 import { preloadBlogPath } from './blog/data';
+import { localeOfPath } from './routes';
 
-export { ROUTE_PATHS, NOT_FOUND_PATH, SITE_ORIGIN, MODS_PATH, ROUTE_MODULES, routeIdOf } from './routes';
+export { ROUTE_PATHS, NOT_FOUND_PATH, SITE_ORIGIN, MODS_PATH, ROUTE_MODULES, routeIdOf, localeAlternates } from './routes';
+export { LOCALES, DEFAULT_LOCALE } from './i18n/config';
 export { BLOG_ROUTES } from './blog/data';
 export { DOCS_PROJECTS } from '../kit/components';
 
@@ -20,5 +22,6 @@ export async function render(url: string) {
       </StaticRouter>
     </StrictMode>,
   );
-  return { html, head: buildHead(url), lang: DEFAULT_LOCALE };
+  // each page in its own language (the 404 page: English)
+  return { html, head: buildHead(url), lang: localeInfo(localeOfPath(url)).lang };
 }

@@ -16,7 +16,9 @@ const require = createRequire(process.env.LEVIMC_PW_DIR ? process.env.LEVIMC_PW_
 const { chromium } = require('playwright');
 
 const ROUTES = ['', 'community/', 'about/', 'support/'];
-const LANG = { en: 'en', zh: 'zh-CN', 'zh-Hant': 'zh-Hant' };
+const LANG = { en: 'en', zh: 'zh-Hans', 'zh-Hant': 'zh-Hant' };
+/** Each language's pages: English at the site's paths, the others under their prefix (src/i18n/config.ts). */
+const PREFIX = { en: '', zh: 'zh-Hans/', 'zh-Hant': 'zh-Hant/' };
 const H1 = {
   en: { '': 'Mod Bedrock', 'community/': 'Get Involved', 'about/': 'The story of a small team.', 'support/': 'Support LeviMC' },
   zh: { '': '随心所欲', 'community/': '参与进来', 'about/': '一个小团队的故事。', 'support/': '支持 LeviMC' },
@@ -73,20 +75,22 @@ const watch = (page) => {
 console.log(`smoke: ${base}`);
 
 for (const locale of ['en', 'zh', 'zh-Hant']) {
-  await check(`${locale}: every route renders (200, h1, lang, no console/hydration errors, no sideways scroll)`, async () => {
-    const ctx = await newContext({ locale: locale === 'en' ? undefined : locale });
+  await check(`/${PREFIX[locale]}…: every route renders in ${locale} (200, h1, lang, nothing hidden, no console/hydration errors, no sideways scroll)`, async () => {
+    // a stored preference of another language never changes a Chinese URL (and / redirects only by it)
+    const ctx = await newContext({ locale: locale === 'en' ? undefined : 'en' });
     for (const r of ROUTES) {
       for (const width of [1440, 390]) {
         const page = await ctx.newPage();
         await page.setViewportSize({ width, height: 900 });
         const errs = watch(page);
-        const res = await page.goto(base + r, { waitUntil: 'networkidle' });
+        const res = await page.goto(base + PREFIX[locale] + r, { waitUntil: 'networkidle' });
         assert(res?.status() === 200, `${r || '/'} → ${res?.status()}`);
         const h1 = (await page.locator('h1').first().innerText()).replace(/\s+/g, ' ').trim();
         assert(h1.startsWith(H1[locale][r]), `${r || '/'}: h1 "${h1}"`);
-        const state = await page.evaluate(() => ({ lang: document.documentElement.lang, pending: document.documentElement.classList.contains('kit-content-pending'), sideways: document.documentElement.scrollWidth > window.innerWidth + 1 }));
+        const state = await page.evaluate(() => ({ path: location.pathname, lang: document.documentElement.lang, pending: /kit-(content|chrome)-pending/.test(document.documentElement.className), sideways: document.documentElement.scrollWidth > window.innerWidth + 1 }));
+        assert(state.path === '/' + PREFIX[locale] + r, `${r || '/'}: moved to ${state.path}`);
         assert(state.lang === LANG[locale], `${r || '/'}: <html lang="${state.lang}">`);
-        assert(!state.pending, `${r || '/'}: page still hidden (kit-content-pending)`);
+        assert(!state.pending, `${r || '/'}: page hidden (kit-*-pending)`);
         assert(!state.sideways, `${r || '/'}: horizontal scroll at ${width}px`);
         assert(!errs.length, `${r || '/'} @${width}: ${errs.join(' | ')}`);
         await page.close();
@@ -97,27 +101,34 @@ for (const locale of ['en', 'zh', 'zh-Hant']) {
   });
 }
 
-await check('prerendered HTML: every route is real static HTML with canonical, description and content', async () => {
-  for (const r of ROUTES) {
-    const html = await (await fetch(base + r)).text();
-    assert(html.includes(`<link rel="canonical" href="https://levimc.org/${r}"`), `${r || '/'}: canonical`);
-    assert(/<meta name="description" content="[^"]+"/.test(html), `${r || '/'}: description`);
-    assert(html.includes(H1.en[r].replace(/&/g, '&amp;').replace(/'/g, '&#x27;')), `${r || '/'}: h1 text not in the static HTML`);
+await check('prerendered HTML: every route in every language is real static HTML with lang, canonical, hreflang, description and content', async () => {
+  for (const locale of Object.keys(PREFIX)) {
+    for (const r of ROUTES) {
+      const path = PREFIX[locale] + r;
+      const html = await (await fetch(base + path)).text();
+      assert(html.includes(`<html lang="${LANG[locale]}"`), `${path || '/'}: <html lang>`);
+      assert(html.includes(`<link rel="canonical" href="https://levimc.org/${path}"`), `${path || '/'}: canonical`);
+      for (const l of Object.keys(PREFIX)) assert(html.includes(`<link rel="alternate" hreflang="${LANG[l]}" href="https://levimc.org/${PREFIX[l]}${r}"`), `${path || '/'}: hreflang ${LANG[l]}`);
+      assert(html.includes(`<link rel="alternate" hreflang="x-default" href="https://levimc.org/${r}"`), `${path || '/'}: x-default`);
+      assert(/<meta name="description" content="[^"]+"/.test(html), `${path || '/'}: description`);
+      assert(!/class="[^"]*kit-(content|chrome)-pending/.test(html), `${path || '/'}: hidden until hydrated`);
+      assert(html.includes(H1[locale][r].replace(/&/g, '&amp;').replace(/'/g, '&#x27;')), `${path || '/'}: h1 text not in the static HTML`);
+    }
   }
   const support = await (await fetch(base + 'support/')).text();
   const csv = await (await fetch(base + 'donors.csv')).text();
   const rows = csv.split(/\r?\n/).filter((l) => l.trim()).length - 1;
   const cards = (support.match(/class="lm-donor"/g) || []).length;
   assert(cards === rows, `support/: ${cards} donor cards prerendered, donors.csv has ${rows} rows`);
-  return `${ROUTES.length} routes; ${cards} supporters prerendered`;
+  return `${ROUTES.length} routes × ${Object.keys(PREFIX).length} languages; ${cards} supporters prerendered`;
 });
 
-await check('unknown path → 404 status, themed page, per-locale text', async () => {
+await check('unknown path → 404 status, themed page, in the language of the URL', async () => {
   for (const locale of ['en', 'zh']) {
-    const ctx = await newContext({ locale: locale === 'zh' ? 'zh' : undefined });
+    const ctx = await newContext();
     const page = await ctx.newPage();
     const errs = watch(page);
-    const res = await page.goto(base + 'no/such/page/', { waitUntil: 'networkidle' });
+    const res = await page.goto(base + PREFIX[locale] + 'no/such/page/', { waitUntil: 'networkidle' });
     assert(res?.status() === 404, `status ${res?.status()}`);
     await page.waitForSelector('.kit-notfound');
     const title = await page.locator('.kit-notfound-title').innerText();
@@ -205,7 +216,7 @@ await check('legacy localStorage "theme" is migrated once to the cross-site them
   return 'theme=dark → cookie levimc_theme=dark';
 });
 
-await check('legacy localStorage "locale" = zh is migrated once to the cross-site language (zh-CN)', async () => {
+await check('legacy localStorage "locale" = zh is migrated once to the cross-site language (zh-Hans), and / follows it', async () => {
   const ctx = await newContext();
   await ctx.addInitScript(() => {
     if (!sessionStorage.getItem('seeded')) {
@@ -215,62 +226,69 @@ await check('legacy localStorage "locale" = zh is migrated once to the cross-sit
   });
   const page = await ctx.newPage();
   await page.goto(base + 'community/', { waitUntil: 'networkidle' });
-  assert((await page.locator('h1').innerText()).includes('参与进来'), 'not shown in Chinese');
   const cookie = (await ctx.cookies()).find((c) => c.name === 'levimc_lang')?.value;
   const old = await page.evaluate(() => localStorage.getItem('locale'));
-  assert(cookie === 'zh-CN' && old === null, JSON.stringify({ cookie, old }));
+  assert(cookie === 'zh-Hans' && old === null, JSON.stringify({ cookie, old }));
+  // a deep link is shown as asked; the root goes to the stored language
+  assert(new URL(page.url()).pathname === '/community/', `moved to ${page.url()}`);
+  await page.goto(base, { waitUntil: 'networkidle' });
+  assert(new URL(page.url()).pathname === '/zh-Hans/', `/ → ${page.url()}`);
   await ctx.close();
-  return 'locale=zh → cookie levimc_lang=zh-CN';
+  return 'locale=zh → cookie levimc_lang=zh-Hans; / → /zh-Hans/';
 });
 
-await check('language switcher: en ⇄ zh, stored in the cross-site cookie levimc_lang, kept on reload and navigation', async () => {
+await check('language switcher: links to the same page in the other language, stored in the cross-site cookie levimc_lang', async () => {
   const ctx = await newContext();
   const page = await ctx.newPage();
   const errs = watch(page);
   await page.goto(base + 'community/', { waitUntil: 'networkidle' });
+  await page.evaluate(() => (window.__lmMarker = 1));
   assert((await page.locator('[data-kit-locale-switcher]').innerText()).trim() === 'English', 'trigger label is not "English"');
   await page.click('[data-kit-locale-switcher]');
-  await page.click('.kit-locale [role="menuitemradio"][data-locale="zh"]');
-  await page.waitForFunction(() => document.documentElement.lang === 'zh-CN');
+  await page.click('.kit-locale [role="menuitemradio"][data-locale="zh-Hans"]');
+  await page.waitForURL((u) => u.pathname === '/zh-Hans/community/');
+  await page.waitForFunction(() => document.documentElement.lang === 'zh-Hans');
+  assert((await page.evaluate(() => window.__lmMarker)) === 1, 'page reloaded');
   assert((await page.locator('[data-kit-locale-switcher]').innerText()).trim() === '简体中文', 'trigger label is not "简体中文"');
   assert(!(await page.locator('.kit-locale').evaluate((d) => d.open)), 'language menu still open');
-  assert(new URL(page.url()).pathname === '/community/', `moved to ${page.url()}`);
-  assert((await page.locator('h1').innerText()).includes('参与进来'), 'h1 not translated');
+  await page.waitForFunction(() => document.querySelector('h1')?.textContent.includes('参与进来'), null, { timeout: 5000 });
   assert((await page.locator('.lm-qq-group').count()) === 3, 'QQ groups missing in zh');
-  assert((await ctx.cookies()).find((c) => c.name === 'levimc_lang')?.value === 'zh-CN', 'not stored in the cookie');
-  await page.evaluate(() => localStorage.clear());
+  assert((await ctx.cookies()).find((c) => c.name === 'levimc_lang')?.value === 'zh-Hans', 'not stored in the cookie');
   await page.reload({ waitUntil: 'networkidle' });
   assert((await page.locator('h1').innerText()).includes('参与进来'), 'not kept after reload');
-  await page.click('.kit-gbar-nav a[href="/about/"]');
-  await page.waitForURL((u) => u.pathname === '/about/');
+  // links keep the language
+  await page.click('.kit-gbar-nav a[href="/zh-Hans/about/"]');
+  await page.waitForURL((u) => u.pathname === '/zh-Hans/about/');
   await page.waitForFunction(() => document.title === '关于 - LeviMC', null, { timeout: 5000 });
   await page.click('[data-kit-locale-switcher]');
   await page.click('.kit-locale [role="menuitemradio"][data-locale="en"]');
+  await page.waitForURL((u) => u.pathname === '/about/');
   await page.waitForFunction(() => document.documentElement.lang === 'en');
-  assert((await page.locator('.lm-qq-group').count()) === 0, 'QQ groups shown in en');
+  assert((await ctx.cookies()).find((c) => c.name === 'levimc_lang')?.value === 'en', 'English not stored');
   assert(!errs.length, errs.join(' | '));
   await ctx.close();
-  return 'community → 中文 → reload → about → English';
+  return '/community/ → 中文 /zh-Hans/community/ → reload → /zh-Hans/about/ → English /about/';
 });
 
-await check('no flash of English for a returning Chinese visitor', async () => {
-  const ctx = await newContext({ locale: 'zh' });
-  await ctx.addInitScript(() => {
-    window.__lmLog = [];
-    new MutationObserver(() => {
-      const pending = document.documentElement.classList.contains('kit-content-pending');
-      const h1 = document.querySelector('h1')?.textContent ?? '';
-      window.__lmLog.push({ pending, h1 });
-    }).observe(document, { attributes: true, childList: true, subtree: true, characterData: true });
-  });
-  const page = await ctx.newPage();
-  await page.goto(base, { waitUntil: 'networkidle' });
-  const log = await page.evaluate(() => window.__lmLog);
-  const visibleEnglish = log.filter((e) => !e.pending && e.h1.includes('Mod Bedrock'));
-  assert(log.some((e) => e.pending), 'pre-paint script never hid the page');
-  assert(!visibleEnglish.length, 'English hero was visible');
-  await ctx.close();
-  return `${log.length} DOM mutations observed, English never visible`;
+await check('root redirect: / follows the stored language, else the browser language; deep links never redirect', async () => {
+  const cases = [
+    [{ locale: 'zh' }, '', '/zh-Hans/'],
+    [{ browserLocale: 'zh-TW' }, '', '/zh-Hant/'],
+    [{ locale: 'en', browserLocale: 'zh-CN' }, '', '/'],
+    [{ locale: 'de' }, '', '/'],
+    [{ locale: 'zh' }, 'about/', '/about/'],
+    [{ browserLocale: 'zh-CN' }, 'blog/', '/blog/'],
+  ];
+  for (const [o, path, want] of cases) {
+    const ctx = o.browserLocale ? await browser.newContext({ locale: o.browserLocale }) : await newContext();
+    if (o.locale) await ctx.addCookies([{ name: 'levimc_lang', value: LANG[o.locale] ?? o.locale, url: base }]);
+    const page = await ctx.newPage();
+    await page.goto(base + path, { waitUntil: 'networkidle' });
+    const got = new URL(page.url()).pathname;
+    assert(got === want, `${JSON.stringify(o)} /${path} → ${got}, expected ${want}`);
+    await ctx.close();
+  }
+  return `${cases.length} cases`;
 });
 
 await check('hero role tabs ("I want to…"): play by default, click, arrow keys and #hash switch the role; remembered', async () => {
@@ -354,7 +372,7 @@ await check('mobile (390px): the bar folds its entries into its menu; it closes 
   const panel = page.locator('.kit-gbar-more-panel');
   await panel.waitFor({ state: 'visible' });
   const labels = await panel.locator('.kit-gbar-more-link').allInnerTexts();
-  assert(labels.join('|') === 'Home|Projects|Mods|Blog|Community|About', `menu entries: ${labels.join('|')}`);
+  assert(labels.join('|') === 'Home|Tutorials|Projects|Mods|Blog|Community|About', `menu entries: ${labels.join('|')}`);
   await page.keyboard.press('Escape');
   await panel.waitFor({ state: 'hidden' });
   assert(await page.evaluate(() => !!document.activeElement?.closest('.kit-gbar-more')), 'focus not returned to the menu button');
@@ -394,9 +412,9 @@ await check('header fits: inline tabs from 961 px up (en, zh) with room before t
   const seen = [];
   for (const locale of ['en', 'zh']) {
     for (const width of [960, 961, 1100, 1280]) {
-      const ctx = await newContext({ locale: locale === 'zh' ? 'zh' : undefined, width });
+      const ctx = await newContext({ width });
       const page = await ctx.newPage();
-      await page.goto(base, { waitUntil: 'networkidle' });
+      await page.goto(base + PREFIX[locale], { waitUntil: 'networkidle' });
       const s = await page.evaluate(() => {
         const inner = document.querySelector('.kit-gbar-inner');
         const nav = document.querySelector('.kit-gbar-nav');
@@ -417,10 +435,10 @@ await check('header fits: inline tabs from 961 px up (en, zh) with room before t
 });
 
 await check('Discord unreachable: no invented "online" count', async () => {
-  const ctx = await newContext({ locale: 'zh' });
+  const ctx = await newContext();
   await ctx.route(/discord\.com/, (r) => r.abort());
   const page = await ctx.newPage();
-  await page.goto(base + 'community/', { waitUntil: 'networkidle' });
+  await page.goto(base + 'zh-Hans/community/', { waitUntil: 'networkidle' });
   await page.waitForFunction(() => !document.querySelector('.lm-community-card .lm-skeleton'), null, { timeout: 15000 });
   const card = (await page.locator('.lm-accent-discord').first().innerText()).replace(/\s+/g, ' ');
   assert(!/\d+ (在线|online)/.test(card), `Discord card shows "${card}"`);
@@ -445,7 +463,9 @@ await check('blog: every blog URL in the sitemap is prerendered (200, h1, zh-CN 
     assert(!(await page.title()).startsWith('Page not found'), `${path}: 404 title`);
     if (/\/\d{4}\/\d{2}\/\d{2}\//.test(path)) {
       assert((await page.locator('[data-doc-content][lang="zh-CN"]').count()) === 1, `${path}: post content not marked zh-CN`);
-      assert((await page.locator('.kit-gbar-link[aria-current="page"]').innerText()) === 'Blog', `${path}: Blog tab not current`);
+      // a post is shown in its own language (it has one URL): the chrome is Chinese
+      assert((await page.locator('.kit-gbar-link[aria-current="page"]').innerText()) === '博客', `${path}: Blog tab not current`);
+      assert((await page.evaluate(() => document.documentElement.lang)) === 'zh-Hans', `${path}: <html lang> is not the post's`);
     }
     assert(!errs.length, `${path}: ${errs.join(' | ')}`);
     await page.close();

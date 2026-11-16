@@ -1,5 +1,5 @@
 // Prerenders every page into dist/ after `vite build` and the SSR build:
-// `/mods/`, one page per mod, and 404.html, each page's index.json next to it;
+// `/mods/` and one page per mod, in every language (`/mods/zh-Hans/…`), and 404.html, each page's index.json next to it;
 // then writes sitemap.xml. See README.md.
 // dist/ is the site's /mods/ folder and dist-api/ its /api/ folder: the
 // levimc.org build copies them there.
@@ -63,14 +63,22 @@ for (const [sitePath, body] of json) {
 for (const file of ssr.HERO_FILES) writeFileSync(`dist/${file}`, ssr.heroSvg(file));
 
 // Crawlers see only the first page of the listing (the query string never
-// reaches the host), so the sitemap lists every mod page (but the old names of
-// a repository, whose pages point to the current one as canonical).
+// reaches the host), so the sitemap lists every mod page in every language,
+// each with its alternates (but the old names of a repository, whose pages
+// point to the current one as canonical).
 const sitemap = await ssr.listSitemapRoutes();
 const escapeXml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const loc = (route) => escapeXml(ORIGIN + encodeURI(route));
+const alternateLinks = (route) => {
+  const alternates = ssr.localeAlternates(route);
+  return [...ssr.LOCALES.map((l) => [l.lang, alternates[l.code]]), ["x-default", alternates[ssr.DEFAULT_LOCALE]]]
+    .map(([lang, href]) => `\n    <xhtml:link rel="alternate" hreflang="${lang}" href="${loc(href)}"/>`)
+    .join("");
+};
 writeFileSync(
   "dist/sitemap.xml",
-  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
-    sitemap.map((route) => `  <url><loc>${escapeXml(ORIGIN + encodeURI(route))}</loc></url>\n`).join("") +
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n` +
+    sitemap.map((route) => `  <url><loc>${loc(route)}</loc>${alternateLinks(route)}\n  </url>\n`).join("") +
     `</urlset>\n`,
 );
 

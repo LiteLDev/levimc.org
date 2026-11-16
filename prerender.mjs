@@ -4,7 +4,9 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { prerenderRoutes } from './kit/ssg/prerender.mjs';
 
-const { ROUTE_PATHS, NOT_FOUND_PATH, SITE_ORIGIN, MODS_PATH, ROUTE_MODULES, routeIdOf, DOCS_PROJECTS } = await import('./.kit/ssr/entry-server.js');
+const { ROUTE_PATHS, NOT_FOUND_PATH, SITE_ORIGIN, MODS_PATH, ROUTE_MODULES, routeIdOf, localeAlternates, LOCALES, DEFAULT_LOCALE, DOCS_PROJECTS } = await import(
+  './.kit/ssr/entry-server.js'
+);
 
 const { files } = await prerenderRoutes({ routes: ROUTE_PATHS, notFound: NOT_FOUND_PATH });
 
@@ -63,8 +65,24 @@ for (const route of ROUTE_PATHS) {
   preloaded++;
 }
 
-const urls = ROUTE_PATHS.map((p) => `  <url><loc>${SITE_ORIGIN}${encodeURI(p)}</loc></url>`).join('\n');
-writeFileSync('dist/sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`);
+// Every page in every locale, each with its alternates (as its <link rel="alternate" hreflang> say; a blog post has
+// one URL and none).
+const loc = (p) => `${SITE_ORIGIN}${encodeURI(p)}`.replace(/&/g, '&amp;');
+const urls = ROUTE_PATHS.map((p) => {
+  const alternates = localeAlternates(p);
+  const others = alternates ? LOCALES.filter((l) => alternates[l.code] !== null) : [];
+  const links =
+    others.length > 1
+      ? [...others.map((l) => [l.lang, alternates[l.code]]), ['x-default', alternates[DEFAULT_LOCALE]]]
+          .map(([lang, href]) => `\n    <xhtml:link rel="alternate" hreflang="${lang}" href="${loc(href)}"/>`)
+          .join('')
+      : '';
+  return `  <url><loc>${loc(p)}</loc>${links}${links ? '\n  ' : ''}</url>`;
+}).join('\n');
+writeFileSync(
+  'dist/sitemap.xml',
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls}\n</urlset>\n`,
+);
 // LeviMC Mods writes its own sitemap (every mod page); its listing's query URLs (/mods/?cat=…) are all one page. Each
 // project's docs (levimc.org/<Project>/, published by its repository) write theirs too: robots.txt exists only here.
 const sitemaps = [`${SITE_ORIGIN}/sitemap.xml`, `${SITE_ORIGIN}${MODS_PATH}sitemap.xml`, ...DOCS_PROJECTS.map((p) => `${p.url}sitemap.xml`)];

@@ -61,15 +61,11 @@ function usePlatform(): DevicePlatform | undefined {
   return platform;
 }
 
-// Docs URLs in the visitor's language: each docs site names its locales its own way.
-const DOCS_LOCALE: Record<'LeviLamina' | 'LeviLauncher', Record<Locale, string>> = {
-  LeviLamina: { en: '', zh: 'zh/', 'zh-Hant': 'zh-Hant/' },
-  LeviLauncher: { en: '', zh: 'zh-CN/', 'zh-Hant': 'zh-HK/' },
-};
-const docs = (project: 'LeviLamina' | 'LegacyScriptEngine' | 'lip' | 'LeviLauncher', locale: Locale, path = '') => {
-  const prefix = project === 'LeviLauncher' ? DOCS_LOCALE.LeviLauncher[locale] : DOCS_LOCALE.LeviLamina[locale];
-  return `${PROJECTS.find((p) => p.id === project)!.docs}${prefix}${path}`;
-};
+// Docs and tutorial URLs in the visitor's language: every LeviMC site puts zh-Hans/ or zh-Hant/ after its base.
+const LOCALE_PREFIX: Record<Locale, string> = { en: '', 'zh-Hans': 'zh-Hans/', 'zh-Hant': 'zh-Hant/' };
+const docs = (project: 'LeviLamina' | 'LegacyScriptEngine' | 'lip' | 'LeviLauncher', locale: Locale, path = '') =>
+  `${PROJECTS.find((p) => p.id === project)!.docs}${LOCALE_PREFIX[locale]}${path}`;
+const tutorial = (locale: Locale, path: string) => `${LINKS.tutorials}${LOCALE_PREFIX[locale]}${path}`;
 
 const DOWNLOADS = {
   // the asset name is stable across releases, so this starts the download right away
@@ -80,7 +76,7 @@ const DOWNLOADS = {
 const PLATFORM_NAMES = { windows: 'Windows', android: 'Android' } as const;
 
 function PlayPanel() {
-  const { t, locale } = useI18n();
+  const { t, locale, href } = useI18n();
   const r = t.roles;
   const platform = usePlatform();
   const first = platform === 'android' ? 'android' : 'windows';
@@ -104,7 +100,7 @@ function PlayPanel() {
       <RoleLinks
         links={[
           { href: docs('LeviLauncher', locale, 'download'), label: r.allDownloads },
-          { href: LINKS.mods, label: r.browseMods, internal: true },
+          { href: href(LINKS.mods), label: r.browseMods, internal: true },
         ]}
       />
     </>
@@ -112,17 +108,17 @@ function PlayPanel() {
 }
 
 function HostPanel() {
-  const { t, locale } = useI18n();
+  const { t, locale, href } = useI18n();
   const r = t.roles;
   const { version } = useLeviLaminaStats();
   return (
     <>
       <p className="lm-role-desc">{r.hostDesc}</p>
       <div className="kit-hero-actions">
-        <PixelButton href={docs('LeviLamina', locale, 'user_guides/install/')} variant="primary" size="lg" iconRight="arrowRight">
+        <PixelButton href={tutorial(locale, 'server/first-server/')} variant="primary" size="lg" iconRight="arrowRight">
           {r.setupGuide}
         </PixelButton>{' '}
-        <PixelButton href={LINKS.mods} size="lg" external={false}>
+        <PixelButton href={href(LINKS.mods)} size="lg" external={false}>
           {r.findMods}
         </PixelButton>
       </div>
@@ -147,7 +143,7 @@ function DevelopPanel() {
     <>
       <p className="lm-role-desc">{r.developDesc}</p>
       <div className="kit-hero-actions">
-        <PixelButton href={docs('LeviLamina', locale, 'developer_guides/tutorials/create_your_first_mod/')} variant="primary" size="lg" iconRight="arrowRight">
+        <PixelButton href={tutorial(locale, 'develop/first-levilamina-mod/')} variant="primary" size="lg" iconRight="arrowRight">
           {r.firstMod}
         </PixelButton>{' '}
         <PixelButton href={docs('LegacyScriptEngine', locale)} size="lg">
@@ -158,7 +154,7 @@ function DevelopPanel() {
         links={[
           // the Doxygen reference is in English only
           { href: `${docs('LeviLamina', 'en')}api/`, label: r.apiReference },
-          { href: docs('LeviLauncher', locale, 'android/guide/developer'), label: r.androidMods },
+          { href: tutorial(locale, 'develop/first-android-mod/'), label: r.androidMods },
         ]}
       />
     </>

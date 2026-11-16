@@ -9,7 +9,7 @@ import { pathOf } from '../routes';
  * documentation, so a mistyped docs link still gets somewhere.
  */
 export default function NotFound() {
-  const { t, locale } = useI18n();
+  const { t, locale, href } = useI18n();
   const ui = uiStrings(kitLocale[locale]);
 
   return (
@@ -22,11 +22,11 @@ export default function NotFound() {
         <h1 className="kit-notfound-title">{ui.notFoundTitle}</h1>
         <p className="kit-notfound-text">{ui.notFoundText}</p>
         <div className="kit-notfound-actions">
-          <Link className="mc-btn mc-btn-primary" to={pathOf('home')}>
+          <Link className="mc-btn mc-btn-primary" to={href(pathOf('home'))}>
             <PixelIcon name="grass" />
             {t.nav.home}
           </Link>
-          <Link className="mc-btn" to="/#projects">
+          <Link className="mc-btn" to={href('/#projects')}>
             <PixelIcon name="map" />
             {t.nav.projects}
           </Link>

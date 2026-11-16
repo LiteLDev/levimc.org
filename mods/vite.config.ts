@@ -7,26 +7,40 @@ import tailwindcss from "@tailwindcss/vite";
 import { createThemeInitScript } from "./kit/components/theme.ts";
 import { FONT_HEAD_HTML } from "./kit/components/fonts.ts";
 import { UI_LOCALES } from "./kit/components/i18n.ts";
+import { PREFS_CORE_JS } from "./kit/components/prefs.ts";
+import { localeRedirectScript } from "./kit/docs/shared/head.ts";
 import { noJsDarkCss } from "./kit/static/nojs-dark.mjs";
 import { BASE } from "./src/base-path.ts";
 import { LISTING_KEYS } from "./src/lib/catalog-query.ts";
 import { STORAGE_KEYS } from "./src/lib/storage.ts";
-import { LOCALES } from "./src/locales.ts";
+import { DEFAULT_LOCALE, LOCALES } from "./src/locales.ts";
 
 /**
- * The kit's pre-paint script: the cross-site theme and language preferences
- * (cookies on levimc.org). A visitor whose language is not the prerendered
- * English sees the page only once it has switched (`usePreferredLocale`); one
- * whose stored language the site has no pages in but the kit has chrome
- * strings for (de, ja …) sees the bar and footer only once they speak it
- * (`useChromeLocale`, src/chrome-locale.ts).
+ * The kit's pre-paint script: the cross-site theme preference (cookie on
+ * levimc.org). Every page is prerendered in the language of its URL
+ * (`/mods/zh-Hans/…`), so nothing waits for the language — but a visitor
+ * whose stored language the site has no pages in while the kit has chrome
+ * strings for it (de, ja …) sees the bar and footer only once they speak it
+ * (`useChromeLocale`, src/chrome-locale.ts; html.kit-chrome-pending).
  */
-const prefsScript = createThemeInitScript({
-  appLocales: { locales: LOCALES, prerendered: "en" },
-  chromeLocales: UI_LOCALES,
-  // prerender links to the other builds on levimc.org, not this app's own pages (its router serves those)
-  speculation: { exclude: [`${BASE}*`] },
-});
+const contentBases = [...new Set(LOCALES.map((l) => l.lang.toLowerCase().split("-")[0]))];
+const prefsScript =
+  createThemeInitScript({
+    // prerender links to the other builds on levimc.org, not this app's own pages (its router serves those)
+    speculation: { exclude: [`${BASE}*`] },
+  }) +
+  `(function(){try{${PREFS_CORE_JS}var l=rp("lang");if(!l)return;var b=l.toLowerCase().split("-")[0];if(${JSON.stringify(contentBases)}.indexOf(b)>=0)return;` +
+  `var C=${JSON.stringify(UI_LOCALES.map((c) => ({ c, l: c })))},a=ml(l,C);` +
+  `if(a>=0&&C[a].l.toLowerCase().split("-")[0]===b)document.documentElement.classList.add("kit-chrome-pending")}catch(e){}})();`;
+
+/**
+ * Only /mods/ itself redirects by language, like every LeviMC site's root (the docs' own script): to the
+ * visitor's stored language, else the browser's, when it has pages (/mods/zh-Hans/ …). Deep links never do.
+ */
+const redirectScript = localeRedirectScript({ base: BASE, siteKey: "mods", locales: [...LOCALES], defaultLocale: DEFAULT_LOCALE });
+
+/** The locale segment after BASE (the listing is /mods/, /mods/zh-Hans/ …). */
+const LOCALE_PREFIX = `^${BASE}(?:${LOCALES.filter((l) => l.prefix).map((l) => l.prefix).join("|")})`;
 
 /**
  * The listing's own pre-paint state: the viewer's list/grid choice, and
@@ -36,7 +50,7 @@ const prefsScript = createThemeInitScript({
  */
 const listingScript =
   `(function(){var d=document.documentElement;try{if(localStorage.getItem(${JSON.stringify(STORAGE_KEYS.view)})==="grid")d.setAttribute("data-view","grid")}catch(e){}` +
-  `var p=location.pathname;if((p===${JSON.stringify(BASE)}||p===${JSON.stringify(`${BASE}index.html`)})&&/[?&](${LISTING_KEYS.join("|")})=/.test(location.search)){` +
+  `var p=location.pathname.replace(new RegExp(${JSON.stringify(LOCALE_PREFIX)}),${JSON.stringify(BASE)});if((p===${JSON.stringify(BASE)}||p===${JSON.stringify(`${BASE}index.html`)})&&/[?&](${LISTING_KEYS.join("|")})=/.test(location.search)){` +
   `d.setAttribute("data-mods-pending","");setTimeout(function(){d.removeAttribute("data-mods-pending")},4000)}})()`;
 
 /**
@@ -49,7 +63,7 @@ function kitHead(): Plugin {
     transformIndexHtml(html) {
       return html.replace(
         "<!--kit-head-->",
-        () => `<script>${prefsScript}</script><script>${listingScript}</script>${FONT_HEAD_HTML}`,
+        () => `<script>${prefsScript}</script><script>${redirectScript}</script><script>${listingScript}</script>${FONT_HEAD_HTML}`,
       );
     },
   };

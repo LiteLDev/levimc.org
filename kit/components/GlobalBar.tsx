@@ -139,6 +139,15 @@ function ProjectItem({ p, t, current, ctx }: { p: Project; t: UiStrings; current
 const MENU_PROJECTS = PROJECTS.filter((p) => p.docs);
 
 /** The Projects menu: every project with a documentation site, each leading to its docs, then the GitHub organisation. */
+/**
+ * The current tab: a project's docs are under Projects; a docs build that is one of the bar's own sites (kit 2.21.2:
+ * the tutorials, `project: 'tutorials'`) is its own tab.
+ */
+function barTab(project: string | undefined, current: SiteId | undefined): SiteId | undefined {
+  if (project && (['home', 'tutorials', 'mods', 'blog', 'community', 'about'] as const).includes(project as never)) return project as SiteId;
+  return project ? 'projects' : current;
+}
+
 function ProjectsPanel({ t, currentProject, ctx }: { t: UiStrings; currentProject?: string; ctx: LinkCtx }) {
   return (
     <div className="kit-proj">
@@ -184,7 +193,7 @@ export interface GlobalNavListProps {
 export function GlobalNavList({ current, currentProject, currentDocs, locale, strings, siteOrigin, linkComponent, isAppPath, onNavigate, heading, className }: GlobalNavListProps) {
   const t = uiStrings(locale, strings);
   const project = currentProject ?? currentDocs;
-  const tab = project ? 'projects' : current;
+  const tab = barTab(project, current);
   const ctx: LinkCtx = { siteOrigin, linkComponent, isAppPath };
   return (
     <div className={className ? `kit-gbar-list ${className}` : 'kit-gbar-list'} onClick={(e) => ((e.target as Element).closest('a') ? onNavigate?.() : undefined)}>
@@ -241,7 +250,7 @@ export function GlobalBar({
 }: GlobalBarProps) {
   const t = uiStrings(locale, strings);
   const project = currentProject ?? currentDocs;
-  const tab = project ? 'projects' : current;
+  const tab = barTab(project, current);
   const projRef = useRef<HTMLDetailsElement>(null);
   const moreRef = useRef<HTMLDetailsElement>(null);
   useDismissableDetails(projRef);

@@ -1,4 +1,7 @@
 import { BASE } from "./base-path";
+import { uiStrings } from "../kit/components/i18n";
+import { STRINGS } from "./i18n";
+import { DEFAULT_LOCALE, LOCALES, localeAlternates, localeInfo, splitLocale, type Locale } from "./locales";
 import type { RepositoryRenames } from "./lib/markdown";
 import { CATALOG_JSON, modJsonPath, type ModSelection } from "./lib/mods";
 import type { Readme } from "./lib/readme-language";
@@ -78,8 +81,8 @@ export const titled = (...parts: string[]) => [...parts, "LeviMC"].join(" - ");
 export const SITE_ORIGIN = "https://levimc.org";
 
 /** The home page's description, with the live counts. */
-export function siteDescription(projects: number): string {
-  return `Browse ${projects} mods and plugins for LeviLamina on Minecraft Bedrock. Install them with lip on servers and LeviLauncher on clients.`;
+export function siteDescription(projects: number, locale: Locale = DEFAULT_LOCALE): string {
+  return STRINGS[locale].siteDescription(projects);
 }
 
 const PAGE_DATA_ID = "mods-page-data";
@@ -109,32 +112,57 @@ export function readEmbeddedPageData(): PageData | null {
 export interface PageMeta {
   title: string;
   description: string;
+  /** The page's language. */
+  locale: Locale;
   /** Absolute URL of the page; absent on the 404 page. */
   canonical?: string;
+  /** The page in each language (absolute URLs; absent on the 404 page and on an old name's page). */
+  alternates?: Record<Locale, string>;
   /** The page's JSON (under `/api/v4/mods/`); absent on the 404 page. */
   json?: string;
 }
 
-export function pageMeta(data: PageData): PageMeta {
+/** The page's meta data at `pathname` (`/mods/…`, `/mods/zh-Hans/…`: the language comes from the URL). */
+export function pageMeta(data: PageData, pathname: string = BASE): PageMeta {
+  const { locale } = splitLocale(pathname);
+  const t = STRINGS[locale];
+  // "Mods" as the LeviMC bar says it in this language
+  const mods = uiStrings(localeInfo(locale).lang).mods;
+  const absolute = (path: string) => {
+    const alternates = localeAlternates(path);
+    return Object.fromEntries(LOCALES.map((l) => [l.code, `${SITE_ORIGIN}${alternates[l.code]}`])) as Record<Locale, string>;
+  };
   switch (data.kind) {
-    case "home":
+    case "home": {
+      const alternates = absolute(BASE);
       return {
-        title: titled("Mods"),
-        description: siteDescription(data.catalog.stats.projects),
-        canonical: `${SITE_ORIGIN}${BASE}`,
+        title: titled(mods),
+        description: t.siteDescription(data.catalog.stats.projects),
+        locale,
+        canonical: alternates[locale],
+        alternates,
         json: `${SITE_ORIGIN}${CATALOG_JSON}`,
       };
-    case "mod":
+    }
+    case "mod": {
+      // an old name's page points to the current one's, in the same language
+      const alternates = absolute(`${BASE}${data.canonical ?? data.id}/`);
       return {
-        title: titled(data.entry.name, "Mods"),
+        title: titled(data.entry.name, mods),
         description: data.mod.info.description || `${data.entry.name} on ${SITE_NAME}`,
-        canonical: `${SITE_ORIGIN}${BASE}${data.canonical ?? data.id}/`,
+        locale,
+        canonical: alternates[locale],
+        alternates: data.canonical ? undefined : alternates,
         json: `${SITE_ORIGIN}${modJsonPath(data.id)}`,
       };
+    }
     case "not-found":
-      return { title: titled("Page not found"), description: `${SITE_NAME} — ${SITE_TAGLINE}` };
+      return { title: titled(t.notFoundTitle), description: `${t.siteName} — ${t.tagline}`, locale };
   }
 }
+
+/** og:locale of each language (the underscore form, with a territory). */
+const OG_LOCALES: Record<Locale, string> = { en: "en_US", "zh-CN": "zh_CN", "zh-Hant": "zh_TW" };
 
 const escapeHtml = (value: string) =>
   value
@@ -143,15 +171,21 @@ const escapeHtml = (value: string) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
-/** `<head>` tags of a prerendered page, its data included. */
-export function pageHead(data: PageData): string {
-  const meta = pageMeta(data);
+/** `<head>` tags of the prerendered page at `pathname`, its data included. */
+export function pageHead(data: PageData, pathname: string = BASE): string {
+  const meta = pageMeta(data, pathname);
   const tags = [
     `<title>${escapeHtml(meta.title)}</title>`,
     `<meta name="description" content="${escapeHtml(meta.description)}" />`,
   ];
   if (meta.canonical) {
     tags.push(`<link rel="canonical" href="${escapeHtml(meta.canonical)}" />`);
+  }
+  if (meta.alternates) {
+    for (const l of LOCALES) {
+      tags.push(`<link rel="alternate" hreflang="${l.lang}" href="${escapeHtml(meta.alternates[l.code])}" />`);
+    }
+    tags.push(`<link rel="alternate" hreflang="x-default" href="${escapeHtml(meta.alternates[DEFAULT_LOCALE])}" />`);
   }
   if (meta.json) {
     tags.push(`<link rel="alternate" type="application/json" href="${escapeHtml(meta.json)}" />`);
@@ -162,8 +196,10 @@ export function pageHead(data: PageData): string {
     `<meta property="og:title" content="${escapeHtml(meta.title)}" />`,
     `<meta property="og:description" content="${escapeHtml(meta.description)}" />`,
     `<meta property="og:image" content="${SITE_ORIGIN}${BASE}icon.png" />`,
-    // the language pages are prerendered in (the interface follows the visitor's after hydration)
-    `<meta property="og:locale" content="en_US" />`,
+    `<meta property="og:locale" content="${OG_LOCALES[meta.locale]}" />`,
+    ...(meta.alternates
+      ? LOCALES.filter((l) => l.code !== meta.locale).map((l) => `<meta property="og:locale:alternate" content="${OG_LOCALES[l.code]}" />`)
+      : []),
   );
   if (meta.canonical) {
     tags.push(`<meta property="og:url" content="${escapeHtml(meta.canonical)}" />`);

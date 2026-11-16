@@ -31,6 +31,7 @@ const { chromium } = require('playwright');
 
 const CANONICAL_TABS = [
   ['home', 'https://levimc.org/'],
+  ['tutorials', 'https://levimc.org/tutorials/'],
   ['projects', null],
   ['mods', 'https://levimc.org/mods/'],
   ['blog', 'https://levimc.org/blog/'],

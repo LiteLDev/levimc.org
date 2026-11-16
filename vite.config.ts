@@ -6,11 +6,11 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { FONT_HEAD_HTML } from './kit/components/fonts.ts';
 import { noJsDarkCss } from './kit/static/nojs-dark.mjs';
-import { PREPAINT_SCRIPT } from './src/prepaint.ts';
+import { PREPAINT_SCRIPT, ROOT_REDIRECT_SCRIPT } from './src/prepaint.ts';
 import { levimcBlog } from './blog/plugin.ts';
 
 /**
- * Inlines the no-flash theme/locale script and the kit's web fonts into index.html, and — like every docs page —
+ * Inlines the no-flash theme script, the root's language redirect and the kit's web fonts into index.html, and — like every docs page —
  * a dark stylesheet for readers without JavaScript whose system is dark: the built stylesheet's .dark rules as
  * :root rules (kit/static/nojs-dark.mjs), in <noscript> with media="(prefers-color-scheme: dark)".
  */
@@ -24,7 +24,7 @@ function levimcHead(): Plugin {
       outDir = config.build.outDir;
     },
     transformIndexHtml(html) {
-      return html.replace('<!--prepaint-->', () => `<script>${PREPAINT_SCRIPT}</script>`).replace('<!--fonts-->', () => FONT_HEAD_HTML);
+      return html.replace('<!--prepaint-->', () => `<script>${PREPAINT_SCRIPT}</script><script>${ROOT_REDIRECT_SCRIPT}</script>`).replace('<!--fonts-->', () => FONT_HEAD_HTML);
     },
     writeBundle(_opts, bundle) {
       if (ssr) return;

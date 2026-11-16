@@ -1,7 +1,7 @@
 // The language of the LeviMC chrome (bar, footer, skip link), by the rule every LeviMC site shares (kit 2.19, as
 // levimc.org's src/i18n): the content language when the site has the visitor's preferred language; otherwise the
 // stored preference, if the kit has chrome strings for it — a visitor who chose Deutsch on another LeviMC site
-// gets a German bar and footer around the English pages. The pre-paint script (vite.config.ts, `chromeLocales`)
+// gets a German bar and footer around the English pages. The pre-paint script (vite.config.ts, kit-chrome-pending)
 // hides the chrome until then.
 import { useEffect, useLayoutEffect, useState } from "react";
 import { readLanguagePreference } from "../kit/components/prefs";
@@ -21,7 +21,7 @@ export function chromeLocaleFor(contentLang: string, preference: string | null):
 /** {@link chromeLocaleFor} for this visitor: the content language until hydrated, then the stored preference's. */
 export function useChromeLocale(contentLang: string): string {
   const [preference, setPreference] = useState<string | null>(null);
-  // a layout effect, in the same commit as usePreferredLocale's switch: the chrome is shown once, in its language
+  // a layout effect, before the next paint: the chrome is shown once, in its language (App reveals it)
   useIsoLayoutEffect(() => {
     const sync = () => setPreference(readLanguagePreference());
     sync();

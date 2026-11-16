@@ -73,6 +73,12 @@ export class PageStore {
     return page;
   }
 
+  /** The data of the page at `pathname` if it is loaded already (never starts loading it). */
+  peek(pathname: string): LoadedPage | undefined {
+    const page = this.pages.get(pageKey(pathname)) as Thenable<LoadedPage> | undefined;
+    return page?.status === "fulfilled" ? page.value : undefined;
+  }
+
   /** Starts loading a page the visitor is likely to open next. */
   preload(pathname: string): void {
     if (typeof window === "undefined") return;

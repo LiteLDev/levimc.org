@@ -31,6 +31,9 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            tutorials/package-lock.json
 
       - run: npm ci
 
@@ -91,6 +94,18 @@ jobs:
           test ! -e dist/api/v4/mc/versions
           mkdir -p dist/api/v4/mc/versions
           cp versions/versions.json dist/api/v4/mc/versions/index.json
+
+      # The tutorials (/tutorials/): a docs build of tutorials/ with this checkout's kit (its install vendors ../kit).
+      - working-directory: tutorials
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+          npm run linkcheck
+
+      - run: |
+          test ! -e dist/tutorials
+          cp -r tutorials/dist dist/tutorials
 
       # Internal links, redirect-needing links and #anchors (GitHub Pages semantics).
       - run: npm run linkcheck

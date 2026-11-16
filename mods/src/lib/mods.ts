@@ -1,4 +1,5 @@
 import { BASE } from "../base-path.ts";
+import { stripLocale } from "../locales.ts";
 import type { EntryJson, ModJson, RawModEntry, VersionJson } from "../types";
 import { labelReadmes, type Readme } from "./readme-language.ts";
 
@@ -57,9 +58,9 @@ export function modPath(tooth: string): string {
 
 const MOD_PAGE = new RegExp(`^${BASE}(.+)/$`);
 
-/** The tooth a mod page path names, or `null` for any other path. */
+/** The tooth a mod page path names (in any language: `/mods/zh-Hans/<tooth>/`), or `null` for any other path. */
 export function toothFromPath(pathname: string): string | null {
-  const match = MOD_PAGE.exec(pathname);
+  const match = MOD_PAGE.exec(stripLocale(pathname));
   if (!match?.[1]) return null;
   try {
     return decodeURIComponent(match[1]);

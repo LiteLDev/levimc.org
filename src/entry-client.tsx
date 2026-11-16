@@ -3,6 +3,7 @@ import { createRoot, hydrateRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { App, preloadRoute } from './App';
 import { canonicalPath } from './routes';
+import { isLocale } from './i18n/config';
 import { preloadBlogPath } from './blog/data';
 import './styles.css';
 
@@ -18,10 +19,12 @@ if (!rootElement) {
   throw new Error('Could not find root element to mount to');
 }
 
+// the language the page was prerendered in (404.html is English for every unknown URL, see I18nProvider)
+const prerendered = document.documentElement.lang;
 const app = (
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <App initialLocale={isLocale(prerendered) ? prerendered : undefined} />
     </BrowserRouter>
   </StrictMode>
 );

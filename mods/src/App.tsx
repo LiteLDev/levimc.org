@@ -1,22 +1,17 @@
 import { BASE } from "./base-path";
 import { Suspense, use, useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
 import { useLocation, useNavigationType } from "react-router";
-import {
-  GlobalBar,
-  PaintedBackdrop,
-  SiteFooter,
-  ThemeProvider,
-  usePreferredLocale,
-} from "./kit-ui";
+import { GlobalBar, PaintedBackdrop, SiteFooter, ThemeProvider } from "./kit-ui";
 import { ErrorBoundary, ErrorMessage } from "./components/error-boundary";
 import { Header } from "./components/header";
-import { KitRouterLink } from "./components/router-link";
-import { LocaleContext, STRINGS, useI18n, type Strings } from "./i18n";
-import { LOCALES } from "./locales";
-import { pageMeta, SITE_ORIGIN, titled, type PageData } from "./page-data";
+import { KitExactLink, KitRouterLink, localizeHref } from "./components/router-link";
+import { LocaleContext, STRINGS, useI18n } from "./i18n";
+import { LOCALES, localeAlternates, localeInfo, splitLocale, type Locale } from "./locales";
+import { pageMeta, SITE_ORIGIN, type PageData } from "./page-data";
 import { useChromeLocale } from "./chrome-locale";
 import { uiStrings } from "../kit/components/i18n";
-import { PageStoreContext, usePageStore, type PageStore } from "./page-store";
+import { revealPendingChrome } from "../kit/components/locale";
+import { PageStoreContext, useHydrated, usePageStore, type PageStore } from "./page-store";
 import { HomePage } from "./pages/home-page";
 import { NotFoundPage } from "./pages/not-found-page";
 import { ModPage } from "./pages/mod-page";
@@ -62,10 +57,11 @@ const canonicalTag = () => {
  * page's `noindex` in step on navigation.
  */
 function useDocumentHead(data: PageData) {
-  const { locale, t } = useI18n();
+  const { locale } = useI18n();
+  const { pathname } = useLocation();
   useEffect(() => {
-    const meta = pageMeta(data);
-    document.title = locale === "en" ? meta.title : localizedTitle(data, t, LOCALES.find((l) => l.code === locale)?.lang ?? "en");
+    const meta = pageMeta(data, pathname);
+    document.title = meta.title;
     setHeadTag('meta[name="description"]', metaTag("name", "description"), "content", meta.description);
     setHeadTag('link[rel="canonical"]', canonicalTag, "href", meta.canonical);
     setHeadTag('meta[property="og:title"]', metaTag("property", "og:title"), "content", meta.title);
@@ -82,21 +78,7 @@ function useDocumentHead(data: PageData) {
       "content",
       data.kind === "not-found" ? "noindex" : undefined,
     );
-  }, [data, locale, t]);
-}
-
-/** The tab title in the interface language (pages are prerendered with the English one). */
-function localizedTitle(data: PageData, t: Strings, lang: string): string {
-  // "Mods" as the LeviMC bar says it in this language
-  const mods = uiStrings(lang).mods;
-  switch (data.kind) {
-    case "home":
-      return titled(mods);
-    case "mod":
-      return titled(data.entry.name, mods);
-    case "not-found":
-      return titled(t.notFoundTitle);
-  }
+  }, [data, locale, pathname]);
 }
 
 /** How far down the results may start before a new query brings them up. */
@@ -188,28 +170,43 @@ function PageFallback() {
   );
 }
 
-/** levimc.org links outside `/mods/` (Home, Blog, …) belong to the main site: they load in full. */
-const isAppPath = (path: string) => path.startsWith(BASE);
+/**
+ * Every levimc.org link of the bar and footer goes through KitRouterLink: this site's pages navigate inside
+ * the app, the others load in full, all in the page's language.
+ */
+const isAppPath = () => true;
 
 /**
  * The LeviMC bar (the site's languages, the shared theme menu, GitHub), the
- * page and the LeviMC footer. The interface follows the visitor's cross-site
- * language preference; pages are prerendered in English.
+ * page and the LeviMC footer, in the language of the URL (`/mods/zh-Hans/…`):
+ * each page is prerendered in each language.
  */
-function Shell({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = usePreferredLocale(LOCALES, LOCALES[0]);
-  const i18n = useMemo(() => ({ locale: locale.code, t: STRINGS[locale.code] }), [locale.code]);
-  const { pathname } = useLocation();
+function Shell({ initialLocale, children }: { initialLocale?: Locale; children: ReactNode }) {
+  const { pathname, search } = useLocation();
+  const { locale: urlLocale, path } = splitLocale(pathname);
+  // The first render matches the HTML being hydrated: a page in another language than its URL's is only the 404
+  // page the host answers for any unknown URL (English); it switches right after hydrating, before the next paint.
+  const hydrated = useHydrated();
+  const code = hydrated || initialLocale === undefined ? urlLocale : initialLocale;
+  const locale = localeInfo(code);
+  const i18n = useMemo(
+    () => ({ locale: code, t: STRINGS[code], href: (href: string) => localizeHref(href, code) }),
+    [code],
+  );
   // the LeviMC bar's and footer's language (see chrome-locale.ts)
   const chrome = useChromeLocale(locale.lang);
   useEffect(() => {
-    // the document's language is the interface's (prerendered as English)
     document.documentElement.lang = locale.lang;
   }, [locale.lang]);
+  // the bar and footer were hidden only for a chrome language the site has no pages in (vite.config.ts)
+  useLayoutEffect(() => revealPendingChrome(), [chrome]);
+  // the page in each language; for a page that does not exist, the listing
+  const missing = usePageStore().peek(pathname)?.kind === "not-found";
+  const alternates = localeAlternates(missing ? BASE : pathname);
   return (
     <LocaleContext value={i18n}>
       <div className="kit-shell" lang={locale.lang}>
-        <PaintedBackdrop scene={pathname !== BASE && pathname !== `${BASE}index.html`} />
+        <PaintedBackdrop scene={path !== BASE && path !== `${BASE}index.html`} />
         <a className="kit-skip-link" href="#main" lang={chrome}>
           {uiStrings(chrome).skipToContent}
         </a>
@@ -221,9 +218,10 @@ function Shell({ children }: { children: ReactNode }) {
           linkComponent={KitRouterLink}
           isAppPath={isAppPath}
           languages={{
-            options: LOCALES.map(({ code, label, lang }) => ({ code, label, lang })),
+            // the same page (and query) in each language; the menu stores the choice as the cross-site preference
+            options: LOCALES.map(({ code, label, lang }) => ({ code, label, lang, href: alternates[code] + (missing ? "" : search) })),
             current: locale.code,
-            onSelect: setLocale,
+            linkComponent: KitExactLink,
           }}
         />
         {children}
@@ -249,7 +247,8 @@ function PageBoundary() {
   );
 }
 
-export function App({ store }: { store: PageStore }) {
+/** `initialLocale`: the language of the prerendered HTML being hydrated (see Shell). */
+export function App({ store, initialLocale }: { store: PageStore; initialLocale?: Locale }) {
   return (
     <ThemeProvider>
       <ErrorBoundary
@@ -260,7 +259,7 @@ export function App({ store }: { store: PageStore }) {
         )}
       >
         <PageStoreContext value={store}>
-          <Shell>
+          <Shell initialLocale={initialLocale}>
             <ScrollOnNavigate />
             <PageBoundary />
           </Shell>

@@ -33,10 +33,13 @@ built with Vite `base: '/mods/'`: every page and file is under `/mods/`.
 - Pages hydrate into a single-page app: following a link fetches the target's
   prerendered HTML and reads its embedded data, so a page looks the same
   however it was reached.
-- The interface is in English, 简体中文 and 繁體中文, following the visitor's
-  language preference shared by every LeviMC site (the LeviMC bar's language
-  menu); the theme (Auto, Light, Dark) is shared the same way. Mod data is
-  shown as published.
+- The interface is in English, 简体中文 and 繁體中文, each at its own URLs: the
+  locale segment follows the base — `/mods/…`, `/mods/zh-Hans/…`, `/mods/zh-Hant/…`
+  (`src/locales.ts`) — and every page is prerendered in each language, with
+  hreflang alternates. `/mods/` alone redirects to the visitor's language preference
+  shared by every LeviMC site (else the browser's); the LeviMC bar's language menu
+  links to the same page in another language and stores the choice. The theme
+  (Auto, Light, Dark) is shared the same way. Mod data is shown as published.
 
 ### Filters
 
@@ -321,7 +324,7 @@ src/
   entry-server.tsx  renders one page (prerender and dev server)
   App.tsx           shell: LeviMC bar, page, footer
   base-path.ts      BASE, the site's path on levimc.org (`/mods/`)
-  i18n.ts           interface strings (en, zh-CN, zh-Hant); locales.ts lists the languages
+  i18n.ts           interface strings (en, zh-CN, zh-Hant); locales.ts lists the languages and their URL segments
   kit-ui.ts         the kit components the site uses
   data/             featured tags (with their groups), license families, sides, sprite names
   pages/            home, mod and 404 pages

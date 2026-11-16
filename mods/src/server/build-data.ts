@@ -11,13 +11,14 @@ import {
   toothFromPath,
 } from "../lib/mods";
 import { DEFAULT_README_FILES } from "../lib/readme-language.ts";
+import { LOCALES, splitLocale, withLocale } from "../locales.ts";
 import type { PageData } from "../page-data";
 import type { EntryJson, LipDoc, RelatedMod } from "../types";
 import { allDependencies, loadBuildData, related, versionTargets } from "./catalog";
 import { loadShowcase } from "./showcase";
 
-/** `/mods/` and every listed or unlisted mod that has a version to show (see `lib/listing.ts`). */
-export async function listRoutes(): Promise<string[]> {
+/** `/mods/` and every listed or unlisted mod that has a version to show (see `lib/listing.ts`), in English. */
+export async function listPageRoutes(): Promise<string[]> {
   const { index, byId } = await loadBuildData();
   return [
     BASE,
@@ -27,13 +28,19 @@ export async function listRoutes(): Promise<string[]> {
   ];
 }
 
-/** The pages for the sitemap: every page but those of old names of a repository. */
+/** Every page in every language (`/mods/…`, `/mods/zh-Hans/…`, `/mods/zh-Hant/…`). */
+export async function listRoutes(): Promise<string[]> {
+  const pages = await listPageRoutes();
+  return LOCALES.flatMap((l) => pages.map((route) => withLocale(route, l.code)));
+}
+
+/** The pages for the sitemap: every page in every language but those of old names of a repository. */
 export async function listSitemapRoutes(): Promise<string[]> {
   const { listings } = await loadBuildData();
   const old = new Set(
     [...listings].filter(([, l]) => l.status === "unlisted" && l.reason === "duplicate").map(([id]) => modPath(id)),
   );
-  return (await listRoutes()).filter((route) => !old.has(route));
+  return (await listRoutes()).filter((route) => !old.has(splitLocale(route).path));
 }
 
 /** A package file's variants as the JSON and the pages have them (name → entries). */
@@ -45,8 +52,9 @@ export function variantsJson(doc: LipDoc): Record<string, EntryJson[]> {
 
 const pages = new Map<string, Promise<PageData>>();
 
-/** A page's data, once per build (the page and its JSON share it, see `server/api.ts`). */
-export function loadPageData(pathname: string): Promise<PageData> {
+/** A page's data, once per build and for every language (the pages and the JSON share it, see `server/api.ts`). */
+export function loadPageData(localizedPath: string): Promise<PageData> {
+  const pathname = splitLocale(localizedPath).path;
   let page = pages.get(pathname);
   if (!page) {
     page = buildPageData(pathname);

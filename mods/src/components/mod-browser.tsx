@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router";
 import { PixelIcon } from "../kit-ui";
+import { stripLocale } from "../locales";
 import { useI18n } from "../i18n";
 import {
   clearFilters,
@@ -77,7 +78,7 @@ function EmptyState({ state, apply }: { state: QueryState; apply: (s: QueryState
  * URL right after hydrating.
  */
 export function ModBrowser({ catalog }: { catalog: Catalog }) {
-  const { t } = useI18n();
+  const { t, href: localize } = useI18n();
   const [params] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -103,10 +104,11 @@ export function ModBrowser({ catalog }: { catalog: Catalog }) {
 
   // "Back to search" on a mod page returns to this exact listing.
   useEffect(() => {
-    if (hydrated) writeStorage(STORAGE_KEYS.lastSearch, location.pathname + location.search, true);
+    // in English: the mod page puts it in its own language
+    if (hydrated) writeStorage(STORAGE_KEYS.lastSearch, stripLocale(location.pathname) + location.search, true);
   }, [hydrated, location.pathname, location.search]);
 
-  const go = (href: string, replace = false) => navigate(href, { replace });
+  const go = (href: string, replace = false) => navigate(localize(href), { replace });
   const apply = (next: QueryState) => go(serializeQuery(next));
   const filters = filterCount(state);
   const { items, matched, total, page, pageCount, counts } = result;

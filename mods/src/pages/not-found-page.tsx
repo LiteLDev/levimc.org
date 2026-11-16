@@ -10,7 +10,7 @@ import { BASE } from "../base-path";
  * red "Error 404" label, the title, a line of text and two actions: back to the listing, and levimc.org.
  */
 export function NotFoundPage() {
-  const { t, locale } = useI18n();
+  const { t, locale, href: localize } = useI18n();
   const ui = uiStrings(LOCALES.find((l) => l.code === locale)?.lang ?? "en");
 
   return (
@@ -27,7 +27,7 @@ export function NotFoundPage() {
             <PixelIcon name="grass" />
             {t.backToSearch}
           </RouterLink>
-          <a href="/" className="mc-btn">
+          <a href={localize("/")} className="mc-btn">
             <PixelIcon name="map" />
             {ui.home}
           </a>
