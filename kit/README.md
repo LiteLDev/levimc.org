@@ -961,7 +961,17 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 ## Changelog
 
-### 2.21.0 — unreleased
+### 2.21.1
+
+* **Links to another LeviMC site stay in the tab.** An absolute `https://levimc.org/…` link (markdown, hero actions,
+  feature cards, nav and sidebar entries, header resources, `Card`, `PixelButton`) is a cross-site navigation — with
+  the view transition and prerendering — not an external link: no `target=_blank`, no external-link icon. New
+  helpers `opensInNewTab(url)`, `newTabProps(url)`, `NETWORK_ORIGIN`.
+* **Converted Traditional Chinese follows the scheme across sites**: in pages and nav converted with `convertFrom`,
+  links and bare URLs to `https://levimc.org/…/zh-Hans/…` become `…/zh-Hant/…` (code is left as written).
+* The static runtime (`kit.js`) translates the Tutorials tab.
+
+### 2.21.0
 
 **levimc.org feels like one site.** The site, /mods/, /tutorials/, every project's docs and the Doxygen reference are
 separate builds on one origin, so links between them are full navigations. Two additions make those navigations

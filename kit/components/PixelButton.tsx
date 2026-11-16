@@ -1,4 +1,5 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
+import { newTabProps } from './projects.ts';
 import { PixelIcon, type PixelIconName } from './PixelIcon';
 
 interface Common {
@@ -36,7 +37,7 @@ export function PixelButton(props: PixelButtonProps) {
     const { external, href, ...a } = rest as { external?: boolean; href: string } & AnchorHTMLAttributes<HTMLAnchorElement>;
     const ext = external ?? /^https?:\/\//.test(href);
     return (
-      <a className={cls} href={href} {...(ext ? { target: '_blank', rel: 'noopener' } : {})} {...a}>
+      <a className={cls} href={href} {...(ext ? newTabProps(href) : {})} {...a}>
         {inner}
       </a>
     );

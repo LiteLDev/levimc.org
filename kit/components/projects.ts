@@ -160,6 +160,24 @@ export function globalNav(t: UiStrings): GlobalNavEntry[] {
   ];
 }
 
+/** The origin every LeviMC site shares (the site, /mods/, /tutorials/, each project's docs). */
+export const NETWORK_ORIGIN = 'https://levimc.org';
+
+/**
+ * Whether a link opens in a new tab (kit 2.21.1): an absolute http(s) URL outside levimc.org. Links to another
+ * LeviMC site (https://levimc.org/<Project>/…) stay in the tab — a cross-site navigation, with the view transition
+ * and prerendering — and get no external-link icon.
+ */
+export function opensInNewTab(url: string): boolean {
+  if (!/^(https?:)?\/\//i.test(url)) return false;
+  return originOf(url.startsWith('//') ? 'https:' + url : url) !== NETWORK_ORIGIN;
+}
+
+/** `target` / `rel` for a link: a new tab exactly when {@link opensInNewTab}. */
+export function newTabProps(url: string): { target?: '_blank'; rel?: string } {
+  return opensInNewTab(url) ? { target: '_blank', rel: 'noopener' } : {};
+}
+
 /** Origin of an absolute http(s) URL, lower-cased ('' for anything else). */
 export function originOf(url: string): string {
   const m = /^(https?:\/\/[^/?#]+)/i.exec(url);

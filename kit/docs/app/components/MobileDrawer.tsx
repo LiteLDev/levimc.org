@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { newTabProps, opensInNewTab } from '../../../components/projects.ts';
 import type { NavItem, RouteMeta, SidebarData } from '../../shared/types';
 import { href, langOf, site } from '../data';
 import { docsStrings } from '../../shared/strings';
@@ -85,9 +86,9 @@ export function MobileDrawer({
                               c.link === undefined ? null : (
                                 <li key={j}>
                                   {c.external ? (
-                                    <a href={c.link} target="_blank" rel="noopener" className="kit-drawer-link">
+                                    <a href={c.link} {...newTabProps(c.link)} className="kit-drawer-link">
                                       {c.text}
-                                      <PixelIcon name="external" />
+                                      {opensInNewTab(c.link) ? <PixelIcon name="external" /> : null}
                                     </a>
                                   ) : (
                                     <KitLink
@@ -110,9 +111,9 @@ export function MobileDrawer({
                     return (
                       <li key={i}>
                         {it.external ? (
-                          <a href={it.link} target="_blank" rel="noopener" className="kit-drawer-link">
+                          <a href={it.link} {...newTabProps(it.link!)} className="kit-drawer-link">
                             {it.text}
-                            <PixelIcon name="external" />
+                            {opensInNewTab(it.link!) ? <PixelIcon name="external" /> : null}
                           </a>
                         ) : (
                           <KitLink href={href(it.link)} className={active ? 'kit-drawer-link is-active' : 'kit-drawer-link'} aria-current={active ? 'true' : undefined} onClick={onClose}>
@@ -137,7 +138,7 @@ export function MobileDrawer({
                   {resources.map((r) => (
                     <li key={r.kind + r.link}>
                       {r.external ? (
-                        <a href={r.link} target="_blank" rel="noopener" className="kit-drawer-link" data-kit-resource={r.kind}>
+                        <a href={r.link} {...newTabProps(r.link)} className="kit-drawer-link" data-kit-resource={r.kind}>
                           <span className="kit-drawer-link-label">
                             {r.kind === 'github' ? <BrandIcon name="github" size={16} /> : null}
                             {r.text}

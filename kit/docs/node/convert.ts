@@ -1,7 +1,8 @@
 // Locales converted from another one: a Traditional Chinese locale (`convertFrom: 'zh'`) gets every page, nav title
 // and chrome override of the Simplified locale that it has no own translation of, converted character by character
 // with OpenCC (`cn` → `tw`, or `hk` for a zh-HK / zh-MO locale; no phrase rewriting, so the wording stays the
-// author's). Code, link targets and URLs are left as written. Only sites that use `convertFrom` load opencc-js
+// author's). Code, link targets and URLs are left as written — except links to another LeviMC site, which follow the
+// script: https://levimc.org/<site>/zh-Hans/… becomes …/zh-Hant/… (kit 2.21.1; levimc.org's one locale scheme). Only sites that use `convertFrom` load opencc-js
 // (a devDependency of theirs), so the others build without it.
 
 import type { NavEntry, ResolvedConfig, ResolvedLocale, SidebarConfig } from './config.ts';
@@ -40,12 +41,16 @@ const convertTarget = (target: string, convert: Convert) => {
   return hash < 0 ? target : target.slice(0, hash + 1) + convert(target.slice(hash + 1));
 };
 
+/** Links to the Simplified Chinese of a LeviMC site (https://levimc.org/…/zh-Hans/…) → its Traditional Chinese. */
+export const traditionalNetworkLinks = (s: string) => s.replace(/(https?:\/\/levimc\.org\/(?:[^\s)<>"'#?]*\/)?)zh-Hans\//g, '$1zh-Hant/');
+
 /** A markdown page in the other script: its prose, headings and front matter; not its code or link targets. */
 export function convertMarkdown(md: string, convert: Convert): string {
   let out = '';
   let last = 0;
   for (const m of md.matchAll(KEEP)) {
-    const span = m[0];
+    // code stays as written; link targets and bare URLs to another LeviMC site follow the script
+    const span = /^\s*(`|~~~)/.test(m[0]) ? m[0] : traditionalNetworkLinks(m[0]);
     out += convert(md.slice(last, m.index));
     out += span.startsWith('](') || /^(href|src)/.test(span) ? convertTarget(span, convert) : span;
     last = m.index + span.length;
@@ -68,7 +73,7 @@ function convertNav(entries: NavEntry[], convert: Convert): NavEntry[] {
   return entries.map((e): NavEntry => {
     if (typeof e === 'string') return e;
     if ('items' in e && Array.isArray(e.items)) return { ...e, text: convert(String(e.text)), items: convertNav(e.items as NavEntry[], convert) };
-    if ('link' in e && typeof e.link === 'string') return { ...e, ...(typeof e.text === 'string' ? { text: convert(e.text) } : {}) };
+    if ('link' in e && typeof e.link === 'string') return { ...e, link: traditionalNetworkLinks(e.link), ...(typeof e.text === 'string' ? { text: convert(e.text) } : {}) };
     return Object.fromEntries(
       Object.entries(e as Record<string, string | NavEntry[]>).map(([title, v]) => [convert(title), typeof v === 'string' ? v : convertNav(v, convert)]),
     );

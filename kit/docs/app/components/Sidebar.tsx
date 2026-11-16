@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { newTabProps, opensInNewTab } from '../../../components/projects.ts';
 import type { NavItem, SidebarData } from '../../shared/types';
 import { href } from '../data';
 import { KitLink } from './KitLink';
@@ -52,10 +53,10 @@ function Item({ item, path, depth, onNavigate, idPath, openAll }: ItemProps) {
   return (
     <li>
       {item.external ? (
-        <a className="kit-sb-link" href={item.link} target="_blank" rel="noopener">
+        <a className="kit-sb-link" href={item.link} {...newTabProps(item.link)}>
           <span>{item.text}</span>
           {/* a label that already ends in a link glyph ("Doxygen API 🔗") gets no second one */}
-          {LINK_GLYPH_END.test(item.text) ? null : <PixelIcon name="external" className="kit-sb-ext" />}
+          {LINK_GLYPH_END.test(item.text) || !opensInNewTab(item.link) ? null : <PixelIcon name="external" className="kit-sb-ext" />}
         </a>
       ) : (
         <KitLink className={current ? 'kit-sb-link is-active' : 'kit-sb-link'} href={href(item.link)} aria-current={current ? 'page' : undefined} onClick={onNavigate}>

@@ -1,4 +1,5 @@
 import { useId, useMemo, type ComponentType, type ReactNode } from 'react';
+import { newTabProps } from './projects.ts';
 import { preload } from 'react-dom';
 import { harborSunrise, lilyPond, type Scene, type Shape } from './paint';
 import type { LinkLikeProps } from './LocaleSwitcher';
@@ -149,7 +150,7 @@ export function PaintedHero({
                 const ext = a.external ?? isExternal(a.link);
                 const cls = a.theme === 'alt' ? 'mc-btn mc-btn-lg' : 'mc-btn mc-btn-primary mc-btn-lg';
                 return ext ? (
-                  <a key={a.text + a.link} className={cls} href={a.link} target="_blank" rel="noopener">
+                  <a key={a.text + a.link} className={cls} href={a.link} {...newTabProps(a.link)}>
                     {a.text}
                   </a>
                 ) : (

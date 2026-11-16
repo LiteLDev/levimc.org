@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
+import { newTabProps, opensInNewTab } from '../../../components/projects.ts';
 import type { NavItem, ResourceLink, RouteMeta } from '../../shared/types';
 import { href, site } from '../data';
 import { KitLink } from './KitLink';
@@ -18,9 +19,9 @@ function NavDropdown({ item, active, path }: { item: NavItem; active: boolean; p
       <div className="kit-menu-panel">
         {item.items!.map((c, i) =>
           c.external ? (
-            <a key={i} className="kit-menu-item" href={c.link} target="_blank" rel="noopener">
+            <a key={i} className="kit-menu-item" href={c.link} {...newTabProps(c.link!)}>
               <span>{c.text}</span>
-              <PixelIcon name="external" />
+              {opensInNewTab(c.link!) ? <PixelIcon name="external" /> : null}
             </a>
           ) : c.link !== undefined ? (
             <KitLink
@@ -242,7 +243,7 @@ function useNavFit(ref: RefObject<HTMLElement | null>, locale: string, active: n
 }
 
 function Resource({ r }: { r: ResourceLink }) {
-  const target = r.external ? { target: '_blank', rel: 'noopener' } : {};
+  const target = r.external ? newTabProps(r.link) : {};
   const url = r.external ? r.link : href(r.link);
   if (r.kind === 'github')
     return (
@@ -308,9 +309,9 @@ export function SiteHeader({ route, locale, t, onOpenSearch, onWarmSearch }: Sit
                       {it.items ? (
                         <NavDropdown item={it} active={active} path={route?.path} />
                       ) : it.external ? (
-                        <a className="kit-site-nav-link" href={it.link} target="_blank" rel="noopener">
+                        <a className="kit-site-nav-link" href={it.link} {...newTabProps(it.link!)}>
                           {it.text}
-                          <PixelIcon name="external" className="kit-site-nav-ext" />
+                          {opensInNewTab(it.link!) ? <PixelIcon name="external" className="kit-site-nav-ext" /> : null}
                         </a>
                       ) : it.link !== undefined ? (
                         <KitLink className={active ? 'kit-site-nav-link is-active' : 'kit-site-nav-link'} href={href(it.link)} aria-current={active ? 'true' : undefined}>

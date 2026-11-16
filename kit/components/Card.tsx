@@ -1,4 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
+import { newTabProps } from './projects.ts';
 import { PixelIcon, type PixelIconName } from './PixelIcon';
 import type { LinkLikeProps } from './LocaleSwitcher';
 
@@ -40,7 +41,7 @@ export function Card({ title, description, icon, eyebrow, href, external, footer
   const ext = external ?? /^https?:\/\//.test(href);
   if (ext)
     return (
-      <a className={cls} href={href} target="_blank" rel="noopener">
+      <a className={cls} href={href} {...newTabProps(href)}>
         {body}
       </a>
     );

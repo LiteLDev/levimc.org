@@ -1,6 +1,7 @@
 // Markdown → HTML at build time: unified/remark/rehype + Shiki. No markdown is parsed at runtime.
 
 import { unified } from 'unified';
+import { opensInNewTab } from '../../../components/projects.ts';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import remarkRehype from 'remark-rehype';
@@ -468,7 +469,7 @@ export async function renderMarkdown(source: string, o: RenderOptions): Promise<
         return;
       }
       node.properties.href = r.href;
-      if (r.external) {
+      if (r.external && opensInNewTab(r.href)) {
         node.properties.target = '_blank';
         node.properties.rel = ['noopener'];
       }
