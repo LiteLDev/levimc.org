@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.kit/
+# levimc-kit, copied from ../../kit by the package install (npm run kit)
+/kit/
+vite.config.ts.timestamp-*
+# downloaded from LiteLDev/BeDD by `npm run spec` (prebuild, predev)
+/public/bedd.asyncapi.yaml
