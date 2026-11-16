@@ -14,10 +14,6 @@ You do not need to install anything else first: no .NET, no Git, no Visual C++ r
 
 ## 1. Install lip
 
-::: warning lip 0.41 is in pre-release
-This tutorial uses lip 0.41 (the interface, the MSI installer, `lip setup` and `lip run`). Until 0.41.0 is final, the "latest release" is still 0.40: download the newest `v0.41.0-…` pre-release from [lip's releases](https://github.com/LiteLDev/lip/releases) instead.
-:::
-
 1. Open the [latest release of lip](https://github.com/LiteLDev/lip/releases/latest) and download `lip-<version>-win-x64.msi`. On a PC with an ARM processor, take `lip-<version>-win-arm64.msi`.
 2. Run the file. The installer asks for the folder to install `lip` in, `C:\Program Files\lip` unless you change it, and installs once you click **Install** and allow Windows to make changes. It adds that folder to the `PATH`.
 3. Open a **new** terminal window. A terminal that was open before does not know the new `PATH` yet.

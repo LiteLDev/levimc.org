@@ -44,7 +44,7 @@ const zh: typeof en = {
     allDownloads: "全部下载与国内镜像",
     browseMods: "浏览模组",
     hostDesc:
-      "在 Windows 10、11 或 Windows Server 上用 LeviLamina 运行基岩版专用服务器，每个模组和插件只需一条 lip 命令即可安装。",
+      "在 Windows、Linux 或 macOS 上用 LeviLamina 运行基岩版专用服务器，每个模组和插件只需一条 lip 命令即可安装。",
     setupGuide: "开服教程",
     findMods: "寻找服务器模组",
     getLip: "获取 lip",

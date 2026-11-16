@@ -14,10 +14,6 @@
 
 ## 1. 安装 lip
 
-::: warning lip 0.41 仍是预发布版
-本教程使用 lip 0.41（图形界面、MSI 安装包、`lip setup` 和 `lip run`）。在 0.41.0 正式发布之前，“最新发行版”仍是 0.40：请改从 [lip 的发行版列表](https://github.com/LiteLDev/lip/releases)下载最新的 `v0.41.0-…` 预发布版。
-:::
-
 1. 打开 [lip 的最新发行版](https://github.com/LiteLDev/lip/releases/latest)，下载 `lip-<version>-win-x64.msi`。电脑用的是 ARM 处理器的话，下载 `lip-<version>-win-arm64.msi`。
 2. 运行这个文件。安装程序会询问把 `lip` 装到哪个文件夹（默认是 `C:\Program Files\lip`），点击 **Install** 并允许 Windows 进行更改后开始安装，并把这个文件夹加入 `PATH`。
 3. 打开一个**新的**终端窗口。安装前就开着的终端还不知道新的 `PATH`。

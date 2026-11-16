@@ -44,7 +44,7 @@ const en = {
     allDownloads: "All downloads & mirrors",
     browseMods: "Browse mods",
     hostDesc:
-      "Run Bedrock Dedicated Server with LeviLamina on Windows 10, 11 or Windows Server, then add mods and plugins with one lip command each.",
+      "Run Bedrock Dedicated Server with LeviLamina on Windows, Linux or macOS, then add mods and plugins with one lip command each.",
     setupGuide: "Set up a server",
     findMods: "Find server mods",
     getLip: "Get lip",

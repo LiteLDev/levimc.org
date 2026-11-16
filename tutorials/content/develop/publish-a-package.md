@@ -11,7 +11,7 @@ It takes about half an hour, most of it waiting for the release build.
 - Git, signed in to GitHub so that you can push.
 
 ::: warning lip 0.41 needed
-The `lip pkg …` commands of this tutorial come with lip 0.41, a pre-release until its final version is out (lip 0.40 does not have them). Check with `lip -v`, and install the newest 0.41 from the [releases of lip](https://github.com/LiteLDev/lip/releases) if needed.
+The `lip pkg …` commands of this tutorial come with lip 0.41 (lip 0.40 does not have them). Check with `lip -v`, and install the [latest release of lip](https://github.com/LiteLDev/lip/releases/latest) if needed.
 :::
 
 A **package** is anything `lip` can install. Its **package id** is the address of its repository without `https://`: `github.com/<you>/my-mod`. A **version** is a Git tag `v` + the version, such as `v0.1.0`, at which `lip.toml` says the same version. There is no upload step: publishing is pushing that tag.

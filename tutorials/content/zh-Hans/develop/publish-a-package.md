@@ -11,7 +11,7 @@
 - 已登录 GitHub、可以推送的 Git。
 
 ::: warning 需要 lip 0.41
-本教程的 `lip pkg …` 命令随 lip 0.41 提供，在正式版发布前它还是预发布版本（lip 0.40 没有这些命令）。用 `lip -v` 检查版本，需要时从 [lip 的发布页](https://github.com/LiteLDev/lip/releases)安装最新的 0.41。
+本教程的 `lip pkg …` 命令随 lip 0.41 提供（lip 0.40 没有这些命令）。用 `lip -v` 检查版本，需要时从 [lip 的最新发行版](https://github.com/LiteLDev/lip/releases/latest)安装。
 :::
 
 **包**是 `lip` 能安装的任何东西。它的**包 ID** 是仓库地址去掉 `https://`：`github.com/<you>/my-mod`。一个**版本**就是一个名为 `v` 加版本号的 Git 标签，例如 `v0.1.0`，并且该标签处的 `lip.toml` 写着同样的版本。没有上传这一步：发布就是推送这个标签。

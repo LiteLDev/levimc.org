@@ -246,7 +246,7 @@ const MOVED: Record<string, Target> = {
   'cli/tui': 'reference/interface.html',
   'cli/configuration': 'reference/configuration.html',
   ...Object.fromEntries(COMMANDS.map((c) => [`cli/commands/${c}`, `reference/commands/${c}.html`])),
-  // Since lip v1: JSON-RPC, tooth.json → lip.toml, the command group pkg.
+  // Since lip 0.41: no JSON-RPC, tooth.json → lip.toml, the command group pkg.
   'rpc/overview': 'reference/cli.html',
   'rpc/json_rpc_spec': 'reference/cli.html',
   'cli/commands/rpc': 'reference/cli.html',

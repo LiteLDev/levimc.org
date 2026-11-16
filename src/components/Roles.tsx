@@ -243,7 +243,7 @@ function LauncherCard() {
   );
 }
 
-const SERVER_COMMANDS = ['lip install github.com/LiteLDev/LeviLamina', 'lip install github.com/LiteLDev/LeviAntiCheat', './bedrock_server_mod.exe'];
+const SERVER_COMMANDS = ['lip install LeviLamina', 'lip install LeviAntiCheat', 'lip run'];
 
 function TerminalCard() {
   const { t } = useI18n();
