@@ -310,6 +310,23 @@ test('redirect: no preference → the first matching browser language; kit 1.0 p
   const root = at('/LeviLauncher/', { storage: { 'levimc-locale-LeviLauncher': 'root' }, languages: ['zh-CN'] });
   assert.equal(root.replaced, null, 'a stored "root" (English) choice keeps the root');
 });
+test('redirect (localeFirst, kit 2.23): the root goes to /<lang>/<base>, a referrer on any of its roots is in-site', () => {
+  const lf = localeRedirectScript({
+    ...SITE,
+    localeFirst: true,
+    locales: [
+      { code: 'en', lang: 'en', prefix: '' },
+      { code: 'zh-Hans', lang: 'zh-Hans', prefix: 'zh-Hans/' },
+      { code: 'ja', lang: 'ja', prefix: 'ja/' },
+    ],
+  });
+  const at2 = (path, o = {}) => run(lf, browserEnv({ url: 'https://levimc.org' + path, ...o }));
+  assert.equal(at2('/LeviLauncher/', { cookies: pref('zh-CN') }).replaced, '/zh-Hans/LeviLauncher/');
+  assert.equal(at2('/LeviLauncher/', { languages: ['ja-JP'] }).replaced, '/ja/LeviLauncher/');
+  assert.equal(at2('/zh-Hans/LeviLauncher/', { cookies: pref('ja') }).replaced, null, 'a locale root is an explicit locale URL');
+  assert.equal(at2('/LeviLauncher/', { languages: ['ja'], referrer: 'https://levimc.org/ja/LeviLauncher/guide/' }).replaced, null);
+  assert.equal(at2('/LeviLauncher/', { languages: ['ja'], referrer: 'https://levimc.org/ja/' }).replaced, '/ja/LeviLauncher/');
+});
 
 test('version: VERSION file, components/version.ts and the static runtime agree', () => {
   const v = readFileSync(new URL('../VERSION', import.meta.url), 'utf8').trim();

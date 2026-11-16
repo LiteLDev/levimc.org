@@ -80,7 +80,7 @@ Node.js 25 及更新版本不再自带 corepack：用 `npm install -g corepack` 
 3. 启动服务器，等待 `Server started.`。记下服务器启动时输出的游戏版本，例如 `1.26.60`：机器人需要它。
 
 ::: warning 离线服务器请保持私有
-`online-mode=false` 时，任何人都能以任意名字加入。请把这样的服务器留在自己的网络中，或者保持 `online-mode=true`，并给机器人一个 Microsoft 账号（`auth: 'microsoft'`，见 [API](https://levimc.org/bedboo/zh-Hans/reference/api.html)）。
+`online-mode=false` 时，任何人都能以任意名字加入。请把这样的服务器留在自己的网络中，或者保持 `online-mode=true`，并给机器人一个 Microsoft 账号（`auth: 'microsoft'`，见 [API](https://levimc.org/zh-Hans/bedboo/reference/api.html)）。
 :::
 
 `Server started.` 之后紧跟的 `TRANSPORT TYPE ERROR … not set to NetherNet` 一段是无害的：BDS 只是提醒原版客户端将来可能需要 NetherNet，RakNet 客户端可以正常连接。
@@ -173,11 +173,11 @@ node packages/my-bot/index.js 127.0.0.1 19132 1.26.60
 
 ## 下一步
 
-- 基岩版上的其他 mineflayer 插件：pvp、采集方块等：[生态插件](https://levimc.org/bedboo/zh-Hans/guide/plugins.html)。
-- `createBot` 的所有选项和基岩版扩展，包括 NetherNet 和 Microsoft 账号：[API](https://levimc.org/bedboo/zh-Hans/reference/api.html)。
-- 与 Java 版机器人的不同之处：[Bedrock 差异](https://levimc.org/bedboo/zh-Hans/reference/differences/)。
-- 支持的服务器版本：[支持的版本](https://levimc.org/bedboo/zh-Hans/reference/versions/)。
-- 一个现成的生存模式机器人：[生存智能体](https://levimc.org/bedboo/zh-Hans/guide/agent.html)。
-- BDS 对机器人的行为：[BDS 备忘](https://levimc.org/bedboo/zh-Hans/reference/bds.html)。
+- 基岩版上的其他 mineflayer 插件：pvp、采集方块等：[生态插件](https://levimc.org/zh-Hans/bedboo/guide/plugins.html)。
+- `createBot` 的所有选项和基岩版扩展，包括 NetherNet 和 Microsoft 账号：[API](https://levimc.org/zh-Hans/bedboo/reference/api.html)。
+- 与 Java 版机器人的不同之处：[Bedrock 差异](https://levimc.org/zh-Hans/bedboo/reference/differences/)。
+- 支持的服务器版本：[支持的版本](https://levimc.org/zh-Hans/bedboo/reference/versions/)。
+- 一个现成的生存模式机器人：[生存智能体](https://levimc.org/zh-Hans/bedboo/guide/agent.html)。
+- BDS 对机器人的行为：[BDS 备忘](https://levimc.org/zh-Hans/bedboo/reference/bds.html)。
 - 驱动真实的游戏客户端，而不是协议机器人：[用 Be.D.D. 驱动游戏客户端](bedd.md)。
-- bedboo 是什么、如何构建：[bedboo](https://levimc.org/bedboo/zh-Hans/)。
+- bedboo 是什么、如何构建：[bedboo](https://levimc.org/zh-Hans/bedboo/)。

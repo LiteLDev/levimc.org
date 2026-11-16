@@ -22,10 +22,11 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      kit-changed: ${{ steps.kit.outputs.changed }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          # full history for the docs' "Last updated" dates (tutorials/, docs/<Project>/)
+          fetch-depth: 0
 
       - uses: actions/setup-node@v7
         with:
@@ -34,18 +35,14 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             tutorials/package-lock.json
+            docs/*/package-lock.json
 
       - run: npm ci
 
-      # levimc-kit lives here (kit/) and is published with the site at https://levimc.org/kit/v2/, where every
-      # other LeviMC site fetches it when it builds. --stamp puts the kit's build hash into this site's pages too.
-      - id: kit
-        run: |
-          node kit/scripts/publish-kit.mjs .kit/publish --stamp
-          new=$(jq -r .build .kit/publish/v2/manifest.json)
-          old=$(curl -fsSL https://levimc.org/kit/v2/manifest.json | jq -r .build || echo none)
-          echo "kit build: $old → $new"
-          echo "changed=$([ "$new" != "$old" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      # levimc-kit lives here (kit/) and is published with the site at https://levimc.org/kit/v2/ (for sites built
+      # elsewhere; every LeviMC docs site is built below, with this checkout's kit). --stamp puts the kit's build hash
+      # into this site's pages too.
+      - run: node kit/scripts/publish-kit.mjs .kit/publish --stamp
 
       - run: npm run typecheck
 
@@ -95,17 +92,38 @@ jobs:
           mkdir -p dist/api/v4/mc/versions
           cp versions/versions.json dist/api/v4/mc/versions/index.json
 
-      # The tutorials (/tutorials/): a docs build of tutorials/ with this checkout's kit (its install vendors ../kit).
-      - working-directory: tutorials
-        run: |
-          npm ci
-          npm run typecheck
-          npm run build
-          npm run linkcheck
+      # The docs (docs/README.md): the tutorials (tutorials/) and every project's docs root (docs/<Project>/), each a
+      # docs build with this checkout's kit (its install vendors it). Per root: npm ci, typecheck, build (with the
+      # root's prebuild / postbuild scripts), linkcheck.
+      - run: node scripts/docs-sites.mjs build
 
-      - run: |
-          test ! -e dist/tutorials
-          cp -r tutorials/dist dist/tutorials
+      # LeviLamina's API reference (/LeviLamina/api/), once docs/LeviLamina/ has its Doxyfile: Doxygen over the
+      # headers of LiteLDev/LeviLamina (checked out into docs/LeviLamina/.levilamina/), run in docs/LeviLamina/ and
+      # written into its dist/LeviLamina/api/, with the docs' header (sections, resources, languages: from the build's
+      # dist/LeviLamina/_kit/nav.json) and the kit's footer. See docs/README.md, "LeviLamina API reference".
+      - if: hashFiles('docs/LeviLamina/api/Doxyfile') != ''
+        uses: actions/checkout@v7
+        with:
+          repository: LiteLDev/LeviLamina
+          path: docs/LeviLamina/.levilamina
+
+      - if: hashFiles('docs/LeviLamina/api/Doxyfile') != ''
+        working-directory: docs/LeviLamina
+        run: |
+          node kit/static/doxygen/gen-header.mjs --nav dist/LeviLamina/_kit/nav.json --out api/header.html
+          git clone --depth 1 --branch v2.4.1 https://github.com/jothepro/doxygen-awesome-css.git api/doxygen-awesome-css
+          wget -qO "$RUNNER_TEMP/doxygen.tar.gz" https://www.doxygen.nl/files/doxygen-1.16.1.linux.bin.tar.gz
+          tar -xzf "$RUNNER_TEMP/doxygen.tar.gz" -C "$RUNNER_TEMP"
+          sudo cp -r "$RUNNER_TEMP"/doxygen-*/bin/* /usr/local/bin/
+          doxygen --version
+          mkdir -p dist/LeviLamina/api
+          doxygen api/Doxyfile
+          # the tree renders a window of its long lists (the Class List) and leaves the page layout to the kit
+          node kit/static/doxygen/patch-navtree.mjs dist/LeviLamina/api
+
+      # Each docs build mirrors the host root (dist/tutorials/, dist/zh-Hans/tutorials/ …): merged into the site as it
+      # is, without its 404.html (the site's own forwards and shows the 404); a file both publish fails the build.
+      - run: node scripts/docs-sites.mjs merge dist
 
       # Internal links, redirect-needing links and #anchors (GitHub Pages semantics).
       - run: npm run linkcheck
@@ -125,32 +143,3 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
-
-  # A new kit is live: rebuild every other LeviMC site now, so the change reaches them within minutes. Needs the
-  # KIT_SYNC_TOKEN secret (a fine-grained token with "Actions: read and write" on the repositories below);
-  # without it, each site still picks the new kit up with its hourly check.
-  sync:
-    needs: [build, deploy]
-    if: needs.build.outputs.kit-changed == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - env:
-          GH_TOKEN: ${{ secrets.KIT_SYNC_TOKEN }}
-        run: |
-          if [ -z "$GH_TOKEN" ]; then
-            echo "::notice::KIT_SYNC_TOKEN is not set: the sites rebuild with the new kit at their next hourly check"
-            exit 0
-          fi
-          status=0
-          while read -r repo workflow; do
-            echo "→ $repo ($workflow)"
-            gh workflow run "$workflow" -R "LiteLDev/$repo" || status=1
-          done <<'EOF'
-          LeviLamina build-docs.yml
-          LegacyScriptEngine build_docs.yml
-          lip build-docs.yml
-          LeviLauncher docs.yml
-          BeDD docs.yml
-          bedboo docs.yml
-          EOF
-          exit $status

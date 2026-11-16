@@ -16,7 +16,8 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { uiStrings } from '../kit/components/i18n.ts';
 import { KIT_GENERATOR } from '../kit/components/version.ts';
-import { MOVED_SITES, ORIGIN, PROJECT_SITES } from './redirects.mjs';
+import { LANGUAGE_SEGMENTS, MOVED_SITES, OLD_LANGUAGE_SEGMENTS, ORIGIN, PROJECT_SITES, builtSites } from './redirects.mjs';
+import { NETWORK_LANGUAGE_SEGMENTS, PROJECTS } from '../kit/components/projects.ts';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const KIT_STATIC = join(repo, 'kit', 'static');
@@ -63,12 +64,16 @@ export function legacyHash(hash, mode) {
 
 /**
  * Where dist/404.html forwards a request, or null to show the 404 page: old URLs of a moved site go to the
- * new page (or the locale home); wrongly cased project paths (/levilamina/x) go to the project
- * (/LeviLamina/x), because project sites are case-sensitive on GitHub Pages.
+ * new page (or the locale home); wrongly cased project paths (/levilamina/x, /zh-Hans/levilamina/x) go to the
+ * project (/LeviLamina/x, /zh-Hans/LeviLamina/x), because paths are case-sensitive on GitHub Pages. The language
+ * moved first (kit 2.23): an old /<Site>/<lang>/… URL of a site built here that has no redirect page goes to
+ * /<lang>/<Site>/… (`b`, the sites built here; `l`, old segment → new); a language-first URL of a project still
+ * published by its own repository goes to where that repository publishes it (`r`: project → { new → its segment };
+ * `u`: the paths without languages, e.g. LeviLamina's api/).
  * @param {string} pathname location.pathname (percent-encoded)
  * @param {string} search location.search
  * @param {string} hash location.hash
- * @param {{ o: string, m: { f: string, t: string, p: Record<string, [string, 0 | 1 | Record<string, string>]>, d: [string, string][] }[], c: string[] }} D
+ * @param {{ o: string, m: { f: string, t: string, p: Record<string, [string, 0 | 1 | Record<string, string>]>, d: [string, string][] }[], c: string[], n: string[], b: string[], l: Record<string, string>, u: Record<string, string[]>, r: Record<string, Record<string, string>> }} D
  */
 export function legacyForward(pathname, search, hash, D) {
   var path = pathname;
@@ -89,10 +94,24 @@ export function legacyForward(pathname, search, hash, D) {
     }
   }
   var parts = pathname.split('/');
-  var first = path.split('/')[1] || '';
+  var segs = path.split('/');
+  var lang = D.n.indexOf(segs[1]) >= 0 ? segs[1] : '';
+  var n = lang ? 1 : 0;
+  var first = segs[1 + n] || '';
   for (var k = 0; k < D.c.length; k++) {
     var name = D.c[k];
-    if (first !== name && first.toLowerCase() === name.toLowerCase()) return D.o + '/' + name + '/' + parts.slice(2).join('/') + search + hash;
+    if (first !== name && first.toLowerCase() === name.toLowerCase()) return D.o + '/' + (lang ? lang + '/' : '') + name + '/' + parts.slice(2 + n).join('/') + search + hash;
+  }
+  if (!lang && D.b.indexOf(first) >= 0 && segs.length > 2) {
+    var old = (segs[2] || '').toLowerCase();
+    if (Object.prototype.hasOwnProperty.call(D.l, old)) return D.o + '/' + D.l[old] + '/' + first + '/' + parts.slice(3).join('/') + search + hash;
+  }
+  if (lang && D.c.indexOf(first) >= 0 && D.b.indexOf(first) < 0) {
+    var rest = parts.slice(3).join('/');
+    var u = Object.prototype.hasOwnProperty.call(D.u, first) ? D.u[first] : [];
+    for (var x = 0; x < u.length; x++) if ((rest + '/').indexOf(u[x]) === 0) return D.o + '/' + first + '/' + rest + search + hash;
+    var own = Object.prototype.hasOwnProperty.call(D.r, first) && Object.prototype.hasOwnProperty.call(D.r[first], lang) ? D.r[first][lang] : lang;
+    return D.o + '/' + first + '/' + own + '/' + rest + search + hash;
   }
   return null;
 }
@@ -111,8 +130,12 @@ export function hashMode(hash) {
   return renames;
 }
 
-/** The compact table legacyForward() reads. */
-export function forwardTable() {
+/**
+ * The compact table legacyForward() reads. `built`: the sites whose pages this build has (default: from the
+ * repository, redirects.mjs builtSites).
+ */
+export function forwardTable({ built = builtSites(repo) } = {}) {
+  const projects = new Set(PROJECT_SITES);
   return {
     o: ORIGIN,
     m: MOVED_SITES.map((s) => {
@@ -122,6 +145,11 @@ export function forwardTable() {
       return { f: s.from.toLowerCase(), t: s.to, p, d: (s.fallbacks ?? [['', '']]).map(([from, to]) => [legacyKey(from), to]) };
     }),
     c: PROJECT_SITES,
+    n: [...NETWORK_LANGUAGE_SEGMENTS],
+    b: built,
+    l: OLD_LANGUAGE_SEGMENTS,
+    u: Object.fromEntries(PROJECTS.filter((p) => p.docsUnlocalized?.length).map((p) => [p.id, p.docsUnlocalized])),
+    r: Object.fromEntries(Object.entries(LANGUAGE_SEGMENTS).filter(([p]) => projects.has(p) && !built.includes(p))),
   };
 }
 
@@ -154,8 +182,8 @@ export function globalBar(locale, currentProject) {
   html = html.replace('<summary class="kit-gbar-link">', '<summary class="kit-gbar-link" aria-current="page">');
   html = html.replace('<summary class="kit-gbar-more-link">', '<summary class="kit-gbar-more-link" aria-current="page">');
   if (currentProject) {
-    // the project's docs, in the bar's language since kit 2.22.2 (…/LeviLauncher/zh-Hans/)
-    const item = new RegExp(`<a class="kit-proj-main" href="(${ORIGIN}/${currentProject}/(?:[A-Za-z]{2}(?:-[A-Za-z]{2,4})?/)?)">`, 'g');
+    // the project's docs, in the bar's language since kit 2.22.2 (…/zh-Hans/LeviLauncher/ since kit 2.23)
+    const item = new RegExp(`<a class="kit-proj-main" href="(${ORIGIN}/(?:[A-Za-z]{2}(?:-[A-Za-z]{2,4})?/)?${currentProject}/)">`, 'g');
     html = html.replace(item, '<a class="kit-proj-main" href="$1" aria-current="page">');
   }
   return html;
@@ -274,7 +302,7 @@ function stubPage(site, [, to, lang, pageTitle, hash], notFound) {
   html = replaceOnce(html, '<html lang="en">', `<html lang="${esc(lang)}">`, '<html lang="en">');
   html = replaceOnce(html, /<title>[^<]*<\/title>/, `<title>${esc(t.title(pageTitle))}</title>`, '<title>');
   html = replaceOnce(html, /\n\s*<meta name="robots" content="noindex">/, '', 'robots meta');
-  html = replaceOnce(html, globalBar('en'), globalBar(lang, site.to.replace(/\//g, '')), 'GlobalBar');
+  html = replaceOnce(html, globalBar('en'), globalBar(lang, site.project ?? site.to.replace(/\//g, '')), 'GlobalBar');
   html = replaceOnce(html, footer('en'), footer(lang), 'footer');
   html = replaceOnce(html, /<main id="kit-main"[^>]*>[\s\S]*?<\/main>/, main, '<main>');
   return hoistIntoHead(skipLink(html, lang), [

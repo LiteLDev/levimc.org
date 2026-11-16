@@ -97,15 +97,19 @@ export default defineDocsConfig({
   editLink: 'https://github.com/LiteLDev/lip/edit/main/docs/:path',
   hostname: 'https://levimc.org',
   sitemap: { hostname: 'https://levimc.org' },
+  // the language first (kit 2.23): /zh-Hans/lip/x.html; lip's /lip/zh/x.html and /lip/zh-Hans/x.html redirect there
   i18n: {
     mode: 'folder',
     defaultLocale: 'root',
+    localeFirst: true,
     locales: [
       { code: 'root', label: 'English', lang: 'en', prefix: '' },
-      { code: 'zh', label: '简体中文', lang: 'zh-Hans', prefix: 'zh-Hans/', folder: 'zh', formerPrefixes: ['zh/'] },
-      { code: 'zh-Hant', label: '繁體中文', lang: 'zh-Hant', prefix: 'zh-Hant/', convertFrom: 'zh' },
+      { code: 'zh', label: '简体中文', lang: 'zh-Hans', prefix: 'zh-Hans/', folder: 'zh', formerPrefixes: ['zh-Hans/', 'zh/'] },
+      { code: 'zh-Hant', label: '繁體中文', lang: 'zh-Hant', prefix: 'zh-Hant/', convertFrom: 'zh', formerPrefixes: ['zh-Hant/'] },
     ],
   },
+  // a moved page in each language: with localeFirst the localized one also answers at /zh-Hans/lip/intro/install.html
+  redirects: { 'intro/install': 'intro/installation.html', 'zh-Hans/intro/install': 'zh-Hans/intro/installation.html' },
   urlStyle: 'html',
   cleanUrls: false,
   slug: 'vitepress',

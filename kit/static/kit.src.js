@@ -13,6 +13,8 @@
   var NAMES = /*__NAMES__*/ {};
   // the projects' docs: base, extra languages (base language → segment), paths without languages
   var NET = /*__NETWORK__*/ [];
+  // the first path segments that name a language (components/projects.ts NETWORK_LANGUAGE_SEGMENTS)
+  var NETLANGS = /*__NETLANGS__*/ ['zh-Hans', 'zh-Hant'];
   var root = document.documentElement;
   var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
   var doxygen = root.classList.contains('dark-mode') || root.classList.contains('light-mode') || root.hasAttribute('data-kit-doxygen');
@@ -202,24 +204,29 @@
     });
     if (siteFit) siteFit();
   }
-  // levimc.org links of the bar, the footer and the drawer's LeviMC list in the reader's language (kit 2.22.2, the
-  // same rule as components/projects.ts localizeNetworkUrl): without it the target's root would redirect (a flash)
+  // levimc.org links of the bar, the footer and the drawer's LeviMC list in the reader's language (kit 2.22.2; the
+  // language FIRST since kit 2.23: /zh-Hans/about/, /zh-Hans/lip/, /ja/LeviLauncher/ — the same rule as
+  // components/projects.ts localizeNetworkUrl): without it the target's root would redirect (a flash)
   var ORIGIN = 'https://levimc.org';
+  var LANGSEG = new RegExp('^(?:' + NETLANGS.join('|') + '|zh|[a-z]{2}-[A-Z]{2})(?:/|$)');
   function localizeUrl(url, lang) {
     if (!lang) return url;
     var abs = url.indexOf(ORIGIN + '/') === 0;
     var path = abs ? url.slice(ORIGIN.length) : url;
     if (path.charAt(0) !== '/' || path.charAt(1) === '/') return url;
+    if (LANGSEG.test(path.slice(1))) return url;
     var tag = String(lang).toLowerCase().replace(/_/g, '-');
     var prim = tag.split('-')[0];
     var proj = null;
     for (var i = 0; i < NET.length; i++) if (path.indexOf(NET[i].b) === 0) proj = NET[i];
-    var base = proj ? proj.b : path.indexOf('/mods/') === 0 ? '/mods/' : path.indexOf('/tutorials/') === 0 ? '/tutorials/' : '/';
-    var rest = path.slice(base.length);
-    if (/^(?:zh-Hans|zh-Hant|zh|[a-z]{2}-[A-Z]{2})(?:\/|$)/.test(rest)) return url;
-    if (proj) for (var u = 0; u < proj.u.length; u++) if (rest.indexOf(proj.u[u]) === 0) return url;
+    var base = proj ? proj.b : path.indexOf('/mods/') === 0 ? '/mods/' : path.indexOf('/tutorials/') === 0 ? '/tutorials/' : '';
+    if (base) {
+      var rest = path.slice(base.length);
+      if (LANGSEG.test(rest)) return url;
+      if (proj) for (var u = 0; u < proj.u.length; u++) if (rest.indexOf(proj.u[u]) === 0) return url;
+    }
     var seg = prim === 'zh' ? (/^zh-(tw|hk|mo|hant)\b/.test(tag) ? 'zh-Hant' : 'zh-Hans') : proj ? proj.l[prim] : null;
-    return seg ? (abs ? ORIGIN : '') + base + seg + '/' + rest : url;
+    return seg ? (abs ? ORIGIN : '') + '/' + seg + path : url;
   }
   function localizeNetwork(lang) {
     each('[data-kit-globalbar] a[href], [data-kit-footer] a[href], .kit-drawer-network a[href]', function (a) {

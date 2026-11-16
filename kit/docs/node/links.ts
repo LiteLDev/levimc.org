@@ -8,6 +8,7 @@ import { basename, extname, join, posix } from 'node:path';
 import type { ResolvedConfig } from './config.ts';
 import type { ContentScan, PageRoute, SourceFile } from './content.ts';
 import type { LinkResolution } from './markdown/render.ts';
+import { pathUrl, siteRoots, sitePath, stripBase } from '../shared/routing.ts';
 
 export interface AssetRef {
   /** Absolute source path. */
@@ -85,10 +86,11 @@ export function findSource(ctx: Pick<LinkContext, 'cfg' | 'scan'>, p: string): {
 export function createLinkResolver(ctx: LinkContext, page: PageRoute) {
   const { cfg, scan } = ctx;
   const origin = cfg.hostname;
-  const ownPrefix = origin ? origin + cfg.base : null;
+  // the URLs this site's pages are served under (base; with localeFirst also /zh-Hans/<base> …)
+  const ownPrefixes = origin ? siteRoots(cfg).map((r) => origin + r) : [];
   const curDir = posix.dirname(page.source.rel);
 
-  const routeUrl = (r: PageRoute) => cfg.base + r.path;
+  const routeUrl = (r: PageRoute) => pathUrl(cfg, r.path);
 
   const resolveContentPath = (contentPath: string, kind: 'a' | 'img'): { url: string; route?: PageRoute; file?: string } | null => {
     const p = posix.normalize(contentPath || '.').replace(/^\.$/, '');
@@ -107,7 +109,14 @@ export function createLinkResolver(ctx: LinkContext, page: PageRoute) {
         return { url: routeUrl(r), route: r };
       }
       // a canonical route path written directly (e.g. '/zh-CN/guide/x' in folder mode, or 'a/b/')
-      const direct = scan.byPath.get(p) ?? scan.byPath.get(p + '/') ?? scan.byPath.get(p.replace(/\/index\.html$/, '/')) ?? scan.byPath.get(p.replace(/\.html$/, ''));
+      const byPath = (q: string) => scan.byPath.get(q) ?? scan.byPath.get(q + '/') ?? scan.byPath.get(q.replace(/\/index\.html$/, '/')) ?? scan.byPath.get(q.replace(/\.html$/, ''));
+      let direct = byPath(p);
+      // … or under a locale's former prefix ('/zh/x' after the move to zh-Hans/): the page's URL now
+      for (const loc of cfg.locales) {
+        if (direct) break;
+        const former = loc.formerPrefixes.find((f) => f !== loc.prefix && p.startsWith(f));
+        if (former) direct = byPath(loc.prefix + p.slice(former.length));
+      }
       if (direct) return { url: routeUrl(direct), route: direct };
     }
     // static asset: content dir (MkDocs) or public dir (VitePress)
@@ -135,10 +144,12 @@ export function createLinkResolver(ctx: LinkContext, page: PageRoute) {
     if (!raw) return null;
     let h = raw;
     // own-site absolute URL → treat as root-absolute internal link
-    if (ownPrefix && h.toLowerCase().startsWith(ownPrefix.toLowerCase())) {
-      h = '/' + h.slice(ownPrefix.length).replace(/^\/*/, '');
-      const { path, query, hash } = splitHref(h.slice(1));
-      const res = resolveContentPath(safeDecode(path), kind);
+    const ownPrefix = ownPrefixes.find((o) => h.toLowerCase().startsWith(o.toLowerCase()));
+    if (ownPrefix && origin) {
+      const { path, query, hash } = splitHref(h.slice(origin.length));
+      // with localeFirst also the URLs before it, the language after base ('/<base>/zh-Hans/x': still that page)
+      const rel = sitePath(cfg, path) ?? stripBase(path, cfg.base);
+      const res = rel === null ? null : resolveContentPath(safeDecode(rel), kind);
       if (res) return { href: res.url + query + hash, file: res.file, target: res.route && hash ? { route: res.route.id, anchor: safeDecode(hash.slice(1)) } : undefined };
       return { href: raw, external: true };
     }
@@ -149,7 +160,9 @@ export function createLinkResolver(ctx: LinkContext, page: PageRoute) {
     let contentPath: string;
     if (path.startsWith('/')) {
       // root-absolute: '/LeviLamina/x' (with base) or '/guide/x' (VitePress, relative to srcDir)
-      contentPath = path.startsWith(cfg.base) ? path.slice(cfg.base.length) : path.slice(1);
+      // (with localeFirst also '/zh-Hans/LeviLamina/x')
+      // (localeFirst: '/zh-Hans/LeviLamina/x', or the URL before it, '/LeviLamina/zh-Hans/x', which resolves the same)
+      contentPath = sitePath(cfg, path) ?? stripBase(path, cfg.base) ?? path.slice(1);
     } else if (path === '') {
       return { href: raw };
     } else {

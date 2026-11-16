@@ -1,7 +1,7 @@
 // Runtime access to the compiled site (virtual modules) + a small page cache compatible with React's use().
 import * as virtualSite from 'virtual:kit-docs/site';
 import type { PageData, RouteMeta, SiteData } from '../shared/types';
-import { createRouteMatcher, localeFromPath, stripBase } from '../shared/routing';
+import { createRouteMatcher, localeFromPath, pathUrl, sitePath } from '../shared/routing';
 import { uiStrings, type UiStrings } from '../../components/i18n';
 
 export const site = virtualSite.site as SiteData;
@@ -10,8 +10,14 @@ const pages = virtualSite.pages as Record<string, () => Promise<{ default: PageD
 
 const matcher = createRouteMatcher(routes);
 
+/**
+ * The router's basename: base, or '/' when the locales' pages are outside it (localeFirst: /zh-Hans/<base>…), the
+ * router then sees full pathnames.
+ */
+export const routerBase = site.localeFirst ? '/' : site.base;
+
 export function matchPathname(pathname: string): RouteMeta | undefined {
-  return matcher(stripBase(pathname, site.base));
+  return matcher(sitePath(site, pathname));
 }
 
 /** Router-relative path (react-router basename = base without trailing slash). */
@@ -20,7 +26,12 @@ export function relFromRouter(pathname: string): string {
 }
 
 export function localeOf(pathname: string): string {
-  return localeFromPath(site, stripBase(pathname, site.base) ?? relFromRouter(pathname));
+  return localeFromPath(site, sitePath(site, pathname) ?? (site.localeFirst ? null : relFromRouter(pathname)));
+}
+
+/** The full pathname of a router location (react-router strips the basename). */
+export function fullPathname(routerPath: string): string {
+  return routerBase + routerPath.replace(/^\//, '');
 }
 
 export function langOf(code: string): string {
@@ -31,9 +42,9 @@ export function stringsFor(code: string): UiStrings {
   return uiStrings(langOf(code), site.ui[code] as Partial<UiStrings> | undefined);
 }
 
-/** Absolute href (with base) for a route path. */
+/** Absolute href (with base, and the locale in front of it with localeFirst) for a route path. */
 export function href(path: string): string {
-  return site.base + path;
+  return pathUrl(site, path);
 }
 
 // ------------------------------------------------------------------------------------- page cache

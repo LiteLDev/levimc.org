@@ -5,7 +5,7 @@ export interface LocaleInfo {
   code: string;
   label: string;
   lang: string;
-  /** URL prefix relative to base: '' for the default locale, e.g. 'zh/' or 'zh-CN/'. */
+  /** URL prefix ('' for the default locale, e.g. 'zh/' or 'zh-Hans/'): after base, or before it with localeFirst. */
   prefix: string;
 }
 
@@ -112,6 +112,11 @@ export interface ResourceLink {
 
 export interface SiteData {
   base: string;
+  /**
+   * Locale prefixes go in front of base (kit 2.23, config `i18n.localeFirst`): 'zh-Hans/x/' is served at
+   * /zh-Hans/<base>x/. Route paths keep the prefix first either way; routing.ts pathUrl / sitePath map them.
+   */
+  localeFirst?: boolean;
   title: string;
   description: string;
   hostname?: string;

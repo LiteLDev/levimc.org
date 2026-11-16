@@ -10,10 +10,12 @@ export async function prerenderDocs({ root = process.cwd(), outDir } = {}) {
   const manifestPath = join(root, '.kit/client-pages.json');
   if (!existsSync(ssrEntry)) throw new Error(`SSR bundle not found at ${ssrEntry} — run the SSR build first.`);
   const mod = await import(pathToFileURL(ssrEntry).href);
-  const { site, routes, render } = mod;
-  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')); // { appHtml, outDir, pages: page id → chunk files }
+  const { site, routes, render, pageUrl } = mod;
+  // { appHtml, outDir, template, pages: page id → chunk files }; outDir is the host root with localeFirst (kit 2.23),
+  // template the client build's index.html relative to it (in base's folder)
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
   const out = outDir ?? manifest.outDir ?? join(root, 'dist');
-  const templatePath = join(out, manifest.appHtml);
+  const templatePath = join(out, manifest.template ?? manifest.appHtml);
   const template = readFileSync(templatePath, 'utf8');
   const escJson = (v) => JSON.stringify(v).replace(/</g, '\\u003c').replace(/[\u2028\u2029]/g, (c) => (c === '\u2028' ? '\\u2028' : '\\u2029'));
 
@@ -26,7 +28,7 @@ export async function prerenderDocs({ root = process.cwd(), outDir } = {}) {
 
   let count = 0;
   for (const route of routes) {
-    const r = await render(site.base + route.path);
+    const r = await render(pageUrl ? pageUrl(route.path) : site.base + route.path);
     // No modulepreload of the page's own chunk: hydration reuses the prerendered HTML and #kit-page-data
     // (entry-client primes the page cache), so that chunk is only fetched for client-side navigation (KitLink
     // warms it on hover/focus). Page chunks are plain data and import nothing the entry does not load already.

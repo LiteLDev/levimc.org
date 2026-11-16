@@ -12,10 +12,10 @@
     "kit": "node ../kit/scripts/vendor.mjs .",
     "dev": "vite",
     "build": "node kit/docs/build.mjs",
-    "preview": "node kit/scripts/serve-pages.mjs dist --base /tutorials/ --port 4177",
+    "preview": "node kit/scripts/serve-pages.mjs dist --base / --port 4177",
     "typecheck": "tsc --noEmit",
-    "linkcheck": "node kit/scripts/linkcheck.mjs dist --base /tutorials/ --site-origin https://levimc.org --other-sites /mods/,/LeviLamina/,/LegacyScriptEngine/,/lip/,/LeviLauncher/,/BeDD/,/bedboo/",
-    "smoke": "node kit/scripts/smoke.mjs --url http://127.0.0.1:4177/tutorials/"
+    "linkcheck": "node kit/scripts/linkcheck.mjs dist --base /tutorials/ --locale-first zh-Hans,zh-Hant --site-origin https://levimc.org",
+    "smoke": "node kit/scripts/smoke.mjs --url http://127.0.0.1:4177/tutorials/ --current tutorials"
   },
   "dependencies": {
     "minisearch": "7.2.0",

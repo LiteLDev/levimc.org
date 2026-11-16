@@ -26,18 +26,20 @@ import {
 import { MOVED_SITES, ORIGIN, PROJECT_SITES } from './redirects.mjs';
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), '..');
-const D = forwardTable();
+// as before any project's docs are built here (docs/<Project>/): the deterministic table of the tests
+const D = forwardTable({ built: ['mods', 'tutorials'] });
 const fwd = (path, hash = '', search = '') => legacyForward(path, search, hash, D);
 const files = generate();
 const html = [...files].filter(([f]) => f.endsWith('.html'));
 // the Android native mod docs in LeviLamina's docs, and LeviLauncher's guide with the Android tab preselected
 // (formerly docs.levimc.org/LeviLaunchroid/, now levimc.org/LeviLaunchroid/)
 const L = `${ORIGIN}/LeviLamina/developer_guides/android/`;
-const LZ = `${ORIGIN}/LeviLamina/zh/developer_guides/android/`;
-const LH = `${ORIGIN}/LeviLamina/zh-Hant/developer_guides/android/`;
+// the language first (2026-11-16, MIGRATION.md)
+const LZ = `${ORIGIN}/zh-Hans/LeviLamina/developer_guides/android/`;
+const LH = `${ORIGIN}/zh-Hant/LeviLamina/developer_guides/android/`;
 const G = `${ORIGIN}/LeviLauncher/guide/`;
-const GZ = `${ORIGIN}/LeviLauncher/zh-CN/guide/`;
-const GH = `${ORIGIN}/LeviLauncher/zh-HK/guide/`;
+const GZ = `${ORIGIN}/zh-Hans/LeviLauncher/guide/`;
+const GH = `${ORIGIN}/zh-Hant/LeviLauncher/guide/`;
 const QS = '?platform=android';
 const LSE = `${ORIGIN}/LegacyScriptEngine/`;
 
@@ -133,7 +135,7 @@ test('404 forwarding: LeviLaunchroid user pages go to LeviLauncher\'s guide, dev
   assert.equal(fwd('/levilaunchroid/API/Mod-Menu'), `${L}api/mod_menu/`);
   assert.equal(fwd('/LeviLaunchroid/zh-CN/'), `${GZ}quick-start${QS}`);
   assert.equal(fwd('/LeviLaunchroid/zh-CN/api/types-and-macros'), `${LZ}api/types_and_macros/`);
-  // zh-Hant became LeviLauncher's zh-HK and LeviLamina's zh-Hant
+  // zh-Hant became LeviLauncher's and LeviLamina's zh-Hant
   assert.equal(fwd('/LeviLaunchroid/zh-Hant/'), `${GH}quick-start${QS}`);
   assert.equal(fwd('/LeviLaunchroid/zh-Hant/guide/build.html'), LH);
   assert.equal(fwd('/LeviLaunchroid/zh-Hant/api/patch'), `${LH}api/patch/`);
@@ -169,6 +171,34 @@ test('404 forwarding: wrongly cased project paths, nothing else', () => {
   assert.equal(fwd('/_kit/kit.css'), null);
   // levimc.org's own pages are never forwarded
   for (const p of ['/about/', '/blog/nope/', '/mods/x/', '/community/', '/kit/v2/x'] ) assert.equal(fwd(p), null, p);
+});
+
+test('404 forwarding: the language first (2026-11-16) — wrong case under a language, old language URLs, projects not built here yet', () => {
+  // wrong case keeps the language in front
+  assert.equal(fwd('/zh-Hans/levilamina/x/'), `${ORIGIN}/zh-Hans/LeviLamina/x/`);
+  assert.equal(fwd('/ja/levilauncher/guide/', '#a', '?q'), `${ORIGIN}/ja/LeviLauncher/guide/?q#a`);
+  // a project still published by its own repository: its language-first URLs go to where it publishes them
+  assert.equal(fwd('/zh-Hans/LeviLamina/user_guides/install/', '#x'), `${ORIGIN}/LeviLamina/zh-Hans/user_guides/install/#x`);
+  assert.equal(fwd('/zh-Hant/lip/intro.html'), `${ORIGIN}/lip/zh-Hant/intro.html`);
+  assert.equal(fwd('/ja/LeviLauncher/download'), `${ORIGIN}/LeviLauncher/ja-JP/download`);
+  assert.equal(fwd('/zh-Hans/LeviLauncher'), `${ORIGIN}/LeviLauncher/zh-Hans/`);
+  assert.equal(fwd('/zh-Hans/LeviLamina/api/classes.html'), `${ORIGIN}/LeviLamina/api/classes.html`, 'the API reference has no languages');
+  // the sites built here: an old language URL without a redirect page goes language first
+  assert.equal(fwd('/tutorials/zh-Hans/missing/'), `${ORIGIN}/zh-Hans/tutorials/missing/`);
+  assert.equal(fwd('/mods/zh-Hant/github.com/x/'), `${ORIGIN}/zh-Hant/mods/github.com/x/`);
+  assert.equal(fwd('/zh-Hans/tutorials/missing/'), null, 'no loop');
+  assert.equal(fwd('/zh-Hans/mods/missing/'), null);
+  assert.equal(fwd('/zh-Hans/nope/'), null);
+  // once a project's docs are built here, the other way round: its old URLs go language first, and never back
+  const built = forwardTable({ built: ['mods', 'tutorials', 'LeviLamina', 'LeviLauncher'] });
+  const f2 = (p) => legacyForward(p, '', '', built);
+  assert.equal(f2('/LeviLamina/zh/user_guides/install/'), `${ORIGIN}/zh-Hans/LeviLamina/user_guides/install/`);
+  assert.equal(f2('/LeviLamina/zh-Hant/x/'), `${ORIGIN}/zh-Hant/LeviLamina/x/`);
+  assert.equal(f2('/LeviLauncher/ja-JP/download'), `${ORIGIN}/ja/LeviLauncher/download`);
+  assert.equal(f2('/LeviLauncher/zh-HK/guide/x'), `${ORIGIN}/zh-Hant/LeviLauncher/guide/x`);
+  assert.equal(f2('/zh-Hans/LeviLamina/missing/'), null);
+  assert.equal(f2('/LeviLamina/api/missing.html'), null);
+  assert.equal(f2('/zh-Hans/lip/intro.html'), `${ORIGIN}/lip/zh-Hans/intro.html`, 'lip is not built here');
 });
 
 test('every old page and directory alias has a redirect page with canonical, meta refresh, location.replace and a visible link', () => {
@@ -264,9 +294,9 @@ test('every page: the kit chrome — skip link, no-JS dark theme, generator, foo
     assert.match(page, /<span>© <span data-kit-year="">\d{4}<\/span> LeviMC<\/span>/, f);
     // the GlobalBar: canonical tabs, Mods label, the blog on levimc.org, language + theme menus, GitHub
     const mods = { 'zh-CN': '模组', 'zh-HK': '模組' }[lang] ?? 'Mods';
-    // levimc.org links in the bar's language (kit 2.22.2): /mods/zh-Hans/, /zh-Hant/blog/
+    // levimc.org links in the bar's language (kit 2.22.2), the language first (kit 2.23): /zh-Hans/mods/, /zh-Hant/blog/
     const seg = { 'zh-CN': 'zh-Hans/', 'zh-HK': 'zh-Hant/' }[lang] ?? '';
-    assert.ok(page.includes(`<a class="kit-gbar-link" href="https://levimc.org/mods/${seg}"><span data-kit-t="mods">${mods}</span></a>`), `${f}: Mods tab`);
+    assert.ok(page.includes(`<a class="kit-gbar-link" href="https://levimc.org/${seg}mods/"><span data-kit-t="mods">${mods}</span></a>`), `${f}: Mods tab`);
     assert.ok(page.includes(`<a class="kit-gbar-link" href="https://levimc.org/${seg}blog/">`), `${f}: Blog tab`);
     assert.ok(!page.includes('blog.levimc.org'), `${f}: blog.levimc.org`);
     for (const hook of ['data-kit-locale-switcher', 'data-kit-theme-toggle', 'data-kit-theme-value="auto"', 'data-kit-lang-value="zh-HK"', 'kit-gbar-github'])

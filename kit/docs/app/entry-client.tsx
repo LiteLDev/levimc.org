@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { App } from './App';
-import { primePage, site } from './data';
+import { primePage, routerBase } from './data';
 import type { EmbeddedPageData } from '../shared/types';
 import './styles.css';
 import 'virtual:kit-docs/tokens.css';
@@ -19,7 +19,7 @@ if (embedded?.page) {
 
 const app = (
   <StrictMode>
-    <BrowserRouter basename={site.base}>
+    <BrowserRouter basename={routerBase}>
       <App />
     </BrowserRouter>
   </StrictMode>

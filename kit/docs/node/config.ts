@@ -32,10 +32,11 @@ export interface LocaleConfig {
    */
   convertFrom?: string;
   /**
-   * URL prefixes this locale was published under before (kit 2.21), e.g. `['zh/']` for a site moving its
-   * Simplified Chinese from /zh/ to `prefix: 'zh-Hans/'` (levimc.org's one scheme: /<base>/zh-Hans/, /<base>/zh-Hant/).
-   * Every page of the locale gets a redirect page at the same path under each former prefix. Keep `suffix` /
-   * `folder` as they were: the sources need not move.
+   * URL prefixes this locale was published under before (kit 2.21), relative to base, e.g. `['zh/']` for a site
+   * that moved its Simplified Chinese from /<base>/zh/ to `prefix: 'zh-Hans/'`. Every page of the locale gets a
+   * redirect page at the same path under each former prefix (query and #hash kept). Keep `suffix` / `folder` as
+   * they were: the sources need not move. With `i18n.localeFirst` (kit 2.23) the locale's own prefix may be listed
+   * too: `['zh-Hans/', 'zh/']` redirects /<base>/zh-Hans/x/ and /<base>/zh/x/ to /zh-Hans/<base>/x/.
    */
   formerPrefixes?: string[];
 }
@@ -107,6 +108,15 @@ export interface DocsConfig {
     locales: LocaleConfig[];
     /** Build default-locale content at localized URLs when a translation is missing. Default: true (suffix), false (folder). */
     fallback?: boolean;
+    /**
+     * The language first (kit 2.23, levimc.org's URL scheme): a locale's prefix goes in front of base, so the
+     * Simplified Chinese of base '/LeviLamina/' is at /zh-Hans/LeviLamina/ (page URL = '/' + prefix + base without
+     * its leading slash + page). The default locale stays at base; assets, search indexes and _kit/ stay under base.
+     * `outDir` then mirrors the host root (dist/LeviLamina/…, dist/zh-Hans/LeviLamina/…, dist/404.html) and is
+     * merged into levimc.org's dist as is. List the old prefixes in each locale's `formerPrefixes` to keep the
+     * old URLs alive. Default false: the prefix after base (/LeviLamina/zh-Hans/).
+     */
+    localeFirst?: boolean;
   };
   /** 'directory' (MkDocs: a/b.md → a/b/) or 'html' (VitePress: a/b.md → a/b.html). */
   urlStyle?: 'directory' | 'html';
@@ -220,7 +230,12 @@ export interface ResolvedConfig extends Omit<DocsConfig, 'i18n' | 'outline' | 'l
   root: string;
   contentRoot: string;
   publicRoot: string | null;
+  /** The output folder (config outDir): base's folder, or the host root with localeFirst. */
   outRoot: string;
+  /** The folder of base's own files (the client build: assets, search, _kit/, the default locale's pages). */
+  baseOutRoot: string;
+  /** See `i18n.localeFirst`. */
+  localeFirst: boolean;
   base: string;
   siteKey: string;
   project: string;
@@ -286,12 +301,16 @@ export function resolveConfig(config: DocsConfig, root: string): ResolvedConfig 
   const editLink = typeof config.editLink === 'string' ? { pattern: config.editLink } : config.editLink;
   const siteKey = base.replace(/^\/|\/$/g, '') || 'root';
   const compat = config.markdown?.compat ?? (urlStyle === 'directory' ? 'python-markdown' : 'commonmark');
+  const outRoot = resolve(root, config.outDir ?? 'dist');
+  const localeFirst = !!config.i18n?.localeFirst;
   return {
     ...config,
     root,
     contentRoot,
     publicRoot,
-    outRoot: resolve(root, config.outDir ?? 'dist'),
+    outRoot,
+    baseOutRoot: localeFirst ? join(outRoot, ...base.split('/').filter(Boolean)) : outRoot,
+    localeFirst,
     base,
     siteKey,
     project: config.project ?? siteKey,

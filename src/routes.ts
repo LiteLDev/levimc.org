@@ -7,7 +7,7 @@
 import type { Messages } from './i18n';
 import { DEFAULT_LOCALE, LOCALES, localeOfTag, splitLocale, withLocale, type Locale } from './i18n/config';
 import { BLOG_ROUTES, blog, resolveBlogPath, type BlogView } from './blog/data';
-import { MODS_PATH, OTHER_SITES, TUTORIALS_PATH } from './other-sites';
+import { MODS_PATH, OTHER_SITES, TUTORIALS_PATH, withoutLanguage } from './other-sites';
 import { localizeNetworkUrl } from '../kit/components/projects.ts';
 
 export const SITE_ORIGIN = 'https://levimc.org';
@@ -109,30 +109,28 @@ export function localizePath(path: string, locale: Locale): string {
   return withLocale(path, locale);
 }
 
-/** The builds with the same locale scheme (the locale segment follows their base): LeviMC Mods and the tutorials. */
+/** The builds with the same locales as this site (zh-Hans, zh-Hant): LeviMC Mods and the tutorials. */
 const LOCALIZED_SITES = [MODS_PATH, TUTORIALS_PATH];
 const PROJECT_PATHS = OTHER_SITES.filter((p) => !LOCALIZED_SITES.includes(p));
 const LOCALE_SEGMENT = new RegExp(`^(?:${LOCALES.filter((l) => l.prefix).map((l) => l.prefix.slice(0, -1)).join('|')})(?:/|$)`);
 
 /**
- * A link on levimc.org in `locale`: the site's own pages get the locale prefix (/about/ → /zh-Hans/about/), LeviMC Mods
- * and the tutorials theirs after their base (/mods/ → /mods/zh-Hans/); a link that names a locale already, the
- * projects' docs (always absolute) get theirs from the kit (localizeNetworkUrl); other origins stay as they are. Other levimc.org URLs come
- * back root-relative.
+ * A link on levimc.org in `locale`. The language is the first segment of every levimc.org URL (2026-11-16): the
+ * site's own pages, LeviMC Mods and the tutorials get the locale prefix (/about/ → /zh-Hans/about/, /mods/ →
+ * /zh-Hans/mods/); a link that names a locale already (first, or after the base as the URLs did before) stays; the
+ * projects' docs (always absolute) get theirs from the kit (localizeNetworkUrl); other origins stay as they are.
+ * Other levimc.org URLs come back root-relative.
  */
 export function localizeHref(href: string, locale: Locale): string {
   const path = href.startsWith(SITE_ORIGIN + '/') ? href.slice(SITE_ORIGIN.length) : href;
   if (!path.startsWith('/') || path.startsWith('//')) return href;
   // the projects' docs: their canonical absolute URL, in the page's language (kit localizeNetworkUrl: their root would
   // redirect otherwise)
-  if (PROJECT_PATHS.some((p) => path.startsWith(p))) return localizeNetworkUrl(SITE_ORIGIN + path, locale);
+  if (PROJECT_PATHS.some((p) => withoutLanguage(path).startsWith(p))) return localizeNetworkUrl(SITE_ORIGIN + path, locale);
   if (locale === DEFAULT_LOCALE) return path;
-  const site = LOCALIZED_SITES.find((p) => path.startsWith(p));
-  if (site) {
-    const rest = path.slice(site.length);
-    return LOCALE_SEGMENT.test(rest) ? path : site + withLocale('/' + rest, locale).slice(1);
-  }
   if (LOCALE_SEGMENT.test(path.slice(1))) return path;
+  const site = LOCALIZED_SITES.find((p) => path.startsWith(p));
+  if (site) return LOCALE_SEGMENT.test(path.slice(site.length)) ? path : withLocale(path, locale);
   return localizePath(path, locale);
 }
 

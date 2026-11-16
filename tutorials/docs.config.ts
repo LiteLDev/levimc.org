@@ -1,7 +1,8 @@
 // levimc.org/tutorials/: every end-to-end tutorial of the LeviMC projects, in one place (the project docs keep the
 // introductions, guides and reference). Built from this folder by levimc.org's deploy and published at /tutorials/.
-// English at the root, Simplified Chinese in zh-Hans/, Traditional Chinese converted from it (levimc.org's one
-// locale scheme). Writing rules: CONTRIBUTING.md at the repository root, "Tutorials".
+// English at /tutorials/, Simplified Chinese at /zh-Hans/tutorials/ (sources in content/zh-Hans/), Traditional
+// Chinese at /zh-Hant/tutorials/, converted from it: levimc.org's one scheme, the language first (2026-11-16). The
+// URLs before (/tutorials/zh-Hans/…) redirect. Writing rules: CONTRIBUTING.md at the repository root, "Tutorials".
 import { defineDocsConfig, type NavEntry } from './kit/docs/node/config.ts';
 
 const repo = 'https://github.com/LiteLDev/liteldev.github.io';
@@ -109,10 +110,11 @@ export default defineDocsConfig({
   i18n: {
     mode: 'folder',
     defaultLocale: 'en',
+    localeFirst: true,
     locales: [
       { code: 'en', label: 'English', lang: 'en', prefix: '' },
-      { code: 'zh-Hans', label: '简体中文', lang: 'zh-Hans', prefix: 'zh-Hans/' },
-      { code: 'zh-Hant', label: '繁體中文', lang: 'zh-Hant', prefix: 'zh-Hant/', convertFrom: 'zh-Hans' },
+      { code: 'zh-Hans', label: '简体中文', lang: 'zh-Hans', prefix: 'zh-Hans/', formerPrefixes: ['zh-Hans/'] },
+      { code: 'zh-Hant', label: '繁體中文', lang: 'zh-Hant', prefix: 'zh-Hant/', convertFrom: 'zh-Hans', formerPrefixes: ['zh-Hant/'] },
     ],
   },
   urlStyle: 'directory',

@@ -45,7 +45,7 @@ LeviLauncher 不再弹出任何提示，这一步就完成了。
 
 ## 5. 安装模组
 
-1. 在**启动**页面上，**内容下载**卡片可以进入 **LeviMC 模组**。打开它。这里列出的是 [LeviMC 模组](https://levimc.org/mods/zh-Hans/)中带有 Windows 客户端构建的模组。
+1. 在**启动**页面上，**内容下载**卡片可以进入 **LeviMC 模组**。打开它。这里列出的是 [LeviMC 模组](https://levimc.org/zh-Hans/mods/)中带有 Windows 客户端构建的模组。
 2. 搜索 `LeviOptimize` 并打开它。
 3. 点击**安装**。LeviLauncher 会选择模组的客户端构建、与你的 LeviLamina 相配的版本，以及模组需要的依赖。
 4. 你应该看到“安装成功”。回到**启动**页面，实例的**模组**卡片里列出了 LeviOptimize。
@@ -71,9 +71,9 @@ LeviLauncher 不再弹出任何提示，这一步就完成了。
 ## 下一步
 
 - 加入一个带模组的服务器，或者自己开一个：[开你的第一个服务器](../server/first-server.md)。
-- 启动器模组功能的全部内容，包括 CurseForge 和内置的包管理器：[模组与集成](https://levimc.org/LeviLauncher/zh-Hans/guide/mods-integrations)。
-- 重命名、删除和整理实例：[版本管理](https://levimc.org/LeviLauncher/zh-Hans/guide/version-management)。
-- 世界、资源包和行为包：[内容管理](https://levimc.org/LeviLauncher/zh-Hans/guide/content-management)。
-- 下载失败或游戏启动不了时：[更新与故障排查](https://levimc.org/LeviLauncher/zh-Hans/guide/update-troubleshooting)。
-- Android 版 LeviLauncher 和所有发行版：[下载](https://levimc.org/LeviLauncher/zh-Hans/download)。
+- 启动器模组功能的全部内容，包括 CurseForge 和内置的包管理器：[模组与集成](https://levimc.org/zh-Hans/LeviLauncher/guide/mods-integrations)。
+- 重命名、删除和整理实例：[版本管理](https://levimc.org/zh-Hans/LeviLauncher/guide/version-management)。
+- 世界、资源包和行为包：[内容管理](https://levimc.org/zh-Hans/LeviLauncher/guide/content-management)。
+- 下载失败或游戏启动不了时：[更新与故障排查](https://levimc.org/zh-Hans/LeviLauncher/guide/update-troubleshooting)。
+- Android 版 LeviLauncher 和所有发行版：[下载](https://levimc.org/zh-Hans/LeviLauncher/download)。
 - 自己做一个模组：[你的第一个 LeviLamina 模组](../develop/first-levilamina-mod.md)。

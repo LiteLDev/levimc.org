@@ -29,6 +29,10 @@ const base = root.endsWith('/') ? root : root + '/';
 const require = createRequire(process.env.LEVIMC_PW_DIR ? process.env.LEVIMC_PW_DIR + '/' : import.meta.url);
 const { chromium } = require('playwright');
 
+// kit 2.23: the language is the first path segment of every levimc.org URL; the bar links each site in the page's
+// language (/zh-Hans/mods/), so tabs are compared without it
+const unlang = (path) => path.replace(/^\/(?:zh-Hans|zh-Hant|[a-z]{2})(?=\/)/, '');
+const samePage = (href, url) => href === url || unlang(new URL(href).pathname) === new URL(url).pathname;
 const CANONICAL_TABS = [
   ['home', 'https://levimc.org/'],
   ['tutorials', 'https://levimc.org/tutorials/'],
@@ -125,7 +129,7 @@ await check('GlobalBar: canonical tabs in order, controls (language · theme · 
     });
     const end = g.querySelector('.kit-gbar-end');
     const order = [...end.children].map((c) =>
-      c.matches('.kit-locale') ? 'language' : c.matches('.kit-theme') ? 'theme' : c.matches('.kit-gbar-github') ? 'github' : c.matches('.kit-gbar-more, [data-kit-gbar-menu]') ? 'menu' : c.className,
+      c.matches('.kit-gbar-search') ? 'search' : c.matches('.kit-locale') ? 'language' : c.matches('.kit-theme') ? 'theme' : c.matches('.kit-gbar-github') ? 'github' : c.matches('.kit-gbar-more, [data-kit-gbar-menu]') ? 'menu' : c.className,
     );
     return { tabs, order, current: g.querySelector('.kit-gbar-nav [aria-current="page"]:not(.kit-proj-main) [data-kit-t], .kit-gbar-nav summary[aria-current="page"] [data-kit-t]')?.getAttribute('data-kit-t') ?? null };
   });
@@ -136,9 +140,10 @@ await check('GlobalBar: canonical tabs in order, controls (language · theme · 
     if (!url) continue;
     const href = bar.tabs[i].href;
     // same-site tabs may be router links (root-relative), so compare the resolved path on this origin too
-    assert(href === url || new URL(href).pathname === new URL(url).pathname, `${key} → ${href}`);
+    assert(samePage(href, url), `${key} → ${href}`);
   }
-  const ctl = bar.order.filter((o) => o !== 'menu');
+  // the docs' search trigger (kit 2.22) sits before the controls
+  const ctl = bar.order.filter((o) => o !== 'menu' && o !== 'search');
   assert(JSON.stringify(ctl) === JSON.stringify(['language', 'theme', 'github']), `controls ${bar.order.join(',')}`);
   const want = opt('--current', APP ? null : 'projects');
   if (want) assert(bar.current === want, `current tab ${bar.current}, expected ${want}`);
@@ -165,7 +170,7 @@ await check('GlobalBar + footer: the shared brand, GitHub → LiteLDev, the comp
   assert(r.footer && r.footerMark, 'no footer / footer mark');
   assert(r.columns === 0, `footer has ${r.columns} link columns`);
   assert(new Set(r.social).size === r.social.length && r.social.length === 6, `social links ${r.social.join(' ')}`);
-  assert(r.support && new URL(r.support).pathname === '/support/', `Support us → ${r.support}`);
+  assert(r.support && unlang(new URL(r.support).pathname) === '/support/', `Support us → ${r.support}`);
   return `${r.projects} projects in the menu; footer: ${r.social.length} channels, no columns`;
 });
 await check('theme: Auto by default, follows the system live', async () => {
@@ -330,8 +335,8 @@ await check('phone (390px): bar controls visible, one menu with the bar links, n
     links = await p.$$eval('.kit-gbar-more-panel a', (as) => as.map((a) => a.href));
     await p.keyboard.press('Escape');
   }
-  for (const [key, url] of CANONICAL_TABS) if (url) assert(links.some((h) => h === url || new URL(h).pathname === new URL(url).pathname), `menu lacks ${key}`);
-  assert(links.filter((h) => /^https:\/\/levimc\.org\/(LeviLamina|LegacyScriptEngine|lip|LeviLauncher|BeDD|bedboo)\/$/.test(h)).length >= 4, 'menu lacks the docs projects');
+  for (const [key, url] of CANONICAL_TABS) if (url) assert(links.some((h) => samePage(h, url)), `menu lacks ${key}`);
+  assert(links.filter((h) => /^https:\/\/levimc\.org\/(?:[A-Za-z-]+\/)?(LeviLamina|LegacyScriptEngine|lip|LeviLauncher|BeDD|bedboo)\/$/.test(h)).length >= 4, 'menu lacks the docs projects');
   const sideways = await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   assert(!sideways, 'horizontal page scroll at 390px');
   assert(!e.length, e.join(' | '));
@@ -456,34 +461,41 @@ if (!APP) {
   });
   await check('language redirect: only on the root; the stored preference always wins', async () => {
     await page.goto(pages[0] ?? base, { waitUntil: 'networkidle' });
-    const info = await page.evaluate(() => ({
-      langs: [...document.querySelectorAll('link[rel="alternate"][hreflang]')].map((l) => l.getAttribute('hreflang')).filter((l) => l && l !== 'x-default'),
-      cur: document.documentElement.lang,
-    }));
-    const other = opt('--redirect-lang') ?? info.langs.find((l) => l !== info.cur);
+    const info = await page.evaluate(() => {
+      const alts = [...document.querySelectorAll('link[rel="alternate"][hreflang]')].map((l) => [l.getAttribute('hreflang'), l.getAttribute('href')]);
+      const def = alts.find(([l]) => l === 'x-default')?.[1];
+      return {
+        langs: alts.map(([l]) => l).filter((l) => l && l !== 'x-default'),
+        // the default locale's language (the root's): the one whose page is the x-default
+        root: alts.find(([l, h]) => l !== 'x-default' && h === def)?.[0] ?? document.documentElement.lang,
+      };
+    });
+    const other = opt('--redirect-lang') ?? info.langs.find((l) => l !== info.root);
     if (!other) return 'skipped — single-locale site';
-    const rootPath = new URL(base).pathname;
+    // the site's root: --url may be a localized root (/zh-Hans/<base>, kit 2.23): the default locale's is without it
+    const root = new URL(unlang(new URL(base).pathname), base).href;
+    const rootPath = new URL(root).pathname;
     // 1. no preference: the browser language picks the locale
     const c = await newCtx({ locale: other });
     const p = await c.newPage();
-    await p.goto(base, { waitUntil: 'networkidle' });
+    await p.goto(root, { waitUntil: 'networkidle' });
     const landed = new URL(p.url()).pathname;
     assert(landed !== rootPath, `root did not redirect for browser language ${other}`);
     const deep = pages[0] ?? base;
     await p.goto(deep, { waitUntil: 'networkidle' });
     assert(p.url() === deep, `deep link redirected to ${p.url()}`);
     // 2. a stored preference (English) wins over the browser language
-    await c.addCookies([{ name: 'levimc_lang', value: 'en', url: base }]);
-    await p.goto(base, { waitUntil: 'networkidle' });
+    await c.addCookies([{ name: 'levimc_lang', value: 'en', url: root }]);
+    await p.goto(root, { waitUntil: 'networkidle' });
     assert(new URL(p.url()).pathname === rootPath, 'stored "en" did not keep the root');
     await c.close();
     // 3. the stored preference also wins when arriving from a page of the same site (in-site link to the root)
     const c2 = await newCtx();
-    await c2.addCookies([{ name: 'levimc_lang', value: other, url: base }]);
+    await c2.addCookies([{ name: 'levimc_lang', value: other, url: root }]);
     const p2 = await c2.newPage();
     await p2.goto(deep, { waitUntil: 'networkidle' });
     const deepPath = new URL(deep).pathname;
-    await Promise.all([p2.waitForURL((u) => u.pathname !== deepPath, { waitUntil: 'load' }), p2.evaluate((u) => (location.href = u), base)]);
+    await Promise.all([p2.waitForURL((u) => u.pathname !== deepPath, { waitUntil: 'load' }), p2.evaluate((u) => (location.href = u), root)]);
     // the root page either stays (wrong) or has already replaced itself with the preferred locale
     await p2.waitForTimeout(500);
     await p2.waitForLoadState('networkidle');

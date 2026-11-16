@@ -64,6 +64,7 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             tutorials/package-lock.json
+            docs/*/package-lock.json
 
       - run: npm ci
 
@@ -74,10 +75,10 @@ jobs:
 
       - run: npm run build
 
-      # the tutorials (/tutorials/), with this checkout's kit
-      - name: tutorials
-        working-directory: tutorials
-        run: npm ci && npm run typecheck && npm run build && npm run linkcheck
+      # the docs (docs/README.md): the tutorials and every docs/<Project>/ root, with this checkout's kit; then the
+      # merge into dist/ (a file two builds publish fails). The link check of the whole site runs in the deploy.
+      - name: docs
+        run: node scripts/docs-sites.mjs build && node scripts/docs-sites.mjs merge dist
 
   kit:
     needs: changes
@@ -108,10 +109,10 @@ jobs:
         run: npm run build && npm run linkcheck
 
       - name: lip demo (VitePress-style, folder locales)
-        run: npm run build:lip && node kit/scripts/linkcheck.mjs dist-lip --base /lip/ --site-origin https://levimc.org
+        run: npm run build:lip && npm run linkcheck:lip
 
       - name: single-locale docs demo
-        run: npm run build:single && node kit/scripts/linkcheck.mjs dist-single --base /Single/ --site-origin https://levimc.org
+        run: npm run build:single && npm run linkcheck:single
 
       - name: plain app demo (levimc.org / levimc.org/mods shape)
         run: npm run build:app

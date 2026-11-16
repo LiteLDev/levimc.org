@@ -1,5 +1,6 @@
 // <head> generation for prerendered pages + the root-only language redirect script.
 import type { RouteMeta, SiteData } from './types.ts';
+import { localeRoot, pathUrl, siteRoots } from './routing.ts';
 import { PREFS_CORE_JS } from '../../components/prefs.ts';
 import { KIT_GENERATOR } from '../../components/version.ts';
 
@@ -23,7 +24,7 @@ function siteName(site: SiteData): string {
 }
 
 export function absoluteUrl(site: SiteData, path: string): string {
-  return (site.hostname ?? '') + site.base + path;
+  return (site.hostname ?? '') + pathUrl(site, path);
 }
 
 /**
@@ -37,9 +38,12 @@ export function absoluteUrl(site: SiteData, path: string): string {
  *     entry that matches a locale.
  * Kit 1.0 stored a per-site choice in localStorage `levimc-locale-<site>`; it is migrated into the preference once.
  */
-export function localeRedirectScript(site: Pick<SiteData, 'base' | 'siteKey' | 'locales' | 'defaultLocale'>): string {
+export function localeRedirectScript(site: Pick<SiteData, 'base' | 'siteKey' | 'locales' | 'defaultLocale' | 'localeFirst'>): string {
   if (site.locales.length < 2) return '';
-  const L = site.locales.map((l) => ({ c: l.code, l: l.lang, p: l.prefix }));
+  // r: the locale's root URL (/zh-Hans/<base> with localeFirst, else <base>zh-Hans/)
+  const L = site.locales.map((l) => ({ c: l.code, l: l.lang, r: l.prefix ? localeRoot(site, l.prefix) : '' }));
+  // a referrer on any of the site's roots counts as "from this site"
+  const roots = siteRoots(site);
   // a preference no locale matches → English, else the default locale
   const en = site.locales.findIndex((l) => l.lang.toLowerCase().split('-')[0] === 'en');
   const fallback = en >= 0 ? en : Math.max(0, site.locales.findIndex((l) => l.code === site.defaultLocale));
@@ -49,10 +53,10 @@ export function localeRedirectScript(site: Pick<SiteData, 'base' | 'siteKey' | '
     `try{o=s&&s.getItem(k)}catch(e){}` +
     `if(o!==null){if(!g)for(i=0;i<L.length;i++)if(L[i].c===o){g=L[i].l;wp("lang",g)}try{s.removeItem(k)}catch(e){}}` +
     `if(g){x=ml(g,L);if(x<0)x=${fallback}}` +
-    `else{try{var r=new URL(document.referrer);if(r.origin===location.origin&&r.pathname.indexOf(b)===0)return}catch(e){}` +
+    `else{try{var r=new URL(document.referrer),R=${JSON.stringify(roots)};if(r.origin===location.origin)for(i=0;i<R.length;i++)if(r.pathname.indexOf(R[i])===0)return}catch(e){}` +
     `var N=navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||""];` +
     `for(j=0;j<N.length&&x<0;j++)x=ml(N[j],L)}` +
-    `if(x>=0&&L[x].p)location.replace(b+L[x].p+location.search+location.hash)}catch(e){}})();`
+    `if(x>=0&&L[x].r)location.replace(L[x].r+location.search+location.hash)}catch(e){}})();`
   );
 }
 

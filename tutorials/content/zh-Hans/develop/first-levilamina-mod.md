@@ -176,7 +176,7 @@ Minecraft 编译时没有运行时类型信息，因此不能对它的类使用 
 以后每次修改：停止服务器，运行 `xmake`，重新复制文件夹，启动服务器。
 
 ::: tip 模组没有加载时的错误码
-如果 LeviLamina 没有加载 `my-mod`，而是报告 126 或 127 之类的错误，通常是因为模组所用的 LeviLamina 版本与服务器的不同。请检查第 3 步固定的版本。[LeviLamina 故障排除](https://levimc.org/LeviLamina/zh-Hans/user_guides/troubleshooting/)解释了这些错误码。
+如果 LeviLamina 没有加载 `my-mod`，而是报告 126 或 127 之类的错误，通常是因为模组所用的 LeviLamina 版本与服务器的不同。请检查第 3 步固定的版本。[LeviLamina 故障排除](https://levimc.org/zh-Hans/LeviLamina/user_guides/troubleshooting/)解释了这些错误码。
 :::
 
 ## 你现在有了什么
@@ -189,10 +189,10 @@ Minecraft 编译时没有运行时类型信息，因此不能对它的类使用 
 
 - 让别人用一条命令安装你的模组：[用 lip 发布你的模组](publish-a-package.md)。
 - 包含配置文件、数据库、表单和物品的更完整示例：[ShrBox/ExampleMod](https://github.com/ShrBox/ExampleMod)。
-- 带参数的命令：[命令指南](https://levimc.org/LeviLamina/zh-Hans/developer_guides/how_to_guides/command_guide/)。
-- 响应玩家的行为：[事件指南](https://levimc.org/LeviLamina/zh-Hans/developer_guides/how_to_guides/event_guide/)。
-- 用对话框询问玩家：[表单指南](https://levimc.org/LeviLamina/zh-Hans/developer_guides/how_to_guides/form_guide/)。
-- 改变游戏的行为：[Hook 指南](https://levimc.org/LeviLamina/zh-Hans/developer_guides/how_to_guides/hook_guide/)。
+- 带参数的命令：[命令指南](https://levimc.org/zh-Hans/LeviLamina/developer_guides/how_to_guides/command_guide/)。
+- 响应玩家的行为：[事件指南](https://levimc.org/zh-Hans/LeviLamina/developer_guides/how_to_guides/event_guide/)。
+- 用对话框询问玩家：[表单指南](https://levimc.org/zh-Hans/LeviLamina/developer_guides/how_to_guides/form_guide/)。
+- 改变游戏的行为：[Hook 指南](https://levimc.org/zh-Hans/LeviLamina/developer_guides/how_to_guides/hook_guide/)。
 - 所有类和函数：[LeviLamina API](https://levimc.org/LeviLamina/api/)。
-- 开发者常见问题：[开发者 FAQ](https://levimc.org/LeviLamina/zh-Hans/developer_guides/faq/)。
+- 开发者常见问题：[开发者 FAQ](https://levimc.org/zh-Hans/LeviLamina/developer_guides/faq/)。
 - 更想用脚本语言：[你的第一个脚本插件](first-script-plugin.md)。

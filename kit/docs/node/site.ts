@@ -15,6 +15,7 @@ import { gitLastUpdated } from './git.ts';
 import { uiStrings } from '../../components/i18n.ts';
 import { searchOptions, SNIPPET_STORE_CHARS } from '../shared/search.ts';
 import { docsStrings } from '../shared/strings.ts';
+import { sitePath } from '../shared/routing.ts';
 import { PAGE_META_KEYS, type FeatureData, type HeroData, type PageData, type PageMeta, type ResourceLink, type RouteMeta, type SearchDoc, type SiteData } from '../shared/types.ts';
 
 export interface BuiltPage extends PageData {
@@ -223,7 +224,7 @@ export async function buildSite(cfg: ResolvedConfig, opts: { changed?: Set<strin
         list.push({ kind: h.kind, text, link: h.link, external: true });
         continue;
       }
-      let rel = h.link.startsWith(cfg.base) ? h.link.slice(cfg.base.length) : h.link.replace(/^\/+/, '');
+      let rel = sitePath(cfg, h.link) ?? h.link.replace(/^\/+/, '');
       const hit = routeByPath(rel);
       if (hit) rel = scan.byKey.get(hit.key)?.get(loc.code)?.path ?? hit.path;
       else if (loc.isDefault) warnings.push(`header.links: '${h.link}' is no page of this site (linked as is)`);
@@ -263,6 +264,7 @@ export async function buildSite(cfg: ResolvedConfig, opts: { changed?: Set<strin
 
   const site: SiteData = {
     base: cfg.base,
+    ...(cfg.localeFirst ? { localeFirst: true } : {}),
     title: cfg.title,
     description: cfg.description ?? '',
     hostname: cfg.hostname,

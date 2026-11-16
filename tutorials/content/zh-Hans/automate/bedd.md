@@ -12,7 +12,7 @@
 
 - 一台 Windows 10 或 11 电脑（x64）。
 - 一个拥有 Minecraft（Windows 版）的 Microsoft 账号。
-- [LeviLauncher](https://levimc.org/LeviLauncher/zh-Hans/) 1.1 或更高版本。如果还没装，请完成[在 Windows 上玩模组](../play/play-with-mods.md)的第 1、2 步。
+- [LeviLauncher](https://levimc.org/zh-Hans/LeviLauncher/) 1.1 或更高版本。如果还没装，请完成[在 Windows 上玩模组](../play/play-with-mods.md)的第 1、2 步。
 - [Node.js](https://nodejs.org/zh-cn) 24 或更高版本，用来运行脚本。用 `node -v` 检查。
 
 不需要 PowerShell 模块、`lip` 或 .NET 运行时。
@@ -150,10 +150,10 @@ BeDD.exe stop 1.26.60.05-1
 
 ## 下一步
 
-- 该用哪种方式驱动游戏以及原因：先用 bedboo 操作，再用 UI 树，最后才模拟输入：[操作模式](https://levimc.org/BeDD/zh-Hans/guide/operation-modes.html)。
-- 用 mineflayer 风格的机器人移动、转视角、使用物品和战斗：[你的第一个 bedboo 机器人](first-bedboo-bot.md)，然后看 bedboo 的 [驱动真实客户端（BeDD）](https://levimc.org/bedboo/zh-Hans/guide/bedd.html)。
-- 读取和点击菜单：[UI 控件树](https://levimc.org/BeDD/zh-Hans/reference/ui.html)。每个请求及其字段：[WebSocket 接口](https://levimc.org/BeDD/zh-Hans/reference/websocket.html)。
-- 同时运行多个游戏，以及管理窗口：[多开](https://levimc.org/BeDD/zh-Hans/guide/several-games.html)。
-- 让客户端与专用服务器一起测试：[世界在哪里运行](https://levimc.org/BeDD/zh-Hans/guide/modes.html)。
-- 模组的设置，例如窗口大小：[配置](https://levimc.org/BeDD/zh-Hans/guide/configuration.html)。
-- 遇到问题：[常见问题](https://levimc.org/BeDD/zh-Hans/guide/troubleshooting.html)。
+- 该用哪种方式驱动游戏以及原因：先用 bedboo 操作，再用 UI 树，最后才模拟输入：[操作模式](https://levimc.org/zh-Hans/BeDD/guide/operation-modes.html)。
+- 用 mineflayer 风格的机器人移动、转视角、使用物品和战斗：[你的第一个 bedboo 机器人](first-bedboo-bot.md)，然后看 bedboo 的 [驱动真实客户端（BeDD）](https://levimc.org/zh-Hans/bedboo/guide/bedd.html)。
+- 读取和点击菜单：[UI 控件树](https://levimc.org/zh-Hans/BeDD/reference/ui.html)。每个请求及其字段：[WebSocket 接口](https://levimc.org/zh-Hans/BeDD/reference/websocket.html)。
+- 同时运行多个游戏，以及管理窗口：[多开](https://levimc.org/zh-Hans/BeDD/guide/several-games.html)。
+- 让客户端与专用服务器一起测试：[世界在哪里运行](https://levimc.org/zh-Hans/BeDD/guide/modes.html)。
+- 模组的设置，例如窗口大小：[配置](https://levimc.org/zh-Hans/BeDD/guide/configuration.html)。
+- 遇到问题：[常见问题](https://levimc.org/zh-Hans/BeDD/guide/troubleshooting.html)。

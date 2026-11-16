@@ -126,9 +126,9 @@ LeviLamina 来自 GitHub。`lip` 连不上时会问你怎么办：有 GitHub 代
 - 给服务器装模组：[给服务器安装模组](install-mods.md)。
 - 让其他玩家连进来：[让朋友连上你的服务器](let-friends-join.md)。
 - 用命令做同样的事，适合脚本和远程机器：[用命令行开服](command-line.md)。
-- 修改服务器名称、游戏模式或玩家人数：[游戏配置](https://levimc.org/lip/zh-Hans/interface/game_config.html)。
-- 让服务器崩溃后自动重启：[服务器](https://levimc.org/lip/zh-Hans/interface/server.html)。
-- 再开一个服务器，或更换游戏版本：[工作区](https://levimc.org/lip/zh-Hans/interface/workspaces.html)。
-- 系统地了解界面的每个页面：[界面导览](https://levimc.org/lip/zh-Hans/interface/tour.html)。
-- `lip` 怎样在 Linux 和 macOS 上运行 Windows 服务器：[Linux 与 macOS](https://levimc.org/lip/zh-Hans/guides/linux_macos.html)。
-- 出了问题：[lip 故障排查](https://levimc.org/lip/zh-Hans/guides/troubleshooting.html)和 [LeviLamina 问题排除](https://levimc.org/LeviLamina/zh-Hans/user_guides/troubleshooting/)。
+- 修改服务器名称、游戏模式或玩家人数：[游戏配置](https://levimc.org/zh-Hans/lip/interface/game_config.html)。
+- 让服务器崩溃后自动重启：[服务器](https://levimc.org/zh-Hans/lip/interface/server.html)。
+- 再开一个服务器，或更换游戏版本：[工作区](https://levimc.org/zh-Hans/lip/interface/workspaces.html)。
+- 系统地了解界面的每个页面：[界面导览](https://levimc.org/zh-Hans/lip/interface/tour.html)。
+- `lip` 怎样在 Linux 和 macOS 上运行 Windows 服务器：[Linux 与 macOS](https://levimc.org/zh-Hans/lip/guides/linux_macos.html)。
+- 出了问题：[lip 故障排查](https://levimc.org/zh-Hans/lip/guides/troubleshooting.html)和 [LeviLamina 问题排除](https://levimc.org/zh-Hans/LeviLamina/user_guides/troubleshooting/)。

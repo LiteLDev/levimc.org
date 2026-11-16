@@ -24,14 +24,17 @@ export default defineDocsConfig({
   contentDir: 'content',
   hostname: 'https://levimc.org',
   sitemap: { hostname: 'https://levimc.org' },
+  // levimc.org's URL scheme (kit 2.23): the language first — /Demo/, /zh-Hans/Demo/, /zh-Hant/Demo/. The URLs the demo
+  // had before (/Demo/zh/…, and /Demo/zh-Hans/… as every LeviMC docs site had) redirect there.
   i18n: {
     mode: 'suffix',
     defaultLocale: 'en',
+    localeFirst: true,
     locales: [
       { code: 'en', label: 'English', lang: 'en' },
-      { code: 'zh', label: '简体中文', lang: 'zh' },
+      { code: 'zh', label: '简体中文', lang: 'zh', prefix: 'zh-Hans/', formerPrefixes: ['zh-Hans/', 'zh/'] },
       // generated from the zh pages (kit 2.7)
-      { code: 'zh-Hant', label: '繁體中文', lang: 'zh-Hant', convertFrom: 'zh' },
+      { code: 'zh-Hant', label: '繁體中文', lang: 'zh-Hant', convertFrom: 'zh', formerPrefixes: ['zh-Hant/'] },
     ],
   },
   urlStyle: 'directory',

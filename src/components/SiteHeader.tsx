@@ -1,14 +1,17 @@
 import { Link, useLocation } from 'react-router';
 import { GlobalBar, type LinkLikeProps, type SiteId } from '../../kit/components';
 import { useI18n, LOCALES } from '../i18n';
-import { OTHER_SITES } from '../other-sites';
+import { isOtherSitePath } from '../other-sites';
 import { localeAlternates, localizePath, SITE_ORIGIN, type RouteId } from '../routes';
 
-/** Paths of this origin the app's router renders (everything but the other builds: /mods/, /tutorials/, the docs). */
-export const isAppPath = (path: string) => !OTHER_SITES.some((prefix) => path.startsWith(prefix));
+/**
+ * Paths of this origin the app's router renders: everything but the other builds (/mods/, /tutorials/, the docs),
+ * in any language (/zh-Hans/mods/, /ja/LeviLauncher/).
+ */
+export const isAppPath = (path: string) => !isOtherSitePath(path);
 
 /**
- * Same-site links of the bar and footer, in the page's locale (/about/ → /zh-Hans/about/, /mods/ → /mods/zh-Hans/):
+ * Same-site links of the bar and footer, in the page's locale (/about/ → /zh-Hans/about/, /mods/ → /zh-Hans/mods/):
  * the app's own pages navigate inside the app (no full reload), the other builds' load in full.
  */
 export function RouterLink({ href, ...rest }: LinkLikeProps) {

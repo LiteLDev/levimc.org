@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { HotbarTabs, LINKS, PixelButton, PixelIcon, PROJECTS, type PixelIconName } from '../../kit/components';
+import { HotbarTabs, LINKS, PixelButton, PixelIcon, PROJECTS, localizeNetworkUrl, type PixelIconName } from '../../kit/components';
 import { detectPlatform, type DevicePlatform } from '../../kit/docs/shared/platform';
 import { useLeviLaminaStats } from '../hooks/useExternalData';
 import { useI18n, type Locale } from '../i18n';
@@ -61,11 +61,11 @@ function usePlatform(): DevicePlatform | undefined {
   return platform;
 }
 
-// Docs and tutorial URLs in the visitor's language: every LeviMC site puts zh-Hans/ or zh-Hant/ after its base.
-const LOCALE_PREFIX: Record<Locale, string> = { en: '', 'zh-Hans': 'zh-Hans/', 'zh-Hant': 'zh-Hant/' };
+// Docs and tutorial URLs in the visitor's language: the language is the first segment of every levimc.org URL
+// (/zh-Hans/LeviLamina/…, /zh-Hant/tutorials/…; kit localizeNetworkUrl).
 const docs = (project: 'LeviLamina' | 'LegacyScriptEngine' | 'lip' | 'LeviLauncher', locale: Locale, path = '') =>
-  `${PROJECTS.find((p) => p.id === project)!.docs}${LOCALE_PREFIX[locale]}${path}`;
-const tutorial = (locale: Locale, path: string) => `${LINKS.tutorials}${LOCALE_PREFIX[locale]}${path}`;
+  localizeNetworkUrl(`${PROJECTS.find((p) => p.id === project)!.docs}${path}`, locale);
+const tutorial = (locale: Locale, path: string) => localizeNetworkUrl(`${LINKS.tutorials}${path}`, locale);
 
 const DOWNLOADS = {
   // the asset name is stable across releases, so this starts the download right away

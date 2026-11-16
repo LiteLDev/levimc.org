@@ -57,8 +57,8 @@ export interface Project {
   /** @deprecated kit < 2.5 showed a pixel sprite; kept for sites that still read it. Show `logo`. */
   icon: PixelIconName;
   /**
-   * The docs' languages besides English and zh-Hans / zh-Hant (every LeviMC site has those): base language → URL
-   * segment, e.g. `{ es: 'es-ES' }` (kit 2.22.2, {@link localizeNetworkUrl}).
+   * The docs' languages besides English and zh-Hans / zh-Hant (every LeviMC site has those): base language → the
+   * URL's first segment, e.g. `{ es: 'es' }` for levimc.org/es/LeviLauncher/ (kit 2.23, {@link localizeNetworkUrl}).
    */
   docsLocales?: Record<string, string>;
   /** Paths under the docs that have no languages (relative to the docs URL), e.g. LeviLamina's Doxygen `api/`. */
@@ -102,7 +102,7 @@ export const PROJECTS: readonly Project[] = [
     docs: 'https://levimc.org/LeviLauncher/',
     logo: logo('LeviLauncher'),
     icon: 'map',
-    docsLocales: { es: 'es-ES', ru: 'ru-RU', de: 'de-DE', ja: 'ja-JP', ko: 'ko-KR', fr: 'fr-FR' },
+    docsLocales: { es: 'es', ru: 'ru', de: 'de', ja: 'ja', ko: 'ko', fr: 'fr' },
   },
   { id: 'BeDD', name: 'Be.D.D.', group: 'core', repo: 'https://github.com/LiteLDev/BeDD', docs: 'https://levimc.org/BeDD/', logo: logo('BeDD'), icon: 'monitor' },
   { id: 'bedboo', name: 'bedboo', group: 'core', repo: 'https://github.com/LiteLDev/bedboo', docs: 'https://levimc.org/bedboo/', logo: logo('bedboo'), icon: 'pickaxe' },
@@ -203,32 +203,46 @@ export function newTabProps(url: string): { target?: '_blank'; rel?: string } {
   return opensInNewTab(url) ? { target: '_blank', rel: 'noopener' } : {};
 }
 
-/** A URL segment that already names a language (zh-Hans, zh-Hant, es-ES …). */
-const LOCALE_SEGMENT = /^(?:zh-Hans|zh-Hant|zh|[a-z]{2}-[A-Z]{2})(?:\/|$)/;
+/**
+ * The first segment of a levimc.org path that names a language (kit 2.23: every language but English is the first
+ * segment): zh-Hans, zh-Hant, and the docs' other languages (`docsLocales`).
+ */
+export const NETWORK_LANGUAGE_SEGMENTS: readonly string[] = [
+  'zh-Hans',
+  'zh-Hant',
+  ...new Set(PROJECTS.flatMap((p) => Object.values(p.docsLocales ?? {}))),
+];
+/** A path segment that names a language: a network one, or the forms of the URLs before kit 2.23 (zh, es-ES …). */
+const LOCALE_SEGMENT = new RegExp(`^(?:${NETWORK_LANGUAGE_SEGMENTS.join('|')}|zh|[a-z]{2}-[A-Z]{2})(?:/|$)`);
 const TRADITIONAL = /^zh-(tw|hk|mo|hant)\b/i;
 
 /**
- * A levimc.org link in the visitor's language (kit 2.22.2): every LeviMC site puts the language right after its base
- * (levimc.org/zh-Hans/about/, /mods/zh-Hans/, /tutorials/zh-Hant/, /lip/zh-Hans/), so the bar, the Projects menu and
- * the footer link the target in the reader's language directly — without it the target's root would redirect (a
- * second page load: a flash, and a wasted prerender). Chinese goes to zh-Hans / zh-Hant everywhere; other languages
- * only to the docs that have them (`docsLocales`); English, other origins, links naming a language already and
- * paths without languages (`docsUnlocalized`) stay as they are. Absolute and root-relative URLs keep their form.
+ * A levimc.org link in the visitor's language (kit 2.22.2; language first since kit 2.23): every LeviMC site —
+ * levimc.org itself, /mods/, /tutorials/ and each project's docs — puts the language FIRST in the path
+ * (levimc.org/zh-Hans/about/, /zh-Hans/mods/, /zh-Hant/tutorials/, /zh-Hans/lip/, /ja/LeviLauncher/), so the bar, the
+ * Projects menu and the footer link the target in the reader's language directly — without it the target's root
+ * would redirect (a second page load: a flash, and a wasted prerender). Chinese goes to zh-Hans / zh-Hant everywhere;
+ * other languages only to the docs that have them (`docsLocales`); English, other origins, links naming a language
+ * already (first, or after a site's base as before kit 2.23) and paths without languages (`docsUnlocalized`) stay as
+ * they are. Absolute and root-relative URLs keep their form.
  */
 export function localizeNetworkUrl(url: string, lang: string | undefined): string {
   if (!lang) return url;
   const abs = url.startsWith(NETWORK_ORIGIN + '/');
   const path = abs ? url.slice(NETWORK_ORIGIN.length) : url;
   if (!path.startsWith('/') || path.startsWith('//')) return url;
+  if (LOCALE_SEGMENT.test(path.slice(1))) return url;
   const tag = lang.toLowerCase().replace(/_/g, '-');
   const project = PROJECTS.find((p) => p.docs && path.startsWith(new URL(p.docs).pathname));
-  const base = project ? new URL(project.docs!).pathname : path.startsWith('/mods/') ? '/mods/' : path.startsWith('/tutorials/') ? '/tutorials/' : '/';
-  const rest = path.slice(base.length);
-  if (LOCALE_SEGMENT.test(rest) || project?.docsUnlocalized?.some((u) => rest.startsWith(u))) return url;
+  const base = project ? new URL(project.docs!).pathname : path.startsWith('/mods/') ? '/mods/' : path.startsWith('/tutorials/') ? '/tutorials/' : '';
+  if (base) {
+    const rest = path.slice(base.length);
+    if (LOCALE_SEGMENT.test(rest) || project?.docsUnlocalized?.some((u) => rest.startsWith(u))) return url;
+  }
   const primary = tag.split('-')[0]!;
   const segment = primary === 'zh' ? (TRADITIONAL.test(tag) ? 'zh-Hant' : 'zh-Hans') : project?.docsLocales?.[primary];
   if (!segment) return url;
-  return (abs ? NETWORK_ORIGIN : '') + base + segment + '/' + rest;
+  return (abs ? NETWORK_ORIGIN : '') + '/' + segment + path;
 }
 
 /** Origin of an absolute http(s) URL, lower-cased ('' for anything else). */

@@ -1,3 +1,39 @@
+# The language first, and every docs site built here (2026-11-16)
+
+Every levimc.org URL starts with its language; English has none:
+
+| | English | Simplified Chinese | Traditional Chinese | others |
+| --- | --- | --- | --- | --- |
+| levimc.org | `/about/` | `/zh-Hans/about/` | `/zh-Hant/about/` | |
+| LeviMC Mods | `/mods/` | `/zh-Hans/mods/` (was `/mods/zh-Hans/`) | `/zh-Hant/mods/` | |
+| Tutorials | `/tutorials/x/` | `/zh-Hans/tutorials/x/` (was `/tutorials/zh-Hans/x/`) | `/zh-Hant/tutorials/x/` | |
+| Project docs | `/LeviLamina/x/` | `/zh-Hans/LeviLamina/x/` (was `/LeviLamina/zh-Hans/x/`, `/LeviLamina/zh/x/`) | `/zh-Hant/LeviLamina/x/` | LeviLauncher: `/es/`, `/ru/`, `/de/`, `/ja/`, `/ko/`, `/fr/` (was `/LeviLauncher/ja-JP/…`) |
+
+LeviLamina's Doxygen API (`/LeviLamina/api/`) has no languages. Blog posts keep their one URL.
+
+**Old URLs keep working.** Each docs build writes a redirect page at every page's old URL (levimc-kit 2.23,
+`i18n.localeFirst` with `formerPrefixes`; query and #hash kept): `/tutorials/zh-Hans/x/` → `/zh-Hans/tutorials/x/`.
+Whatever has no redirect page reaches the site's `404.html`, which forwards an old `/<Site>/<lang>/…` of a site
+built here to `/<lang>/<Site>/…` (`legacy/build.mjs`; `zh`, `zh-CN`, `zh-HK`, `es-ES` … map to the new segments) and
+fixes the case under a language (`/zh-Hans/levilamina/` → `/zh-Hans/LeviLamina/`).
+
+**The docs move into this repository.** Each project's docs become a docs root, `docs/<Project>/` (how, and the
+template: [docs/README.md](docs/README.md)); the deploy builds the tutorials and every docs root with this checkout's
+kit, merges them into the site and link-checks the whole (`scripts/docs-sites.mjs`). LeviLamina's API reference is
+made in the deploy from a checkout of LiteLDev/LeviLamina when `docs/LeviLamina/api/Doxyfile` exists. The deploy no
+longer triggers the project repositories' docs builds (the `sync` job and its `KIT_SYNC_TOKEN` are gone).
+
+Until a project is imported, its repository still publishes `/<Project>/…` with the language after the base. The
+links here already use the language-first URLs: the 404 forwards `/zh-Hans/<Project>/x` to `/<Project>/zh-Hans/x`
+(LeviLauncher's other languages to `ja-JP` …) for every project without a docs root here, and `npm run linkcheck`
+treats those projects as other sites. Adding `docs/<Project>/package.json` switches both for it.
+
+**Cutover, per project:** merge its import here (the deploy publishes `/<Project>/` and `/<lang>/<Project>/` from
+`dist/`); then, in the project's repository, turn GitHub Pages off and delete its docs workflow. GitHub serves a
+project path from the project's repository while its Pages are on, so until then only the language-first URLs come
+from here. The targets in `legacy/redirects.mjs` are language-first already: `node legacy/build.test.mjs --live`
+passes again once every project is cut over.
+
 # The project docs moved from docs.levimc.org to levimc.org (2026-11-15)
 
 `https://docs.levimc.org/<Project>/…` is now `https://levimc.org/<Project>/…`. The pages, their paths and their

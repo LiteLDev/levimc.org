@@ -25,8 +25,12 @@ if (!appDist || !docsDist) {
 const require = createRequire(process.env.LEVIMC_PW_DIR ? process.env.LEVIMC_PW_DIR + '/' : import.meta.url);
 const { chromium } = require('playwright');
 
-/** The build that serves a URL: the docs below their base, the app everywhere else (like GitHub Pages' project sites). */
-const siteOf = (url) => (url.hostname !== 'levimc.org' ? null : url.pathname.startsWith(docsBase) ? [docsDist, docsBase] : [appDist, '/']);
+/**
+ * The build that serves a URL: the docs where their dist has the path (kit 2.23: a language-first docs dist mirrors the
+ * host root, /Demo/ and /zh-Hans/Demo/), the app everywhere else (both are merged into one site on levimc.org).
+ */
+const siteOf = (url) =>
+  url.hostname !== 'levimc.org' ? null : resolvePagesPath(docsDist, '/', url.pathname).status !== 404 ? [docsDist, '/'] : [appDist, '/'];
 const APP = 'https://levimc.org/';
 const DOCS = `https://levimc.org${docsBase}`;
 
@@ -93,7 +97,7 @@ await check(`levimc.org${docsBase}: choosing English + Light there applies on le
   assert(!(await page.evaluate(() => document.documentElement.classList.contains('dark'))), 'levimc.org still dark');
 });
 await check('visiting an explicit locale URL does not change the stored language', async () => {
-  await load(DOCS + 'zh/');
+  await load(`https://levimc.org/zh-Hans${docsBase}`);
   const v = (await ctx.cookies(APP)).find((c) => c.name === 'levimc_lang')?.value;
   assert(v === 'en', `levimc_lang = ${v}`);
 });

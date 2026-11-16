@@ -139,9 +139,9 @@ its sha256 and replaces `kit/` (writing `kit/.vendored`). `LEVIMC_KIT_SOURCE=<le
 installs a local kit checkout instead — to try kit changes in a site before they are published. Offline, an installed
 kit is kept with a warning (in CI, `$CI`, it fails). Never edit `kit/` in a site.
 
-**Keeping sites current** — after a deploy that changed the kit, levimc.org's `sync` job runs every site's deploy
-workflow (needs the `KIT_SYNC_TOKEN` secret: a fine-grained token with *Actions: read and write* on the site
-repositories). Each site's workflow also runs hourly: its `kit` job compares the published `manifest.json` with the
+**Keeping sites current** — since 2026-11-16 the docs sites are built in levimc.org's repository (`docs/<Project>/`)
+with its kit, by every deploy (levimc.org's `sync` job, which ran the sites' own workflows, is gone). A site still
+built elsewhere runs its workflow hourly: its `kit` job compares the published `manifest.json` with the
 generator meta of the live site and builds only when they differ. `node kit/scripts/chrome-parity.mjs` fetches one
 page of every LeviMC site and checks that they show the same bar and footer (local previews:
 `http://127.0.0.1:4173/=https://levimc.org`).
@@ -311,6 +311,7 @@ export default defineDocsConfig({ … });
 | `i18n.mode` | `'suffix'` \| `'folder'` | mkdocs-static-i18n (`x.md`, `x.zh.md`, `x.en.md` = default) / VitePress (`zh-CN/x.md`) |
 | `i18n.defaultLocale` | locale code | |
 | `i18n.locales[]` | `{ code, label, lang?, prefix?, suffix?, folder?, convertFrom?, formerPrefixes? }` | `prefix` defaults to `''` (default) / `'<code>/'`; `lang` is used for `<html lang>`/hreflang; `convertFrom: '<zh locale>'` generates Traditional Chinese from that locale (see below); `formerPrefixes: ['zh/']` puts a redirect page at each page's old URL after a prefix change (kit 2.21) |
+| `i18n.localeFirst` | default `false` | the language FIRST (kit 2.23, levimc.org's URLs): a locale's `prefix` goes in front of `base` (`/zh-Hans/LeviLamina/x/`); `outDir` mirrors the host root (`dist/LeviLamina/`, `dist/zh-Hans/LeviLamina/`, `dist/404.html`); assets, search indexes and `_kit/` stay under base; `formerPrefixes` are relative to base and may name the locale's own prefix (`['zh-Hans/', 'zh/']`). Preview with `serve-pages dist --base /`, link-check with `linkcheck dist --base /<Project>/ --locale-first zh-Hans,zh-Hant` |
 | `i18n.fallback` | default `true` (suffix) / `false` (folder) | build default-locale content at localized URLs when a translation is missing (static-i18n `fallback_to_default`) |
 | `urlStyle` | `'directory'` (default) \| `'html'` | MkDocs directory URLs / VitePress `.html` files |
 | `cleanUrls` | `false` | html style: link `a/b` instead of `a/b.html` |
@@ -954,6 +955,33 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.23.0
+
+* **The language first.** levimc.org puts the language at the start of every URL: `/zh-Hans/LeviLamina/x/`,
+  `/zh-Hans/mods/`, `/zh-Hant/tutorials/`, `/ja/LeviLauncher/` (English stays unprefixed), and every docs site is
+  built in levimc.org's repository (`docs/<Project>/`, see its `docs/README.md`).
+* Docs engine: `defineDocsConfig({ i18n: { localeFirst: true, … } })`. A locale's page URL is
+  `'/' + prefix + base.slice(1) + page`; route paths keep the prefix first, `docs/shared/routing.ts` maps them
+  (`pathUrl`, `sitePath`, `localeRoot`, `siteRoots`). Canonical, hreflang and x-default, the sitemap, the root
+  language redirect (`localeRedirectScript` given a site with `localeFirst: true` sends `/<base>` to
+  `/<lang>/<base>`), the language menu, nav, sidebar and search links, `_kit/nav.json`, the router (basename `/`), the
+  dev server and the prerender's output paths follow. `outDir` mirrors the host root (base's files in `dist/<base>/`,
+  `404.html` and `.nojekyll` at the root). `formerPrefixes` stay relative to base and may name the locale's own
+  prefix: `['zh-Hans/', 'zh/']` writes `/<base>/zh-Hans/x/` and `/<base>/zh/x/` redirect pages. Redirect pages now
+  keep the query as well as the #hash. Without `localeFirst` nothing changes.
+* `localizeNetworkUrl` and kit.js put the language first on every LeviMC site (`/zh-Hans/lip/`, `/zh-Hans/mods/`,
+  `/zh-Hans/about/`); `docsLocales` are the short segments (`es`, `ru`, `de`, `ja`, `ko`, `fr`), the new
+  `NETWORK_LANGUAGE_SEGMENTS` lists every segment. URLs naming a language already (first, or after a base as before)
+  stay. The Doxygen fallback header (`static/doxygen/`) is language-first too.
+* `scripts/linkcheck.mjs --locale-first [prefixes]`: the dist is the host root, the site's pages are those under
+  base and `/<prefix>/<base>`.
+* Demos: Demo, the lip demo and Single build language-first (`/zh-Hans/Demo/`, `/zh-Hans/lip/`) with
+  `formerPrefixes`; previews use `--base /` (`npm run preview`, `linkcheck:lip`, `linkcheck:single`).
+* **Migration** (a docs root in levimc.org's `docs/`): add `localeFirst: true`, list every old prefix in
+  `formerPrefixes` (the current one too), change `preview` to `--base /` and `linkcheck` to
+  `--locale-first <prefixes>`; links into other sites use language-first URLs. Sites built elsewhere keep working
+  unchanged on 2.23.
 
 ### 2.22.2
 

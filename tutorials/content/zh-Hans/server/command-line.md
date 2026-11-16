@@ -128,7 +128,7 @@ lip setup --game 1.26.60 --accept-eula
 - 装模组：[给服务器安装模组](install-mods.md)。
 - 让其他玩家连进来：[让朋友连上你的服务器](let-friends-join.md)。
 - 改在容器里运行服务器：[在 Docker 中运行服务器](docker.md)。
-- 安装、列出、更新和卸载包：[管理包](https://levimc.org/lip/zh-Hans/guides/managing_packages.html)。
-- `lip` 的设置，以及 GitHub 慢或连不上时怎么办：[配置](https://levimc.org/lip/zh-Hans/guides/configuration.html)。
-- 所有选项：[`lip setup`](https://levimc.org/lip/zh-Hans/reference/commands/setup.html)、[`lip run`](https://levimc.org/lip/zh-Hans/reference/commands/run.html)、[`lip config`](https://levimc.org/lip/zh-Hans/reference/commands/config.html)。
-- 命令失败时：[故障排查](https://levimc.org/lip/zh-Hans/guides/troubleshooting.html)。
+- 安装、列出、更新和卸载包：[管理包](https://levimc.org/zh-Hans/lip/guides/managing_packages.html)。
+- `lip` 的设置，以及 GitHub 慢或连不上时怎么办：[配置](https://levimc.org/zh-Hans/lip/guides/configuration.html)。
+- 所有选项：[`lip setup`](https://levimc.org/zh-Hans/lip/reference/commands/setup.html)、[`lip run`](https://levimc.org/zh-Hans/lip/reference/commands/run.html)、[`lip config`](https://levimc.org/zh-Hans/lip/reference/commands/config.html)。
+- 命令失败时：[故障排查](https://levimc.org/zh-Hans/lip/guides/troubleshooting.html)。

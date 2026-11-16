@@ -6,6 +6,7 @@ import type { NavEntry, ResolvedConfig, SidebarConfig } from './config.ts';
 import type { ContentScan, PageRoute } from './content.ts';
 import { findSource } from './links.ts';
 import type { NavItem, SidebarData } from '../shared/types.ts';
+import { sitePath } from '../shared/routing.ts';
 
 type Node =
   | { kind: 'page'; key: string; locale?: string; text?: string; external?: false }
@@ -14,9 +15,18 @@ type Node =
 
 const isExternal = (s: string) => /^[a-z][a-z0-9+.-]*:|^\/\//i.test(s);
 
+/** A root-relative URL of this site (query and #hash kept) as a path relative to the site (routing.ts sitePath), or null. */
+function ownPath(cfg: ResolvedConfig, url: string): string | null {
+  const i = url.search(/[?#]/);
+  const path = i < 0 ? url : url.slice(0, i);
+  if (!cfg.localeFirst) return path.startsWith(cfg.base) ? url.slice(cfg.base.length) : null;
+  const rel = sitePath(cfg, path);
+  return rel === null ? null : rel + (i < 0 ? '' : url.slice(i));
+}
+
 function findSourceForNav(scan: ContentScan, cfg: ResolvedConfig, link: string): { key: string; locale?: string } | null {
   let p = link.split('#')[0]!.split('?')[0]!;
-  if (p.startsWith(cfg.base)) p = p.slice(cfg.base.length);
+  if (p.startsWith('/')) p = sitePath(cfg, p) ?? p;
   p = posix.normalize(p.replace(/^\/+/, '') || '.').replace(/^\.$/, '');
   const found = findSource({ cfg, scan }, p);
   if (found) return { key: found.src.key, locale: found.explicit ? found.src.locale : undefined };
@@ -30,17 +40,20 @@ export function parseNav(entries: NavEntry[], scan: ContentScan, cfg: ResolvedCo
   const asTarget = (text: string | undefined, link: string): Node | null => {
     if (isExternal(link)) {
       // own-site absolute URL pointing into this build → internal page, or a same-site link (below)
-      if (cfg.hostname && link.startsWith(cfg.hostname + cfg.base)) {
-        const t = findSourceForNav(scan, cfg, link.slice(cfg.hostname.length));
+      const own = cfg.hostname && link.startsWith(cfg.hostname + '/') ? ownPath(cfg, link.slice(cfg.hostname.length)) : null;
+      if (own !== null) {
+        const t = findSourceForNav(scan, cfg, link.slice(cfg.hostname!.length));
         if (t) return { kind: 'page', key: t.key, locale: t.locale, text };
-        return { kind: 'link', text: text ?? link, href: link.slice(cfg.hostname.length + cfg.base.length), internal: true };
+        return { kind: 'link', text: text ?? link, href: own, internal: true };
       }
       return { kind: 'link', text: text ?? link, href: link };
     }
     const t = findSourceForNav(scan, cfg, link);
     // a root-absolute path under base that is no page of the docs (e.g. the Doxygen output merged into dist/api/):
     // a link of this site, opened in place like a page
-    if (!t && link.startsWith(cfg.base)) return { kind: 'link', text: text ?? link, href: link.slice(cfg.base.length), internal: true };
+    // (with localeFirst also /zh-Hans/<base>…)
+    const own = t || !link.startsWith('/') ? null : ownPath(cfg, link);
+    if (own !== null) return { kind: 'link', text: text ?? link, href: own, internal: true };
     if (!t) {
       warn(`nav: cannot resolve '${link}'`);
       return null;

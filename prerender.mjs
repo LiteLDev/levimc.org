@@ -86,6 +86,11 @@ writeFileSync(
 // LeviMC Mods writes its own sitemap (every mod page); its listing's query URLs (/mods/?cat=…) are all one page. Each
 // project's docs (levimc.org/<Project>/, published by its repository) write theirs too: robots.txt exists only here.
 const sitemaps = [`${SITE_ORIGIN}/sitemap.xml`, `${SITE_ORIGIN}${MODS_PATH}sitemap.xml`, ...DOCS_PROJECTS.map((p) => `${p.url}sitemap.xml`)];
-writeFileSync('dist/robots.txt', `User-agent: *\nAllow: /\nDisallow: ${MODS_PATH}*?*\n\n${sitemaps.map((u) => `Sitemap: ${u}\n`).join('')}`);
+// the tutorials (tutorials/) and every docs build of this repository keep their sitemap under their base (it lists
+// their language-first URLs too: /zh-Hans/tutorials/…, allowed for a sitemap named in robots.txt)
+sitemaps.push(`${SITE_ORIGIN}/tutorials/sitemap.xml`);
+// the listing's query URLs in every language too (the language first: /zh-Hans/mods/?cat=…)
+const disallow = ['', ...LOCALES.filter((l) => l.prefix).map((l) => '/' + l.prefix.slice(0, -1))].map((l) => `Disallow: ${l}${MODS_PATH}*?*\n`).join('');
+writeFileSync('dist/robots.txt', `User-agent: *\nAllow: /\n${disallow}\n${sitemaps.map((u) => `Sitemap: ${u}\n`).join('')}`);
 
 console.log(`prerendered ${files.length} pages (${preloaded} with modulepreloaded page/post chunks) + sitemap.xml (${ROUTE_PATHS.length} URLs), robots.txt`);

@@ -5,7 +5,7 @@
 第一次大约需要一小时，大部分时间花在安装 Android SDK 上。
 
 ::: info Android，而不是 LeviLamina
-Android 原生模组由 [Android 版 LeviLauncher](https://levimc.org/LeviLauncher/zh-Hans/guide/mods-integrations?platform=android) 通过 Preloader SDK（[LiteLDev/preloader-android](https://github.com/LiteLDev/preloader-android)）加载，而不是由 LeviLamina 加载，并使用独立的 `pl::` API。模组的形态（`load()`、`enable()`、`disable()`、`getSelf()`）与[你的第一个 LeviLamina 模组](first-levilamina-mod.md)相同。
+Android 原生模组由 [Android 版 LeviLauncher](https://levimc.org/zh-Hans/LeviLauncher/guide/mods-integrations?platform=android) 通过 Preloader SDK（[LiteLDev/preloader-android](https://github.com/LiteLDev/preloader-android)）加载，而不是由 LeviLamina 加载，并使用独立的 `pl::` API。模组的形态（`load()`、`enable()`、`disable()`、`getSelf()`）与[你的第一个 LeviLamina 模组](first-levilamina-mod.md)相同。
 :::
 
 ## 你需要准备
@@ -16,7 +16,7 @@ Android 原生模组由 [Android 版 LeviLauncher](https://levimc.org/LeviLaunch
   - [PowerShell 7](https://learn.microsoft.com/zh-cn/powershell/scripting/install/installing-powershell)（在 Windows 上也可以用 Windows PowerShell）；
   - 一个面向电脑本身的 C++ 编译器：Windows 上是勾选了 **使用 C++ 的桌面开发** 的 Visual Studio，Linux 和 macOS 上是 GCC 或 Clang。构建时会在电脑上运行一个小程序，生成模组的默认配置；
   - [Git](https://git-scm.com)。
-- 一部 ARM64 的 Android 手机（Android 9 或更高版本），装有 Google Play 上的 Minecraft 和 Android 版 LeviLauncher：见 [LeviLauncher](https://levimc.org/LeviLauncher/zh-Hans/)。
+- 一部 ARM64 的 Android 手机（Android 9 或更高版本），装有 Google Play 上的 Minecraft 和 Android 版 LeviLauncher：见 [LeviLauncher](https://levimc.org/zh-Hans/LeviLauncher/)。
 - 可选：[Android 平台工具](https://developer.android.com/tools/releases/platform-tools)（`adb`），并在手机上开启 USB 调试，用于查看日志。
 - C++ 基础。
 
@@ -146,10 +146,10 @@ pwsh ./scripts/package.ps1 -Abi arm64-v8a
 
 ## 下一步
 
-- 生命周期的细节：[Mod API](https://levimc.org/LeviLamina/zh-Hans/developer_guides/android/api/mod/)。
-- 更多带标题、描述和取值范围的设置：[Config API](https://levimc.org/LeviLamina/zh-Hans/developer_guides/android/api/config/)。
-- 游戏中的按钮和开关：[Mod Menu API](https://levimc.org/LeviLamina/zh-Hans/developer_guides/android/api/mod_menu/)。触摸和按键：[Input API](https://levimc.org/LeviLamina/zh-Hans/developer_guides/android/api/input/)。
-- 改变游戏的行为：[Hook API](https://levimc.org/LeviLamina/zh-Hans/developer_guides/android/api/hook/)、[Signature API](https://levimc.org/LeviLamina/zh-Hans/developer_guides/android/api/signature/) 和 [Patch API](https://levimc.org/LeviLamina/zh-Hans/developer_guides/android/api/patch/)。
-- SDK 的头文件和宏：[SDK 头文件与宏](https://levimc.org/LeviLamina/zh-Hans/developer_guides/android/api/types_and_macros/)。
+- 生命周期的细节：[Mod API](https://levimc.org/zh-Hans/LeviLamina/developer_guides/android/api/mod/)。
+- 更多带标题、描述和取值范围的设置：[Config API](https://levimc.org/zh-Hans/LeviLamina/developer_guides/android/api/config/)。
+- 游戏中的按钮和开关：[Mod Menu API](https://levimc.org/zh-Hans/LeviLamina/developer_guides/android/api/mod_menu/)。触摸和按键：[Input API](https://levimc.org/zh-Hans/LeviLamina/developer_guides/android/api/input/)。
+- 改变游戏的行为：[Hook API](https://levimc.org/zh-Hans/LeviLamina/developer_guides/android/api/hook/)、[Signature API](https://levimc.org/zh-Hans/LeviLamina/developer_guides/android/api/signature/) 和 [Patch API](https://levimc.org/zh-Hans/LeviLamina/developer_guides/android/api/patch/)。
+- SDK 的头文件和宏：[SDK 头文件与宏](https://levimc.org/zh-Hans/LeviLamina/developer_guides/android/api/types_and_macros/)。
 - 包含 Mod Menu、按钮和图片的完整示例：[LiteLDev/LeviLauncher-Android](https://github.com/LiteLDev/LeviLauncher-Android) 中的 `examples/full-cpp-mod`。
-- 从玩家角度看 LeviLauncher 中的原生模组：[模组与集成](https://levimc.org/LeviLauncher/zh-Hans/guide/mods-integrations?platform=android)。
+- 从玩家角度看 LeviLauncher 中的原生模组：[模组与集成](https://levimc.org/zh-Hans/LeviLauncher/guide/mods-integrations?platform=android)。

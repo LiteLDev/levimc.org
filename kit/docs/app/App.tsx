@@ -1,7 +1,7 @@
 import { Suspense, use, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigationType } from 'react-router';
 import type { PageData, RouteMeta } from '../shared/types';
-import { href, langOf, loadPage, localeOf, matchPathname, site, stringsFor, withMeta } from './data';
+import { fullPathname, href, langOf, loadPage, localeOf, matchPathname, site, stringsFor, withMeta } from './data';
 import { pageTitle } from '../shared/head';
 import { docsStrings } from '../shared/strings';
 import { KitLink } from './components/KitLink';
@@ -51,15 +51,17 @@ function useHead(route: RouteMeta | undefined, locale: string) {
     document.title = pageTitle(site, route, docsStrings(langOf(locale)).pageNotFound);
     document.documentElement.lang = langOf(locale);
     if (!route || !site.hostname) return;
-    document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', site.hostname + site.base + route.path);
+    document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', site.hostname + href(route.path));
     document.head.querySelectorAll('link[rel="alternate"][hreflang]').forEach((n) => n.remove());
     const alts = Object.entries(route.alternates);
     if (alts.length > 1) {
-      for (const [code, p] of alts) {
+      // the same tags as the prerendered head (shared/head.ts routeHead), x-default included
+      const def = route.alternates[site.defaultLocale];
+      for (const [lang, p] of [...alts.map(([code, p]) => [langOf(code), p] as const), ...(def !== undefined ? [['x-default', def] as const] : [])]) {
         const l = document.createElement('link');
         l.rel = 'alternate';
-        l.hreflang = langOf(code);
-        l.href = site.hostname + site.base + p;
+        l.hreflang = lang;
+        l.href = site.hostname + href(p);
         document.head.appendChild(l);
       }
     }
@@ -214,7 +216,7 @@ function useScrollManagement(key: string, hash: string) {
 
 export function App() {
   const location = useLocation();
-  const fullPath = site.base + location.pathname.replace(/^\//, '');
+  const fullPath = fullPathname(location.pathname);
   const route = useMemo(() => matchPathname(fullPath), [fullPath]);
   // On the static 404 page the locale is taken from the URL after hydration (SSR renders the default).
   const [notFoundLocale, setNotFoundLocale] = useState(site.defaultLocale);

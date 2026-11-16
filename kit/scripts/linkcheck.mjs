@@ -4,13 +4,16 @@
 //   node linkcheck.mjs <dist> --base /<Project>/ --site-origin https://levimc.org
 //        [--external] [--allow-redirect-hosts aka.ms,discord.gg,qm.qq.com]
 //        [--ignore-paths /LeviLamina/api/,/other/] [--other-sites /mods/,/LeviLamina/]
-//        [--json report.json] [--concurrency 8] [--quiet]
+//        [--locale-first [zh-Hans,zh-Hant]] [--json report.json] [--concurrency 8] [--quiet]
 //
 // Internal links (relative, root-relative and absolute links to <site-origin><base>) are resolved against
 // the dist folder exactly like GitHub Pages serves it (see serve-pages.mjs): broken targets, targets that
 // only work through a redirect (e.g. missing trailing slash) and missing #anchors are errors.
 // --ignore-paths skips links below those paths; --other-sites treats them as external URLs (paths of the same
 // origin that another build publishes: levimc.org/<Project>/ is each project's docs, not part of levimc.org's dist).
+// --locale-first: a docs build with `i18n.localeFirst` (kit 2.23): <dist> is the host root (dist/<Project>/…,
+// dist/zh-Hans/<Project>/…) and the site's pages are those under <base> and under /<prefix>/<base> for each listed
+// locale prefix; every other path of the origin is another site's (external).
 // With --external every external URL is fetched once with curl (honours HTTP(S)_PROXY), following
 // redirects manually; redirects are reported unless the URL ends in /releases/latest or the host is
 // allow-listed. Exit code is 1 when there are internal errors (external problems are reported only,
@@ -25,7 +28,10 @@ const args = process.argv.slice(2);
 const opt = (n, d) => (args.includes(n) ? args[args.indexOf(n) + 1] : d);
 const flag = (n) => args.includes(n);
 const VALUE_OPTS = new Set(['--base', '--site-origin', '--allow-redirect-hosts', '--ignore-paths', '--other-sites', '--json', '--concurrency']);
-const positional = args.filter((a, i) => !a.startsWith('--') && !VALUE_OPTS.has(args[i - 1]));
+// --locale-first takes an optional value (a single-locale site has no prefixes)
+const lfAt = args.indexOf('--locale-first');
+const lfValue = lfAt >= 0 && args[lfAt + 1] !== undefined && !args[lfAt + 1].startsWith('--') ? lfAt + 1 : -1;
+const positional = args.filter((a, i) => !a.startsWith('--') && !VALUE_OPTS.has(args[i - 1]) && i !== lfValue);
 const dist = resolve(positional[0] ?? 'dist');
 let base = opt('--base', '/');
 if (!base.startsWith('/')) base = '/' + base;
@@ -38,6 +44,12 @@ const allowHosts = (opt('--allow-redirect-hosts', 'aka.ms,discord.gg,qm.qq.com,t
 const ignorePaths = (opt('--ignore-paths', '') || '').split(',').filter(Boolean);
 const otherSites = (opt('--other-sites', '') || '').split(',').filter(Boolean);
 const quiet = flag('--quiet');
+const localeFirst = lfAt >= 0;
+const localePrefixes = lfValue >= 0 ? args[lfValue].split(',').map((s) => s.trim().replace(/^\/+|\/+$/g, '')).filter(Boolean) : [];
+// the URL path <dist> is served at, and the paths of the site's pages
+const distBase = localeFirst ? '/' : base;
+const scopes = [base, ...localePrefixes.map((p) => '/' + p + base)];
+const inScope = (pathname) => scopes.some((s) => pathname.startsWith(s));
 const concurrency = Number(opt('--concurrency', '8'));
 
 // ------------------------------------------------------------------------------------------ html parsing
@@ -90,7 +102,7 @@ function scanHtml(html) {
 const files = walk(dist);
 const pageUrlOf = (file) => {
   const rel = relative(dist, file).split(sep).join('/');
-  return base + rel.replace(/(^|\/)index\.html$/, '$1');
+  return distBase + rel.replace(/(^|\/)index\.html$/, '$1');
 };
 const idCache = new Map();
 const idsOf = (file) => {
@@ -121,7 +133,7 @@ for (const file of files) {
     }
     const isOwn = u.origin === 'http://site.invalid' || (origin && u.origin === origin);
     const other = isOwn && otherSites.some((p) => u.pathname.startsWith(p));
-    if (!isOwn || other || !u.pathname.startsWith(base) || ignorePaths.some((p) => u.pathname.startsWith(p))) {
+    if (!isOwn || other || !inScope(u.pathname) || ignorePaths.some((p) => u.pathname.startsWith(p))) {
       if (isOwn && !other && ignorePaths.some((p) => u.pathname.startsWith(p))) {
         internal.ignored++;
         continue;
@@ -133,10 +145,10 @@ for (const file of files) {
       continue;
     }
     internal.checked++;
-    const r = resolvePagesPath(dist, base, u.pathname);
+    const r = resolvePagesPath(dist, distBase, u.pathname);
     if (r.status === 301) {
       // a directory without index.html also answers 301 (GitHub Pages), but its target is a 404
-      if (resolvePagesPath(dist, base, r.location).status !== 200) internal.broken.push({ page: pageRel, url: raw, reason: `301 → 404 (${r.location})` });
+      if (resolvePagesPath(dist, distBase, r.location).status !== 200) internal.broken.push({ page: pageRel, url: raw, reason: `301 → 404 (${r.location})` });
       else internal.redirects.push({ page: pageRel, url: raw, location: r.location });
       continue;
     }
@@ -240,7 +252,7 @@ const jsonOut = opt('--json');
 if (jsonOut) writeFileSync(jsonOut, JSON.stringify(report, null, 2));
 
 const line = (s = '') => console.log(s);
-line(`linkcheck: ${files.length} HTML files in ${dist} (base ${base}${origin ? `, origin ${origin}` : ''})`);
+line(`linkcheck: ${files.length} HTML files in ${dist} (base ${base}${localeFirst ? `, language first: ${scopes.join(' ')}` : ''}${origin ? `, origin ${origin}` : ''})`);
 line(`  internal links checked: ${internal.checked}${internal.ignored ? ` (+${internal.ignored} ignored)` : ''}`);
 line(`  broken: ${internal.broken.length}   redirect-needing: ${internal.redirects.length}   missing anchors: ${internal.anchors.length}`);
 const show = (title, list, fmt) => {

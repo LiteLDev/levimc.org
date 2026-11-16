@@ -64,6 +64,8 @@ export {
   opensInNewTab,
   newTabProps,
   NETWORK_ORIGIN,
+  NETWORK_LANGUAGE_SEGMENTS,
+  localizeNetworkUrl,
   type Project,
   type ProjectId,
   type ProjectGroupId,

@@ -18,7 +18,7 @@ export default function ProjectCard({ project, stars, loading, headingLevel = 3 
   const kind = project.tags[0];
   // LeviMC Mods pages stay in this tab; docs and repositories open beside it, as before
   const external = !project.link.startsWith(LINKS.home);
-  // a LeviMC Mods page in the page's language (/mods/zh-Hans/…)
+  // a LeviMC Mods page in the page's language (/zh-Hans/mods/…)
   const { href } = useI18n();
 
   return (

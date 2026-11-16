@@ -69,7 +69,7 @@
 
 ## 3. 添加模组
 
-容器第一次启动、安装服务器时，会安装变量 `PACKAGES` 里列出的包，包之间用空格分隔。[LeviMC 模组](https://levimc.org/mods/zh-Hans/)目录里的任何模组都可以，名字就是模组页面上 `lip install` 后面的部分。
+容器第一次启动、安装服务器时，会安装变量 `PACKAGES` 里列出的包，包之间用空格分隔。[LeviMC 模组](https://levimc.org/zh-Hans/mods/)目录里的任何模组都可以，名字就是模组页面上 `lip install` 后面的部分。
 
 要新开一个带模组的服务器，把这个变量加进第 1 步的 `docker run` 命令：
 
@@ -126,6 +126,6 @@ docker exec -it levilamina lip install github.com/LiteLDev/LeviOptimize
 - 挑选模组：[给服务器安装模组](install-mods.md)讲了包名和变体。
 - 让网络外的玩家连进来：[让朋友连上你的服务器](let-friends-join.md)。
 - 不用 Docker 开服：[开你的第一个服务器](first-server.md)或[用命令行开服](command-line.md)。
-- `PACKAGES` 接受的包名、版本和引用：[管理包](https://levimc.org/lip/zh-Hans/guides/managing_packages.html)。
+- `PACKAGES` 接受的包名、版本和引用：[管理包](https://levimc.org/zh-Hans/lip/guides/managing_packages.html)。
 - 镜像、它们的 Dockerfile 和更新日志：[LiteLDev/docker-levilamina-server](https://github.com/LiteLDev/docker-levilamina-server)。
-- 出了问题：[LeviLamina 问题排除](https://levimc.org/LeviLamina/zh-Hans/user_guides/troubleshooting/)。
+- 出了问题：[LeviLamina 问题排除](https://levimc.org/zh-Hans/LeviLamina/user_guides/troubleshooting/)。

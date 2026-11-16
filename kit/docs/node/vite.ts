@@ -10,10 +10,10 @@
 // chunk per page), serves the SPA in dev, and emits search indexes, sitemap.xml, .nojekyll and content
 // assets for the client build. `node kit/docs/build.mjs` runs client build → SSR build → prerender.
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { gzipSync } from 'node:zlib';
-import { dirname, extname, join, relative, resolve } from 'node:path';
+import { dirname, extname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin, PluginOption, ViteDevServer } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -22,6 +22,7 @@ import { resolveConfig, type DocsConfig, type ResolvedConfig } from './config.ts
 import { buildSite, type BuiltSite } from './site.ts';
 import { localeRedirectScript } from '../shared/head.ts';
 import { PAGE_META_KEYS, type SiteData } from '../shared/types.ts';
+import { pathUrl, siteRoots, sitePath } from '../shared/routing.ts';
 import { createThemeInitScript } from '../../components/theme.ts';
 import { UI_LOCALES } from '../../components/i18n.ts';
 import { GOOGLE_FONTS_HREF } from '../../components/fonts.ts';
@@ -58,7 +59,7 @@ function chromeOnlyLocales(site: Pick<SiteData, 'locales'>): string[] {
 
 /** dist/_kit/nav.json: the docs' sections and resources per locale (generates the Doxygen API header, kit 2.19). */
 export function navJson(site: SiteData): Record<string, unknown> {
-  const abs = (link: string, external?: boolean) => (external ? link : site.base + link);
+  const abs = (link: string, external?: boolean) => (external ? link : pathUrl(site, link));
   const out: Record<string, unknown> = {};
   for (const l of site.locales) {
     out[l.code] = {
@@ -66,7 +67,7 @@ export function navJson(site: SiteData): Record<string, unknown> {
       label: l.label,
       prefix: l.prefix,
       title: site.title,
-      home: site.base + (site.homePaths[l.code] ?? l.prefix),
+      home: pathUrl(site, site.homePaths[l.code] ?? l.prefix),
       tabs: (site.nav[l.code] ?? [])
         .filter((it) => it.link !== undefined)
         .map((it) => ({ text: it.text, link: abs(it.link!, it.external), ...(it.external ? { external: true } : {}) })),
@@ -74,6 +75,17 @@ export function navJson(site: SiteData): Record<string, unknown> {
     };
   }
   return out;
+}
+
+/** A redirect page (canonical, meta refresh, location.replace keeping the query and #hash) to an absolute URL. */
+function redirectHtml(url: string): string {
+  const attr = url.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  return (
+    `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>Redirecting…</title>\n<meta name="robots" content="noindex">\n` +
+    `<link rel="canonical" href="${attr}">\n<meta http-equiv="refresh" content="0; url=${attr}">\n` +
+    `<script>location.replace(${JSON.stringify(url).replace(/</g, '\\u003c')}+location.search+location.hash);</script>\n</head>\n` +
+    `<body><p>This page has moved to <a href="${attr}">${attr}</a>.</p></body>\n</html>\n`
+  );
 }
 
 function hash8(s: string) {
@@ -88,6 +100,8 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
   let isSsr = false;
   let isBuild = false;
   let searchFiles = new Map<string, { file: string; json: string }>();
+  /** localeFirst: redirect pages at language-first URLs (outside base), relative to outRoot (generateBundle → writeBundle). */
+  let localizedRedirects: { file: string; html: string }[] = [];
 
   const appHtml = join(KIT_DOCS_APP_DIR, 'index.html');
   const entryServer = join(KIT_DOCS_APP_DIR, 'entry-server.tsx');
@@ -135,7 +149,9 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
               rollupOptions: { input: entryServer, output: { entryFileNames: 'entry-server.js', format: 'es' } },
             }
           : {
-              outDir: cfg.outRoot,
+              // localeFirst: outDir mirrors the host root, base's own files go to its folder (the locales' pages are
+              // written next to it by the prerender)
+              outDir: cfg.baseOutRoot,
               emptyOutDir: true,
               assetsDir: 'assets',
               rollupOptions: {
@@ -149,6 +165,11 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
       };
     },
     async buildStart() {
+      // localeFirst: Vite empties base's folder only; the locales' folders (dist/zh-Hans/<base>…) go too
+      if (isBuild && !isSsr && cfg.localeFirst && cfg.outRoot !== cfg.baseOutRoot) {
+        if (!cfg.outRoot.startsWith(root + sep)) throw new Error(`[kit-docs] outDir ${cfg.outRoot} is outside the project (${root})`);
+        rmSync(cfg.outRoot, { recursive: true, force: true });
+      }
       const b = await rebuild();
       if (isBuild && !isSsr) {
         reportWarnings(b, (m) => this.warn(m));
@@ -215,7 +236,7 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
         // the chrome language rule (App's useChromeLocale): a stored language none of the site's locales has moves
         // the chrome (bar, footer) to that language — hide it until the app has re-rendered it
         // cross-site prerendering: every same-origin link except this site's own pages (its router serves those)
-        const init = createThemeInitScript({ chromeLocales: chromeOnlyLocales(b.site), speculation: { exclude: [b.site.base + '*'] } });
+        const init = createThemeInitScript({ chromeLocales: chromeOnlyLocales(b.site), speculation: { exclude: siteRoots(b.site).map((r) => r + '*') } });
         const favicon = b.site.favicon ?? b.site.logo?.src;
         const headExtra = (cfg.head ?? [])
           .map(([tag, attrs, content]) => {
@@ -253,6 +274,24 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
       server.watcher.on('change', onChange);
       server.watcher.on('add', onChange);
       server.watcher.on('unlink', onChange);
+      const serveApp = async (res: import('node:http').ServerResponse) => {
+        const template = readFileSync(appHtml, 'utf8');
+        // Transform as if requested at the template's own location so ./entry-client.tsx resolves.
+        const html = await server.transformIndexHtml('/' + relative(root, appHtml).split('\\').join('/'), template);
+        res.setHeader('content-type', 'text/html; charset=utf-8');
+        res.end(html);
+      };
+      // localeFirst: the locales' pages are outside Vite's base (/zh-Hans/<base>…): serve the app there before Vite
+      // answers them with its "did you mean <base>" page
+      if (cfg.localeFirst) {
+        server.middlewares.use(async (req, res, next) => {
+          const url = (req.url ?? '/').split('?')[0]!;
+          if ((req.method !== 'GET' && req.method !== 'HEAD') || url.startsWith(cfg.base) || (extname(url) && !url.endsWith('.html'))) return next();
+          if (sitePath(cfg, url) === null) return next();
+          await ensure();
+          await serveApp(res);
+        });
+      }
       return () => {
         server.middlewares.use(async (req, res, next) => {
           // Vite's base middleware strips the base from req.url; use the original URL.
@@ -277,11 +316,7 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
             }
             return next();
           }
-          const template = readFileSync(appHtml, 'utf8');
-          // Transform as if requested at the template's own location so ./entry-client.tsx resolves.
-          const html = await server.transformIndexHtml('/' + relative(root, appHtml).split('\\').join('/'), template);
-          res.setHeader('content-type', 'text/html; charset=utf-8');
-          res.end(html);
+          await serveApp(res);
         });
       };
     },
@@ -289,31 +324,50 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
       if (isSsr || !built) return;
       const b = built;
       for (const f of searchFiles.values()) this.emitFile({ type: 'asset', fileName: f.file, source: f.json });
-      this.emitFile({ type: 'asset', fileName: '.nojekyll', source: '' });
+      // (localeFirst: at the host root, written in writeBundle)
+      if (!cfg.localeFirst) this.emitFile({ type: 'asset', fileName: '.nojekyll', source: '' });
       this.emitFile({ type: 'asset', fileName: '_kit/nav.json', source: JSON.stringify(navJson(b.site), null, 2) + '\n' });
       // moved pages: a redirect page at each old URL
-      const routeFiles = new Set(b.routes.map((r) => r.path));
+      // the route paths served under base (with localeFirst: the default locale's), relative to base
+      const routeFiles = new Set(
+        b.routes.map((r) => pathUrl(cfg, r.path)).filter((u) => u.startsWith(cfg.base)).map((u) => u.slice(cfg.base.length)),
+      );
+      const allRoutes = new Set(b.routes.map((r) => r.path));
+      const written = new Map<string, string>();
+      // localeFirst: a redirect of a localized path also answers at its language-first URL (outside base: written to
+      // the host root in writeBundle)
+      localizedRedirects = [];
       const redirectPage = (fileName: string, to: string) => {
-        const url = /^[a-z]+:/i.test(to) ? to : `${cfg.hostname ?? ''}${cfg.base}${to}`;
-        const attr = url.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-        const source =
-          `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>Redirecting…</title>\n<meta name="robots" content="noindex">\n` +
-          `<link rel="canonical" href="${attr}">\n<meta http-equiv="refresh" content="0; url=${attr}">\n` +
-          `<script>location.replace(${JSON.stringify(url).replace(/</g, '\\u003c')}+location.hash);</script>\n</head>\n` +
-          `<body><p>This page has moved to <a href="${attr}">${attr}</a>.</p></body>\n</html>\n`;
-        this.emitFile({ type: 'asset', fileName, source });
+        const url = /^[a-z]+:/i.test(to) ? to : `${cfg.hostname ?? ''}${pathUrl(cfg, to)}`;
+        const prev = written.get(fileName);
+        if (prev !== undefined && prev !== url) throw new Error(`redirects: ${cfg.base}${fileName} would redirect to ${prev} and to ${url}`);
+        if (prev !== undefined) return;
+        written.set(fileName, url);
+        this.emitFile({ type: 'asset', fileName, source: redirectHtml(url) });
       };
       for (const [from, to] of Object.entries(cfg.redirects ?? {})) {
         const dir = from === '' || from.endsWith('/');
         const fileName = dir ? `${from}index.html` : cfg.urlStyle === 'directory' ? `${from}/index.html` : `${from}.html`;
-        if (routeFiles.has(from) || routeFiles.has(dir ? from : `${from}.html`)) throw new Error(`redirects: ${from} is a page of the site`);
+        if (routeFiles.has(from) || routeFiles.has(dir ? from : `${from}.html`) || allRoutes.has(from) || (!dir && allRoutes.has(`${from}.html`))) {
+          throw new Error(`redirects: ${from} is a page of the site`);
+        }
         redirectPage(fileName, to);
+        if (cfg.localeFirst && pathUrl(cfg, from) !== cfg.base + from) {
+          const html = redirectHtml(/^[a-z]+:/i.test(to) ? to : `${cfg.hostname ?? ''}${pathUrl(cfg, to)}`);
+          localizedRedirects.push({ file: pathUrl(cfg, fileName).slice(1), html });
+        }
       }
-      // a locale's former URL prefixes (kit 2.21, LocaleConfig.formerPrefixes): each page also answers there
+      // a locale's former URL prefixes (kit 2.21, LocaleConfig.formerPrefixes): each page also answers there.
+      // They are relative to base: with localeFirst (kit 2.23) no locale but the default one lives under base, so a
+      // locale's own prefix is a former one too (/<base>/zh-Hans/x/ → /zh-Hans/<base>/x/)
       for (const loc of cfg.locales) {
         for (const former of loc.formerPrefixes) {
-          if (former === loc.prefix) continue;
-          if (cfg.locales.some((l) => l.prefix === former)) throw new Error(`i18n: former prefix '${former}' of '${loc.code}' is the prefix of a locale`);
+          if (!cfg.localeFirst) {
+            if (former === loc.prefix) continue;
+            if (cfg.locales.some((l) => l.prefix === former)) throw new Error(`i18n: former prefix '${former}' of '${loc.code}' is the prefix of a locale`);
+          } else if (former === '' || [...routeFiles].some((f) => f.startsWith(former))) {
+            throw new Error(`i18n: former prefix '${former}' of '${loc.code}' holds pages of the site`);
+          }
           for (const r of b.routes) {
             if (r.locale !== loc.code || !r.path.startsWith(loc.prefix)) continue;
             const old = former + r.path.slice(loc.prefix.length);
@@ -330,7 +384,13 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
         }
       }
       mkdirSync(join(root, '.kit'), { recursive: true });
-      writeFileSync(join(root, '.kit/client-pages.json'), JSON.stringify({ pages, appHtml: relative(root, appHtml).split('\\').join('/'), outDir: cfg.outRoot }, null, 2));
+      // outDir: where the prerender writes the pages (the host root with localeFirst); template: the client build's
+      // index.html (in base's folder)
+      const template = relative(cfg.outRoot, join(cfg.baseOutRoot, relative(root, appHtml))).split('\\').join('/');
+      writeFileSync(
+        join(root, '.kit/client-pages.json'),
+        JSON.stringify({ pages, appHtml: relative(root, appHtml).split('\\').join('/'), outDir: cfg.outRoot, template }, null, 2),
+      );
       // sitemap
       if (cfg.sitemap && cfg.hostname) {
         const urls = b.routes
@@ -339,11 +399,11 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
             const links =
               alts.length > 1
                 ? alts
-                    .map(([code, p]) => `    <xhtml:link rel="alternate" hreflang="${b.site.locales.find((l) => l.code === code)?.lang ?? code}" href="${cfg.hostname}${cfg.base}${encodeURI(p)}"/>`)
+                    .map(([code, p]) => `    <xhtml:link rel="alternate" hreflang="${b.site.locales.find((l) => l.code === code)?.lang ?? code}" href="${cfg.hostname}${encodeURI(pathUrl(cfg, p))}"/>`)
                     .join('\n') + '\n'
                 : '';
             const lastmod = r.lastUpdated ? `    <lastmod>${new Date(r.lastUpdated).toISOString().slice(0, 10)}</lastmod>\n` : '';
-            return `  <url>\n    <loc>${cfg.hostname}${cfg.base}${encodeURI(r.path)}</loc>\n${lastmod}${links}  </url>`;
+            return `  <url>\n    <loc>${cfg.hostname}${encodeURI(pathUrl(cfg, r.path))}</loc>\n${lastmod}${links}  </url>`;
           })
           .join('\n');
         const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls}\n</urlset>\n`;
@@ -362,25 +422,33 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
         .filter((o) => o.type === 'asset' && o.fileName.endsWith('.css'))
         .map((o) => (o.type === 'asset' ? String(o.source) : ''))
         .join('\n');
-      const tplFile = join(cfg.outRoot, relative(root, appHtml));
+      if (cfg.localeFirst) {
+        mkdirSync(cfg.outRoot, { recursive: true });
+        writeFileSync(join(cfg.outRoot, '.nojekyll'), '');
+        for (const r of localizedRedirects) {
+          mkdirSync(dirname(join(cfg.outRoot, r.file)), { recursive: true });
+          writeFileSync(join(cfg.outRoot, r.file), r.html);
+        }
+      }
+      const tplFile = join(cfg.baseOutRoot, relative(root, appHtml));
       if (css && existsSync(tplFile)) {
         const dark = noJsDarkCss(css, { source: 'the levimc-kit docs build from the site stylesheet' });
         const file = `assets/kit-nojs-dark.${hash8(dark)}.css`;
-        mkdirSync(join(cfg.outRoot, 'assets'), { recursive: true });
-        writeFileSync(join(cfg.outRoot, file), dark);
+        mkdirSync(join(cfg.baseOutRoot, 'assets'), { recursive: true });
+        writeFileSync(join(cfg.baseOutRoot, file), dark);
         const tag = `<noscript><link rel="stylesheet" href="${cfg.base}${file}" media="(prefers-color-scheme: dark)"></noscript>`;
         writeFileSync(tplFile, readFileSync(tplFile, 'utf8').replace('</head>', () => `  ${tag}\n  </head>`));
       }
       // MkDocs: every non-markdown file in the content dir is copied verbatim (logo.svg, favicon.ico, img/…)
       if (cfg.copyContentAssets) {
         for (const rel of b.scan.assets) {
-          const to = join(cfg.outRoot, rel);
+          const to = join(cfg.baseOutRoot, rel);
           mkdirSync(dirname(to), { recursive: true });
           copyFileSync(join(cfg.contentRoot, rel), to);
         }
       }
       for (const a of b.assets.values()) {
-        const to = join(cfg.outRoot, a.out);
+        const to = join(cfg.baseOutRoot, a.out);
         mkdirSync(dirname(to), { recursive: true });
         copyFileSync(a.abs, to);
       }

@@ -12,7 +12,7 @@
 
 ## 1. 在目录里找模组
 
-1. 打开 [LeviMC 模组](https://levimc.org/mods/zh-Hans/)，搜索 `LeviOptimize`。
+1. 打开 [LeviMC 模组](https://levimc.org/zh-Hans/mods/)，搜索 `LeviOptimize`。
 2. 打开它的页面。看**运行端**：给服务器用的模组必须包含服务端。再看游戏版本：其中必须有你的服务器的版本。
 3. 点**安装**。对话框里可以选择**变体**和**版本**，并在“在服务端目录中用 lip 运行：”下面给出命令，例如：
 
@@ -97,7 +97,7 @@ LegacyScriptEngine（LSE）运行用脚本语言写的插件。它有四个**变
 2. 在输出里找带 `[LeviLamina]` 的几行。你应该看到每个模组一行 `Loaded`，例如 `Loaded LeviOptimize v1.8.1`，还有一行数量，例如 `5 mod(s) loaded`（依赖也算模组）。
 3. 按 `Ctrl+C` 停止服务器。
 
-如果某个模组不在其中，输出里会说明原因。126、127 等错误码的含义见 [LeviLamina 问题排除](https://levimc.org/LeviLamina/zh-Hans/user_guides/troubleshooting/)。
+如果某个模组不在其中，输出里会说明原因。126、127 等错误码的含义见 [LeviLamina 问题排除](https://levimc.org/zh-Hans/LeviLamina/user_guides/troubleshooting/)。
 
 ## 5. 更新和移除模组
 
@@ -110,7 +110,7 @@ LegacyScriptEngine（LSE）运行用脚本语言写的插件。它有四个**变
 | 移除一个模组 | `lip uninstall LeviOptimize` | 「模组」页面：在模组上按 `Enter`，选**卸载** |
 | 看看命令会做什么 | 加上 `--dry-run` | 每次改动都会先给出计划 |
 
-不再被需要的依赖，`lip` 会自动移除。`lip update` 从不改动游戏和 LeviLamina；要把服务器换到新的游戏版本，见[工作区](https://levimc.org/lip/zh-Hans/interface/workspaces.html)或 [`lip setup`](https://levimc.org/lip/zh-Hans/reference/commands/setup.html)。
+不再被需要的依赖，`lip` 会自动移除。`lip update` 从不改动游戏和 LeviLamina；要把服务器换到新的游戏版本，见[工作区](https://levimc.org/zh-Hans/lip/interface/workspaces.html)或 [`lip setup`](https://levimc.org/zh-Hans/lip/reference/commands/setup.html)。
 
 ## 你现在有了什么
 
@@ -121,8 +121,8 @@ LegacyScriptEngine（LSE）运行用脚本语言写的插件。它有四个**变
 
 - 为刚装好的引擎写一个插件：[你的第一个脚本插件](../develop/first-script-plugin.md)。
 - 让其他玩家连进来：[让朋友连上你的服务器](let-friends-join.md)。
-- 修改模组的设置：[模组配置](https://levimc.org/lip/zh-Hans/interface/mod_config.html)。
-- 在 `lip` 里搜索、排序和筛选目录：[获取模组](https://levimc.org/lip/zh-Hans/interface/get_mods.html)。管理已安装的模组：[模组](https://levimc.org/lip/zh-Hans/interface/mods.html)。
-- 指定包的各种写法（版本、分支、ZIP 文件、文件夹）：[管理包](https://levimc.org/lip/zh-Hans/guides/managing_packages.html)。
-- 脚本引擎和它们支持的语言：[LegacyScriptEngine](https://levimc.org/LegacyScriptEngine/zh-Hans/)。
+- 修改模组的设置：[模组配置](https://levimc.org/zh-Hans/lip/interface/mod_config.html)。
+- 在 `lip` 里搜索、排序和筛选目录：[获取模组](https://levimc.org/zh-Hans/lip/interface/get_mods.html)。管理已安装的模组：[模组](https://levimc.org/zh-Hans/lip/interface/mods.html)。
+- 指定包的各种写法（版本、分支、ZIP 文件、文件夹）：[管理包](https://levimc.org/zh-Hans/lip/guides/managing_packages.html)。
+- 脚本引擎和它们支持的语言：[LegacyScriptEngine](https://levimc.org/zh-Hans/LegacyScriptEngine/)。
 - 给游戏客户端而不是服务器装模组：[在 Windows 上玩模组](../play/play-with-mods.md)。

@@ -1,6 +1,6 @@
 # 用 lip 发布你的模组
 
-完成本教程后，你的模组会在 GitHub 上有第一个发布版本，任何人都能用一条命令 `lip install github.com/<you>/my-mod` 把它装到自己的服务器上。你将在 `lip.toml` 中描述模组，让 GitHub Actions 构建发布版本，确认 `lip` 能看到它，在自己的服务器上安装它，并让它上架 [LeviMC 模组](https://levimc.org/mods/zh-Hans/)。
+完成本教程后，你的模组会在 GitHub 上有第一个发布版本，任何人都能用一条命令 `lip install github.com/<you>/my-mod` 把它装到自己的服务器上。你将在 `lip.toml` 中描述模组，让 GitHub Actions 构建发布版本，确认 `lip` 能看到它，在自己的服务器上安装它，并让它上架 [LeviMC 模组](https://levimc.org/zh-Hans/mods/)。
 
 大约需要半小时，大部分时间在等待发布构建。
 
@@ -45,7 +45,7 @@ logo = "https://avatars.githubusercontent.com/u/<your user id>"
 :::
 
 ::: details 没有 lip.toml 或只有 tooth.json 的仓库
-对于不是由模板创建的仓库，在其根目录运行 `lip pkg init`：它会询问包 ID，并写入一个最小的 `lip.toml`，再按上面的方式填写。lip v0.x 的 `tooth.json` 用 `lip pkg migrate` 转换；见[迁移包](https://levimc.org/lip/zh-Hans/authors/migrating_packages.html)。
+对于不是由模板创建的仓库，在其根目录运行 `lip pkg init`：它会询问包 ID，并写入一个最小的 `lip.toml`，再按上面的方式填写。lip v0.x 的 `tooth.json` 用 `lip pkg migrate` 转换；见[迁移包](https://levimc.org/zh-Hans/lip/authors/migrating_packages.html)。
 :::
 
 ## 2. 确认 lip 能读取它
@@ -119,7 +119,7 @@ lip pkg view github.com/<you>/my-mod
 
 ## 7. 上架 LeviMC 模组
 
-[LeviMC 模组](https://levimc.org/mods/zh-Hans/)是 `lip` 的「获取模组」页和 LeviLauncher 显示的目录。它由一份仓库列表构建，即 levimc.org 仓库中的 [`mods/repos.txt`](https://github.com/LiteLDev/liteldev.github.io/blob/main/mods/repos.txt)。
+[LeviMC 模组](https://levimc.org/zh-Hans/mods/)是 `lip` 的「获取模组」页和 LeviLauncher 显示的目录。它由一份仓库列表构建，即 levimc.org 仓库中的 [`mods/repos.txt`](https://github.com/LiteLDev/liteldev.github.io/blob/main/mods/repos.txt)。
 
 通常你什么都不用做：每两小时会有一个机器人在 GitHub 上搜索带有 `lip.toml` 和 `lip` 能读取的版本标签的仓库，并发起拉取请求把它们加入列表。维护者合并后，模组会在下一次每小时构建中出现。
 
@@ -131,7 +131,7 @@ lip pkg view github.com/<you>/my-mod
 - 它把文件放到 `mods/`（或 `plugins/`，或游戏加载附加包的位置）；
 - 仓库不是 GitHub 模板，名字也不以 `-template`、`-example`、`-demo`、`-sample` 或 `-test` 结尾。
 
-之后你应该能在 `https://levimc.org/mods/zh-Hans/github.com/<you>/my-mod/` 找到你的模组，页面上有它的名字、描述、图标、标签和安装命令。
+之后你应该能在 `https://levimc.org/zh-Hans/mods/github.com/<you>/my-mod/` 找到你的模组，页面上有它的名字、描述、图标、标签和安装命令。
 
 ## 发布下一个版本
 
@@ -147,8 +147,8 @@ lip pkg view github.com/<you>/my-mod
 
 ## 下一步
 
-- `lip.toml` 的所有字段：依赖、变体、要保留或删除的文件、钩子：[lip.toml](https://levimc.org/lip/zh-Hans/concepts/lip_toml.html)。
-- 包作者使用的命令：[`lip pkg init`](https://levimc.org/lip/zh-Hans/reference/commands/pkg_init.html)、[`lip pkg pack`](https://levimc.org/lip/zh-Hans/reference/commands/pkg_pack.html)、[`lip pkg view`](https://levimc.org/lip/zh-Hans/reference/commands/pkg_view.html)、[`lip pkg migrate`](https://levimc.org/lip/zh-Hans/reference/commands/pkg_migrate.html)。
-- 在发布前安装某个分支或提交：[管理包](https://levimc.org/lip/zh-Hans/guides/managing_packages.html)。
-- `lip` 界面中的同类工具：[工具](https://levimc.org/lip/zh-Hans/interface/tools.html)。
+- `lip.toml` 的所有字段：依赖、变体、要保留或删除的文件、钩子：[lip.toml](https://levimc.org/zh-Hans/lip/concepts/lip_toml.html)。
+- 包作者使用的命令：[`lip pkg init`](https://levimc.org/zh-Hans/lip/reference/commands/pkg_init.html)、[`lip pkg pack`](https://levimc.org/zh-Hans/lip/reference/commands/pkg_pack.html)、[`lip pkg view`](https://levimc.org/zh-Hans/lip/reference/commands/pkg_view.html)、[`lip pkg migrate`](https://levimc.org/zh-Hans/lip/reference/commands/pkg_migrate.html)。
+- 在发布前安装某个分支或提交：[管理包](https://levimc.org/zh-Hans/lip/guides/managing_packages.html)。
+- `lip` 界面中的同类工具：[工具](https://levimc.org/zh-Hans/lip/interface/tools.html)。
 - 服务器如何安装你的包：[给服务器安装模组](../server/install-mods.md)。

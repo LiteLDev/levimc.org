@@ -8,9 +8,9 @@ About, language · theme · GitHub), the footer, the theme and the docs engine �
 (and LeviMC Mods at levimc.org/mods/, see below) and the project docs at levimc.org/<Project>/ (LeviLamina with its Doxygen API, LegacyScriptEngine, lip,
 LeviLauncher for Windows and Android). Every deploy publishes it at <https://levimc.org/kit/v2/> (`kit/scripts/publish-kit.mjs`);
 the other sites fetch it when they build (`scripts/fetch-kit.mjs`, run by their package install) and never edit it.
-After a deploy that changed the kit, the `sync` job rebuilds every site (with the `KIT_SYNC_TOKEN` secret: a
-fine-grained token with *Actions: read and write* on those repositories); each site also checks hourly and rebuilds
-when its live pages run an older kit. `node kit/scripts/chrome-parity.mjs` checks that every live site shows the
+The project docs move into this repository (`docs/<Project>/`, [docs/README.md](docs/README.md)) and are built with
+this checkout's kit by every deploy; a site still built in its own repository checks hourly and rebuilds when its live
+pages run an older kit. `node kit/scripts/chrome-parity.mjs` checks that every live site shows the
 same bar and footer.
 Every route is prerendered to static HTML at build time and hydrated in the browser; GitHub Pages serves `dist/`.
 
@@ -60,8 +60,9 @@ npm run smoke:kit
   posts and pages, written in Chinese, keep their one URL (`/blog/2023/07/26/…`) and are shown in their own language.
   Only `/` redirects (to the stored language, else the browser's: `ROOT_REDIRECT_SCRIPT` in `src/prepaint.ts`); the
   bar's language menu links to the same page in the other language and stores the choice for every LeviMC site.
-  Same-site links carry the page's locale (`localizeHref` in `src/routes.ts`; LeviMC Mods and the tutorials get it
-  after their base: `/mods/zh-Hans/`)
+  Same-site links carry the page's locale (`localizeHref` in `src/routes.ts`): the language is the first segment of
+  every levimc.org URL, LeviMC Mods, the tutorials and the project docs included (`/zh-Hans/mods/`,
+  `/zh-Hans/LeviLamina/`; [MIGRATION.md](MIGRATION.md))
 - `src/pages/`, `src/components/` — page content; `src/i18n/locales/{en,zh,zh-Hant}.ts` — all site text (English, Simplified and Traditional Chinese)
 - `src/routes.ts` — route list (and each route in each locale), titles ("<Page> - LeviMC", "<post> - Blog - LeviMC", "Page not found - LeviMC") and
   descriptions; `src/head.ts` — per-page `<head>` tags (Open Graph with the social card `public/og/levimc.jpg`, made
@@ -164,11 +165,14 @@ line in `DOWNLOADS` in `versions/update.mjs` and a list in the file. `npm test` 
 
 ## Project docs
 
-Each project's docs are published by its own repository at `levimc.org/<Project>/` (LeviLamina, LegacyScriptEngine,
-lip, LeviLauncher, BeDD, bedboo): GitHub Pages serves a project repository's site below the organisation site's
-domain, and this repository is the organisation site. A path that a project with Pages owns is never this site's, so
-no route here may start with a repository's name. `robots.txt` lists their sitemaps; the bar and footer load them
-in full (`isAppPath` in `src/components/SiteHeader.tsx`). They were at docs.levimc.org until the move described in
+Each project's docs (LeviLamina, LegacyScriptEngine, lip, LeviLauncher, BeDD, bedboo) are at `levimc.org/<Project>/`,
+in other languages at `levimc.org/<lang>/<Project>/`. They move into this repository, one docs root each in
+`docs/<Project>/`, built and merged by the deploy (`scripts/docs-sites.mjs`; how to import one, and the template:
+[docs/README.md](docs/README.md)). Until a project is imported its own repository publishes it: GitHub Pages serves a
+project repository's site below the organisation site's domain, and this repository is the organisation site. A
+path that a project with Pages owns is never this site's, so no route here may start with a repository's name.
+`robots.txt` lists their sitemaps; the bar and footer load them in full (`isAppPath` in
+`src/components/SiteHeader.tsx`). They were at docs.levimc.org until the move described in
 [MIGRATION.md](MIGRATION.md); docs.levimc.org redirects every URL to the same path here (308, Cloudflare).
 
 What goes where:
@@ -183,8 +187,10 @@ What goes where:
 
 ## Tutorials
 
-`levimc.org/tutorials/` is a docs build of `tutorials/` (levimc-kit's docs engine, with this checkout's kit: its
-`npm ci` vendors `../kit` into `tutorials/kit/`). The deploy builds it and copies it to `dist/tutorials/`.
+`levimc.org/tutorials/` (and `/zh-Hans/tutorials/`, `/zh-Hant/tutorials/`) is a docs build of `tutorials/`
+(levimc-kit's docs engine, with this checkout's kit: its `npm ci` vendors `../kit` into `tutorials/kit/`). Its
+`dist/` mirrors the host root; the deploy builds it like every docs root and merges it into `dist/`
+(`node scripts/docs-sites.mjs build`, then `merge dist`; preview: `npm run preview` in `tutorials/`).
 
 ```sh
 cd tutorials
@@ -199,7 +205,8 @@ npm run build && npm run linkcheck
   with a redirect (`redirects` in `docs.config.ts`) and tell the projects.
 * Writing: say up front what the reader will have at the end and what they need; numbered steps, each one
   checkable ("you should see …"); no step another tutorial already teaches — link it instead; end with "Next steps"
-  into the project docs (absolute `https://levimc.org/<Project>/…` URLs, `/zh-Hans/` for the Chinese pages).
+  into the project docs (absolute `https://levimc.org/<Project>/…` URLs, `https://levimc.org/zh-Hans/<Project>/…`
+  for the Chinese pages).
 * Commands and screenshots follow the current releases; when a project changes how something is done, update the
   tutorial in the same week.
 

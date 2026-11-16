@@ -13,7 +13,7 @@ import { createThemeInitScript } from '../kit/components/theme.ts';
 import { UI_LOCALES } from '../kit/components/i18n.ts';
 import { PREFS_CORE_JS } from '../kit/components/prefs.ts';
 import { localeRedirectScript } from '../kit/docs/shared/head.ts';
-import { OTHER_SITES } from './other-sites.ts';
+import { otherSitePatterns } from './other-sites.ts';
 import { DEFAULT_LOCALE, LEGACY_LOCALE_KEY, LEGACY_LOCALE_MAP, LOCALES } from './i18n/config.ts';
 
 const base = (tag: string) => tag.toLowerCase().split('-')[0]!;
@@ -30,8 +30,9 @@ export const PREPAINT_SCRIPT =
   createThemeInitScript({
     legacyTheme: ['theme'],
     legacyLang: [{ key: LEGACY_LOCALE_KEY, map: LEGACY_LOCALE_MAP }],
-    // prerender only the other builds' pages: the router serves this app's own without a navigation
-    speculation: { include: OTHER_SITES.map((p) => p + '*') },
+    // prerender only the other builds' pages, in English and this site's languages (/zh-Hans/mods/*, the language
+    // first): the router serves this app's own without a navigation
+    speculation: { include: otherSitePatterns(LOCALES.filter((l) => l.prefix).map((l) => l.prefix.slice(0, -1))) },
   }) + CHROME_PENDING_JS;
 
 /** The root-only language redirect (/ → /zh-Hans/ …), the docs' own (kit/docs/shared/head.ts). */
