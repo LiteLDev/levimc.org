@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A stand-in for the game, only for the pictures: an app without code that installs as com.mojang.minecraftpe with
+     the label and version name of a current release, so that LeviLauncher shows its normal home screen with the game
+     as an instance. It never runs: the capture script does not launch the game. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.mojang.minecraftpe"
+    android:versionCode="972606005"
+    android:versionName="1.26.60.5">
+    <uses-sdk android:minSdkVersion="28" android:targetSdkVersion="35" />
+    <application android:label="Minecraft" android:hasCode="false" />
+</manifest>

@@ -16,7 +16,7 @@ Android native mods are loaded by the [Android version of LeviLauncher](https://
   - [PowerShell 7](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (Windows PowerShell works too on Windows);
   - a C++ compiler for the PC itself: Visual Studio with **Desktop development with C++** on Windows, or GCC or Clang on Linux and macOS. The build runs a small program on the PC that writes the default config of the mod;
   - [Git](https://git-scm.com).
-- An ARM64 Android phone (Android 9 or later) with Minecraft from Google Play and LeviLauncher for Android: see [LeviLauncher](https://levimc.org/LeviLauncher/).
+- An ARM64 Android phone (Android 9 or later) with Minecraft from Google Play and LeviLauncher for Android: see [Play with mods on Android](../play/play-with-mods-android.md).
 - Optional: [Android platform tools](https://developer.android.com/tools/releases/platform-tools) (`adb`) and USB debugging on the phone, to read the log.
 - Basic C++.
 
@@ -113,8 +113,14 @@ The template has a workflow in `.github\workflows\build.yml`. After you push, th
 ## 6. Import it into LeviLauncher
 
 1. Copy the `.levipack` to the **Download** folder of your phone, by USB or any way you like.
-2. Open LeviLauncher, go to **Mods** and tap **Scan**. Your mod appears; tap **Add** next to it. (You can also open the `.levipack` from a file manager and choose LeviLauncher.)
-3. You should see **My Android Mod** in the list of mods, enabled, with version `0.1.0`.
+2. Open LeviLauncher. On the **Launch** page, tap **Manage** on the **Mods** card: the **Mods** page of the current instance opens.
+3. Tap **Add Mod** and choose your `.levipack` in the file picker. You should see "Successfully processed 1 mod files". (You can also open the `.levipack` from a file manager and choose LeviLauncher.)
+
+   ![The Mods page of LeviLauncher, with the "Add Mod" button at the top right that imports a .levipack file.](./images/en/first-android-mod-01-add-mod.svg)
+
+4. You should see **My Android Mod** in the list of mods, with version `0.1.0` and its switch on.
+
+New to LeviLauncher on Android? [Play with mods on Android](../play/play-with-mods-android.md) goes through it step by step.
 
 ## 7. Check that it runs
 

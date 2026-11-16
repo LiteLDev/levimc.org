@@ -16,6 +16,7 @@ interface Labels {
   letFriendsJoin: string;
   play: string;
   playWithMods: string;
+  playWithModsAndroid: string;
   develop: string;
   firstMod: string;
   firstPlugin: string;
@@ -36,6 +37,7 @@ const LABELS: Record<'en' | 'zh-Hans', Labels> = {
     letFriendsJoin: 'Let friends join your server',
     play: 'Play',
     playWithMods: 'Play with mods on Windows',
+    playWithModsAndroid: 'Play with mods on Android',
     develop: 'Make mods',
     firstMod: 'Your first LeviLamina mod',
     firstPlugin: 'Your first script plugin',
@@ -54,6 +56,7 @@ const LABELS: Record<'en' | 'zh-Hans', Labels> = {
     letFriendsJoin: '让朋友连上你的服务器',
     play: '游玩',
     playWithMods: '在 Windows 上玩模组',
+    playWithModsAndroid: '在 Android 上玩模组',
     develop: '开发模组',
     firstMod: '你的第一个 LeviLamina 模组',
     firstPlugin: '你的第一个脚本插件',
@@ -68,7 +71,7 @@ const LABELS: Record<'en' | 'zh-Hans', Labels> = {
 /** The tutorial pages, by section: the one list the nav, the redirects of the project docs and the index read. */
 export const TUTORIALS = {
   server: ['server/first-server', 'server/command-line', 'server/docker', 'server/install-mods', 'server/let-friends-join'],
-  play: ['play/play-with-mods'],
+  play: ['play/play-with-mods', 'play/play-with-mods-android'],
   develop: ['develop/first-levilamina-mod', 'develop/first-script-plugin', 'develop/first-android-mod', 'develop/publish-a-package'],
   automate: ['automate/bedd', 'automate/first-bedboo-bot'],
 } as const;
@@ -80,6 +83,7 @@ const KEY: Record<string, keyof Labels> = {
   'server/install-mods': 'installMods',
   'server/let-friends-join': 'letFriendsJoin',
   'play/play-with-mods': 'playWithMods',
+  'play/play-with-mods-android': 'playWithModsAndroid',
   'develop/first-levilamina-mod': 'firstMod',
   'develop/first-script-plugin': 'firstPlugin',
   'develop/first-android-mod': 'firstAndroidMod',

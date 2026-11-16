@@ -16,7 +16,7 @@ Android 原生模组由 [Android 版 LeviLauncher](https://levimc.org/zh-Hans/Le
   - [PowerShell 7](https://learn.microsoft.com/zh-cn/powershell/scripting/install/installing-powershell)（在 Windows 上也可以用 Windows PowerShell）；
   - 一个面向电脑本身的 C++ 编译器：Windows 上是勾选了 **使用 C++ 的桌面开发** 的 Visual Studio，Linux 和 macOS 上是 GCC 或 Clang。构建时会在电脑上运行一个小程序，生成模组的默认配置；
   - [Git](https://git-scm.com)。
-- 一部 ARM64 的 Android 手机（Android 9 或更高版本），装有 Google Play 上的 Minecraft 和 Android 版 LeviLauncher：见 [LeviLauncher](https://levimc.org/zh-Hans/LeviLauncher/)。
+- 一部 ARM64 的 Android 手机（Android 9 或更高版本），装有 Google Play 上的 Minecraft 和 Android 版 LeviLauncher：见[在 Android 上玩模组](../play/play-with-mods-android.md)。
 - 可选：[Android 平台工具](https://developer.android.com/tools/releases/platform-tools)（`adb`），并在手机上开启 USB 调试，用于查看日志。
 - C++ 基础。
 
@@ -113,8 +113,14 @@ pwsh ./scripts/package.ps1 -Abi arm64-v8a
 ## 6. 导入 LeviLauncher
 
 1. 用 USB 或任何你喜欢的方式，把 `.levipack` 复制到手机的 **Download**（下载）文件夹。
-2. 打开 LeviLauncher，进入「模组」，点击**扫描**。你的模组会出现，点击它旁边的**添加**。（也可以在文件管理器中打开 `.levipack`，选择用 LeviLauncher 打开。）
-3. 你应该在模组列表中看到 **My Android Mod**，已启用，版本为 `0.1.0`。
+2. 打开 LeviLauncher。在「启动」页面上，点击「模组」卡片上的**管理**：会打开当前实例的「模组」页面。
+3. 点击**添加模组**，在文件选择器中选择你的 `.levipack`。你应该看到“成功处理 1 个模组文件”。（也可以在文件管理器中打开 `.levipack`，选择用 LeviLauncher 打开。）
+
+   ![LeviLauncher 的“模组”页面，右上角的“添加模组”按钮用来导入 .levipack 文件。](../../develop/images/zh-Hans/first-android-mod-01-add-mod.svg)
+
+4. 你应该在模组列表中看到 **My Android Mod**，版本为 `0.1.0`，开关已打开。
+
+第一次在 Android 上用 LeviLauncher？[在 Android 上玩模组](../play/play-with-mods-android.md)会一步步带你完成。
 
 ## 7. 确认它在运行
 

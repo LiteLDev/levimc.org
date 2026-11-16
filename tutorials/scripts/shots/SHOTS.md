@@ -14,6 +14,7 @@ tutorials/scripts/shots/
   annotate.test.mjs   its tests: npm run shots:test
   demo/               capture.mjs (an example capture script, on mock pages), shots.json, captures/, out/
   <app>/              the capture script of each app, with its specs (added with the tutorials of the app)
+  levilauncher-android/   LeviLauncher for Android on an emulator (adb, uiautomator): see its README.md
 tutorials/content/<section>/images/<lang>/<name>.svg     the pictures: en, zh-Hans, zh-Hant
 ```
 

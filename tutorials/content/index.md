@@ -26,6 +26,9 @@ features:
   - title: Play with mods on Windows
     details: Install LeviLauncher, add a game version and launch it with mods.
     link: /play/play-with-mods/
+  - title: Play with mods on Android
+    details: Install LeviLauncher on your phone, launch your Google Play game and add a mod.
+    link: /play/play-with-mods-android/
   - title: Your first LeviLamina mod
     details: Create a C++ mod from the template, build it and load it on your server.
     link: /develop/first-levilamina-mod/

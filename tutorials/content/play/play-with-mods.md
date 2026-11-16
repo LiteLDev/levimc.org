@@ -75,5 +75,5 @@ To install, update or remove LeviLamina in an instance that already exists, open
 - Rename, delete and organize instances: [Version Management](https://levimc.org/LeviLauncher/guide/version-management).
 - Worlds, resource packs and behavior packs: [Content Management](https://levimc.org/LeviLauncher/guide/content-management).
 - When downloads fail or the game does not start: [Update & Troubleshooting](https://levimc.org/LeviLauncher/guide/update-troubleshooting).
-- LeviLauncher for Android, and all releases: [Download](https://levimc.org/LeviLauncher/download).
+- Play on your Android phone or tablet: [Play with mods on Android](./play-with-mods-android.md).
 - Make a mod of your own: [Your first LeviLamina mod](../develop/first-levilamina-mod.md).

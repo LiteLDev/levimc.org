@@ -26,6 +26,9 @@ features:
   - title: 在 Windows 上玩模组
     details: 安装 LeviLauncher，添加游戏版本，带着模组启动它。
     link: /zh-Hans/play/play-with-mods/
+  - title: 在 Android 上玩模组
+    details: 在手机上安装 LeviLauncher，启动你从 Google Play 安装的游戏，并添加一个模组。
+    link: /zh-Hans/play/play-with-mods-android/
   - title: 你的第一个 LeviLamina 模组
     details: 用模板创建 C++ 模组，构建它，并在服务器上加载。
     link: /zh-Hans/develop/first-levilamina-mod/

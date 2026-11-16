@@ -75,5 +75,5 @@ LeviLauncher 不再弹出任何提示，这一步就完成了。
 - 重命名、删除和整理实例：[版本管理](https://levimc.org/zh-Hans/LeviLauncher/guide/version-management)。
 - 世界、资源包和行为包：[内容管理](https://levimc.org/zh-Hans/LeviLauncher/guide/content-management)。
 - 下载失败或游戏启动不了时：[更新与故障排查](https://levimc.org/zh-Hans/LeviLauncher/guide/update-troubleshooting)。
-- Android 版 LeviLauncher 和所有发行版：[下载](https://levimc.org/zh-Hans/LeviLauncher/download)。
+- 在 Android 手机或平板上玩：[在 Android 上玩模组](./play-with-mods-android.md)。
 - 自己做一个模组：[你的第一个 LeviLamina 模组](../develop/first-levilamina-mod.md)。
