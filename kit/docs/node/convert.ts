@@ -2,10 +2,15 @@
 // and chrome override of the Simplified locale that it has no own translation of, converted character by character
 // with OpenCC (`cn` → `tw`, or `hk` for a zh-HK / zh-MO locale; no phrase rewriting, so the wording stays the
 // author's). Code, link targets and URLs are left as written — except links to another LeviMC site, which follow the
-// script: https://levimc.org/<site>/zh-Hans/… becomes …/zh-Hant/… (kit 2.21.1; levimc.org's one locale scheme). Only sites that use `convertFrom` load opencc-js
+// script: https://levimc.org/<site>/zh-Hans/… becomes …/zh-Hant/… (kit 2.21.1; levimc.org's one locale scheme) — and relative
+// links and images with a path segment naming the source locale (images/zh-Hans/x.svg), which point at the converted
+// locale's file (images/zh-Hant/x.svg) where that file exists (kit 2.24.0). Only sites that use `convertFrom` load opencc-js
 // (a devDependency of theirs), so the others build without it.
 
+import { statSync } from 'node:fs';
+import { join, posix } from 'node:path';
 import type { NavEntry, ResolvedConfig, ResolvedLocale, SidebarConfig } from './config.ts';
+import { SCHEME, safeDecode, splitHref } from './links.ts';
 
 export type Convert = (text: string) => string;
 
@@ -30,11 +35,12 @@ export function loadConverter(lang: string): Promise<Convert> {
 }
 
 /**
- * Spans kept as written: fenced code, inline code, link targets (`](…)`, `href="…"`, `src="…"`), autolinks and bare
- * URLs. A link target keeps its path; its `#fragment` is converted like the heading it points at.
+ * Spans kept as written: fenced code, inline code, link targets (`](…)`, `href="…"`, `src="…"`, a reference
+ * definition's `[label]: …`), autolinks and bare URLs. A link target keeps its path; its `#fragment` is converted like
+ * the heading it points at.
  */
 const KEEP =
-  /(?:^|\n)[ \t]*(`{3,}|~{3,})[^\n]*\n[\s\S]*?\n[ \t]*\1[ \t]*(?=\n|$)|`[^`\n]+`|\]\([^)\s]*|\b(?:href|src)\s*=\s*(["'])[^"']*\2|<https?:[^>]*>|https?:\/\/[^\s)<>"']+/g;
+  /(?:^|\n)[ \t]*(`{3,}|~{3,})[^\n]*\n[\s\S]*?\n[ \t]*\1[ \t]*(?=\n|$)|`[^`\n]+`|\]\([^)\s]*|\b(?:href|src)\s*=\s*(["'])[^"']*\2|(?<ref>(?<=(?:^|\n)[ \t]{0,3}\[(?!\^)[^\]\n]+\]:[ \t]*)[^\s<>]+)|<https?:[^>]*>|https?:\/\/[^\s)<>"']+/g;
 
 const convertTarget = (target: string, convert: Convert) => {
   const hash = target.indexOf('#');
@@ -44,16 +50,68 @@ const convertTarget = (target: string, convert: Convert) => {
 /** Links to the Simplified Chinese of a LeviMC site (https://levimc.org/…/zh-Hans/…) → its Traditional Chinese. */
 export const traditionalNetworkLinks = (s: string) => s.replace(/(https?:\/\/levimc\.org\/(?:[^\s)<>"'#?]*\/)?)zh-Hans\//g, '$1zh-Hant/');
 
-/** A markdown page in the other script: its prose, headings and front matter; not its code or link targets. */
-export function convertMarkdown(md: string, convert: Convert): string {
+/** Where a converted page comes from, so its relative links can follow the locale (kit 2.24.0). */
+export interface ConvertPage {
+  /** Source locale code (`zh-Hans`) and converted locale code (`zh-Hant`). */
+  from: string;
+  to: string;
+  /** The content dir, and the page's source file relative to it (`zh-Hans/play/x.md`). */
+  contentRoot: string;
+  rel: string;
+}
+
+
+/**
+ * A relative path with a segment naming the source locale (`../images/zh-Hans/x.svg`) → the same path with that
+ * segment naming the converted locale, when that file exists in the content dir; else the path as written.
+ */
+export function localeTarget(target: string, page: ConvertPage): string {
+  if (!target || SCHEME.test(target) || /^[/#?<]/.test(target)) return target;
+  const { path, query, hash } = splitHref(target);
+  const segs = path.split('/');
+  if (!segs.includes(page.from)) return target;
+  const moved = segs.map((s) => (s === page.from ? page.to : s)).join('/');
+  const rel = posix.normalize(posix.join(posix.dirname(page.rel.replace(/\\/g, '/')), safeDecode(moved)));
+  if (rel.startsWith('..') || !isFile(join(page.contentRoot, rel))) return target;
+  return moved + query + hash;
+}
+
+const isFile = (abs: string) => {
+  try {
+    return statSync(abs).isFile();
+  } catch {
+    return false;
+  }
+};
+
+/** A link target span (`](x`, `href="x"`, `src='x'`, a reference definition's `x`) with its path following the locale. */
+const localeSpan = (span: string, page: ConvertPage) => {
+  const m = /^(\]\(|(?:href|src)\s*=\s*(["']))(.*)$/s.exec(span);
+  if (!m) return localeTarget(span, page);
+  const quote = m[2] ?? '';
+  const target = quote && m[3]!.endsWith(quote) ? m[3]!.slice(0, -1) : m[3]!;
+  return m[1] + localeTarget(target, page) + m[3]!.slice(target.length);
+};
+
+/**
+ * A markdown page in the other script: its prose, headings and front matter; not its code or link targets. Given
+ * `page`, relative link and image targets that name the source locale's folder point at the converted locale's file
+ * where it exists.
+ */
+export function convertMarkdown(md: string, convert: Convert, page?: ConvertPage): string {
   let out = '';
   let last = 0;
   for (const m of md.matchAll(KEEP)) {
     // code stays as written; link targets and bare URLs to another LeviMC site follow the script
-    const span = /^\s*(`|~~~)/.test(m[0]) ? m[0] : traditionalNetworkLinks(m[0]);
+    const code = /^\s*(`|~~~)/.test(m[0]);
+    let span = code ? m[0] : traditionalNetworkLinks(m[0]);
     out += convert(md.slice(last, m.index));
-    out += span.startsWith('](') || /^(href|src)/.test(span) ? convertTarget(span, convert) : span;
-    last = m.index + span.length;
+    last = m.index + m[0].length;
+    if (!code && (m.groups?.ref !== undefined || span.startsWith('](') || /^(href|src)/.test(span))) {
+      if (page) span = localeSpan(span, page);
+      span = convertTarget(span, convert);
+    }
+    out += span;
   }
   return out + convert(md.slice(last));
 }

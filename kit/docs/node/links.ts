@@ -24,9 +24,9 @@ export interface LinkContext {
   assets: Map<string, AssetRef>;
 }
 
-const SCHEME = /^[a-z][a-z0-9+.-]*:/i;
+export const SCHEME = /^[a-z][a-z0-9+.-]*:/i;
 
-function splitHref(href: string): { path: string; query: string; hash: string } {
+export function splitHref(href: string): { path: string; query: string; hash: string } {
   let path = href;
   let hash = '';
   let query = '';
@@ -43,7 +43,7 @@ function splitHref(href: string): { path: string; query: string; hash: string } 
   return { path, query, hash };
 }
 
-function safeDecode(s: string): string {
+export function safeDecode(s: string): string {
   try {
     return decodeURI(s);
   } catch {

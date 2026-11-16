@@ -2,7 +2,10 @@
 // and URLs stay as written. A stub converter stands in for OpenCC.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { convertMarkdown, traditionalNetworkLinks } from '../docs/node/convert.ts';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { convertMarkdown, localeTarget, traditionalNetworkLinks } from '../docs/node/convert.ts';
 
 const stub = (s) => s.replace(/简/g, '簡').replace(/体/g, '體').replace(/钩/g, '鉤');
 
@@ -33,4 +36,42 @@ test('links to another LeviMC site follow the script: zh-Hans → zh-Hant (kit 2
   assert.match(out, /\(\.\.\/zh\/x\.md\)/);
   assert.match(out, /```\nhttps:\/\/levimc\.org\/zh-Hans\/\n```/);
   assert.equal(traditionalNetworkLinks('link: https://levimc.org/zh-Hans/about/'), 'link: https://levimc.org/zh-Hant/about/');
+});
+
+test('relative targets naming the source locale point at the converted locale\'s file where it exists (kit 2.24.0)', () => {
+  const root = mkdtempSync(join(tmpdir(), 'kit-convert-'));
+  try {
+    for (const f of ['images/zh-Hans/a.svg', 'images/zh-Hant/a.svg', 'images/zh-Hans/only.svg', 'zh-Hant/x.md']) {
+      mkdirSync(join(root, dirname(f)), { recursive: true });
+      writeFileSync(join(root, f), '');
+    }
+    const page = { from: 'zh-Hans', to: 'zh-Hant', contentRoot: root, rel: 'zh-Hans/play/p.md' };
+    const conv = (md) => convertMarkdown(md, stub, page);
+    // replaced when the zh-Hant file exists: markdown images and links, <img src>, href, query and fragment kept
+    assert.equal(conv('![简体](../../images/zh-Hans/a.svg)'), '![簡體](../../images/zh-Hant/a.svg)');
+    assert.equal(conv('<img src="../../images/zh-Hans/a.svg" alt="简体">'), '<img src="../../images/zh-Hant/a.svg" alt="簡體">');
+    assert.equal(conv("<a href='../../images/zh-Hans/a.svg?v=1#简体'>简体</a>"), "<a href='../../images/zh-Hant/a.svg?v=1#簡體'>簡體</a>");
+    assert.equal(conv('[x](../../images/zh-Hans/a.svg "简体")'), '[x](../../images/zh-Hant/a.svg "簡體")');
+    // unchanged when it does not exist, or the path leaves the content dir
+    assert.equal(conv('![x](../../images/zh-Hans/only.svg)'), '![x](../../images/zh-Hans/only.svg)');
+    assert.equal(conv('![x](../../images/zh-Hans/none.svg)'), '![x](../../images/zh-Hans/none.svg)');
+    assert.equal(conv('![x](../../../images/zh-Hans/a.svg)'), '![x](../../../images/zh-Hans/a.svg)');
+    // a segment equal to the code only, not a substring
+    assert.equal(conv('![x](../../images/zh-Hans-old/a.svg)'), '![x](../../images/zh-Hans-old/a.svg)');
+    // code spans and blocks stay as written
+    assert.equal(conv('`![x](../../images/zh-Hans/a.svg)`'), '`![x](../../images/zh-Hans/a.svg)`');
+    assert.equal(conv('```md\n![x](../../images/zh-Hans/a.svg)\n```'), '```md\n![x](../../images/zh-Hans/a.svg)\n```');
+    // absolute URLs: only levimc.org's rule applies
+    assert.equal(conv('![x](/images/zh-Hans/a.svg) [y](https://example.com/images/zh-Hans/a.svg) [z](https://levimc.org/zh-Hans/tutorials/)'),
+      '![x](/images/zh-Hans/a.svg) [y](https://example.com/images/zh-Hans/a.svg) [z](https://levimc.org/zh-Hant/tutorials/)');
+    // reference definitions too (their labels stay prose, like the references using them); footnotes are prose
+    assert.equal(conv('![简体][简]\n\n[简]: ../../images/zh-Hans/a.svg#简体\n[^1]: 简体'), '![簡體][簡]\n\n[簡]: ../../images/zh-Hant/a.svg#簡體\n[^1]: 簡體');
+    // a folder is not a file
+    assert.equal(conv('[x](../../zh-Hans)'), '[x](../../zh-Hans)');
+    // without page info nothing moves
+    assert.equal(convertMarkdown('![x](../../images/zh-Hans/a.svg)', stub), '![x](../../images/zh-Hans/a.svg)');
+    assert.equal(localeTarget('../x.md', page), '../x.md');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

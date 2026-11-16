@@ -57,7 +57,10 @@ export async function buildSite(cfg: ResolvedConfig, opts: { changed?: Set<strin
     for (let r = queue.shift(); r; r = queue.shift()) {
       const route = r;
       const raw = readFileSync(route.source.abs, 'utf8');
-      const src = route.converted ? convertMarkdown(raw, converters.get(route.locale)!) : raw;
+      const from = route.converted ? cfg.locales.find((l) => l.code === route.locale)?.convertFrom : undefined;
+      const src = route.converted
+        ? convertMarkdown(raw, converters.get(route.locale)!, from ? { from, to: route.locale, contentRoot: cfg.contentRoot, rel: route.source.rel } : undefined)
+        : raw;
       const t = uiStrings(cfg.locales.find((l) => l.code === route.locale)?.lang, cfg.ui?.[route.locale]);
       const resolve = createLinkResolver({ cfg, scan, assets }, route);
       const pageWarn = (m: string) => warnings.push(`${route.source.rel}${route.fallback ? ` (as ${route.locale})` : ''}: ${m}`);

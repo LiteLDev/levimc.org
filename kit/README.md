@@ -310,7 +310,7 @@ export default defineDocsConfig({ … });
 | `exclude` | globs relative to contentDir | e.g. `['overrides/**']`; `node_modules`, dot folders, `.vitepress`, `public` are always excluded |
 | `i18n.mode` | `'suffix'` \| `'folder'` | mkdocs-static-i18n (`x.md`, `x.zh.md`, `x.en.md` = default) / VitePress (`zh-CN/x.md`) |
 | `i18n.defaultLocale` | locale code | |
-| `i18n.locales[]` | `{ code, label, lang?, prefix?, suffix?, folder?, convertFrom?, formerPrefixes? }` | `prefix` defaults to `''` (default) / `'<code>/'`; `lang` is used for `<html lang>`/hreflang; `convertFrom: '<zh locale>'` generates Traditional Chinese from that locale (see below); `formerPrefixes: ['zh/']` puts a redirect page at each page's old URL after a prefix change (kit 2.21) |
+| `i18n.locales[]` | `{ code, label, lang?, prefix?, suffix?, folder?, convertFrom?, formerPrefixes? }` | `prefix` defaults to `''` (default) / `'<code>/'`; `lang` is used for `<html lang>`/hreflang; `convertFrom: '<zh locale>'` generates Traditional Chinese from that locale (see below); its pages' relative links and images with a path segment naming the source locale (`../images/zh-Hans/x.svg`) point at the converted locale's file (`images/zh-Hant/x.svg`) where that file exists (kit 2.24); `formerPrefixes: ['zh/']` puts a redirect page at each page's old URL after a prefix change (kit 2.21) |
 | `i18n.localeFirst` | default `false` | the language FIRST (kit 2.23, levimc.org's URLs): a locale's `prefix` goes in front of `base` (`/zh-Hans/LeviLamina/x/`); `outDir` mirrors the host root (`dist/LeviLamina/`, `dist/zh-Hans/LeviLamina/`, `dist/404.html`); assets, search indexes and `_kit/` stay under base; `formerPrefixes` are relative to base and may name the locale's own prefix (`['zh-Hans/', 'zh/']`). Preview with `serve-pages dist --base /`, link-check with `linkcheck dist --base /<Project>/ --locale-first zh-Hans,zh-Hant` |
 | `i18n.fallback` | default `true` (suffix) / `false` (folder) | build default-locale content at localized URLs when a translation is missing (static-i18n `fallback_to_default`) |
 | `urlStyle` | `'directory'` (default) \| `'html'` | MkDocs directory URLs / VitePress `.html` files |
@@ -956,6 +956,20 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 ## Changelog
 
+### 2.24.0
+
+* **Converted pages show their own locale's pictures.** In a page converted with `convertFrom`, a relative link or
+  image target (markdown `](…)` and `[label]: …`, `src="…"`, `href="…"`) with a path segment equal to the source
+  locale's code points at the same path with that segment naming the converted locale —
+  `../../play/images/zh-Hans/x.svg` becomes `…/zh-Hant/x.svg` on the zh-Hant page — when that file exists (a file,
+  resolved from the page's source file within the content dir); otherwise it stays as written. Code is left as
+  written; absolute URLs keep the levimc.org rule of 2.21.1. A site keeps Traditional Chinese screenshots or
+  annotated SVGs beside the Simplified ones (`images/zh-Hans/`, `images/zh-Hant/`) and writes only the Simplified
+  page.
+* Reference definitions' targets (`[label]: path`) are no longer run through OpenCC (only their `#fragment`).
+* `convertMarkdown(md, convert, page?)` takes `{ from, to, contentRoot, rel }` (new `ConvertPage`,
+  `localeTarget`); the build passes it for every converted page.
+* **Migration**: none. A site with no `<source locale>/` folders in its link paths builds as before.
 ### 2.23.0
 
 * **The language first.** levimc.org puts the language at the start of every URL: `/zh-Hans/LeviLamina/x/`,
