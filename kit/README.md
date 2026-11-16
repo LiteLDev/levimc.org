@@ -956,6 +956,11 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 ## Changelog
 
+### 2.24.1
+
+* **`linkcheck --ignore-paths` also skips the pages below those paths**, not just the links into them: the
+  whole-site check of levimc.org read LeviLamina's ~5,700 Doxygen pages (`/LeviLamina/api/`) and ran out of memory.
+
 ### 2.24.0
 
 * **Converted pages show their own locale's pictures.** In a page converted with `convertFrom`, a relative link or

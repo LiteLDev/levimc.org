@@ -99,11 +99,13 @@ function scanHtml(html) {
 }
 
 // ------------------------------------------------------------------------------------------ internal
-const files = walk(dist);
 const pageUrlOf = (file) => {
   const rel = relative(dist, file).split(sep).join('/');
   return distBase + rel.replace(/(^|\/)index\.html$/, '$1');
 };
+// Pages below --ignore-paths are not scanned either: they are generated elsewhere (LeviLamina's Doxygen api/ is
+// ~5,700 pages, and collecting their links ran the whole-site check out of memory).
+const files = walk(dist).filter((f) => !ignorePaths.some((p) => pageUrlOf(f).startsWith(p)));
 const idCache = new Map();
 const idsOf = (file) => {
   if (!idCache.has(file)) idCache.set(file, scanHtml(readFileSync(file, 'utf8')).ids);
