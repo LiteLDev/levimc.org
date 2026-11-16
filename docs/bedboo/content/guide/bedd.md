@@ -2,7 +2,7 @@
 
 bedboo normally *is* the client: it logs in to Bedrock Dedicated Server over RakNet or NetherNet and sends every
 packet itself. With `transport: 'bedd'` it drives a **real Minecraft Bedrock client** instead, hosted by
-[Be.D.D.](https://levimc.org/BeDD/) (Bedrock Deep Dive, a LeviLamina client mod). The same script then runs
+[Be.D.D.](https://levimc.org/BeDD/) (Bedrock Deep Dive, a testing toolkit for LeviLamina client mods). The same script then runs
 against a real game: you watch the local player walk, look, dig, place and chat as the script says.
 
 ```js
@@ -16,10 +16,10 @@ of this mode, entry by entry: [BeDD mode](../reference/differences/bedd.md).
 
 ## Setup {#setup}
 
-Windows only (BeDD is a Windows client mod); Node 24 or later. bedboo needs **BeDD v2**, which serves every game over
-a local WebSocket; BeDD v1 (named pipes `\\.\pipe\BeDD`) is no longer supported.
+Windows only (BeDD runs the Windows client of Minecraft); Node 24 or later. bedboo needs **BeDD 0.4.0 or newer**, which serves every game over
+a local WebSocket; BeDD 0.3 and older (named pipes `\\.\pipe\BeDD`) are no longer supported.
 
-1. Install BeDD v2 (see the [BeDD docs](https://levimc.org/BeDD/)) and start a game with it:
+1. Install BeDD 0.4.0 or newer (see the [BeDD docs](https://levimc.org/BeDD/)) and start a game with it:
 
    ```sh
    BeDD.exe launch --slot 2
@@ -29,7 +29,7 @@ a local WebSocket; BeDD v1 (named pipes `\\.\pipe\BeDD`) is no longer supported.
    and announces it in `%LOCALAPPDATA%\BeDD\run\<pid>.json` (`$BEDD_HOME` moves that folder) while it listens:
    `{ "protocol": 2, "kind": "client", "pid", "url": "ws://127.0.0.1:<port>/v1", "token", "instance", "label", … }`.
    bedboo reads this file to connect; the token is the only credential.
-2. Everything bedboo uses is **on by default** in BeDD v2 (the token is the boundary). The keys of the game's
+2. Everything bedboo uses is **on by default** since BeDD 0.4.0 (the token is the boundary). The keys of the game's
    `mods\BeDD\config\config.json` that matter to bedboo:
 
    | key | default | what it does | bedboo needs it for |
@@ -59,7 +59,7 @@ a local WebSocket; BeDD v1 (named pipes `\\.\pipe\BeDD`) is no longer supported.
    server first with BeDD's `join` op (leaving its world, answering "Trust this server?") and attaches once it is in
    the level.
 4. `createBot({ transport: 'bedd', version: '1.26.60', bedd: {} })`, with `version` the game's protocol family (the
-   tap's HELLO is refused otherwise; in this mode it defaults to `1.26.60`, the game BeDD v2 runs). `bedd: {}` picks the only running BeDD game; with several, name one (see
+   tap's HELLO is refused otherwise; in this mode it defaults to `1.26.60`, the game BeDD 0.4.0 runs). `bedd: {}` picks the only running BeDD game; with several, name one (see
    [options](#options)). `spawn` fires once the join journal has been replayed; from then on `bot.*` is the client's
    state.
 
@@ -100,7 +100,7 @@ bot.* state ← plugins ← decoder ← tap reader ←──(binary frames)─�
   and any id you add to `sendAllow`), `stack` (item_stack_request through the client's ItemStackNetManager), `ui` (the
   client's screens: Respawn, Leave Bed, the sign editor) and `join` (createBot's `host`). Input is applied only while the game has the
   mouse and shows no menu. Requests are `{ id, op, … }` text frames, answered in order, one in flight.
-- **Negotiation:** at attach, bedboo pings the control connection (BeDD v2 answers `protocol: 2`, `defaultMode:
+- **Negotiation:** at attach, bedboo pings the control connection (BeDD 0.4.0 and newer answer `protocol: 2`, `defaultMode:
   'bedboo'` and `modes`, the ops of each operation mode) and probes each op with no arguments: `unknown op` (or not
   listed in `modes`) → absent, `code:'disabled'` → present but turned off in config.json, `ok` → present.
   `bot.bedrock.bedd.caps` holds the result and `bot.bedrock.bedd.supports(name)` answers per mineflayer API.
@@ -171,7 +171,7 @@ events); flight via a double-tap jump; input pauses while a screen is open; a la
 
 ## Screens {#screens}
 
-BeDD v2's `ui` op reads the game's JSON UI screens as a tree of nodes (`role`, `name`, `text`, `state`) with refs and
+BeDD's `ui` op reads the game's JSON UI screens as a tree of nodes (`role`, `name`, `text`, `state`) with refs and
 clicks or types into a node by its ref. `lib/bedd/screens.js` uses it for what the client only does when its user
 acts on a screen:
 
@@ -218,7 +218,7 @@ LAN world. Those packets never hit the network, so BeDD re-serializes them (`Pac
 
 ## Security {#security}
 
-- **The token is the boundary.** BeDD v2 listens on 127.0.0.1 only and refuses a connection without the game's token
+- **The token is the boundary.** BeDD listens on 127.0.0.1 only and refuses a connection without the game's token
   (HTTP 401) or with an `Origin` header (403, so a web page cannot reach it). The token sits in the run file under
   your `%LOCALAPPDATA%`: anything running as your Windows user can read it and drive the game. bedboo sends it as
   `?token=` and never sends `Origin`.
@@ -259,8 +259,8 @@ client gives up (`join_failed`, `not_allowed` for a host off this PC that `loopb
 `'error'` with `code: 'ERR_BEDD_JOIN'` (`reason`: BeDD's code) and ends. `bot._client.bedd.joined` holds the reply.
 
 Run files of processes that are gone (a crashed game) are skipped. When no game matches, the bot emits `'error'`
-(`code: 'ERR_BEDD_DISCOVERY'`) and ends. `bedd.pipe`, `bedd.tapPipe` and `bedd.connect` (BeDD v1) throw, naming these
-options; a BeDD v1 that answers anyway is refused with `ERR_BEDD_PROTOCOL` ("BeDD v1 uses named pipes; upgrade BeDD").
+(`code: 'ERR_BEDD_DISCOVERY'`) and ends. `bedd.pipe`, `bedd.tapPipe` and `bedd.connect` (BeDD 0.3 and older) throw, naming these
+options; a BeDD 0.3 or older that answers anyway is refused with `ERR_BEDD_PROTOCOL` ("BeDD v1 uses named pipes; upgrade BeDD").
 
 - `bot._bedrock.mode === 'bedd'`.
 - `bot.bedrock.bedd.url` / `endpoint`: the WebSocket in use (without its token) and the game's `pid`, `instance`,

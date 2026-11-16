@@ -113,7 +113,7 @@ docker exec -it levilamina lip install github.com/LiteLDev/LeviOptimize
 | `PACKAGES` | | 第一次启动时安装的包，用空格分隔。 |
 | `GITHUB_MIRROR_URL` | | 下载用的 GitHub 镜像。 |
 | `TZ` | `UTC` | 时区，影响日志里的时间。 |
-| `LANG`、`LC_ALL` | `en_US.UTF-8` | 容器里的区域设置。 |
+| `LANG`、`LC_ALL` | | 容器里的区域设置，例如 `en_US.UTF-8`（Wine 镜像包含所有区域设置）。 |
 | `WINEDEBUG` | `-all` | Wine 的调试输出（仅 Wine 镜像）。 |
 
 ## 你现在有了什么

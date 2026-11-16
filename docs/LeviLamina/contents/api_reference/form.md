@@ -166,6 +166,8 @@ public:
 
     CustomForm& sendTo(Player& player, Callback callback = {});
     CustomForm& sendUpdate(Player& player, Callback callback = {});
+
+    std::string getFormData() const; // Serialized form JSON
 };
 }
 ```
@@ -191,7 +193,7 @@ void showSettings(Player& player) {
         auto motd = std::get<std::string>(data.at("motd"));
         auto pvp = std::get<uint64>(data.at("pvp"));            // 0 or 1
         auto renderDist = std::get<double>(data.at("renderDistance"));
-        auto difficulty = std::get<uint64>(data.at("difficulty")); // index
+        auto difficulty = std::get<std::string>(data.at("difficulty")); // selected option text, e.g. "Normal"
     });
 }
 ```

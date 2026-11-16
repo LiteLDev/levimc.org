@@ -26,6 +26,10 @@ struct KeyEvent {
   bool isKeyDown;
 };
 
+struct TextInputEvent {
+  std::string text;
+};
+
 struct MouseEvent {
   int button;
   bool isDown;
@@ -39,11 +43,19 @@ callback 返回 `true` 表示消费事件。
 ```cpp
 void registerTouchCallback(pl::input::TouchCallback callback);
 void registerKeyCallback(pl::input::KeyCallback callback);
+void registerTextInputCallback(pl::input::TextInputCallback callback);
 void registerMouseCallback(pl::input::MouseCallback callback);
 
 void showKeyboard();
 void hideKeyboard();
+
+bool openDocument(std::string mimeType, pl::input::DocumentCallback callback);
 ```
+
+`registerTextInputCallback()` 接收通过软键盘提交的文本。
+`openDocument()` 按 `mimeType`（为空时为 `*/*`）打开 Android 文档选择器，并以
+`DocumentResult`（`success`、`path`、`displayName`、`error`）调用一次 callback；
+已有请求未完成或无法打开选择器时返回 `false`。
 
 ## 示例
 

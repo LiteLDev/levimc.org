@@ -523,6 +523,46 @@ subsystem is up or when it is unavailable on the current client/server target.
 Check for emptiness; do not assume the instance exists at any particular mod
 lifecycle stage.
 
+### Target-Specific Accessors
+
+`ll/api/service/TargetedBedrock.h` adds accessors that exist only in one build target, in the same
+`ll::service::bedrock` namespace:
+
+```cpp
+#include "ll/api/service/TargetedBedrock.h"
+
+// Server builds (src-server/)
+optional_ref<PropertiesSettings> getPropertiesSettings();
+optional_ref<DedicatedServer>    getDedicatedServer();
+
+// Client builds (src-client/)
+optional_ref<ClientInstance> getClientInstance();
+optional_ref<Level>          getMultiPlayerLevel();
+optional_ref<AppPlatform>    getAppPlatform();
+```
+
+### Other Helpers
+
+The same directory also provides `GamingStatus.h` (`ll::getGamingStatus()`), `PlayerInfo.h` (a cache of known
+players' UUID, XUID and name, looked up with `fromUuid` / `fromXuid` / `fromName`), and `ServerInfo.h`
+(`ll::setServerMotd`, `ll::getWorldPath`, `ll::getWorldDataRoot`, `ll::getWorldConfigRoot`):
+
+```cpp
+#include "ll/api/service/GamingStatus.h"
+#include "ll/api/service/PlayerInfo.h"
+#include "ll/api/service/ServerInfo.h"
+
+ll::GamingStatus status = ll::getGamingStatus(); // Default, Starting, Running or Stopping
+
+auto& players = ll::service::PlayerInfo::getInstance();
+if (auto entry = players.fromName("Steve")) {
+    // entry->uuid, entry->xuid, entry->name
+}
+
+std::optional<std::filesystem::path> world = ll::getWorldPath();
+ll::setServerMotd("My Server");
+```
+
 ## Related
 
 - [Event](event.md) — `ServiceRegisterEvent`, `ServiceUnregisterEvent`

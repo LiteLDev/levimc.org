@@ -32,10 +32,10 @@ them in `index.d.ts`). Defaults differ where Bedrock needs it:
 | `port` | `19132` | BDS `server-port` (UDP for RakNet, TCP + UDP for NetherNet) |
 | `username` | `'Player'` | offline: the player name; microsoft: the token-cache key (the in-game name is the gamertag) |
 | `auth` | `'offline'` | `'offline'` (no Xbox Live; the server needs `online-mode=false`) or `'microsoft'` (Xbox Live through prismarine-auth: `profilesFolder`, `onMsaCode`, `authTitle`, `flow`, `deviceType` as in mineflayer). `'mojang'` throws. |
-| `version` | `'1.26.51'` | a tested family (`'1.26.60'`) or one of its BDS builds (`'1.26.62.1'`); `false` (auto) means 1.26.51 (the server's version is not detected); anything else throws `ERR_BEDBOO_VERSION` ([supported versions](versions/index.md#choosing)) |
+| `version` | `'1.26.51'` (`'1.26.60'` with `transport: 'bedd'`) | a tested family (`'1.26.60'`) or one of its BDS builds (`'1.26.62.1'`); `false` (auto) means 1.26.51 (the server's version is not detected); anything else throws `ERR_BEDBOO_VERSION` ([supported versions](versions/index.md#choosing)) |
 | `transport` | `'raknet'` | `'nethernet'` for NetherNet ([transports](differences/connection.md#transport)); `'bedd'` drives a real client ([BeDD](../guide/bedd.md#options)) |
 | `nethernet` | `{ signalling: 'http' }` | NetherNet only: `signalling` (`'http'` = HTTP on the server port, `'lan'` = UDP 7551 discovery, `'services'` = Xbox), `url` (signalling origin, default `http://host:port`), `serverKey` (`'sha256:<hex>'` pin of the server's identity key), `onServerKey(fingerprint, url) → boolean` (approve an unpinned key; by default any key is accepted), `networkId`, `webrtcBackend`, `signallingConnectTimeout` |
-| `bedd` | | `transport: 'bedd'` only: `url` + `token`, `pid` or `instance` (the BeDD v2 game; `{}` = the only running one), `home`, `timeoutMs`, `joinTimeoutMs`, `modules` ([BeDD options](../guide/bedd.md#options)); with it, `host` / `port` make the real client join that server first |
+| `bedd` | | `transport: 'bedd'` only: `url` + `token`, `pid` or `instance` (the BeDD game; `{}` = the only running one), `home`, `timeoutMs`, `joinTimeoutMs`, `modules` ([BeDD options](../guide/bedd.md#options)); with it, `host` / `port` make the real client join that server first |
 | `raknetBackend` | `'raknet-native'` | `'jsp-raknet'` is refused by BDS (RakNet protocol 10 vs 11) |
 | `skipPing` | `true` | BDS with LAN visibility off does not answer pings |
 | `conLog` | `null` | bedrock-protocol's console logging (`console.log` to see connection messages) |

@@ -16,7 +16,7 @@ BeDD.exe launch --slot 1 --json
 
 | 参数 | |
 |---|---|
-| `--slot N` / `<instance>` / `--dir <folder>` | 克隆 `<base>-<N>`（默认 1）、指定名字的实例，或任意含 `Minecraft.Windows.exe` 的目录 |
+| `--slot N` / `<instance>` / `--dir <folder>` | 克隆 `<gameVersion>-<N>`（默认 1）、指定名字的实例，或任意含 `Minecraft.Windows.exe` 的目录 |
 | `--label <text>` | 管理窗口里的名字（默认 `BEDD_LABEL`，否则为调用方项目） |
 | `--exclusive-signaling` | 等其他游戏关掉；独占整台电脑（[规矩](/zh/guide/several-games#并行测试的规矩)） |
 | `--keep-mod` | 保留克隆里的模组 |
@@ -24,7 +24,7 @@ BeDD.exe launch --slot 1 --json
 | `--timeout` / `--lock-timeout` | 等待 WebSocket（`3m`）/ 信令锁（`2h`） |
 | `--detach` | 进程一启动就返回；`url`/`token` 为 `null` |
 
-`BeDD.exe ps` 列出游戏；`BeDD.exe stop <pid>` 保存并关闭一个。
+`BeDD.exe ps` 列出游戏；`BeDD.exe stop --pid <pid>`（或 `stop <instance>`）强制结束一个。
 
 ## 选哪个游戏
 

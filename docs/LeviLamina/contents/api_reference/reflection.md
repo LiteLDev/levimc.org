@@ -229,7 +229,7 @@ Notes:
 
 ## Optionals and Required Fields
 
-Default deserialization is strict, and there are only three rules:
+Default deserialization is strict, and there are only two rules:
 
 | Member declaration | When the key is missing from the input |
 | --- | --- |

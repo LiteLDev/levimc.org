@@ -23,6 +23,7 @@ Through this function, a new item object is generated based on the given informa
 - Return value: Generated item object.
 - Return value type: `Item`
   - If the return value is `Null`, the item generation has failed.
+  - If no item with this type name exists, an exception is thrown.
 
 #### Clone From an Existing Item Object
 
@@ -71,6 +72,7 @@ Every item object contains some fixed object properties. For a specific item obj
 | it.damage           | Item Consumed Damage                                     | `Integer`                  |
 | it.attackDamage     | Item Attack Damage                                       | `Integer`                  |
 | it.maxDamage        | Item Max Damage                                          | `Integer`                  |
+| it.maxStackSize     | Item's max stack size                                    | `Integer`                  |
 | it.isArmorItem      | Whether the item is armor item                           | `Boolean`                  |
 | it.isBlock          | Whether the item is block                                | `Boolean`                  |
 | it.isDamageableItem | Whether the item is damageable                           | `Boolean`                  |

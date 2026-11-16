@@ -293,7 +293,8 @@ export default defineDocsConfig({
   // the pages; CONTRIBUTING.md, next to it, is for writers
   contentDir: 'content',
   // public/ next to content/: lip's screenshot generator (tests/Lip.Cli.Tests/Tui/Screenshots in LiteLDev/lip) writes
-  // the pictures into docs/lip/public/screenshots/ of a checkout of this repository next to lip's.
+  // the pictures into docs/lip/public/screenshots/ of a checkout of this repository named liteldev.github.io next to
+  // lip's (or into LIP_SCREENSHOTS_DIR).
   publicDir: 'public',
   repo,
   // The sources live in levimc.org's repository now. The Traditional Chinese pages are made from the Simplified ones

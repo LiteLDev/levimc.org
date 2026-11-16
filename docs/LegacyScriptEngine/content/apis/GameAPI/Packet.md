@@ -139,6 +139,18 @@ Every binary stream object contains some member functions (member methods) that 
 - Return value: success or not
 - Return value type： `Boolean`
 
+#### Reserve binary stream capacity
+
+`bs.reserve(size)`
+
+- Parameters：
+
+  - size : `Integer`  
+    Number of bytes to reserve
+
+- Return value: success or not
+- Return value type： `Boolean`
+
 #### Get binary stream read pointer
 
 !!! warning
@@ -233,7 +245,7 @@ Because the old return value was `String`, in JavaScript it may be forcibly enco
 | writeVarInt                    | `Number` / `String`  |
 | writeVarInt64                  | `Number` / `String`  |
 | writeVec3                      | `FloatPos`           |
-| writeBlockPos (Added in 0.9.5) | `BlockPos`           |
+| writeBlockPos (Added in 0.9.5) | `IntPos`             |
 | writeCompoundTag               | `NbtCompound`        |
 | writeItem (Added in 0.9.5)     | `Item`               |
 | writeUuid (Added in 0.19.1)    | `String`             |

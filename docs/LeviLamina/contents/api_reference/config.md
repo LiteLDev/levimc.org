@@ -51,9 +51,10 @@ Loads a config from `path` into `config`. If the file does not exist, saves the 
 
 **Behavior:**
 
-1. If the file doesn't exist → saves default config, returns `false`
-2. If the file exists but version differs → calls `updater`, returns `false`
+1. If the file doesn't exist → saves the default config first, then loads it like an existing file (its version matches, so this returns `true`)
+2. If the file has no `version` or a different one → calls `updater` and deserializes only if it returns `true`; returns `false`
 3. If the file exists and version matches → deserializes directly, returns `true`
+4. If the file is empty or unreadable → leaves `config` unchanged, returns `false`
 
 ### defaultConfigUpdater
 

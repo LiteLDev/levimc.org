@@ -18,9 +18,9 @@ limit. Give each parallel run (worktree, CI job) its own slot: one slot means on
 ## Rules for parallel runs
 
 - Find your game by **instance** (`ps --json`, `run\<pid>.json`), never by process name `Minecraft.Windows`; close it
-  with `BeDD.exe stop <pid>`.
+  with `BeDD.exe stop --pid <pid>`.
 - Start games only with `BeDD.exe launch` (otherwise your normal profile's data is used).
-- Run `BeDD.exe world singleplayer <worldDir>` after restoring a test world: games share one online sign-in, and
+- Run `BeDD.exe world singleplayer <instance> [<world folder>]` after restoring a test world: games share one online sign-in, and
   simultaneous multiplayer worlds fail with "Blaze".
 - Runs that join a server online use `launch --exclusive-signaling`: every game holds the signaling lock
   (`locks`) shared for its life; this one waits for the others to close and holds it alone. The game process holds
@@ -41,7 +41,7 @@ Double-click `BeDD.exe`, or `launch` opens it; later runs reuse it.
 - **Play its sound on this PC** (right-click): that game's sound on the speakers, until unchecked or the window
   closes. Games are silent otherwise.
 - Closing it (asks first) or killing it closes every game.
-- CLI: `BeDD.exe ps`, `stop <pid>`, `manager status`, `manager stop` (closes all without asking).
+- CLI: `BeDD.exe ps`, `stop --pid <pid>`, `manager status`, `manager stop --yes` (closes all without asking).
 
 A game with no manager attached within 30 s, or that loses it, closes (reason in `latest.log`). Headless CI: config
 `manager=false` ([Configuration](/guide/configuration#keys)); the game stays hidden, never closes itself; use

@@ -20,6 +20,8 @@ Base 模块提供了 LeviLamina API 的基础构建块：导出宏、C++20 概�
 | `ll/api/base/SourceLocation.h` | 源代码位置信息 |
 | `ll/api/base/ToString.h` | 转字符串工具 |
 | `ll/api/base/CompilerPredefine.h` | 编译器检测及 `LL_SHARED_EXPORT`/`LL_SHARED_IMPORT` |
+| `ll/api/base/Alias.h` | 游戏头文件使用的存储辅助类型（`UntypedStorage`、`TypedStorage`） |
+| `ll/api/base/ScopedValue.h` | `ScopedValue<T>`：在作用域内替换变量的值，退出时恢复 |
 
 ## 导出宏
 

@@ -17,9 +17,9 @@ N 号槽位就是克隆 `<gameVersion>-<N>`（[克隆](/zh/guide/installs#克隆
 
 ## 并行测试的规矩
 
-- 按**实例**找自己的游戏（`ps --json`、`run\<pid>.json`），从不按进程名 `Minecraft.Windows`；用 `BeDD.exe stop <pid>` 关闭。
+- 按**实例**找自己的游戏（`ps --json`、`run\<pid>.json`），从不按进程名 `Minecraft.Windows`；用 `BeDD.exe stop --pid <pid>` 关闭。
 - 只用 `BeDD.exe launch` 启动游戏（否则会用你平时的配置文件数据）。
-- 恢复测试存档后运行 `BeDD.exe world singleplayer <worldDir>`：游戏共用一个联机登录，同时打开多个多人存档会报 "Blaze"。
+- 恢复测试存档后运行 `BeDD.exe world singleplayer <instance> [<world folder>]`：游戏共用一个联机登录，同时打开多个多人存档会报 "Blaze"。
 - 在线加入服务器的运行用 `launch --exclusive-signaling`：每个游戏在整个生命期内共享持有信令锁（`locks`）；带此参数的游戏
   等其他游戏都关掉后独占它。锁由游戏进程持有，脚本崩溃不会泄漏它。
 
@@ -36,7 +36,7 @@ N 号槽位就是克隆 `<gameVersion>-<N>`（[克隆](/zh/guide/installs#克隆
   Alt+Tab 也交给游戏。按 **Ctrl+左 Alt** 释放（AltGr 照常输入），切换到别的窗口也会释放。控制期间 Alt+F4 无效。
 - **在本机播放它的声音**（右键）：这个游戏的声音从扬声器播放，直到取消勾选或关闭窗口。其余时间游戏都是静音的。
 - 关掉它（先确认）或强制结束它会关掉所有游戏。
-- 命令行：`BeDD.exe ps`、`stop <pid>`、`manager status`、`manager stop`（不确认，全部关闭）。
+- 命令行：`BeDD.exe ps`、`stop --pid <pid>`、`manager status`、`manager stop --yes`（不确认，全部关闭）。
 
 30 秒内没有管理窗口接管或失去管理窗口的游戏会关闭（原因写在 `latest.log`）。无头 CI：配置
 `manager=false`（[配置](/zh/guide/configuration#配置项)）；游戏保持隐藏、从不自行关闭；用 `BeDD.exe stop`。

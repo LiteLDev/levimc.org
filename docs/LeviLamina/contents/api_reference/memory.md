@@ -29,42 +29,51 @@ enum class HookPriority {
     Lowest  = 400,
 };
 
+using FuncPtr = void*;
+
 int hook(
-    void* target,
-    void* detour,
-    void** originalFunc,
-    HookPriority priority = HookPriority::Normal,
-    bool suspendThreads = true
+    FuncPtr      target,
+    FuncPtr      detour,
+    FuncPtr*     originalFunc,
+    HookPriority priority,
+    bool         suspendThreads = true
 );
 
-bool unhook(void* target, void* detour, bool suspendThreads = true);
+bool unhook(FuncPtr target, FuncPtr detour, bool suspendThreads = true);
 }
 ```
 
 ### Hook Macros
 
 ```cpp
-// Static function hook
-LL_STATIC_HOOK(HookName, HookPriority::Normal, ReturnType, FunctionPointer, ParamTypes...) {
+// Static function hook (registered manually with HookName::hook() / HookName::unhook())
+LL_STATIC_HOOK(HookName, HookPriority::Normal, Identifier, ReturnType, Params...) {
     // Hook implementation
     // Call original: origin(args...)
 }
 
-// Instance method hook
-LL_INSTANCE_HOOK(HookName, ClassName, HookPriority::Normal, ReturnType, &ClassName::MethodName, ParamTypes...) {
-    // Hook implementation
-    // Call original: origin(args...)
-}
-
-// Auto-hook (registers automatically)
-LL_AUTO_STATIC_HOOK(HookName, ReturnType, FunctionPointer, ParamTypes...) {
+// Static function hook; the hook struct derives from ClassName
+LL_TYPE_STATIC_HOOK(HookName, HookPriority::Normal, ClassName, &ClassName::staticFunction, ReturnType, Params...) {
     // ...
 }
 
-LL_AUTO_INSTANCE_HOOK(HookName, ClassName, ReturnType, &ClassName::MethodName, ParamTypes...) {
+// Instance method hook; `this` is the ClassName instance
+LL_TYPE_INSTANCE_HOOK(HookName, HookPriority::Normal, ClassName, &ClassName::method, ReturnType, Params...) {
+    // Hook implementation
+    // Call original: origin(args...)
+}
+
+// Auto-hooks (registered and unregistered automatically)
+LL_AUTO_STATIC_HOOK(HookName, HookPriority::Normal, Identifier, ReturnType, Params...) {
+    // ...
+}
+
+LL_AUTO_TYPE_INSTANCE_HOOK(HookName, HookPriority::Normal, ClassName, &ClassName::method, ReturnType, Params...) {
     // ...
 }
 ```
+
+`Identifier` can be a function pointer, a symbol, an address or a signature. `LL_INSTANCE_HOOK` / `LL_AUTO_INSTANCE_HOOK` and `LL_AUTO_TYPE_STATIC_HOOK` follow the same patterns, and every macro has an `_EX` variant (e.g. `LL_TYPE_INSTANCE_HOOK_EX`) that takes a `RegisterSaveOptions` argument after the priority.
 
 ### Memory Utilities
 
@@ -93,16 +102,20 @@ T& dAccess(void* ptr, ptrdiff_t off);
 
 ```cpp
 #include "ll/api/memory/Hook.h"
-#include "mc/server/ServerInstance.h"
+#include "mc/scripting/ServerScriptManager.h"
 
-LL_AUTO_STATIC_HOOK(
-    ServerStartHook,
-    void,
-    &ServerInstance::start  // Function pointer
+LL_AUTO_TYPE_INSTANCE_HOOK(
+    ServerStartedHook,
+    ll::memory::HookPriority::Normal,
+    ServerScriptManager,
+    &ServerScriptManager::$onServerThreadStarted,  // Function pointer
+    EventResult,
+    ServerInstance& ins
 ) {
     // Code before original
-    origin();  // Call original function
+    auto result = origin(ins);  // Call original function
     // Code after original
+    return result;
 }
 ```
 
@@ -112,17 +125,20 @@ LL_AUTO_STATIC_HOOK(
 #include "ll/api/memory/Hook.h"
 #include "mc/world/actor/player/Player.h"
 
-LL_AUTO_INSTANCE_HOOK(
+LL_AUTO_TYPE_INSTANCE_HOOK(
     PlayerAttackHook,
+    ll::memory::HookPriority::Normal,
     Player,
-    void,
-    &Player::attack,  // Method pointer
-    Actor& target
+    &Player::$attack,  // Method pointer ($ prefix: the virtual's implementation)
+    ActorHurtResult,
+    Actor&                                         target,
+    SharedTypes::Legacy::ActorDamageCause const& cause
 ) {
     // 'this' is the Player instance
-    if (shouldAllowAttack(target)) {
-        origin(target);  // Call original
+    if (!shouldAllowAttack(target)) {
+        return {};
     }
+    return origin(target, cause);  // Call original
 }
 ```
 
@@ -132,12 +148,15 @@ LL_AUTO_INSTANCE_HOOK(
 LL_STATIC_HOOK(
     HighPriorityHook,
     ll::memory::HookPriority::High,
-    bool,
-    &SomeClass::someFunction  // Function pointer
+    &SomeClass::someFunction,  // Function pointer
+    bool
 ) {
     // This runs before Normal priority hooks
     return origin();
 }
+
+// LL_STATIC_HOOK is not registered automatically
+void enable() { HighPriorityHook::hook(); }
 ```
 
 ### Memory Modification
@@ -167,7 +186,7 @@ void callVirtual(void* obj) {
 
 ## Platform Notes
 
-- Use function pointers (`&ClassName::method`) instead of symbol names
+- Prefer function pointers (`&ClassName::method`, or `&ClassName::$method` for a virtual function's implementation) over symbol names, addresses or signatures
 - Hook priority determines execution order (lower number = earlier)
 
 ## Related

@@ -30,6 +30,10 @@ LeviLauncher には **Windows 版**と **Android 版**（[Android 版ガイド](
 
 可能です。ただし、これは高度なワークフローに該当します。まずはクリーンな隔離バージョンから始め、段階的にテストすることを推奨します。
 
+### LeviLauncher をコマンドラインから使えますか？
+
+はい、Windows 版で使えます。引数なしの `LeviLauncher.exe` はウィンドウを開きます。`install latest`、`play`、`instance list`、`mod install <Mod>` などのコマンドを付けると、ターミナルで実行して終了します。すべてのコマンドは `LeviLauncher.exe help`、各コマンドのオプションと例は `LeviLauncher.exe help <コマンド>` で確認できます。
+
 ### Android 版に必要なものは？
 
 ARM64 デバイス上の Android 9.0 以降と、Google Play からインストールした Minecraft 統合版 1.21.80 以降です。[ダウンロード](../download?platform=android)を参照してください。

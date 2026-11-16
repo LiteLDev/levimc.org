@@ -53,9 +53,10 @@ Among them, the operating system type attribute returns a string that records th
 | `Linux`                  | Linux                                         |
 | `Unknown`                | Unknown System                                |
 
-| Input mode ENUM              |
-| ---------------------------- |
-| `InputMode.Mouse`            |
-| `InputMode.Touch`            |
-| `InputMode.GamePad`          |
-| `InputMode.MotionController` |
+| Input mode ENUM                        |
+| -------------------------------------- |
+| `InputMode.Undefined`                  |
+| `InputMode.Mouse`                      |
+| `InputMode.Touch`                      |
+| `InputMode.GamePad`                    |
+| `InputMode.MotionControllerDeprecated` |

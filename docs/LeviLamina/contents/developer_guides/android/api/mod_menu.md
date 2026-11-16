@@ -52,6 +52,16 @@ Configuration entry kinds:
 | `ConfigType::SliderFloat` | Floating-point slider. |
 | `ConfigType::Radio` | One-of-many string value. |
 | `ConfigType::Color` | Color value. |
+| `ConfigType::Keybind` | Key binding, reported through `onKeybind`. |
+| `ConfigType::Text` | Free text value. |
+| `ConfigType::Button` | Action button. |
+
+`ModuleBuilder::onConfigChanged()` receives `(moduleId, key, value)` when a
+configuration value changes, and `onKeybind()` receives `(moduleId, key, isDown)`
+for `Keybind` entries. For a richer settings page (categories, choices, ranges,
+conditions), build a schema with `pl::modmenu::ConfigSchemaBuilder` from
+`<pl/ModMenuConfig.hpp>` and pass its `toJson()` to
+`setConfigSchemaJson(moduleId, json)`; `clearConfigSchema(moduleId)` removes it.
 
 ## Floating Buttons
 
@@ -78,7 +88,7 @@ bool registerQuickButton() {
 
 Button icons can be supplied as PNG, WebP, or SVG data through
 `ButtonBuilder::pngIcon()`, `webpIcon()`, `svgIcon()`, or the generic
-`icon()` helper.
+`icon()` helper; `resourceIcon()` uses a named resource instead.
 
 ## Overlay Drawing
 
@@ -92,6 +102,8 @@ overlay commands. Text commands can use a font registered with
 | `registerFont(fontId, ttfData)` | Registers a TrueType font for text commands. |
 | `registerImage(imageId, imageData, width, height)` | Registers raw RGBA image pixels for image commands. |
 | `submitDrawCommands(moduleId, commands)` | Replaces the module's current overlay draw command list. |
+| `submitHudEditorElements(moduleId, elements)` | Declares the module's elements that the HUD editor can move. |
+| `getHudSurfaceSize()` | Returns the width and height of the HUD surface. |
 
 `registerImage()` expects `imageData.size()` to be exactly
 `width * height * 4`. For `DrawCommandType::Text`, set `DrawCommand::fontId`
@@ -129,6 +141,14 @@ void submitOverlay() {
   pl::modmenu::submitDrawCommands(ModuleId, commands);
 }
 ```
+
+## Menu Control
+
+| API | Purpose |
+| --- | --- |
+| `setModuleEnabled(moduleId, enabled)` | Updates a module's enabled state. |
+| `requestOpenMenu()` / `requestCloseMenu()` | Opens or closes the Mod Menu. |
+| `setFloatingMenuButtonVisible(visible)` | Shows or hides the floating Mod Menu button. |
 
 ## Cleanup
 

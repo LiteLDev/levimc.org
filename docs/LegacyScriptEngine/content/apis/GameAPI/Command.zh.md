@@ -83,7 +83,8 @@ addon 中，也可以使用这里所注册的命令。
 | 执行权限                   | 含义                |
 |------------------------|-------------------|
 | `PermType.Any`         | 任何人都可以执行这条指令      |
-| `PermType.GameMasters` | 只有OP可以执行这条指令（默认值） |
+| `PermType.GameMasters` | 只有OP可以执行这条指令      |
+| `PermType.Admin`       | 管理员权限等级（默认值）     |
 | `PermType.Console`     | 只有控制台可以执行这条指令     |
 
 - 返回值：指令对象
@@ -119,6 +120,61 @@ addon 中，也可以使用这里所注册的命令。
       枚举的有效值
 - 返回值：新增枚举选项的标识名称
 - 返回值类型：`String`
+
+#### 设置一个可变枚举
+
+`Command.setSoftEnum(name,values)`
+
+- 参数：
+    - name : `String`  
+      可变枚举名，配合 `ParamType.SoftEnum` 参数使用
+    - values : `Array<String>`  
+      可变枚举的初始值
+- 返回值：是否成功设置
+- 返回值类型：`Boolean`
+
+与普通枚举不同，可变枚举的值在命令注册后仍然可以修改
+
+#### 为可变枚举添加值
+
+`Command.addSoftEnumValues(name,values)`
+
+- 参数：
+    - name : `String`  
+      可变枚举名
+    - values : `Array<String>`  
+      要添加的值
+- 返回值：是否成功添加
+- 返回值类型：`Boolean`
+
+#### 从可变枚举中移除值
+
+`Command.removeSoftEnumValues(name,values)`
+
+- 参数：
+    - name : `String`  
+      可变枚举名
+    - values : `Array<String>`  
+      要移除的值
+- 返回值：是否成功移除
+- 返回值类型：`Boolean`
+
+#### 获取可变枚举的值
+
+`Command.getSoftEnumValues(name)`
+
+- 参数：
+    - name : `String`  
+      可变枚举名
+- 返回值：可变枚举的值，不存在则返回 `Null`
+- 返回值类型：`Array<String>`
+
+#### 获取所有可变枚举的名称
+
+`Command.getSoftEnumNames()`
+
+- 返回值：所有已注册的可变枚举名称
+- 返回值类型：`Array<String>`
 
 #### 新增一个必选参数
 
@@ -240,16 +296,26 @@ addon 中，也可以使用这里所注册的命令。
 | 属性           | 含义          | 类型           |
 |--------------|-------------|--------------|
 | ori.type     | 指令执行主体类型    | `OriginType` |
+| ori.typeName | 指令执行主体类型名称  | `String`     |
 | ori.name     | 指令执行主体的名称   | `String`     |
 | ori.pos      | 指令执行主体的坐标   | `FloatPos`   |
 | ori.blockPos | 指令执行主体的方块坐标 | `IntPos`     |
 | ori.entity   | 执行指令的实体（可空） | `Entity`     |
 | ori.player   | 执行指令的玩家（可空） | `Player`     |
 
+`ori.getNbt()` 以 `NbtCompound` 形式返回指令执行主体的序列化数据
+
 #### 参数 `output` ：向命令执行者输出命令的执行结果
 
 参数`output`的类型为`CommandOutput` 对象。通过这个对象，可以向命令执行者输出命令的执行结果。  
-对于某个特定的 `CommandOutput` 对象`outp`，有以下这些成员方法
+对于某个特定的 `CommandOutput` 对象`outp`，有以下这些属性
+
+| 属性                | 含义               | 类型        |
+|-------------------|------------------|-----------|
+| outp.empty        | 是否尚未输出任何消息       | `Boolean` |
+| outp.successCount | 输出中记录的成功次数       | `Integer` |
+
+以及以下这些成员方法
 
 ##### 输出一条成功信息
 

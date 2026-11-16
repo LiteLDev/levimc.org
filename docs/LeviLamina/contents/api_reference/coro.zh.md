@@ -19,6 +19,8 @@ Coroutine 模块提供了 C++20 协程基础设施，用于 LeviLamina 中的异
 | `ll/api/coro/YieldAwaiter.h` | 让出执行 awaiter |
 | `ll/api/coro/ForwardAwaiter.h` | 转发 awaiter |
 | `ll/api/coro/Collect.h` | 收集多个协程结果 |
+| `ll/api/coro/ConditionVariable.h` | 协程条件变量（`wait`、`waitFor`、`waitUntil`） |
+| `ll/api/coro/CallbackTransformer.h` | 将回调式生产者转换为可等待的流 |
 
 ## 核心类
 
@@ -44,6 +46,9 @@ public:
 
     // co_await 获取 Expected<T>（从不抛异常）
     auto tryGet();                // -> ExpectedAwaiter
+
+    // co_await 时在另一个执行器上运行任务，完成后回到当前执行器继续
+    auto via(NonNullExecutorRef executor); // -> ViaAwaiter
 
     // 在执行器上启动并回调
     template <std::invocable<ExpectedResult> F>

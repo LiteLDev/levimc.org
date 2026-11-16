@@ -2,7 +2,7 @@
 
 ## ⛳ 放在前面
 
-`LegacyScriptEngine`（以下简称**LSE**/**脚本引擎**）是一个 Minecraft 基岩版专用服务器 `Bedrock Dedicated Server`（以下简称**BDS**）的插件框架，提供强大的跨语言脚本插件支持能力和稳定的开发API支持。  
+`LegacyScriptEngine`（以下简称**LSE**/**脚本引擎**）是一个 Minecraft 基岩版专用服务器 `Bedrock Dedicated Server`（以下简称**BDS**）和 Windows 上的 Minecraft 客户端的插件框架，提供强大的跨语言脚本插件支持能力和稳定的开发API支持。  
 
 > 欢迎参与到脚本引擎的插件开发中来！
 

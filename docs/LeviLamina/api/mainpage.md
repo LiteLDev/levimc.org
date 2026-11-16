@@ -20,6 +20,7 @@ types and files. The tree on the left lists the same pages; on phones it is in t
 
 ## Where it comes from
 
-The reference is built from the `src/` headers of the [LeviLamina repository](https://github.com/LiteLDev/LeviLamina)
+The reference is built from the `src/`, `src-server/` and `src-client/` headers of the
+[LeviLamina repository](https://github.com/LiteLDev/LeviLamina)
 on every change of the main branch. Functions marked *not yet publicly available* are part of %Minecraft but not
 exported to mods yet: their documentation says how to request access.

@@ -140,7 +140,7 @@ You can use entity.despawn() or entity.remove() to intercept this event.
       The entity that was hit with a projectile.
     - source : `Entity`  
       The projecticle entity (like arrows).
-- Intercept event: cannot be intercepted.
+- Intercept events: function returns `false`
 
 #### `"onWitherBossDestroy"` - Block Broken by Wither Event
 
@@ -271,6 +271,6 @@ the transition is destroyed quickly.
       Enderman entity.
     - block : `Block`  
       Pick up the Block
-    - pos : `BlockPos`  
+    - pos : `IntPos`  
       The coordinates of the block.
 - Intercept events: function returns `false`

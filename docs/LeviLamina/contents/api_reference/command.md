@@ -15,7 +15,7 @@ The Command module provides a high-level API for registering custom commands in 
 | `ll/api/command/Command.h` | Base command template |
 | `ll/api/command/Overload.h` | Fluent overload builder with parameter chain |
 | `ll/api/command/OverloadData.h` | Overload metadata storage |
-| `ll/api/command/RuntimeOverload.h` | Dynamic runtime overload creation |
+| `ll/api/command/runtime/RuntimeOverload.h` | Dynamic runtime overload creation |
 | `ll/api/command/ParamTraits.h` | Parameter type information and parsing |
 | `ll/api/command/EnumName.h` | Enum-to-name mapping for command parameters |
 | `ll/api/command/SoftEnum.h` | Soft enum wrapper type |
@@ -25,7 +25,7 @@ The Command module provides a high-level API for registering custom commands in 
 
 ### CommandRegistrar
 
-Singleton that manages all command registrations. Accessed via `getInstance(bool isClientSide)` (or the shorthands `getServerInstance()` / `getClientInstance()`).
+Singleton that manages all command registrations. Accessed via `getInstance(bool isClientSide)` (or the shorthands `getServerInstance()` / `getClientInstance()`; the latter exists only in client builds).
 
 ```cpp
 namespace ll::command {
@@ -41,12 +41,22 @@ public:
         std::weak_ptr<mod::Mod> mod         = mod::NativeMod::current()
     );
 
+    Expected<std::unique_ptr<::Command>> compileCommand(
+        std::string_view commandStr, ::CommandOrigin& origin,
+        ::CurrentCmdVersion version = CurrentCmdVersion::Latest) const noexcept;
+    CommandOutput executeCommand(
+        std::string_view commandStr, ::CommandOrigin& origin,
+        ::CommandOutputType outputType = CommandOutputType::AllOutput,
+        ::CurrentCmdVersion version    = CurrentCmdVersion::Latest) const noexcept;
+
     bool hasEnum(std::string const& name);
     bool tryRegisterEnum(name, values, type, parser);
     bool addEnumValues(name, values, type);
+    bool tryRegisterRuntimeEnum(name, values);
+    bool addRuntimeEnumValues(name, values);
 
-    template <std::is_enum T> bool tryRegisterEnum();
-    template <std::is_enum T> bool tryRegisterRuntimeEnum();
+    template <concepts::Require<std::is_enum> T> bool tryRegisterEnum();
+    template <concepts::Require<std::is_enum> T> bool tryRegisterRuntimeEnum();
 
     bool hasSoftEnum(std::string const& name);
     bool tryRegisterSoftEnum(name, values);
@@ -54,7 +64,7 @@ public:
     bool removeSoftEnumValues(name, values);
     bool setSoftEnumValues(name, values);
 
-    template <Specializes<SoftEnum> T> bool tryRegisterSoftEnum();
+    template <concepts::Specializes<SoftEnum> T> bool tryRegisterSoftEnum();
 };
 }
 ```
@@ -90,6 +100,11 @@ public:
     Overload& optional(ParamName name);   // Mark parameter as optional
     Overload& required(ParamName name);   // Mark parameter as required
     Overload& text(std::string_view text); // Add a text literal
+    Overload& postfix(std::string_view postfix);     // Turn the last parameter into a postfix parameter
+    Overload& option(CommandParameterOption option);   // Add an option to the last parameter
+    Overload& deoption(CommandParameterOption option); // Remove an option from the last parameter
+    template <class Fn>
+    Overload& modify(Fn&& fn);           // Edit the last CommandParameterData directly
 
     template <class Fn>
     void execute(Fn&& fn);               // Set the execution callback
@@ -271,5 +286,5 @@ void registerMultiOverload() {
 
 ## Related
 
-- [Event](event.md) — `ExecuteCommandEvent` for intercepting commands
+- [Event](event.md) — `ExecutingCommandEvent` for intercepting commands
 - [How-to Guide: Commands](../developer_guides/how_to_guides/command_guide.md) — Step-by-step tutorial

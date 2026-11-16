@@ -8,7 +8,7 @@
 运行新版安装程序；它会关掉开着的管理窗口及其游戏。之后每次 `launch` 在克隆缺模组时安装，模组与来源不同时替换（保留
 `config.json`）：
 
-- 默认来源：`BeDD.exe` 旁的 `mod\BeDD`，否则是当前目录所在检出的 `bin\BeDD`；
+- 默认来源：`BEDD_MOD_DIR`，否则 `BeDD.exe` 旁的 `mod\BeDD`，否则是当前目录所在检出的 `bin\BeDD`；
 - `mod install <instance> --from <dir>` 之后：该目录（记在 `mods\BeDD\source.pin`）；目录里不再有构建时，`launch`
   发出警告，不动模组。不带 `--from` 的 `mod install` 结束固定。
 
@@ -34,8 +34,8 @@ mkdir "$env:LOCALAPPDATA\BeDD\app" -Force; tar.exe -xf "$env:TEMP\bedd.zip" -C "
 
 | 覆盖 | |
 |---|---|
-| `BEDD_LEVILAUNCHER` | 要询问的 `LeviLauncher.exe`（默认：已安装的，否则用 `tools` 里的） |
-| `BEDD_INSTANCE` / `--base <name>` | 有多个 1.26.60 实例时指定基础实例 |
+| `BEDD_LEVILAUNCHER` | 要询问的 `LeviLauncher.exe`（默认：`PATH` 上的，否则已安装的，否则用 `tools` 里的） |
+| `BEDD_INSTANCE` / `instance clone --base <name>` | 有多个 1.26.60 实例时指定基础实例（默认：LeviLauncher 的默认实例，否则第一个合适的） |
 
 ## 克隆
 
@@ -43,8 +43,9 @@ mkdir "$env:LOCALAPPDATA\BeDD\app" -Force; tar.exe -xf "$env:TEMP\bedd.zip" -C "
 游戏文件硬链接到基础实例。
 
 ```powershell
-BeDD.exe instance list --all                # clones and their LeviLauncher bases
-BeDD.exe instance show 1.26.60.05-2         # folder, base, game/loader version, mod, hardlinked or copied
+BeDD.exe instance list                      # clones and their LeviLauncher bases
+BeDD.exe instance list --bases --all        # the LeviLauncher instances, and why one cannot be cloned
+BeDD.exe instance show 1.26.60.05-2         # folder, base, game/loader version, mod, running games, status
 BeDD.exe instance clone --slot 2            # make or update
 BeDD.exe instance refresh 1.26.60.05-2      # re-link after the base changed
 BeDD.exe instance path 1.26.60.05-2         # its folder

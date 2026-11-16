@@ -3,7 +3,7 @@ platforms: [windows]
 ---
 # Paramètres & Personnalisation
 
-LeviLauncher propose une page de paramètres assez complète pour ajuster les chemins, l'apparence, la gestion des composants, les préférences de confidentialité et la stratégie de mise à jour.
+LeviLauncher propose une page de paramètres assez complète pour ajuster les chemins, l'apparence, la gestion des paquets, les préférences de confidentialité et la stratégie de mise à jour.
 
 ## Principales sections de paramètres
 
@@ -11,7 +11,7 @@ L'application divise actuellement les paramètres en plusieurs zones, par exempl
 
 - Paramètres généraux
 - Personnalisation
-- Composants tiers
+- Gestion des paquets
 - Autres
 - Confidentialité
 - Mises à jour
@@ -50,9 +50,11 @@ L'aperçu en direct partage l'image chargée et les paramètres de rendu avec la
 
 Utilisez **Image suivante** lorsque le dossier contient plusieurs images. L'ordre **Séquentiel** suit le tri naturel des noms de fichiers ; l'ordre **Aléatoire** évite de répéter l'image actuelle. Lorsqu'aucune image n'est sélectionnée, que l'image ne peut pas être chargée ou que son opacité est de 0, l'interface revient aux surfaces ordinaires. Le contraste élevé, la transparence réduite et les filtres d'arrière-plan non pris en charge utilisent des surfaces de secours opaques.
 
-### Composants tiers
+### Gestion des paquets
 
-- Gestionnaire de paquets intégré (compatible avec [lip](https://github.com/LiteLDev/lip) ; rien à installer ni à mettre à jour) : définir le **Proxy GitHub** utilisé pour télécharger les paquets (affiché lorsque **Utiliser des miroirs** est activé), ou utiliser **Nettoyer le cache** pour supprimer les fichiers de paquets téléchargés
+- Gestionnaire de paquets intégré (compatible avec [lip](https://github.com/LiteLDev/lip) ; rien à installer ni à mettre à jour) : utiliser **Nettoyer le cache** pour supprimer les fichiers de paquets téléchargés si le téléchargement de paquets échoue
+- **Utiliser des miroirs** : télécharger les mises à jour du launcher, les paquets et les listes de versions depuis des miroirs hébergés en Chine continentale (activé par défaut pour les utilisateurs de Chine continentale)
+- **Proxy GitHub** utilisé pour télécharger les paquets (affiché lorsque **Utiliser des miroirs** est activé) : choisir un préréglage ou **Personnalisé** pour saisir votre propre URL ; laissez vide pour rétablir la valeur par défaut
 
 ### Confidentialité
 

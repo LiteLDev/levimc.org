@@ -15,6 +15,7 @@ The Mod module manages mod lifecycle, metadata (manifest), directory structure, 
 | `ll/api/mod/ModManager.h` | Base mod manager |
 | `ll/api/mod/ModManagerRegistry.h` | Registry of all mod managers |
 | `ll/api/mod/NativeMod.h` | Native (DLL) mod implementation |
+| `ll/api/mod/RegisterHelper.h` | `LL_REGISTER_MOD` entry point macro |
 
 ## Key Classes
 
@@ -142,8 +143,33 @@ loads, so loading an optional provider later does not retroactively add lifecycl
 #include "ll/api/mod/NativeMod.h"
 
 ll::mod::NativeMod& getSelfMod() {
-    return ll::mod::NativeMod::current();
+    return *ll::mod::NativeMod::current(); // current() returns std::shared_ptr<NativeMod>
 }
+```
+
+### Registering the Mod Entry
+
+`ll/api/mod/RegisterHelper.h` provides `LL_REGISTER_MOD(Class, instance)`. It exports the entry point that LeviLamina
+calls when loading the DLL: that entry calls `instance.load()`, and `instance.enable()`, `disable()` and `unload()` are
+bound as the mod's callbacks if the class defines them. Each of them returns `bool`.
+
+```cpp
+#include "ll/api/mod/NativeMod.h"
+#include "ll/api/mod/RegisterHelper.h"
+
+class MyMod {
+public:
+    static MyMod& getInstance() {
+        static MyMod instance;
+        return instance;
+    }
+
+    bool load() { return true; }    // required
+    bool enable() { return true; }  // optional
+    bool disable() { return true; } // optional
+};
+
+LL_REGISTER_MOD(MyMod, MyMod::getInstance());
 ```
 
 ### Using Mod Resources

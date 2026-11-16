@@ -3,7 +3,7 @@ platforms: [windows]
 ---
 # Settings & Personalization
 
-LeviLauncher includes a large settings area so you can tune paths, appearance, component management, privacy choices, and update behavior.
+LeviLauncher includes a large settings area so you can tune paths, appearance, package management, privacy choices, and update behavior.
 
 ## Main settings sections
 
@@ -11,7 +11,7 @@ The app groups settings into several sections, including:
 
 - Basic Settings
 - Personalization
-- Third-party Components
+- Package Management
 - Others
 - Privacy
 - Updates
@@ -50,9 +50,11 @@ The live preview shares the loaded image and rendering parameters with the main 
 
 Use **Next image** when the folder contains multiple pictures. **Sequential** order uses natural filename sorting; **Random** order avoids repeating the current image. When no image is selected, the image cannot be loaded, or image opacity is 0, the interface returns to ordinary surfaces. Higher contrast, reduced transparency and unsupported backdrop filters use solid fallback surfaces.
 
-### Third-party Components
+### Package Management
 
-- built-in package manager (compatible with [lip](https://github.com/LiteLDev/lip); nothing to install or update): set the **GitHub proxy** used for package downloads (shown while **Use mirror sources** is on), or use **Clean Cache** to remove downloaded package files
+- built-in package manager (compatible with [lip](https://github.com/LiteLDev/lip); nothing to install or update): use **Clean Cache** to remove downloaded package files when package downloads fail
+- **Use mirror sources**: download launcher updates, packages and version lists from mirrors hosted in mainland China (on by default for users in mainland China)
+- **GitHub proxy** used for package downloads (shown while **Use mirror sources** is on): pick a preset or choose **Custom** to type your own URL; leave it empty to restore the default
 
 ### Privacy
 

@@ -37,9 +37,10 @@ public:
     Error() noexcept = default;
     Error(std::unique_ptr<ErrorInfoBase> info) noexcept;
 
-    explicit operator bool() const noexcept; // true if error exists
+    operator bool() const noexcept; // true if error exists
 
     std::string message() const noexcept;
+    std::string message(std::string_view locale) const noexcept; // localized message
 
     template <class T> bool isA() noexcept;
     template <class T> T& as() noexcept;
@@ -48,20 +49,23 @@ public:
 
     Error const& log(io::Logger&, io::LogLevel = io::LogLevel::Error) const noexcept;
     Error const& log(CommandOutput&, CommandOutputMessageType = CommandOutputMessageType::Error) const noexcept;
+    // Each log() also has an overload taking a `std::string_view locale` before the level/type
+    Error const& log(brstd::function_ref<void(std::string_view msg)> out, std::string_view locale = {}) const noexcept;
 };
 }
 ```
 
 ### ErrorInfoBase
 
-Abstract base class for error details. Subclass this to create custom error types.
+Abstract base class for error details. Subclass this and override `message(std::string_view locale)` to create custom error types.
 
 ```cpp
 namespace ll {
 class ErrorInfoBase {
 public:
     virtual ~ErrorInfoBase();
-    virtual std::string message() const noexcept = 0;
+    virtual std::string message() const noexcept; // calls message({})
+    virtual std::string message(std::string_view locale) const noexcept = 0;
 };
 }
 ```
@@ -135,7 +139,7 @@ void example(ll::io::Logger& logger) {
 struct FileNotFoundError : ll::ErrorInfoBase {
     std::string path;
     FileNotFoundError(std::string path) : path(std::move(path)) {}
-    std::string message() const noexcept override {
+    std::string message(std::string_view /*locale*/) const noexcept override {
         return "File not found: " + path;
     }
 };

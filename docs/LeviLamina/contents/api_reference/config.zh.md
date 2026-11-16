@@ -51,9 +51,10 @@ bool loadConfig(T& config, std::filesystem::path const& path, F&& updater = defa
 
 **行为：**
 
-1. 文件不存在 → 保存默认配置，返回 `false`
-2. 文件存在但版本不同 → 调用 `updater`，返回 `false`
+1. 文件不存在 → 先保存默认配置，再按已有文件的流程读取（版本匹配，因此返回 `true`）
+2. 文件缺少 `version` 或版本不同 → 调用 `updater`，仅当其返回 `true` 时才反序列化；返回 `false`
 3. 文件存在且版本匹配 → 直接反序列化，返回 `true`
+4. 文件为空或无法读取 → 不修改 `config`，返回 `false`
 
 ### defaultConfigUpdater
 

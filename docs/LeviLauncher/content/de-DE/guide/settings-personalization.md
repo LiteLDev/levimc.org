@@ -3,7 +3,7 @@ platforms: [windows]
 ---
 # Einstellungen & Personalisierung
 
-LeviLauncher bietet eine umfassende Einstellungsseite, auf der du Pfade, Erscheinungsbild, Komponentenverwaltung, Datenschutzeinstellungen und das Update-Verhalten anpassen kannst.
+LeviLauncher bietet eine umfassende Einstellungsseite, auf der du Pfade, Erscheinungsbild, Paketverwaltung, Datenschutzeinstellungen und das Update-Verhalten anpassen kannst.
 
 ## Hauptbereiche der Einstellungen
 
@@ -11,7 +11,7 @@ Die Anwendung unterteilt die Einstellungen derzeit in mehrere Bereiche, zum Beis
 
 - Allgemeine Einstellungen
 - Personalisierung
-- Drittanbieter-Komponenten
+- Paketverwaltung
 - Sonstiges
 - Datenschutz
 - Updates
@@ -50,9 +50,11 @@ Die Live-Vorschau verwendet dasselbe geladene Bild und dieselben Rendering-Param
 
 Verwende **Nächstes Bild**, wenn der Ordner mehrere Bilder enthält. Die Reihenfolge **Sequentiell** nutzt eine natürliche Sortierung nach Dateinamen; **Zufällig** vermeidet, das aktuelle Bild zu wiederholen. Wenn kein Bild ausgewählt ist, das Bild nicht geladen werden kann oder die Bilddeckkraft 0 beträgt, kehrt die Oberfläche zu normalen Flächen zurück. Bei erhöhtem Kontrast, reduzierter Transparenz oder nicht unterstützten Backdrop-Filtern werden deckende Ersatzflächen verwendet.
 
-### Drittanbieter-Komponenten
+### Paketverwaltung
 
-- integrierter Paketmanager (kompatibel mit [lip](https://github.com/LiteLDev/lip); keine Installation oder Aktualisierung nötig): den für Paket-Downloads verwendeten **GitHub-Proxy** festlegen (sichtbar, wenn **Mirror-Quellen verwenden** aktiviert ist) oder mit **Cache leeren** heruntergeladene Paketdateien entfernen
+- integrierter Paketmanager (kompatibel mit [lip](https://github.com/LiteLDev/lip); keine Installation oder Aktualisierung nötig): mit **Cache leeren** heruntergeladene Paketdateien entfernen, wenn Paket-Downloads fehlschlagen
+- **Mirror-Quellen verwenden**: Launcher-Updates, Pakete und Versionslisten von in Festlandchina gehosteten Mirrors laden (für Nutzer in Festlandchina standardmäßig aktiviert)
+- **GitHub-Proxy** für Paket-Downloads (sichtbar, wenn **Mirror-Quellen verwenden** aktiviert ist): eine Vorgabe wählen oder mit **Benutzerdefiniert** eine eigene URL eingeben; leer lassen, um den Standard wiederherzustellen
 
 ### Datenschutz
 

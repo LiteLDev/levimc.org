@@ -160,14 +160,14 @@ registrar.unregisterPacket(id);
 ### 示例：SimpleTunnel
 
 一个双向传递字符串的通道。`send` 发送消息，`co_await receive()` 等待下一条消息。收到的消息先放在队列里，等协程来取；
-消息到达时，`InterruptableSleep` 会唤醒正在等待的协程。处理器把消息放进收到它的那一端的通道；通道在它那一端第一次用到时才创建，服务器或客户端只有一个，主持世界的客户端两端各一个。
+消息到达时，`ConditionVariable` 会唤醒正在等待的协程。处理器把消息放进收到它的那一端的通道；通道在它那一端第一次用到时才创建，服务器或客户端只有一个，主持世界的客户端两端各一个。
 每一端处理数据包的线程就是执行器运行的线程，所以队列不需要加锁。该数据包是必需的，所以玩家进入之后，两端一定都有这个通道。
 
 服务端模组和客户端模组共用：
 
 ```cpp
 #include "ll/api/coro/CoroTask.h"
-#include "ll/api/coro/InterruptableSleep.h"
+#include "ll/api/coro/ConditionVariable.h"
 #include "ll/api/network/packet/Packet.h"
 
 class SimpleTunnelPacket : public ll::network::PacketBase<SimpleTunnelPacket> {
@@ -216,7 +216,7 @@ public:
 
     ll::coro::CoroTask<Message> receive() {
         while (received.empty()) {
-            co_await arrived.sleep();
+            co_await arrived.wait();
         }
         auto message = std::move(received.front());
         received.pop_front();
@@ -225,12 +225,12 @@ public:
 
     void push(NetworkIdentifierWithSubId source, std::string data) {
         received.push_back({std::move(source), std::move(data)});
-        arrived.interrupt();
+        arrived.notifyOne();
     }
 
 private:
     std::deque<Message>          received;
-    ll::coro::InterruptableSleep arrived;
+    ll::coro::ConditionVariable  arrived;
 };
 
 class SimpleTunnelHandler : public ll::network::PacketHandlerBase<SimpleTunnelHandler, SimpleTunnelPacket> {
@@ -290,4 +290,5 @@ LeviLamina 客户端读到后立即回复自己的 `levilamina:register`；原�
 
 ## 相关模块
 
-- [Event（事件系统）](event.zh.md) — 用于数据包拦截的网络事件
+- [Event（事件系统）](event.zh.md) — `PlayerJoinEvent`，服务器可从此时起发送必需数据包
+- [Coroutine（协程）](coro.zh.md) — SimpleTunnel 示例使用的 `CoroTask` 与 `ConditionVariable`

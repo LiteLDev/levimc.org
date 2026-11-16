@@ -51,7 +51,7 @@ Each member of the coordinate object is **readable and writable**.
 
     Among them, the value of the **dimension ID** attribute is: `0` represents the Main World, `1` represents The Nether, and `2` represents The End.
    
-    **Dimension text name:** The values of the attributes are: "Main World", "Nether", "End".
+    **Dimension text name:** The values of the attributes are: "Overworld", "Nether", "End".
 
    If in some cases the dimension is invalid, or cannot be obtained, you will find that the value of `dimid` is `-1`.
 
@@ -71,7 +71,7 @@ Each member of the coordinate object is **readable and writable**.
 
    Among them, the value of the **dimension ID** attribute is: `0` represents The Main World, `1` represents The Nether, and `2` represents The End.
    
-   **Dimension text name:** The values of the attributes are: "Main World", "Nether", "End"
+   **Dimension text name:** The values of the attributes are: "Overworld", "Nether", "End"
 
    If in some case the dimension is invalid, or cannot be obtained, you will find that the value of `dimid` is `-1`.
 
@@ -145,8 +145,8 @@ Since there is no concept of rotation in the entity system of MC, there is no da
     pitch angle
   - yaw : `Float`  
     yaw angle
-- Return value: A floating point coordinate object.
-- Return value type: `FloatPos`
+- Return value: A direction angle object.
+- Return value type: `DirectionAngle`
 
 
 

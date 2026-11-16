@@ -148,6 +148,11 @@ SQL数据库适用于使用SQL语句处理大量的关系型数据。接口底�
 | create    | 数据库不存在是否自动创建 | `SQLite` | `true`/`false`    | `true`  |
 | readonly  | 以只读模式打开      | `SQLite` | `true`/`false`    | `false` |
 | readwrite | 以读写模式打开      | `SQLite` | `true`/`false`    | `true`  |
+| host      | 数据库服务器地址     | `MySQL`  | `localhost`       | -       |
+| port      | 数据库服务器端口     | `MySQL`  | `3306`            | `3306`  |
+| user      | 用户名          | `MySQL`  | `root`            | -       |
+| password  | 密码           | `MySQL`  | `password`        | -       |
+| database  | 要使用的数据库      | `MySQL`  | `db`              | -       |
 
 
 
@@ -356,8 +361,7 @@ stmt.bind(114514, 7);  // 将会绑定到h
 
 #### 步进到下一行结果
 
-`stmt.step()`  
-`stmt.next()`
+`stmt.step()`
 
 - 返回值：执行成功与否
 - 返回值类型：`Boolean`

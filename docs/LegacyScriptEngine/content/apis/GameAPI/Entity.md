@@ -151,6 +151,7 @@ properties:
 | en.type                  | Entity type name                                       | `String`         |
 | en.id                    | Entity's in-game ID                                    | `Integer`        |
 | en.pos                   | Entity's coordinates                                   | `FloatPos`       |
+| en.posDelta              | Entity's motion (position delta per tick)              | `FloatPos`       |
 | en.feetPos               | The coordinates of the entity's leg                    | `FloatPos`       |
 | en.blockPos              | The coordinates of the block the entity is standing on | `IntPos`         |
 | en.maxHealth             | Entity's maximum health                                | `Integer`        |
@@ -213,6 +214,17 @@ Each entity object contains some member functions (member methods) that can be e
 - Return value: Whether the teleport was successful or not.
 - Return value type:  `Boolean`
 
+#### Set the Entity's Motion
+
+`en.setPosDelta(delta)`  
+`en.setPosDelta(x,y,z)`
+
+- Parameters:
+    - delta : `FloatPos`  
+      The new motion (position delta per tick) of the entity (or use x, y, z to set it)
+- Return value: Whether the setting was successful or not.
+- Return value type:  `Boolean`
+
 #### Kill the Specified Entity
 
 `en.kill()`
@@ -236,15 +248,15 @@ Each entity object contains some member functions (member methods) that can be e
 
 #### Inflict Damage to Entities
 
-`en.hurt(damage,type,source)`
+`en.hurt(damage[,type[,source]])`
 
 - Parameters:
     - damage : `Float`  
       The amount of damage to deal to the entity.
     - type : `Integer`  
-      Actor Damage Cause
+      (Optional) Actor Damage Cause, default is `0` (`ActorDamageCause.Override`)
     - source: `Entity`  
-      Source of damage
+      (Optional) Source of damage
 - Return value: Whether the damage was dealt.
 - Return value type:  `Boolean`
 
@@ -523,7 +535,7 @@ use more item-related APIs.
 - Return value: The container object corresponding to the armor bar of this entity.
 - Return value type:  `Container`
 
-For more usage of container objects, please refer to [Container Object API Documentation](./Command.md)
+For more usage of container objects, please refer to [Container Object API Documentation](./Container.md)
 
 #### Determines if a Mob Has a Container (Except for the Armor Slot)
 
@@ -714,6 +726,13 @@ For more usage of NBT objects, please refer to [NBT Interface Documentation](../
 | bad_omen        | 28 |
 | village_hero    | 29 |
 | darkness        | 30 |
+| trial_omen      | 31 |
+| wind_charged    | 32 |
+| weaving         | 33 |
+| oozing          | 34 |
+| infested        | 35 |
+| raid_omen       | 36 |
+| breath_of_the_nautilus | 37 |
 
 ### Other Entity Function API
 
@@ -722,7 +741,9 @@ The following APIs provide APIs for interacting with entities at specified locat
 #### Create an Explosion at the Specified Location
 
 `mc.explode(pos,source,maxResistance,radius,isDestroy,isFire)`  
-`mc.explode(x,y,z,dimid,source,maxResistance,radius,isDestroy,isFire)`
+`mc.explode(x,y,z,dimid,source,maxResistance,radius,isDestroy,isFire)`  
+`mc.explode(pos,source,radius,isDestroy,isFire)`  
+`mc.explode(x,y,z,dimid,source,radius,isDestroy,isFire)`
 
 - Parameters:
     - pos : `IntPos `/ `FloatPos`  
@@ -730,7 +751,7 @@ The following APIs provide APIs for interacting with entities at specified locat
     - source : `Entity`  
       Set the entity object of the explosion source, which can be `Null`.
     - maxResistance : `Float`  
-      The maximum explosion resistance of the block. Blocks lower than this value will be destroyed.
+      The maximum explosion resistance of the block. Blocks lower than this value will be destroyed. If omitted, there is no limit.
     - radius : `Float`  
       The radius of the explosion, which affects the scope of the explosion.
     - isDestroy : `Boolean`  

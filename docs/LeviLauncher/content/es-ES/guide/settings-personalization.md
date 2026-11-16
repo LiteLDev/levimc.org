@@ -3,7 +3,7 @@ platforms: [windows]
 ---
 # Ajustes y personalización
 
-LeviLauncher ofrece una página de configuración bastante completa para ajustar rutas, apariencia, gestión de componentes, preferencias de privacidad y estrategia de actualizaciones.
+LeviLauncher ofrece una página de configuración bastante completa para ajustar rutas, apariencia, gestión de paquetes, preferencias de privacidad y estrategia de actualizaciones.
 
 ## Principales secciones de configuración
 
@@ -11,7 +11,7 @@ Actualmente, la aplicación divide la configuración en varias áreas, por ejemp
 
 - Configuración básica
 - Personalización
-- Componentes de terceros
+- Gestión de paquetes
 - Otros
 - Privacidad
 - Actualizaciones
@@ -50,9 +50,11 @@ La vista previa en directo comparte la imagen cargada y los parámetros de rende
 
 Usa **Siguiente imagen** cuando la carpeta contenga varias imágenes. El orden **Secuencial** usa la ordenación natural de los nombres de archivo; el orden **Aleatorio** evita repetir la imagen actual. Si no hay ninguna imagen seleccionada, la imagen no se puede cargar o su opacidad es 0, la interfaz vuelve a las superficies normales. El contraste alto, la transparencia reducida y los filtros de fondo no compatibles usan superficies sólidas de reserva.
 
-### Componentes de terceros
+### Gestión de paquetes
 
-- Gestor de paquetes integrado (compatible con [lip](https://github.com/LiteLDev/lip); no hay nada que instalar ni actualizar): configurar el **Proxy de GitHub** usado para descargar paquetes (visible con **Usar servidores espejo** activado) o usar **Limpiar caché** para eliminar los archivos de paquetes descargados
+- Gestor de paquetes integrado (compatible con [lip](https://github.com/LiteLDev/lip); no hay nada que instalar ni actualizar): usar **Limpiar caché** para eliminar los archivos de paquetes descargados si fallan las descargas de paquetes
+- **Usar servidores espejo**: descargar las actualizaciones del launcher, los paquetes y las listas de versiones desde servidores espejo alojados en China continental (activado por defecto para usuarios de China continental)
+- **Proxy de GitHub** usado para descargar paquetes (visible con **Usar servidores espejo** activado): elegir un valor predefinido o **Personalizado** para escribir tu propia URL; déjalo vacío para restaurar el valor predeterminado
 
 ### Privacidad
 

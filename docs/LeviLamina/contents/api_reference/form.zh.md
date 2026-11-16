@@ -166,6 +166,8 @@ public:
 
     CustomForm& sendTo(Player& player, Callback callback = {});
     CustomForm& sendUpdate(Player& player, Callback callback = {});
+
+    std::string getFormData() const; // 序列化后的表单 JSON
 };
 }
 ```
@@ -191,7 +193,7 @@ void showSettings(Player& player) {
         auto motd = std::get<std::string>(data.at("motd"));
         auto pvp = std::get<uint64>(data.at("pvp"));            // 0 或 1
         auto renderDist = std::get<double>(data.at("renderDistance"));
-        auto difficulty = std::get<uint64>(data.at("difficulty")); // 索引
+        auto difficulty = std::get<std::string>(data.at("difficulty")); // 选中选项的文本，例如 "普通"
     });
 }
 ```

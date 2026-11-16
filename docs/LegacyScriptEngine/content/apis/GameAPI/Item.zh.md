@@ -23,6 +23,7 @@
 - 返回值：生成的物品对象
 - 返回值类型：`Item`
   - 如返回值为 `Null` 则表示生成失败
+  - 如不存在该类型名的物品，则抛出异常
 
 #### 从现有的物品对象克隆
 
@@ -71,6 +72,7 @@
 | it.damage           | 物品已消耗耐久                                 | `Integer`                  |
 | it.attackDamage     | 物品攻击伤害                                   | `Integer`                  |
 | it.maxDamage        | 物品最大耐久                                   | `Integer`                  |
+| it.maxStackSize     | 物品最大堆叠数量                               | `Integer`                  |
 | it.lore             | 物品 Lore                                      | `Array<String, String...>` |
 | it.isArmorItem      | 物品是否为盔甲                                 | `Boolean`                  |
 | it.isBlock          | 物品是否为方块                                 | `Boolean`                  |

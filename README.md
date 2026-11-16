@@ -6,7 +6,7 @@ styled with the shared LeviMC design system, levimc-kit, which lives here in [`k
 **levimc-kit is the one source of the LeviMC chrome** — the bar on top (Home · Projects ▾ · Mods · Blog · Community ·
 About, language · theme · GitHub), the footer, the theme and the docs engine — for every LeviMC site: levimc.org
 (and LeviMC Mods at levimc.org/mods/, see below) and the project docs at levimc.org/<Project>/ (LeviLamina with its Doxygen API, LegacyScriptEngine, lip,
-LeviLauncher for Windows and Android). Every deploy publishes it at <https://levimc.org/kit/v2/> (`kit/scripts/publish-kit.mjs`);
+LeviLauncher for Windows and Android, BeDD, bedboo). Every deploy publishes it at <https://levimc.org/kit/v2/> (`kit/scripts/publish-kit.mjs`);
 the other sites fetch it when they build (`scripts/fetch-kit.mjs`, run by their package install) and never edit it.
 The project docs move into this repository (`docs/<Project>/`, [docs/README.md](docs/README.md)) and are built with
 this checkout's kit by every deploy; a site still built in its own repository checks hourly and rebuilds when its live
@@ -180,7 +180,7 @@ What goes where:
 * **Tutorials** (here, `tutorials/`): a newcomer starts from a clean PC and ends with one thing done end to end —
   a server, a modded game, a first mod, a published package. Every project's tutorials live here, once, even when
   they span projects (a server needs lip and LeviLamina: one tutorial, not one per project).
-* **Project docs** (each repository): the home page introduces the project; every other page is a guide (one
+* **Project docs** (here, `docs/<Project>/`): the home page introduces the project; every other page is a guide (one
   topic, assumes the basics), reference, or an explanation of how it works.
 * **Maintainer material** (each repository's `CONTRIBUTING.md` and the files it links): building the project
   itself, code style, releasing. Never on a site.

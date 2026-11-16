@@ -10,13 +10,13 @@ MC使用 **计分项** 作为计分板系统的核心，每一个计分项拥有
 
 #### 创建一个新的计分项
 
-`mc.newScoreObjective(name,displayName)`
+`mc.newScoreObjective(name[,displayName])`
 
 - 参数：
   -  name : `String`  
      计分项名称  
   -  displayName : `String`  
-     计分项显示名称  
+     （可选）计分项显示名称，默认与 `name` 相同  
 - 返回值：新增创建的计分项对象
 - 返回值类型：`Objective`
   - 如果返回`Null`，则代表创建失败

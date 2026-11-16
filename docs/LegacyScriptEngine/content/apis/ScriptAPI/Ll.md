@@ -44,10 +44,10 @@ Some interfaces related to loader operations are provided here.
 |-------------------|-------------------------|----------------------------------|
 | plugin.name       | Plugin name             | `String`                         |
 | plugin.desc       | Plugin description      | `String`                         |
-| plugin.type       | Plugin type             | `String`                         |
+| plugin.type       | Plugin type (only set by `ll.getAllPluginInfo()`) | `String`               |
 | plugin.version    | Plugin version (array)  | `Array<Integer,Integer,Integer>` |
 | plugin.versionStr | Plugin version (string) | `String`                         |
-| plugin.filePath   | Path to plugin          | `String`                         |
+| plugin.filePath   | Entry file of the plugin (`entry` in its manifest.json) | `String`         |
 | plugin.others     | Other information       | `Object`                         |
 
 ### Get information about current Plugin

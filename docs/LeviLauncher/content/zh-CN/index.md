@@ -33,7 +33,7 @@ features:
   - title: 世界工具
     details: 备份为 .mcworld、查看世界信息，并对部分 level.dat 字段进行编辑。
   - title: 用户设置
-    details: 调整语言、外观、下载行为、隐私偏好、更新通道和组件状态。
+    details: 调整语言、外观、下载行为、隐私偏好、更新通道和包管理。
   - title: Android 专属功能
     details: "在同一个启动器里切换 Xbox 账号，并用 URI 快速启动。"
     link: /zh-Hans/guide/accounts-quick-launch

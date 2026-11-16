@@ -171,7 +171,7 @@ The handler must stay alive until it is unregistered or its mod is unloaded.
 ### Example: SimpleTunnel
 
 A tunnel that carries strings both ways. `send` sends a message, and `co_await receive()` waits for the next one.
-Received messages wait in a queue until a coroutine takes them, and `InterruptableSleep` wakes the waiting coroutine
+Received messages wait in a queue until a coroutine takes them, and `ConditionVariable` wakes the waiting coroutine
 when one arrives. The handler puts a message into the tunnel of the side it was received on, and a tunnel is created
 the first time its side is used: a server or a client has one, and a client hosting a world has one for each side.
 On each end, packets are handled on the same thread the executor runs on, so the queue needs no lock. The packet is
@@ -181,7 +181,7 @@ Shared by the server mod and the client mod:
 
 ```cpp
 #include "ll/api/coro/CoroTask.h"
-#include "ll/api/coro/InterruptableSleep.h"
+#include "ll/api/coro/ConditionVariable.h"
 #include "ll/api/network/packet/Packet.h"
 
 class SimpleTunnelPacket : public ll::network::PacketBase<SimpleTunnelPacket> {
@@ -230,7 +230,7 @@ public:
 
     ll::coro::CoroTask<Message> receive() {
         while (received.empty()) {
-            co_await arrived.sleep();
+            co_await arrived.wait();
         }
         auto message = std::move(received.front());
         received.pop_front();
@@ -239,12 +239,12 @@ public:
 
     void push(NetworkIdentifierWithSubId source, std::string data) {
         received.push_back({std::move(source), std::move(data)});
-        arrived.interrupt();
+        arrived.notifyOne();
     }
 
 private:
     std::deque<Message>          received;
-    ll::coro::InterruptableSleep arrived;
+    ll::coro::ConditionVariable  arrived;
 };
 
 class SimpleTunnelHandler : public ll::network::PacketHandlerBase<SimpleTunnelHandler, SimpleTunnelPacket> {
@@ -307,4 +307,5 @@ many 64-bit runtime ids.
 
 ## Related
 
-- [Event](event.md) — Network events for packet interception
+- [Event](event.md) — `PlayerJoinEvent`, from which the server can send required packets
+- [Coroutine](coro.md) — `CoroTask` and `ConditionVariable` used by the SimpleTunnel example

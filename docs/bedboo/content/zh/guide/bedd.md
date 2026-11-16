@@ -2,7 +2,7 @@
 
 通常情况下 bedboo 本身*就是*客户端：它通过 RakNet 或 NetherNet 登录基岩版专用服务器，并亲自发送每一个数据包。使用
 `transport: 'bedd'` 时，它改为驱动一个**真实的 Minecraft 基岩版客户端**，该客户端由
-[Be.D.D.](https://levimc.org/zh-Hans/BeDD/)（Bedrock Deep Dive，一个 LeviLamina 客户端模组）托管。于是同一个脚本会作用于一个
+[Be.D.D.](https://levimc.org/zh-Hans/BeDD/)（Bedrock Deep Dive，一个用于 LeviLamina 客户端模组的测试工具包）托管。于是同一个脚本会作用于一个
 真实的游戏：你能看到本地玩家按照脚本的指示行走、转头、挖掘、放置和聊天。
 
 ```js
@@ -16,10 +16,10 @@ bot.once('spawn', () => bot.chat('hello from bedboo'))
 
 ## 安装配置 {#setup}
 
-仅支持 Windows（BeDD 是 Windows 客户端模组）；需要 Node 24 或更高版本。bedboo 需要 **BeDD v2**，它通过本机 WebSocket
-提供每个游戏；不再支持 BeDD v1（命名管道 `\\.\pipe\BeDD`）。
+仅支持 Windows（BeDD 运行的是 Minecraft 的 Windows 客户端）；需要 Node 24 或更高版本。bedboo 需要 **BeDD 0.4.0 或更高版本**，它通过本机 WebSocket
+提供每个游戏；不再支持 BeDD 0.3 及更早版本（命名管道 `\\.\pipe\BeDD`）。
 
-1. 安装 BeDD v2（见 [BeDD 文档](https://levimc.org/zh-Hans/BeDD/)），并用它启动一个游戏：
+1. 安装 BeDD 0.4.0 或更高版本（见 [BeDD 文档](https://levimc.org/zh-Hans/BeDD/)），并用它启动一个游戏：
 
    ```sh
    BeDD.exe launch --slot 2
@@ -29,7 +29,7 @@ bot.once('spawn', () => bot.chat('hello from bedboo'))
    于 `%LOCALAPPDATA%\BeDD\run\<pid>.json`（`$BEDD_HOME` 可移动该目录）中公布它：
    `{ "protocol": 2, "kind": "client", "pid", "url": "ws://127.0.0.1:<port>/v1", "token", "instance", "label", … }`。
    bedboo 读取这个文件来连接；token 是唯一的凭据。
-2. bedboo 用到的一切在 BeDD v2 中都**默认开启**（以 token 为边界）。游戏的 `mods\BeDD\config\config.json` 中与 bedboo 相关的键：
+2. bedboo 用到的一切自 BeDD 0.4.0 起都**默认开启**（以 token 为边界）。游戏的 `mods\BeDD\config\config.json` 中与 bedboo 相关的键：
 
    | 键 | 默认值 | 作用 | bedboo 用它来 |
    |---|---|---|---|
@@ -51,9 +51,11 @@ bot.once('spawn', () => bot.chat('hello from bedboo'))
    （配置 `"allowHosts": ["*"]`）则允许任何由 `join`（见下文 `host`）指定的主机，无需重启；本机以外的其他主机仍不可达。客户端通过 NetherNet 加入 BDS，
    因此请以 `transport=nethernet` 启动服务器；NetherNet 加入要经过 Minecraft 的在线信令服务，所以在客户端加入和
    游戏期间，这台电脑上不能再启动其他 Minecraft 游戏（后续的登录会把当前会话挤掉："Multiplayer Connection Failed … NetherNet"）。
-3. 让玩家进入一个世界（服务器、局域网世界或单人游戏）：bedboo 附加到一个已经在游戏中的客户端上，它不负责登录。
+3. 让玩家进入一个世界（服务器、局域网世界或单人游戏）：bedboo 附加到一个已经在游戏中的客户端上，它不负责登录。也可以给
+   `createBot` 传入 `host`（和 `port`）：bedboo 会先用 BeDD 的 `join` 操作让客户端加入该服务器（离开当前世界，回答
+   “Trust this server?”），客户端进入关卡后再附加。
 4. `createBot({ transport: 'bedd', version: '1.26.60', bedd: {} })`，其中 `version` 是游戏的协议族（否则 tap 的 HELLO
-   会被拒绝；该模式下默认为 BeDD v2 所运行的游戏版本 `1.26.60`）。`bedd: {}` 选择唯一一个正在运行的 BeDD 游戏；有多个时请指明其中一个（见[选项](#options)）。加入日志回放
+   会被拒绝；该模式下默认为 BeDD 0.4.0 所运行的游戏版本 `1.26.60`）。`bedd: {}` 选择唯一一个正在运行的 BeDD 游戏；有多个时请指明其中一个（见[选项](#options)）。加入日志回放
    完成后触发 `spawn`；从此 `bot.*` 反映的就是客户端的状态。
 
 `bedd_follow.js` 示例让客户端跟随最近的其他玩家：
@@ -88,7 +90,7 @@ bot.* state ← plugins ← decoder ← tap reader ←──(binary frames)─�
   `send`（白名单内的数据包字节：text/command_request，以及你加入 `sendAllow` 的任何 ID）、`stack`（通过客户端的
   ItemStackNetManager 发送 item_stack_request）、`ui`（客户端的界面：重生、离开床、告示牌编辑器）以及 `join`（createBot 的 `host`）。
   只有在游戏占有鼠标且没有打开菜单时，输入才会生效。请求是 `{ id, op, … }` 文本帧，按顺序应答，同一时间只有一个在途。
-- **协商：** 附加时，bedboo 会 ping 控制连接（BeDD v2 应答 `protocol: 2`、`defaultMode: 'bedboo'` 和 `modes`，即每种操作模式
+- **协商：** 附加时，bedboo 会 ping 控制连接（BeDD 0.4.0 及更高版本应答 `protocol: 2`、`defaultMode: 'bedboo'` 和 `modes`，即每种操作模式
   的操作列表），并以不带参数的方式探测每个操作：`unknown op`（或不在 `modes` 中）→ 不存在（absent），`code:'disabled'` →
   存在但在 config.json 中被关闭，`ok` → 存在（present）。`bot.bedrock.bedd.caps` 保存探测结果，`bot.bedrock.bedd.supports(name)`
   按 mineflayer API 逐项给出答案。
@@ -157,7 +159,7 @@ bot.* state ← plugins ← decoder ← tap reader ←──(binary frames)─�
 
 ## 界面 {#screens}
 
-BeDD v2 的 `ui` 操作把游戏的 JSON UI 界面读成带 ref 的节点树（`role`、`name`、`text`、`state`），并按 ref 点击节点或向其输入
+BeDD 的 `ui` 操作把游戏的 JSON UI 界面读成带 ref 的节点树（`role`、`name`、`text`、`state`），并按 ref 点击节点或向其输入
 文字。`lib/bedd/screens.js` 用它完成客户端只有在用户操作界面时才会做的事：
 
 | API | 节点 |
@@ -201,7 +203,7 @@ inventory_transaction、player_auth_input、item_stack_request）始终被拒绝
 
 ## 安全性 {#security}
 
-- **token 是边界。** BeDD v2 只监听 127.0.0.1，并拒绝没有游戏 token 的连接（HTTP 401）或带有 `Origin` 头的连接（403，
+- **token 是边界。** BeDD 只监听 127.0.0.1，并拒绝没有游戏 token 的连接（HTTP 401）或带有 `Origin` 头的连接（403，
   因此网页无法访问它）。token 位于你的 `%LOCALAPPDATA%` 下的 run 文件中：任何以你的 Windows 用户身份运行的程序都能读取它并
   驱动游戏。bedboo 以 `?token=` 发送它，并且从不发送 `Origin`。
 - **tap 会暴露整个会话。** 订阅者可以读取已登录玩家看到和做的一切：聊天、位置、物品栏、世界。
@@ -238,7 +240,7 @@ inventory_transaction、player_auth_input、item_stack_request）始终被拒绝
 `bot._client.bedd.joined` 保存 `join` 的应答。
 
 进程已不存在（游戏崩溃）的 run 文件会被跳过。没有匹配的游戏时，机器人发出 `'error'`（`code: 'ERR_BEDD_DISCOVERY'`）并结束。
-`bedd.pipe`、`bedd.tapPipe` 和 `bedd.connect`（BeDD v1）会抛出错误并指出上述选项；仍然应答的 BeDD v1 会以 `ERR_BEDD_PROTOCOL`
+`bedd.pipe`、`bedd.tapPipe` 和 `bedd.connect`（BeDD 0.3 及更早版本）会抛出错误并指出上述选项；仍然应答的 BeDD 0.3 或更早版本会以 `ERR_BEDD_PROTOCOL`
 被拒绝（"BeDD v1 uses named pipes; upgrade BeDD"）。
 
 - `bot._bedrock.mode === 'bedd'`。

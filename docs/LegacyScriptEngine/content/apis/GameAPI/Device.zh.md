@@ -53,9 +53,10 @@
 | `Linux`                  | Linux |
 | `Unknown`                | 未知系统 |
 
-| Input mode ENUM              | 备注       |
-| ---------------------------- | ---------- |
-| `InputMode.Mouse`            | 鼠标       |
-| `InputMode.Touch`            | 触屏       |
-| `InputMode.GamePad`          | 手柄       |
-| `InputMode.MotionController` | 运动控制器 |
+| Input mode ENUM                        | 备注                 |
+| -------------------------------------- | -------------------- |
+| `InputMode.Undefined`                  | 未定义               |
+| `InputMode.Mouse`                      | 鼠标                 |
+| `InputMode.Touch`                      | 触屏                 |
+| `InputMode.GamePad`                    | 手柄                 |
+| `InputMode.MotionControllerDeprecated` | 运动控制器（已弃用） |

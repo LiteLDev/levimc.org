@@ -33,7 +33,7 @@ features:
   - title: 월드 도구
     details: 런처를 벗어나지 않고 백업을 내보내고, 월드 데이터를 확인하며, 일부 level.dat 필드를 편집할 수 있습니다.
   - title: 사용자 설정
-    details: 언어, 외관, 다운로드 동작, 개인정보 보호 설정, 업데이트 채널 및 구성 요소 상태를 조정합니다.
+    details: 언어, 외관, 다운로드 동작, 개인정보 보호 설정, 업데이트 채널 및 패키지 관리를 조정합니다.
   - title: Android 전용 기능
     details: "같은 런처에서 Xbox 계정 전환과 URI 빠른 실행."
     link: /ko-KR/guide/accounts-quick-launch

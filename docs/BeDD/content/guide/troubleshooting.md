@@ -9,7 +9,7 @@
 | game closes after ~30 s | no manager (see `latest.log`) → `manager status`, `logs\manager.log`, drop `--no-manager`; CI: config `manager=false` |
 | clone takes minutes and GB | copied across volumes → `BEDD_INSTANCES_DIR` on the base's drive, re-clone ([Clones](/guide/installs#clones)) |
 | LeviLauncher not found | missing or < 1.1 → update, or `BEDD_LEVILAUNCHER` |
-| instance not found | → `LeviLauncher.exe install 1.26.60 --loader`; several: `BEDD_INSTANCE`; see `instance list --all` |
+| instance not found | → `LeviLauncher.exe install 1.26.60 --loader`; several: `BEDD_INSTANCE`; see `instance list --bases --all` |
 | no WebSocket, mod not loaded | not 1.26.60 + LeviLamina 26.60.x (`latest.log`) → `LeviLauncher.exe loader install`, `instance refresh` |
 | clone has an old or wrong BeDD mod | `--keep-mod`, running game, or `--from` pin → `mod install <instance>` ([Upgrading](/guide/installs#upgrading)) |
 | "An error has occurred" ("Blaze") | shared sign-in → `world singleplayer`; online: `--exclusive-signaling` |

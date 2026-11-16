@@ -30,6 +30,10 @@ Yes. LeviLauncher includes content views for worlds, resource packs, behavior pa
 
 Yes, but mod workflows are an advanced area. Start with a clean isolated version and test gradually.
 
+### Can I use LeviLauncher from the command line?
+
+Yes, on Windows. `LeviLauncher.exe` without arguments opens the window; with a command such as `install latest`, `play`, `instance list` or `mod install <mod>` it runs in the terminal and exits. Run `LeviLauncher.exe help` for every command, and `LeviLauncher.exe help <command>` for the flags and examples of one.
+
 ### What does the Android version need?
 
 Android 9.0 or later on an ARM64 device, and Minecraft Bedrock Edition 1.21.80 or later installed from Google Play. See [Download](../download?platform=android).

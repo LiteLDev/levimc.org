@@ -11,13 +11,13 @@ Utils 模块提供了各种实用函数，包括系统信息、字符串操作�
 | 头文件 | 说明 |
 |--------|------|
 | `ll/api/utils/SystemUtils.h` | 系统信息（操作系统、语言环境、环境变量、模块路径） |
-| `ll/api/utils/StringUtils.h` | 字符串分割、替换、大小写转换 |
+| `ll/api/utils/StringUtils.h` | 字符串分割、替换、大小写与编码转换、数字解析 |
 | `ll/api/utils/HashUtils.h` | 哈希工具 |
 | `ll/api/utils/RandomUtils.h` | 随机数生成 |
 | `ll/api/utils/ErrorUtils.h` | 错误提取和格式化 |
 | `ll/api/utils/StacktraceUtils.h` | 堆栈跟踪生成 |
 | `ll/api/utils/FontUtils.h` | 字体枚举 |
-| `ll/api/utils/FileUtils.h` | 文件 I/O 工具 |
+| `ll/api/io/FileUtils.h` | 文件 I/O 工具（`ll::file_utils`，见 [IO](io.zh.md)） |
 | `ll/api/utils/Base64Utils.h` | Base64 编码/解码 |
 | `ll/api/utils/CompressUtils.h` | 压缩与解压,支持流式和一次性两种用法 |
 
@@ -27,15 +27,21 @@ Utils 模块提供了各种实用函数，包括系统信息、字符串操作�
 
 ```cpp
 namespace ll::sys_utils {
-std::string getSystemName();
+using HandleT = void*;
+
+std::string const& getSystemName();
 std::string getSystemLocaleCode();
 data::Version getSystemVersion();
+data::TmWithMs getLocalTime();
+bool isWine();
 
-void* getModuleHandle(void* addr);
-std::filesystem::path getModulePath(void* addr);
-std::string getModuleFileName(void* addr);
+HandleT getCurrentModuleHandle();
+HandleT getModuleHandle(void* addr);
+std::optional<std::filesystem::path> getModulePath(HandleT handle, HandleT process = nullptr);
+std::string getModuleFileName(HandleT handle, HandleT process = nullptr);
 
-std::optional<std::string> getEnvironmentVariable(std::string_view name);
+std::string getEnvironmentVariable(std::string_view name); // 未设置时返回空字符串
+bool setEnvironmentVariable(std::string_view name, std::string_view value);
 }
 ```
 
@@ -43,22 +49,29 @@ std::optional<std::string> getEnvironmentVariable(std::string_view name);
 
 ```cpp
 namespace ll::string_utils {
-std::vector<std::string> splitByPattern(std::string_view str, std::string_view pattern);
-std::string& replaceAll(std::string& str, std::string_view oldVal, std::string_view newVal);
-std::string& toLower(std::string& str);
-std::string& toUpper(std::string& str);
-std::string toCamelCase(std::string_view str);
+// 返回 std::vector<std::string_view>（str 为右值 std::string 时返回 std::vector<std::string>）
+auto splitByPattern(auto&& str, std::string_view pattern, bool keepEmpty = false);
+std::string& replaceAll(std::string& str, std::string_view oldValue, std::string_view newValue);
+std::string replaceAll(std::string const& str, std::string_view oldValue, std::string_view newValue);
+std::string toLowerCase(std::string_view str);
 std::string toSnakeCase(std::string_view str);
+std::string removeEscapeCode(std::string_view str);
+std::wstring str2wstr(std::string_view str, uint codePage = CodePage::UTF8);
+std::string wstr2str(std::wstring_view wstr, uint codePage = CodePage::UTF8);
+Expected<bool> svtobool(std::string_view);
+template <class T> Expected<T> svtonum(std::string_view str, size_t* idx = nullptr, ...);
 }
 ```
 
 ### FileUtils
 
 ```cpp
+// ll/api/io/FileUtils.h
 namespace ll::file_utils {
-std::optional<std::string> readFile(std::filesystem::path const& path);
-bool writeFile(std::filesystem::path const& path, std::string_view content);
-std::optional<data::Version> getVersion(std::filesystem::path const& path);
+std::filesystem::path u8path(std::string_view src);
+std::optional<std::string> readFile(std::filesystem::path const& filePath, bool isBinary = false);
+bool writeFile(std::filesystem::path const& filePath, std::string_view content, bool isBinary = false);
+std::optional<data::Version> getVersion(std::filesystem::path const& filePath);
 }
 ```
 
@@ -66,13 +79,22 @@ std::optional<data::Version> getVersion(std::filesystem::path const& path);
 
 ```cpp
 namespace ll::hash_utils {
-size_t doHash(auto const&... args);
+constexpr uint64 doHash(std::string_view x);
+constexpr uint64 doHash2(std::string_view x);
+constexpr uint64 doHash3(std::string_view x);
 
-struct HashCombiner {
-    size_t hash = 0;
-    HashCombiner& add(auto const& val);
-    operator size_t() const;
+class HashCombiner {
+public:
+    constexpr HashCombiner(size_t seed = 0);
+    template <class T> constexpr HashCombiner& add(T const& v);       // 整数直接混入，其他类型使用 std::hash<T>
+    template <class T> constexpr HashCombiner& addRange(T&& range);
+    constexpr operator size_t() const;
+    constexpr size_t hash() const;
 };
+}
+
+namespace ll::hash_literals {
+consteval uint64 operator""_h(char const* x, size_t len); // "key"_h == doHash("key")
 }
 ```
 
@@ -80,8 +102,14 @@ struct HashCombiner {
 
 ```cpp
 namespace ll::random_utils {
-int randomInt(int min, int max);
-double randomReal(double min, double max);
+template <std::integral T>       T rand(T upBound = 0);   // [0, upBound)，为 0 时取整个值域
+template <std::floating_point T> T rand();                // [0, 1)
+template <std::floating_point T> T rand(T max);           // [0, max)
+template <class T>               T rand(T min, T max);    // [min, max)
+template <class T> T openIntervalRand(T min = 0, T max = 1);       // (min, max)
+template <class T> T closeIntervalRand(T min = 0, T max = 1);      // [min, max]
+template <class T> T leftCloseIntervalRand(T min = 0, T max = 1);  // [min, max)
+template <class T> T rightCloseIntervalRand(T min = 0, T max = 1); // (min, max]
 }
 ```
 
@@ -136,8 +164,8 @@ void printSystemInfo() {
 #include "ll/api/utils/StringUtils.h"
 
 void stringOps() {
-    std::string text = "Hello World";
-    ll::string_utils::toLower(text);  // "hello world"
+    std::string text  = "Hello World";
+    auto        lower = ll::string_utils::toLowerCase(text); // "hello world"
     
     auto parts = ll::string_utils::splitByPattern("a,b,c", ",");
     // parts == {"a", "b", "c"}
@@ -151,7 +179,7 @@ void stringOps() {
 ### 文件操作
 
 ```cpp
-#include "ll/api/utils/FileUtils.h"
+#include "ll/api/io/FileUtils.h"
 
 void fileOps() {
     auto content = ll::file_utils::readFile("config.txt");
@@ -169,10 +197,10 @@ void fileOps() {
 #include "ll/api/utils/HashUtils.h"
 
 void hashExample() {
-    size_t hash = ll::hash_utils::doHash("key", 123, 45.6);
+    auto hash = ll::hash_utils::doHash("key");
     
     ll::hash_utils::HashCombiner combiner;
-    combiner.add("part1").add(42).add(3.14);
+    combiner.add(std::string_view{"part1"}).add(42).add(3.14);
     size_t combined = combiner;
 }
 ```
@@ -183,8 +211,8 @@ void hashExample() {
 #include "ll/api/utils/RandomUtils.h"
 
 void randomExample() {
-    int dice = ll::random_utils::randomInt(1, 6);
-    double chance = ll::random_utils::randomReal(0.0, 1.0);
+    int dice = ll::random_utils::rand<int>(1, 7);           // 1..6
+    double chance = ll::random_utils::rand<double>(0.0, 1.0); // [0, 1)
 }
 ```
 

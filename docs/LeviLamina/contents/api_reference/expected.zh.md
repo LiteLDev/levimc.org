@@ -37,9 +37,10 @@ public:
     Error() noexcept = default;
     Error(std::unique_ptr<ErrorInfoBase> info) noexcept;
 
-    explicit operator bool() const noexcept; // 有错误时为 true
+    operator bool() const noexcept; // 有错误时为 true
 
     std::string message() const noexcept;
+    std::string message(std::string_view locale) const noexcept; // 本地化消息
 
     template <class T> bool isA() noexcept;
     template <class T> T& as() noexcept;
@@ -48,20 +49,23 @@ public:
 
     Error const& log(io::Logger&, io::LogLevel = io::LogLevel::Error) const noexcept;
     Error const& log(CommandOutput&, CommandOutputMessageType = CommandOutputMessageType::Error) const noexcept;
+    // 每个 log() 还有一个在级别/类型参数前接受 `std::string_view locale` 的重载
+    Error const& log(brstd::function_ref<void(std::string_view msg)> out, std::string_view locale = {}) const noexcept;
 };
 }
 ```
 
 ### ErrorInfoBase
 
-错误详情的抽象基类。子类化以创建自定义错误类型。
+错误详情的抽象基类。子类化并重写 `message(std::string_view locale)` 以创建自定义错误类型。
 
 ```cpp
 namespace ll {
 class ErrorInfoBase {
 public:
     virtual ~ErrorInfoBase();
-    virtual std::string message() const noexcept = 0;
+    virtual std::string message() const noexcept; // 调用 message({})
+    virtual std::string message(std::string_view locale) const noexcept = 0;
 };
 }
 ```
@@ -135,7 +139,7 @@ void example(ll::io::Logger& logger) {
 struct FileNotFoundError : ll::ErrorInfoBase {
     std::string path;
     FileNotFoundError(std::string path) : path(std::move(path)) {}
-    std::string message() const noexcept override {
+    std::string message(std::string_view /*locale*/) const noexcept override {
         return "文件未找到: " + path;
     }
 };

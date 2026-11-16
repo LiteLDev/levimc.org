@@ -18,11 +18,12 @@ const TAGS: Record<string, string> = {
   LeviLamina: 'Mod Loader',
   LegacyScriptEngine: 'Script Engine',
   LeviStone: 'Plugin Runtime',
-  lip: 'Package Installer',
+  lip: 'Server Manager',
   LeviLauncher: 'Windows · Android',
+  BeDD: 'Testing',
   LeviOptimize: 'Performance',
   LeviAntiCheat: 'Security',
-  MoreDimensions: 'Functionality',
+  MoreDimensions: 'Library',
   bedboo: 'Bot Library',
 };
 

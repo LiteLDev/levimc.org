@@ -48,6 +48,8 @@ LeviLauncher treats each installed setup as a version you can manage independent
 
 Use the **Download** page, then return to **Launch** after installation finishes.
 
+The **Install LeviLamina** switch on the install page starts on; turn it off to install the game without LeviLamina. It only applies to versions LeviLamina supports.
+
 ### Rename a version
 
 Use **Instances** or **Instance Settings** to give the setup a name that reflects its purpose, such as `Release Survival` or `Preview Test`.

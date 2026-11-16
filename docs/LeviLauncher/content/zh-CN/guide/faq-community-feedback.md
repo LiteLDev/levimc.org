@@ -30,6 +30,10 @@ LeviLauncher 提供 **Windows 版**和 **Android 版**（[Android 版文档](/zh
 
 可以，但这属于高级工作流。建议先从一个干净的隔离版本开始，逐步测试。
 
+### 能通过命令行使用 LeviLauncher 吗？
+
+可以（Windows 版）。不带参数运行 `LeviLauncher.exe` 会打开窗口；带上 `install latest`、`play`、`instance list` 或 `mod install <模组>` 等命令时，它会在终端中运行并在完成后退出。运行 `LeviLauncher.exe help` 查看所有命令，运行 `LeviLauncher.exe help <命令>` 查看某个命令的参数和示例。
+
 ### Android 版需要什么？
 
 ARM64 设备上的 Android 9.0 或更高版本，以及从 Google Play 安装的 Minecraft 基岩版 1.21.80 或更高版本。参见[下载](../download?platform=android)。

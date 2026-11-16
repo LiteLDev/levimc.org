@@ -5,9 +5,9 @@
 
 ```powershell
 BeDD.exe instance clone --slot 2                   # then copy your mod into (BeDD.exe instance path 1.26.60.05-2)\mods
-BeDD.exe world singleplayer <worldDir>             # after restoring your test world
+BeDD.exe world singleplayer 1.26.60.05-2 <world>   # after restoring your test world
 BeDD.exe launch --slot 2 --label my-mod --json     # pid, url, token
-BeDD.exe stop <pid>
+BeDD.exe stop --pid <pid>
 ```
 
 ```js
@@ -15,7 +15,7 @@ const bot = bedboo.createBot({ transport: 'bedd', bedd: { url: game.url, token: 
 ```
 
 - stdout 只有结果；`--json` 输出一个文档，`-q` 输出标识符，`-v` 在 stderr 输出细节。出错：`error: …` +
-  `hint:`（`{"error":{code,message,hint}}`）。
+  `hint:`（`{"error":{code,message,exit,hint}}`）。
 - 退出码：`0` 成功，`1` 失败，`2` 用法错误，`4` 找不到，`5` 冲突（如槽位正在使用），`10` 被拒绝。
 - 每个并行运行一个槽位；无需清理。
 - 你自己构建的 BeDD：`mod install <instance> --from <dir>`（[固定来源](/zh/guide/installs#升级)）。
@@ -41,15 +41,15 @@ PowerShell：`[System.Net.WebSockets.ClientWebSocket]`，每个操作一条 UTF-
 | `Register-BeDDNative` | 让输入类改走 WebSocket，而不是 `SendInput` |
 | `Install-BeDDMod`、`Uninstall-BeDDMod` | `BeDD.exe mod install`、`mod uninstall <instance>` |
 | `Set-BeDDMode`、`-Mode` | `BeDD.exe mod config <instance> --world-mode <mode>` |
-| `Set-WorldSinglePlayer` | `BeDD.exe world singleplayer <worldDir>` |
-| `Start-BeDDGame.ps1`、`Start-Game`；`Stop-Game` | `BeDD.exe launch [--slot N] [--label …] --json`；`stop <pid>` |
+| `Set-WorldSinglePlayer` | `BeDD.exe world singleplayer <instance> [<world folder>]` |
+| `Start-BeDDGame.ps1`、`Start-Game`；`Stop-Game` | `BeDD.exe launch [--slot N] [--label …] --json`；`stop --pid <pid>` |
 | `$script:ExclusiveSignaling = $true` | `launch --exclusive-signaling` |
 | `clone-instance.ps1`、`New-BeDDClone`、`Initialize-BeDD.ps1`、`Initialize-BeDDInstance` | `BeDD.exe instance clone --slot N`（[克隆](/zh/guide/installs#克隆)） |
 | `Get-BeDDInstance`、`Initialize-BeDDServer`、`Get-BeDDServer` | `BeDD.exe instance show`、`server init`、`server list` |
 | `Start-BeDDServer.ps1`（`-Stop`、`-Command`） | `server start` / `server stop`；服务器上的 `command` 操作 |
-| `BeDDManager.ps1`（`-List`、`-Game <pid> -Action close`、`-Shutdown`） | `BeDD.exe`（窗口）、`ps`、`stop <pid>`、`manager stop` |
+| `BeDDManager.ps1`（`-List`、`-Game <pid> -Action close`、`-Shutdown`） | `BeDD.exe`（窗口）、`ps`、`stop --pid <pid>`、`manager stop --yes` |
 | 配置 `pipeName`、`pipeInstances`、`managerScript` | `wsPort`、`wsMaxClients`、`manager` |
-| `BEDD_PIPE`、`BEDD_MANAGER_PIPE`；`BEDD_VERSIONS_DIR`、`BEDD_LAUNCHER_DATA`、`BEDD_LIP` | `run\<pid>.json`；`BEDD_LEVILAUNCHER`、`BEDD_INSTANCE` |
+| `BEDD_PIPE`、`BEDD_MANAGER_PIPE`；`BEDD_VERSIONS_DIR`、`BEDD_LAUNCHER_DATA` | `run\<pid>.json`；`BEDD_LEVILAUNCHER`、`BEDD_INSTANCE`（`BEDD_LIP` 保留） |
 
 Be.D.D. 1 的测试框架：[BeetrootSkin](https://github.com/MiracleForest/BeetrootSkin/tree/main/tools/e2e)、
 [AlleviatedBackpacks](https://github.com/MiracleForest/AlleviatedBackpacks/tree/main/tools/e2e)。

@@ -48,7 +48,9 @@ MyMod::MyMod() : mSelf(*ll::mod::NativeMod::current()) {}
 ```
 
 `load()` 是必需的。`enable()`、`disable()`、`unload()` 是可选的；缺失时注册
-helper 会按成功处理。
+helper 会按成功处理。每个阶段也可以改为接收 `ll::mod::ModContext &`（例如
+`bool load(ll::mod::ModContext &context)`），它提供 Java VM、清单 `info()`、
+`logger()` 以及模组的 `dataDir()` / `configDir()` / `resourceDir()`。
 
 每个原生模组库在一个源文件中使用一次 `PL_REGISTER_MOD`。
 
@@ -97,7 +99,7 @@ bool MyMod::load() {
 | `getManifestPath()` | 已解析的 `manifest.json` 路径。 |
 | `getLibraryPath()` | 已解析的 native library 路径。 |
 | `getState()` | 当前原生模组生命周期状态。 |
-| `isLoaded()` / `isEnabled()` / `isDisabled()` | 常用状态判断。 |
+| `isLoaded()` / `isEnabled()` / `isDisabled()` / `isUnloaded()` | 常用状态判断。 |
 
 运行期 UI、浮动按钮和 HUD 覆盖层绘制见 [Mod Menu API](./mod_menu.md)。
 

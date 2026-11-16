@@ -54,3 +54,17 @@ if (update == 0) {
 ```
 
 Use `resolveSignatures()` when resolving several patterns from the same module.
+
+## Vtable Functions
+
+`<pl/memory/Vtable.hpp>` resolves a virtual function through RTTI instead of a
+byte pattern:
+
+```cpp
+uintptr_t resolveVtableFunction(std::string_view typeInfoName, size_t slot,
+                                std::string_view moduleName);
+```
+
+`typeInfoName` is the Itanium typeinfo-name symbol (`"_ZTS9CameraAPI"`) or its
+stored name (`"9CameraAPI"`), and `slot` is the function's index from the vtable
+address point. It returns `0` when the function cannot be resolved.

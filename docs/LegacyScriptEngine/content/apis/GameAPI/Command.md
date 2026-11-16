@@ -85,7 +85,8 @@ in games. In addon, you can also use the commands registered here.
 | Execution Permission   | Meaning                                             |
 |------------------------|-----------------------------------------------------|
 | `PermType.Any`         | Anyone can execute the command.                     |
-| `PermType.GameMasters` | Only the OP can execute the command.(Default value) |
+| `PermType.GameMasters` | Only the OP can execute the command.                |
+| `PermType.Admin`       | Admin permission level (Default value)              |
 | `PermType.Console`     | Only the console can execute the command.           |
 
 - Return value: Command Object.
@@ -121,6 +122,61 @@ The command object has the following member functions.
       Valid values ​​for enumeration.
 - Return value: New enumeration option identification name.
 - Return value type: `String`
+
+#### Set a Soft Enumeration
+
+`Command.setSoftEnum(name,values)`
+
+- Parameters:
+    - name : `String`  
+      Soft enumeration name, used with `ParamType.SoftEnum` parameters.
+    - values : `Array<String>`  
+      Initial values of the soft enumeration.
+- Return value: Whether setting succeeded or not.
+- Return value type: `Boolean`
+
+Unlike ordinary enumerations, the values of a soft enumeration can still be changed after the command is registered.
+
+#### Add Values to a Soft Enumeration
+
+`Command.addSoftEnumValues(name,values)`
+
+- Parameters:
+    - name : `String`  
+      Soft enumeration name.
+    - values : `Array<String>`  
+      Values to add.
+- Return value: Whether adding succeeded or not.
+- Return value type: `Boolean`
+
+#### Remove Values From a Soft Enumeration
+
+`Command.removeSoftEnumValues(name,values)`
+
+- Parameters:
+    - name : `String`  
+      Soft enumeration name.
+    - values : `Array<String>`  
+      Values to remove.
+- Return value: Whether removing succeeded or not.
+- Return value type: `Boolean`
+
+#### Get the Values of a Soft Enumeration
+
+`Command.getSoftEnumValues(name)`
+
+- Parameters:
+    - name : `String`  
+      Soft enumeration name.
+- Return value: Values of the soft enumeration. Returns `Null` if it does not exist.
+- Return value type: `Array<String>`
+
+#### Get the Names of All Soft Enumerations
+
+`Command.getSoftEnumNames()`
+
+- Return value: Names of all registered soft enumerations.
+- Return value type: `Array<String>`
 
 #### Add a Required Parameter
 
@@ -247,17 +303,27 @@ For a particular `CommandOrigin` object `ori`, there are the following propertie
 | Members      | Meaning                                              | Data Types   |
 |--------------|------------------------------------------------------|--------------|
 | ori.type     | Command Execution Body Type                          | `OriginType` |
+| ori.typeName | Name of the command execution body type              | `String`     |
 | ori.name     | The name of the command execution body               | `String`     |
 | ori.pos      | The coordinates of the command exection body         | `FloatPos`   |
 | ori.blockPos | The block coordinates of the command execution body  | `IntPos`     |
 | ori.entity   | The entity that executes the command (may be `Null`) | `Entity`     |
 | ori.player   | The player who executed the command (may be `Null`)  | `Player`     |
 
+`ori.getNbt()` returns the serialized data of the command origin as an `NbtCompound`.
+
 #### Parameter `output` : Output the Execution Result of the Command to the Command Executor
 
 Parameter `output` is of type `CommandOutput` object. Through this object, the execution result of the command can be
 output to the command executor.
-For a particular `CommandOutput` object `outp`, the following member methods are available:
+For a particular `CommandOutput` object `outp`, there are the following properties:
+
+| Members           | Meaning                                    | Data Types |
+|-------------------|--------------------------------------------|------------|
+| outp.empty        | Whether no message has been output yet     | `Boolean`  |
+| outp.successCount | Number of successes recorded by the output | `Integer`  |
+
+and the following member methods are available:
 
 ##### Output a Success Message
 

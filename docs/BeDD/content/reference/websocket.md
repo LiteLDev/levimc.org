@@ -9,7 +9,7 @@ Discovery file `%LOCALAPPDATA%\BeDD\run\<pid>.json` (root `BEDD_HOME`), present 
 
 ```json
 {"protocol": 2, "kind": "client", "pid": 23116, "url": "ws://127.0.0.1:53021/v1", "token": "9c1f…(64 hex)",
- "instance": "MyInstance-2", "instanceDir": "…\\instances\\MyInstance-2", "label": "smoke test", "modVersion": "0.4.0", "startedAt": "2026-11-13T09:41:07Z"}
+ "instance": "1.26.60.05-2", "instanceDir": "…\\instances\\1.26.60.05-2", "label": "smoke test", "modVersion": "0.4.0", "startedAt": "2026-11-13T09:41:07Z"}
 ```
 
 | Item | |

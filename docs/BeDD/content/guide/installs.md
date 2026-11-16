@@ -9,7 +9,7 @@ upgrades, CI, instances, clones and folders.
 Run the newer installer; it closes an open manager window and its games. Each `launch` then installs the clone's mod
 when missing, or replaces it (keeping `config.json`) when it differs from its source:
 
-- default: `mod\BeDD` next to `BeDD.exe`, else `bin\BeDD` of the checkout containing the current folder;
+- default: `BEDD_MOD_DIR`, else `mod\BeDD` next to `BeDD.exe`, else `bin\BeDD` of the checkout containing the current folder;
 - after `mod install <instance> --from <dir>`: that folder (pinned in `mods\BeDD\source.pin`); if it has no build any
   more, `launch` warns and leaves the mod. `mod install` without `--from` ends the pin.
 
@@ -36,8 +36,8 @@ never writes into it or starts it.
 
 | Override | |
 |---|---|
-| `BEDD_LEVILAUNCHER` | the `LeviLauncher.exe` to ask (default: installed, else the one in `tools`) |
-| `BEDD_INSTANCE` / `--base <name>` | the base, when several are 1.26.60 |
+| `BEDD_LEVILAUNCHER` | the `LeviLauncher.exe` to ask (default: on `PATH`, else installed, else the one in `tools`) |
+| `BEDD_INSTANCE` / `instance clone --base <name>` | the base, when several are 1.26.60 (default: LeviLauncher's default instance, else the first that fits) |
 
 ## Clones
 
@@ -45,8 +45,9 @@ Every game runs in a clone `<gameVersion>-<slot>` (e.g. `1.26.60.05-2`; slot 1 t
 worlds and options; game files are hardlinked to the base.
 
 ```powershell
-BeDD.exe instance list --all                # clones and their LeviLauncher bases
-BeDD.exe instance show 1.26.60.05-2         # folder, base, game/loader version, mod, hardlinked or copied
+BeDD.exe instance list                      # clones and their LeviLauncher bases
+BeDD.exe instance list --bases --all        # the LeviLauncher instances, and why one cannot be cloned
+BeDD.exe instance show 1.26.60.05-2         # folder, base, game/loader version, mod, running games, status
 BeDD.exe instance clone --slot 2            # make or update
 BeDD.exe instance refresh 1.26.60.05-2      # re-link after the base changed
 BeDD.exe instance path 1.26.60.05-2         # its folder

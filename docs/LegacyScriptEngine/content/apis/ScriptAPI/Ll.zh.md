@@ -44,10 +44,10 @@
 |-------------------|------------|----------------------------------|
 | plugin.name       | 插件名称       | `String`                         |
 | plugin.desc       | 插件描述       | `String`                         |
-| plugin.type       | 插件类型       | `String`                         |
+| plugin.type       | 插件类型（仅 `ll.getAllPluginInfo()` 提供） | `String`            |
 | plugin.version    | 插件版本（数组形式） | `Array<Integer,Integer,Integer>` |
 | plugin.versionStr | 插件版本       | `String`                         |
-| plugin.filePath   | 插件路径       | `String`                         |
+| plugin.filePath   | 插件入口文件（manifest.json 中的 `entry`） | `String`             |
 | plugin.others     | 其他信息       | `Object`                         |
 
 ### 获取当前插件的信息

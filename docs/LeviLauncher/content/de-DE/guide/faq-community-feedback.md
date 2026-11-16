@@ -30,6 +30,10 @@ Ja. LeviLauncher bietet Übersichten für Welten, Ressourcenpakete, Verhaltenspa
 
 Ja, dies gehört jedoch zu fortgeschrittenen Workflows. Wir empfehlen, zunächst mit einer sauberen, isolierten Version zu beginnen und schrittweise zu testen.
 
+### Kann ich LeviLauncher über die Befehlszeile verwenden?
+
+Ja, unter Windows. `LeviLauncher.exe` ohne Argumente öffnet das Fenster; mit einem Befehl wie `install latest`, `play`, `instance list` oder `mod install <Mod>` läuft es im Terminal und beendet sich danach. `LeviLauncher.exe help` zeigt alle Befehle, `LeviLauncher.exe help <Befehl>` die Optionen und Beispiele eines Befehls.
+
 ### Was braucht die Android-Version?
 
 Android 9.0 oder neuer auf einem ARM64-Gerät und Minecraft Bedrock Edition 1.21.80 oder neuer aus Google Play. Siehe [Downloads](../download?platform=android).

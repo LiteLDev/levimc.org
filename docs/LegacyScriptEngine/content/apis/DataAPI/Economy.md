@@ -113,8 +113,8 @@ Where the result is an array of record objects. for each `record` object record,
 
 | Key            | Meaning of Value                       | Data Type |
 | -------------- | -------------------------------------- | --------- |
-| `record.from`  | XUID of money sender                   | `String`  |
-| `record.to`    | XUID of money receiver                 | `String`  |
+| `record.from`  | Name of money sender                   | `String`  |
+| `record.to`    | Name of money receiver                 | `String`  |
 | `record.money` | Amount of money                        | `Integer` |
 | `record.time`  | Time when this transaction occurred    | `String`  |
 | `record.note`  | Additional notes for this transaction. | `String`  |
@@ -129,7 +129,7 @@ The format of the time string is: YYYY-mm-dd hh:mm:ss
 
 - Parameter: 
   - time : `Integer`  
-    Delete all records within the last `time` seconds.
+    Delete all records older than `time` seconds.
 - Return value: Whether the deletion is successful.
 - Return value type: `Boolean`
 

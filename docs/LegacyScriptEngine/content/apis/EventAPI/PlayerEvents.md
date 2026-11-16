@@ -20,7 +20,7 @@ Note: Only some basic information of players can be obtained in this monitoring 
 - Parameters: 
   - player : `Player`  
     The player that enters the game.
-- Intercept event: cannot be intercepted.
+- Intercept events: function returns `false`
 
 
 
@@ -126,6 +126,18 @@ Reminder: This event does not fire when the player returns to the Overworld from
   - isSneaking : `Boolean`  
     `True` indicates that the player is sneaking,`False` indicates that the player is no longer sneaking.
 
+- Intercept events: function returns `false`
+
+
+
+#### `"onPlayerSwing"` - Player Swing Arm Event
+
+- Listener function prototype 
+  `function(player)`
+- Parameters: 
+  - player : `Player`  
+    The player that swung their arm.
+
 - Intercept event: cannot be intercepted.
 
 
@@ -208,12 +220,12 @@ Note: Win10 client right-clicking on the player will trigger this event on the s
   - item : `Item`  
     The item being used.
   - block : `Block`  
-    The block that was right-clicked.
+    The block being poured out of the bucket (such as water or lava), at the position it is placed.
   - side : `Number`  
     The face of the object that was clicked.   
     The faces: `0`-Down `1`-Up `2`-North `3`-South `4`-West `5`-East
   - pos : `FloatPos`  
-    The position that was right-clicked.
+    The position where the contents are poured out.
 
 - Intercept events: function returns `false`
 
@@ -230,13 +242,12 @@ Note: The player may trigger this event on the server multiple times in a row.
     The player that used the item.
   - item : `Item`  
     The item being used.
-  - target : `Block` / `Entity`  
-    The block or entity that was right-clicked.
+  - target : `Block`  
+    The block being taken into the bucket (water, lava or powder snow).
   - side : `Number`  
-    The face of the object that was clicked.   
-    The faces: `0`-Down `1`-Up `2`-North `3`-South `4`-West `5`-East
+    Always `-1`.
   - pos : `FloatPos`  
-    The position that was right-clicked.
+    The position of the block being taken.
 
 - Intercept events: function returns `false`
 
@@ -375,7 +386,7 @@ Note: The player may trigger this event on the server multiple times in a row.
   - block : `Block`  
     The block that is being destroyed.
 
-- Intercept event: cannot be intercepted.
+- Intercept events: function returns `false`
 
 
 
@@ -401,7 +412,7 @@ Note: The player may trigger this event on the server multiple times in a row.
   - player : `Player`  
     The player that placed the block.
   - block : `Block`  
-    The block that was placed on.
+    The block that is about to be placed.
   - face : `Integer`  
     The face that was placed on.
 
@@ -466,7 +477,7 @@ The **container** here is a broad concept of container, including boxes, buckets
     The original item in the grid.
   - newItem : `Item`  
     The new item in the grid.
-- Intercept event: cannot be intercepted.
+- Intercept events: function returns `false`
 
 Explanation of callback parameters:  
 There are many different combinations of old item objects and new item objects, indicating different changes in the grid.
@@ -533,6 +544,17 @@ Note: Player.setSprinting (false) can be executed in the next game tick to achie
 - Intercept events: function returns `false`
 
 Note: This event is so powerful that it can even intercept and open backpacks.
+
+
+
+#### `"onOpenInventory"` - Player Opens Inventory Event
+
+- Listener function prototype 
+  `function(player)`
+- Parameters: 
+  - player : `Player`  
+    The player that opens their inventory.
+- Intercept events: function returns `false`
 
 
 

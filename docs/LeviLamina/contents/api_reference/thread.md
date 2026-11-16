@@ -13,7 +13,12 @@ The Thread module provides thread pool executors, server thread executors, and s
 | `ll/api/thread/ThreadPoolExecutor.h` | Thread pool executor |
 | `ll/api/thread/ServerThreadExecutor.h` | Server main thread executor |
 | `ll/api/thread/GlobalThreadPauser.h` | Pause all game threads |
-| `ll/api/thread/ThreadName.h` | Thread naming utility |
+| `ll/api/thread/ThreadName.h` | Thread naming utility (`getThreadName`, `setThreadName`) |
+| `ll/api/thread/InplaceExecutor.h` | Executor that runs work immediately on the calling thread |
+| `ll/api/thread/InterruptableSleep.h` | Blocking sleep that another thread can interrupt |
+| `ll/api/thread/ServerTickSyncSleep.h` | Blocking sleep woken in step with server ticks |
+| `ll/api/thread/ClientThreadExecutor.h` | Client main thread executor (client builds only) |
+| `ll/api/thread/ClientTickSyncSleep.h` | Blocking sleep woken in step with client ticks (client builds only) |
 
 ## Key Classes
 

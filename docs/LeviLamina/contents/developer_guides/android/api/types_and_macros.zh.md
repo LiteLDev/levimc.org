@@ -11,10 +11,18 @@ SDK 只安装以下头文件：
 #include <pl/Logger.hpp>
 #include <pl/Mod.hpp>
 #include <pl/ModMenu.hpp>
+#include <pl/ModMenuConfig.hpp>
+#include <pl/Platform.hpp>
 #include <pl/memory/Hook.hpp>
 #include <pl/memory/Patch.hpp>
 #include <pl/memory/Signature.hpp>
+#include <pl/memory/Vtable.hpp>
 ```
+
+`<pl/Platform.hpp>` 在 `pl::platform` 中提供少量 Android 辅助函数：
+`setClipboardText(text)` 设置剪贴板文本；
+`httpGet(url, timeoutMs = 5000)` 发起 HTTP GET 请求并返回
+`HttpResponse`（`status`、`body`、`retryAfter`、`ok()`）。
 
 ## PL_EXPORT
 

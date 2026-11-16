@@ -88,7 +88,10 @@ namespace ll::io {
 class LoggerRegistry {
 public:
     static LoggerRegistry& getInstance();
-    std::shared_ptr<Logger> getLogger(std::string_view name);
+    std::shared_ptr<Logger> getOrCreate(std::string_view title);
+    std::shared_ptr<Logger> tryGet(std::string_view title);
+    bool erase(std::string_view title);
+    coro::Generator<Logger&> loggers();
 };
 }
 ```

@@ -27,7 +27,7 @@ Contains code shared between server and client, plus server-only implementations
 ```
 src/
 ├── ll/
-│   ├── api/          # Public API (255 headers)
+│   ├── api/          # Public API (174 headers)
 │   │   ├── base/     # Foundation types
 │   │   ├── command/  # Command system
 │   │   ├── event/    # Event system
@@ -35,12 +35,12 @@ src/
 │   │   ├── mod/      # Mod management
 │   │   ├── service/  # Service registry
 │   │   └── ...       # Other modules
-│   └── core/         # Internal implementation (34 files)
+│   └── core/         # Internal implementation (62 files)
 │       ├── mod/      # Mod loading
 │       ├── command/  # Built-in commands
 │       ├── form/     # Form handlers
 │       └── tweak/    # Game tweaks
-└── mc/               # Bedrock headers (反编译)
+└── mc/               # Bedrock headers (decompiled)
     ├── server/
     ├── world/
     ├── network/
@@ -49,7 +49,7 @@ src/
 
 #### `src-client/` — Client-Only
 
-Client-specific extensions and overrides (28 files):
+Client-specific extensions and overrides (42 files):
 
 ```
 src-client/
@@ -63,14 +63,14 @@ src-client/
 │   │       ├── render/        # Render events
 │   │       └── client/        # Client lifecycle
 │   └── core/
-│       └── (8 files)          # Client implementations
+│       └── (6 files)          # Client implementations
 └── mc/
     └── client/                # Client-specific BDS headers
 ```
 
 #### `src-server/` — Server-Only
 
-Server-specific extensions (5 files):
+Server-specific extensions (18 files):
 
 ```
 src-server/
@@ -79,7 +79,7 @@ src-server/
 │   │   ├── event/server/      # Server events
 │   │   └── service/           # Server services
 │   └── core/
-│       └── (10 files)         # Server implementations
+│       └── (13 files)         # Server implementations
 └── mc/
     └── server/                # Server-specific BDS headers
 ```
@@ -194,7 +194,7 @@ option("target_type")
 | Base                        |   ✅    |   ✅    | Common                             |
 | Command                     |   ✅    |   ✅    | Common                             |
 | Event (Player/World)        |   ✅    |   ✅    | Common                             |
-| Event (Server)              |   ✅    |   ❌    | Server-only                        |
+| Event (Server)              |   ✅    |   ✅    | Common (on the client: local worlds) |
 | Event (Client/Input/Render) |   ❌    |   ✅    | Client-only                        |
 | Form                        |   ✅    |   ✅    | Common                             |
 | Input                       |   ❌    |   ✅    | Client-only                        |

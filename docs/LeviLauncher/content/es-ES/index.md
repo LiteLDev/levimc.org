@@ -33,7 +33,7 @@ features:
   - title: Herramientas para mundos
     details: Exporta copias de seguridad, consulta los datos del mundo y edita ciertos campos de level.dat sin salir del lanzador.
   - title: Configuración de usuario
-    details: Ajusta el idioma, la apariencia, el comportamiento de las descargas, las opciones de privacidad, los canales de actualización y el estado de los componentes.
+    details: Ajusta el idioma, la apariencia, el comportamiento de las descargas, las opciones de privacidad, los canales de actualización y la gestión de paquetes.
   - title: Extras de Android
     details: "Cambio de cuentas de Xbox y acciones URI de inicio rápido, en el mismo lanzador."
     link: /es-ES/guide/accounts-quick-launch

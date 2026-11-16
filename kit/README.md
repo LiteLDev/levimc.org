@@ -956,6 +956,11 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 ## Changelog
 
+### 2.24.2
+
+* Project blurbs (the Projects menu, the docs' 404 cards) follow the repositories: lip runs a LeviLamina server and
+  manages its packages (no longer "general package installer"); MoreDimensions is for Bedrock servers.
+
 ### 2.24.1
 
 * **`linkcheck --ignore-paths` also skips the pages below those paths**, not just the links into them: the

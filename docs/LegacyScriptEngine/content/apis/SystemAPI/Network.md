@@ -63,6 +63,24 @@ If the request fails, the status value will be `-1`.
 
 
 
+### Send a Synchronous HTTP(s) Get Request
+
+`network.httpGetSync(url)`
+
+- Parameters:
+  - url : `String`  
+    The target address of the request (including the parameters attached to the Get request).
+- Return value: The response, an object with the following members:
+  - status : `Integer`  
+    The returned HTTP(s) response code.
+  - data : `String`  
+    The returned data.
+- Return value type: `Object`
+
+This function blocks until the request returns, so prefer `network.httpGet` where you can.
+
+
+
 ## 🔌 WebSocket Client Object API
 
 In LSE, use "WebSocket objects" to manipulate the connection and work of a WebSocket client.
@@ -89,9 +107,9 @@ These object properties are read-only and cannot be modified.
 
 Among them, the wsc.status enumeration has the following situations:
 
-`wsc.Open` - In normal connection.  
-`wsc.Closing` - Disconnecting.  
-`wsc.Closed` - Not connected.
+`WSClient.Open` - In normal connection.  
+`WSClient.Closing` - Disconnecting.  
+`WSClient.Closed` - Not connected.
 
 
 
@@ -395,12 +413,12 @@ svr.onGet('/test/123', (req, res) => {
 
 ### Listen on a Port and Start the Server
 
-`svr.listen(addr, port)`
-`svr.startAt(addr, port)`
+`svr.listen([addr,] port)`
+`svr.startAt([addr,] port)`
 
 - Parameters:
   - addr : `String`  
-    The address to listen on. It can be an IP address or a domain name.
+    (Optional) The address to listen on. It can be an IP address or a domain name. The default is `127.0.0.1`.
   - port : `Integer`  
     The port to listen on.
 - Return value: The processed server object (for chaining other operations).
@@ -411,6 +429,7 @@ svr.onGet('/test/123', (req, res) => {
 ### Stop the Server
 
 `svr.stop()`
+`svr.close()`
 
 - Return value: None
 

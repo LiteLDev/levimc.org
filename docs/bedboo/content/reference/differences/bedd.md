@@ -81,5 +81,5 @@ authority table and the coverage matrix are in the [BeDD guide](../../guide/bedd
   `auth` and `username` are ignored with one warning each (the client is signed in with its own account), and
   `holdResourcePacks` is a no-op. A world change on the client (`LINK_DOWN`) ends the bot. The bot
   connects to the game instead: `bedd: { url, token }`, `{ pid }`, `{ instance }` or `{}` (the only running game)
-  names a BeDD v2 game by its WebSocket endpoint, announced in BeDD's run files
+  names a BeDD game (0.4.0 or newer) by its WebSocket endpoint, announced in BeDD's run files
   (`%LOCALAPPDATA%\BeDD\run\<pid>.json`); see [options](../../guide/bedd.md#options).

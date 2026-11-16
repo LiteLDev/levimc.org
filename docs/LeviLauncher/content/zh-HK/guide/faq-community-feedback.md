@@ -30,6 +30,10 @@ LeviLauncher 提供 **Windows 版**和 **Android 版**（[Android 版文檔](/zh
 
 可以，但這屬於進階工作流程。建議先從一個乾淨的隔離版本開始，逐步進行測試。
 
+### 能透過命令列使用 LeviLauncher 嗎？
+
+可以（Windows 版）。不帶參數執行 `LeviLauncher.exe` 會開啟視窗；加上 `install latest`、`play`、`instance list` 或 `mod install <模組>` 等命令時，它會在終端機中執行並在完成後結束。執行 `LeviLauncher.exe help` 查看所有命令，執行 `LeviLauncher.exe help <命令>` 查看某個命令的參數和範例。
+
 ### Android 版需要甚麼？
 
 ARM64 裝置上的 Android 9.0 或更高版本，以及從 Google Play 安裝的 Minecraft Bedrock Edition 1.21.80 或更高版本。參見[下載](../download?platform=android)。

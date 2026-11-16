@@ -89,6 +89,8 @@ import { initCommand } from "./plugins/your_plugin/command/command.js"
 
 - LSE 通过自行实现 Node.js 启动代码，使其可以在嵌入式模式下工作，并实现了不同插件的执行环境隔离
 - 自行编写接口实现了对 npm 的 programmic 支持。支持通过 package.json 安装第三方扩展依赖包
+- 支持 ES 模块：在 `package.json` 中设置 `"type": "module"` 即可将插件作为 ES 模块加载
+- 在BDS控制台中使用`nodejsdebug`命令进入和退出 Node.js 交互式命令行环境
 
 #### ⭐ **Node.js 插件开发方法**
 
@@ -102,7 +104,7 @@ import { initCommand } from "./plugins/your_plugin/command/command.js"
 - 在插件编写完成之后，请将 `package.json` 以及所有插件源码打包为一个zip压缩包，并**将文件名后缀修改为 .llplugin**
 - `node_modules` 目录请勿打包在压缩包之中
 - 将 **.llplugin** 文件作为插件分发，安装插件时直接将此文件放置到 plugins 目录即可
-- 在开服时，脚本引擎会自动识别 **.llplugin** 文件，将其解压到`plugins/nodejs/插件名`目录，并在目录中自动执行 `npm install --omit=dev`
+- 在开服时，脚本引擎会自动识别 **.llplugin** 文件，将其解压到`plugins/插件名`目录，并在目录中自动执行 `npm install --omit=dev`
   安装依赖包，整个过程无需人工干预
 
 ## Python 语言支持说明
@@ -144,11 +146,13 @@ import { initCommand } from "./plugins/your_plugin/command/command.js"
 
 #### ⭐ **Python 多文件插件打包 & 部署方法**
 
-- 在插件编写完成之后，请将 `pyproject.toml`以及所有插件源码打包为一个zip压缩包，并**将文件名后缀修改为 .llplugin**
-- `__pycache__` 和`__pypackages__` 等目录请勿打包在压缩包之中
-- 将 **.llplugin** 文件作为插件分发，安装插件时直接将此文件放置到 plugins 目录即可
-- 在开服时，脚本引擎会自动识别 **.llplugin** 文件，将其解压到`plugins/python/插件名`目录，并在目录中自动执行 `pip install`
-  安装依赖包，整个过程无需人工干预
+- 在插件编写完成之后，请将 `pyproject.toml`、所有插件源码以及一个 `manifest.json` 放入以插件名命名的目录中。`manifest.json`
+  中的 `type` 设为 `lse-python`，`entry` 设为 `__init__.py`，`name` 与目录名相同（格式参见
+  [你的第一个脚本插件](https://levimc.org/zh-Hans/tutorials/develop/first-script-plugin/)）
+- `__pycache__`、`__pypackages__` 和 `site-packages` 等目录请勿放入其中
+- 将此目录作为插件分发（例如打包为zip压缩包），安装插件时将此目录放置到 plugins 目录即可
+- 加载插件时，如果插件目录中还没有 `site-packages` 目录，脚本引擎会自动执行 `pip install`，将 `pyproject.toml` 和
+  `requirements.txt` 中列出的依赖包安装到 `site-packages`，整个过程无需人工干预
 
 #### **Python插件开发的已知问题**
 

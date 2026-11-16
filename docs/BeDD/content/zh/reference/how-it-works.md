@@ -22,5 +22,5 @@
 | `send`、`stack` | 客户端线程：`MinecraftPackets::createPacket` + `Packet::read`（客户端 NetworkSystem 的 `ReflectionCtx`），`sendNetworkPacket` |
 | `stack` | 绕过 `ItemStackNetManagerClient`（全为 MCNAPI；依据界面控制器预测）。在钩住的 `ClientNetworkHandler::handle(ItemStackResponsePacket)` 上重新同步 |
 | `join` | `ClientInstance::connectToThirdPartyServer` |
-| `timescale` | 服务端经 `ServerInstance::queueForServerThread`，客户端在 `ClientInstance::update` 之后；写 `Timer::mTimeScale`（`setSimTimeScale` 会相乘，上限 10）；暂停用 `Minecraft::setSimTimePause`。服务端速度：钩住 `ClientNetworkHandler::handle(LevelEventPacket)`，在游戏处理之后，仅当尚未达到时 |
+| `timescale` | 服务端在其 `Minecraft::update` 之后（1.26.60 不再导出 `ServerInstance::queueForServerThread`），客户端在 `ClientInstance::update` 之后；写 `Timer::mTimeScale`（`setSimTimeScale` 会相乘，上限 10）；暂停用 `Minecraft::setSimTimePause`。服务端速度：钩住 `ClientNetworkHandler::handle(LevelEventPacket)`，在游戏处理之后，仅当尚未达到时 |
 | `ui`、`oreui` | [UI 树](/zh/reference/ui#实现) |

@@ -20,7 +20,7 @@
 | `Long`      | `NbtLong`         | 有符号长整型（64位）          |
 | `Float`     | `NbtFloat`        | 单精度浮点数                  |
 | `Double`    | `NbtDouble`       | 双精度浮点数                  |
-| `ByteArray` | `NbtByteBuffer`   | 字节数组                      |
+| `ByteArray` | `NbtByteArray`    | 字节数组                      |
 | `String`    | `NbtString`       | UTF-8 字符串                  |
 | `List`      | `NbtList`         | NBT 列表（类似于 数组）       |
 | `Compound`  | `NbtCompound`     | NBT 标签（类似于 键值对列表） |

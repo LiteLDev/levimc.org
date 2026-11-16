@@ -15,7 +15,7 @@ Command 模块提供了在 Minecraft 基岩版中注册自定义命令的高级 
 | `ll/api/command/Command.h` | 命令基类模板 |
 | `ll/api/command/Overload.h` | 流式重载构建器，包含参数链 |
 | `ll/api/command/OverloadData.h` | 重载元数据存储 |
-| `ll/api/command/RuntimeOverload.h` | 动态运行时重载创建 |
+| `ll/api/command/runtime/RuntimeOverload.h` | 动态运行时重载创建 |
 | `ll/api/command/ParamTraits.h` | 参数类型信息和解析 |
 | `ll/api/command/EnumName.h` | 命令参数的枚举到名称映射 |
 | `ll/api/command/SoftEnum.h` | 软枚举包装类型 |
@@ -25,7 +25,7 @@ Command 模块提供了在 Minecraft 基岩版中注册自定义命令的高级 
 
 ### CommandRegistrar
 
-管理所有命令注册的单例，通过 `getInstance(bool isClientSide)`（或简写 `getServerInstance()` / `getClientInstance()`）获取。
+管理所有命令注册的单例，通过 `getInstance(bool isClientSide)`（或简写 `getServerInstance()` / `getClientInstance()`，后者仅存在于客户端构建中）获取。
 
 ```cpp
 namespace ll::command {
@@ -41,12 +41,22 @@ public:
         std::weak_ptr<mod::Mod> mod         = mod::NativeMod::current()
     );
 
+    Expected<std::unique_ptr<::Command>> compileCommand(
+        std::string_view commandStr, ::CommandOrigin& origin,
+        ::CurrentCmdVersion version = CurrentCmdVersion::Latest) const noexcept;
+    CommandOutput executeCommand(
+        std::string_view commandStr, ::CommandOrigin& origin,
+        ::CommandOutputType outputType = CommandOutputType::AllOutput,
+        ::CurrentCmdVersion version    = CurrentCmdVersion::Latest) const noexcept;
+
     bool hasEnum(std::string const& name);
     bool tryRegisterEnum(name, values, type, parser);
     bool addEnumValues(name, values, type);
+    bool tryRegisterRuntimeEnum(name, values);
+    bool addRuntimeEnumValues(name, values);
 
-    template <std::is_enum T> bool tryRegisterEnum();
-    template <std::is_enum T> bool tryRegisterRuntimeEnum();
+    template <concepts::Require<std::is_enum> T> bool tryRegisterEnum();
+    template <concepts::Require<std::is_enum> T> bool tryRegisterRuntimeEnum();
 
     bool hasSoftEnum(std::string const& name);
     bool tryRegisterSoftEnum(name, values);
@@ -54,7 +64,7 @@ public:
     bool removeSoftEnumValues(name, values);
     bool setSoftEnumValues(name, values);
 
-    template <Specializes<SoftEnum> T> bool tryRegisterSoftEnum();
+    template <concepts::Specializes<SoftEnum> T> bool tryRegisterSoftEnum();
 };
 }
 ```
@@ -90,6 +100,11 @@ public:
     Overload& optional(ParamName name);   // 标记参数为可选
     Overload& required(ParamName name);   // 标记参数为必需
     Overload& text(std::string_view text); // 添加文本字面量
+    Overload& postfix(std::string_view postfix);     // 将最后一个参数设为后缀参数
+    Overload& option(CommandParameterOption option);   // 为最后一个参数添加选项
+    Overload& deoption(CommandParameterOption option); // 移除最后一个参数的选项
+    template <class Fn>
+    Overload& modify(Fn&& fn);           // 直接修改最后一个 CommandParameterData
 
     template <class Fn>
     void execute(Fn&& fn);               // 设置执行回调
@@ -271,5 +286,5 @@ void registerMultiOverload() {
 
 ## 相关模块
 
-- [Event（事件系统）](event.zh.md) — `ExecuteCommandEvent` 用于拦截命令
+- [Event（事件系统）](event.zh.md) — `ExecutingCommandEvent` 用于拦截命令
 - [操作指南：命令](../developer_guides/how_to_guides/command_guide.zh.md) — 分步教程

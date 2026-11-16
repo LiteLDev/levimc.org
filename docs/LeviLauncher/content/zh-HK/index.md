@@ -33,7 +33,7 @@ features:
   - title: 世界工具
     details: 匯出備份、檢視世界資料，並在不離開啟動器的情況下編輯部分 level.dat 欄位。
   - title: 使用者設定
-    details: 調整語言、外觀、下載行為、私隱偏好、更新通道與元件狀態。
+    details: 調整語言、外觀、下載行為、私隱偏好、更新通道與套件管理。
   - title: Android 專屬功能
     details: "在同一個啟動器裏切換 Xbox 帳號，並用 URI 快速啟動。"
     link: /zh-Hant/guide/accounts-quick-launch

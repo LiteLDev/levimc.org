@@ -49,6 +49,8 @@ public:
     template <class T> size_t getListenerCount();
     bool hasEvent(EventIdView const& eventId) const;
     bool hasListener(ListenerId id) const;
+    ListenerPtr getListener(ListenerId id) const;
+    bool removeListener(ListenerId id);
 
     // 设置发射器工厂
     template <class T> bool setEventEmitter(FactoryFn fn, std::weak_ptr<mod::Mod> mod);
@@ -127,23 +129,25 @@ public:
 
 | 事件 | 说明 | 可取消 |
 |------|------|:------:|
-| `PlayerJoinEvent` | 玩家加入服务器 | 否 |
+| `PlayerConnectEvent` | 玩家连接（加入之前） | 是 |
+| `PlayerJoinEvent` | 玩家加入服务器 | 是 |
 | `PlayerDisconnectEvent` | 玩家断开连接 | 否 |
 | `PlayerChatEvent` | 玩家发送聊天消息 | 是 |
 | `PlayerAttackEvent` | 玩家攻击实体 | 是 |
 | `PlayerDestroyBlockEvent` | 玩家破坏方块 | 是 |
-| `PlayerPlaceBlockEvent` | 玩家放置方块 | 是 |
+| `PlayerPlacingBlockEvent` | 玩家即将放置方块 | 是 |
+| `PlayerPlacedBlockEvent` | 玩家已放置方块 | 否 |
 | `PlayerInteractBlockEvent` | 玩家与方块交互 | 是 |
 | `PlayerUseItemEvent` | 玩家使用物品 | 是 |
 | `PlayerSwingEvent` | 玩家挥手 | 否 |
-| `PlayerJumpEvent` | 玩家跳跃 | 否 |
-| `PlayerSneakEvent` | 玩家开始/停止潜行 | 否 |
-| `PlayerSprintEvent` | 玩家开始/停止疾跑 | 否 |
+| `PlayerJumpEvent` | 玩家跳跃 | 是 |
+| `PlayerSneakingEvent` / `PlayerSneakedEvent` | 玩家开始/停止潜行 | 是 |
+| `PlayerSprintingEvent` / `PlayerSprintedEvent` | 玩家开始/停止疾跑 | 否 |
 | `PlayerPickUpItemEvent` | 玩家拾取物品 | 是 |
 | `PlayerRespawnEvent` | 玩家重生 | 否 |
 | `PlayerDieEvent` | 玩家死亡 | 否 |
-| `PlayerChangePermEvent` | 玩家权限等级变更 | 否 |
-| `PlayerAddExperienceEvent` | 玩家获得经验值 | 否 |
+| `PlayerChangePermEvent` | 玩家权限等级变更 | 是 |
+| `PlayerAddExperienceEvent` | 玩家获得经验值 | 是 |
 
 ### 实体事件 `[通用]`
 
@@ -156,8 +160,9 @@ public:
 
 | 事件 | 说明 | 可取消 |
 |------|------|:------:|
-| `LevelTickEvent` | 每个服务器刻 | 否 |
-| `SpawnMobEvent` | 生物生成 | 是 |
+| `ServerLevelTickEvent` | 每个服务器世界刻 | 否 |
+| `SpawningMobEvent` | 生物即将生成 | 是 |
+| `SpawnedMobEvent` | 生物已生成 | 否 |
 | `BlockChangedEvent` | 方块变化 | 否 |
 | `FireSpreadEvent` | 火焰蔓延 | 是 |
 
@@ -172,7 +177,16 @@ public:
 
 | 事件 | 说明 | 可取消 |
 |------|------|:------:|
-| `ExecuteCommandEvent` | 执行命令 | 是 |
+| `ExecutingCommandEvent` | 即将执行命令 | 是 |
+| `ExecutedCommandEvent` | 命令已执行 | 否 |
+| `ServerCommandRegisterEvent` | 正在注册服务端命令 | 否 |
+
+### IO 事件 `[通用]`
+
+| 事件 | 说明 | 可取消 |
+|------|------|:------:|
+| `ConsoleOutputtingEvent` | 即将写出控制台输出 | 是 |
+| `ConsoleOutputtedEvent` | 控制台输出已写出 | 否 |
 
 ### 服务事件 `[通用]`
 
@@ -189,9 +203,11 @@ public:
 | `ClientExitLevelEvent` | 客户端退出关卡 | 否 |
 | `ClientStartJoinLevelEvent` | 客户端开始加入关卡 | 否 |
 | `ClientCancelJoinLevelEvent` | 客户端取消加入关卡 | 否 |
+| `ClientLevelTickEvent` | 每个客户端世界刻 | 否 |
+| `ClientCommandRegisterEvent` | 正在注册客户端命令 | 否 |
 | `KeyInputEvent` | 键盘输入 | 是 |
 | `MouseInputEvent` | 鼠标输入 | 是 |
-| `BeforeUIRenderEvent` | UI 渲染之前 | 否 |
+| `BeforeUIRenderEvent` | UI 渲染之前 | 是 |
 | `AfterUIRenderEvent` | UI 渲染之后 | 否 |
 
 ## 使用方法

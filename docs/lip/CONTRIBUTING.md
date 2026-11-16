@@ -3,8 +3,8 @@
 This page is for whoever writes the documentation of lip. It is not a page of the site (the pages are in
 `content/`). The pictures of the interface are made by lip's tests:
 [tests/Lip.Cli.Tests/Tui/Screenshots/README.md](https://github.com/LiteLDev/lip/blob/main/tests/Lip.Cli.Tests/Tui/Screenshots/README.md)
-in LiteLDev/lip says how. They write into `docs/lip/public/screenshots/` of a checkout of this repository next to
-the lip checkout (or into `LIP_SCREENSHOTS_DIR`).
+in LiteLDev/lip says how. They write into `docs/lip/public/screenshots/` of a checkout of this repository named
+`liteldev.github.io` next to the lip checkout (or into `LIP_SCREENSHOTS_DIR`).
 
 ## Building the site
 

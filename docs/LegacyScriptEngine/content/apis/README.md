@@ -2,7 +2,7 @@
 
 ## ⛳ Start
 
-`LegacyScriptEngine`, hereinafter referred to as **LSE**, is a plugin framework for `Bedrock Dedicated Server` (hereinafter referred to as **BDS**), the official server of Minecraft Bedrock Edition, providing powerful cross-language script plug-in support and stable development API support.  
+`LegacyScriptEngine`, hereinafter referred to as **LSE**, is a plugin framework for `Bedrock Dedicated Server` (hereinafter referred to as **BDS**), the official server of Minecraft Bedrock Edition, and for the Minecraft client on Windows, providing powerful cross-language script plug-in support and stable development API support.  
 
 > Welcome to LSE's plug-in development!
 

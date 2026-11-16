@@ -18,7 +18,7 @@ exits; the game keeps running. A running instance: exit 5.
 
 | Flag | |
 |---|---|
-| `--slot N` / `<instance>` / `--dir <folder>` | clone `<base>-<N>` (default 1), a named instance, or any folder with `Minecraft.Windows.exe` |
+| `--slot N` / `<instance>` / `--dir <folder>` | clone `<gameVersion>-<N>` (default 1), a named instance, or any folder with `Minecraft.Windows.exe` |
 | `--label <text>` | name in the manager window (default `BEDD_LABEL`, else the calling project) |
 | `--exclusive-signaling` | wait for other games to close; keep the PC to itself ([rules](/guide/several-games#rules-for-parallel-runs)) |
 | `--keep-mod` | keep the clone's mod |
@@ -26,7 +26,7 @@ exits; the game keeps running. A running instance: exit 5.
 | `--timeout` / `--lock-timeout` | wait for the WebSocket (`3m`) / signaling lock (`2h`) |
 | `--detach` | return when the process starts; `url`/`token` are `null` |
 
-`BeDD.exe ps` lists games; `BeDD.exe stop <pid>` saves and closes one.
+`BeDD.exe ps` lists games; `BeDD.exe stop --pid <pid>` (or `stop <instance>`) kills one.
 
 ## Which game
 

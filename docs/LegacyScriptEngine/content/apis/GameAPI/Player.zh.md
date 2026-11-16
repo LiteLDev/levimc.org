@@ -107,7 +107,7 @@
 这些对象属性都是只读的，无法被修改。其中：
 
 - **坐标** 和 **腿部坐标**：玩家为两格高，`pos`为玩家视角高度的坐标，`feetPos`为游戏内显示的方块坐标
-- **玩家游戏模式** 属性的取值为：`0` 代表生存模式，`1` 代表创造模式，`2` 代表冒险模式，`3` 代表旁观者模式
+- **玩家游戏模式** 属性的取值为：`0` 代表生存模式，`1` 代表创造模式，`2` 代表冒险模式，`6` 代表旁观者模式
 - **玩家真实名字** 属性储存的字符串可以被认为是可靠的，他们不会被改名而变动
 - **玩家设备IP地址** 属性储存了玩家的设备IP以及端口号，格式类似`12.34.567.89:1111`
 - **玩家当前朝向** 属性的详细解释见  [基础游戏接口文档](./Basic.zh.md)
@@ -435,15 +435,15 @@
 
 #### 对玩家造成伤害
 
-`pl.hurt(damage,type,source)`
+`pl.hurt(damage[,type[,source]])`
 
 - 参数：
     - damage : `Float`  
       对玩家造成的伤害数值
     - type : `Integer`  
-      伤害类型
+      （可选参数）伤害类型，默认为 `0`（`ActorDamageCause.Override`）
     - source : `Entity`
-      伤害来源
+      （可选参数）伤害来源
 - 返回值：是否造成伤害
 - 返回值类型：`Boolean`
 
@@ -918,7 +918,7 @@
     - type : `String`  
       要清除的物品对象类型名
     - count : `Integer`  
-      （可选参数）要清除的物品数量
+      （可选参数）要清除的物品数量，默认为1
 - 返回值：清除的物品个数
 - 返回值类型：`Integer`
 
@@ -1399,7 +1399,7 @@
     - percent : `Integer`  
       血条中的血量百分比，有效范围为0~100。0为空血条，100为满
     - colour : `Integer`  
-      血条颜色(默认值为2(RED))
+      血条颜色（例如 `2` 为 RED）
 - 返回值：是否成功设置
 - 返回值类型：`Boolean`
 
@@ -1514,7 +1514,7 @@
 
 - 参数：
     - isOnlineMode : `Boolean` 可选参数  
-      为 `true` 时返回登录了微软账号玩家的 UUID；为 `false` 时返回离线模式玩家的 UUID，默认为 `false`
+      为 `true` 时返回登录了微软账号玩家的 UUID；为 `false` 时返回离线模式玩家的 UUID，默认为 `true`
 - 返回值：已保存玩家 UUID 字符串列表
 - 返回值类型：`Array<String,String,...>`
 
@@ -1730,10 +1730,29 @@
 | 不祥之兆   | bad_omen        | 28    |
 | 村庄英雄   | village_hero    | 29    |
 | 黑暗     | darkness        | 30    |
+| 试炼之兆   | trial_omen      | 31    |
+| 蓄风     | wind_charged    | 32    |
+| 盘丝     | weaving         | 33    |
+| 渗浆     | oozing          | 34    |
+| 寄生     | infested        | 35    |
+| 袭击之兆   | raid_omen       | 36    |
+| 鹦鹉螺之息  | breath_of_the_nautilus | 37    |
+
+#### 快速执行Molang表达式
+
+`pl.quickEvalMolangScript(str)`
+
+- 参数：
+    - str : `String`  
+      Molang表达式
+- 返回值：表达式执行结果
+- 返回值类型：`Float`
+
+关于Molang的详细使用方法，请参考 [MOLANG文档 bedrock.dev](https://bedrock.dev/zh/docs/stable/Molang)
 
 #### 将玩家对象转换实体对象
 
-`en.toEntity()`
+`pl.toEntity()`
 
 - 返回值：转换成的实体对象
 - 返回值类型：`Entity`
@@ -1750,14 +1769,14 @@
 
 ### 创建一个模拟玩家
 
-`mc.spawnSimulatedPlayer(name,pos)`  
+`mc.spawnSimulatedPlayer(name[,pos])`  
 `mc.spawnSimulatedPlayer(name,x,y,z,dimid)`
 
 - 参数：
     - name : `String`  
       模拟玩家名称
     - pos : `IntPos `/ `FloatPos`  
-      生成生物的位置的坐标对象（或者使用x, y, z, dimid来确定生成位置）
+      （可选参数）生成生物的位置的坐标对象（或者使用x, y, z, dimid来确定生成位置），默认为世界出生点
 - 返回值：生成的（模拟）玩家对象
 - 返回值类型：`Player`
     - 如返回值为 `Null` 则表示生成失败
@@ -1846,14 +1865,21 @@
 
 参考：[mojang-gametest docs](https://learn.microsoft.com/zh-cn/minecraft/creator/scriptapi/minecraft/server-gametest/simulatedplayer?view=minecraft-bedrock-experimental#jump)
 
+#### 模拟潜行
+
+`sp.simulateSneak()`
+
+- 返回值：是否成功模拟操作
+- 返回值类型：`Boolean`
+
 #### 模拟看向某方块或实体
 
 `sp.simulateLookAt(pos, [lookDuration])`
 `sp.simulateLookAt(entity, [lookDuration])`
-`sp.simulateLookAt(block, [lookDurration])`
+`sp.simulateLookAt(block, [lookDuration])`
 
 !!! warning
-    `lookDurration`仅在0.8.13以及之后的版本中可用
+    `lookDuration`仅在0.8.13以及之后的版本中可用
 
 - 参数：
 
@@ -1888,7 +1914,7 @@
 
 #### 相对玩家坐标系移动
 
-`sp.simulateLocalMove()`
+`sp.simulateLocalMove(pos[,speed])`
 
 - 参数：
     - pos : `IntPos` / `FloatPos`  
@@ -1901,7 +1927,7 @@
 
 #### 相对世界坐标系移动
 
-`sp.simulateWorldMove()`
+`sp.simulateWorldMove(pos[,speed])`
 
 - 参数：
     - pos : `IntPos` / `FloatPos`  
@@ -1914,7 +1940,7 @@
 
 #### 直线移动到坐标
 
-`sp.simulateMoveTo()`
+`sp.simulateMoveTo(pos[,speed])`
 
 - 参数：
     - pos : `IntPos` / `FloatPos`  
@@ -1930,7 +1956,7 @@
 
 #### 模拟导航移动
 
-`sp.simulateNavigateTo(entity[,speed)`
+`sp.simulateNavigateTo(entity[,speed])`
 `sp.simulateNavigateTo(pos[,speed])`
 
 - 参数：
@@ -2072,4 +2098,11 @@
 - 返回值类型：`Boolean`
 
 参考：[mojang-gametest docs](https://learn.microsoft.com/zh-cn/minecraft/creator/scriptapi/minecraft/server-gametest/simulatedplayer?view=minecraft-bedrock-experimental#stopusingitem)
+
+#### 模拟停止潜行
+
+`sp.simulateStopSneaking()`
+
+- 返回值：是否成功模拟操作
+- 返回值类型：`Boolean`
 

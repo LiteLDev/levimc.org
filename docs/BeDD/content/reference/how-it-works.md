@@ -22,5 +22,5 @@
 | `send`, `stack` | client thread: `MinecraftPackets::createPacket` + `Packet::read` (client NetworkSystem `ReflectionCtx`), `sendNetworkPacket` |
 | `stack` | bypasses `ItemStackNetManagerClient` (all MCNAPI; predicts from screen controllers). Resync on hooked `ClientNetworkHandler::handle(ItemStackResponsePacket)` |
 | `join` | `ClientInstance::connectToThirdPartyServer` |
-| `timescale` | server via `ServerInstance::queueForServerThread`, client after `ClientInstance::update`; writes `Timer::mTimeScale` (`setSimTimeScale` multiplies, caps at 10); pause `Minecraft::setSimTimePause`. Server scale: hooked `ClientNetworkHandler::handle(LevelEventPacket)`, after the game, only if not already reached |
+| `timescale` | server after its `Minecraft::update` (1.26.60 exports no `ServerInstance::queueForServerThread`), client after `ClientInstance::update`; writes `Timer::mTimeScale` (`setSimTimeScale` multiplies, caps at 10); pause `Minecraft::setSimTimePause`. Server scale: hooked `ClientNetworkHandler::handle(LevelEventPacket)`, after the game, only if not already reached |
 | `ui`, `oreui` | [UI tree](/reference/ui#implementation) |

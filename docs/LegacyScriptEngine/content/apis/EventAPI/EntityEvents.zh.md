@@ -140,7 +140,7 @@ ActorDamageCause 为伤害原因枚举，枚举值如下，有问号的待验证
       被击中的实体对象
     - source : `Entity`  
       发射的弹射物实体（如箭）
-- 拦截事件：不可以拦截
+- 拦截事件：函数返回`false`
 
 #### `"onWitherBossDestroy"` - 凋灵破坏方块
 
@@ -281,6 +281,6 @@ ActorDamageCause 为伤害原因枚举，枚举值如下，有问号的待验证
       搬运方块的末影人
     - block : `Block`  
       被搬运的方块
-    - pos : `BlockPos`  
+    - pos : `IntPos`  
       被搬运的方块坐标
 - 拦截事件：函数返回`false`

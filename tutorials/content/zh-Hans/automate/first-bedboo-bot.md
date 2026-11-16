@@ -53,7 +53,7 @@ Node.js 25 及更新版本不再自带 corepack：用 `npm install -g corepack` 
    }
    ```
 
-   `bedboo` 来自工作区。`mineflayer-pathfinder` 是 mineflayer 常用的寻路插件，在基岩版上无需修改即可使用。
+   `bedboo` 来自工作区。`mineflayer-pathfinder` 是 mineflayer 常用的寻路插件，bedboo 工作区会为它打上补丁，使其可在基岩版上使用，你的代码用法与 Java 版相同。
 
 3. 在仓库根目录再次运行 `pnpm install`。你应该看到它添加了 `mineflayer-pathfinder`。
 

@@ -13,7 +13,12 @@ Thread 模块提供了线程池执行器、服务器线程执行器和用于并�
 | `ll/api/thread/ThreadPoolExecutor.h` | 线程池执行器 |
 | `ll/api/thread/ServerThreadExecutor.h` | 服务器主线程执行器 |
 | `ll/api/thread/GlobalThreadPauser.h` | 暂停所有游戏线程 |
-| `ll/api/thread/ThreadName.h` | 线程命名工具 |
+| `ll/api/thread/ThreadName.h` | 线程命名工具（`getThreadName`、`setThreadName`） |
+| `ll/api/thread/InplaceExecutor.h` | 在调用线程上立即执行任务的执行器 |
+| `ll/api/thread/InterruptableSleep.h` | 可被其他线程中断的阻塞休眠 |
+| `ll/api/thread/ServerTickSyncSleep.h` | 随服务器刻同步唤醒的阻塞休眠 |
+| `ll/api/thread/ClientThreadExecutor.h` | 客户端主线程执行器（仅客户端构建） |
+| `ll/api/thread/ClientTickSyncSleep.h` | 随客户端刻同步唤醒的阻塞休眠（仅客户端构建） |
 
 ## 核心类
 

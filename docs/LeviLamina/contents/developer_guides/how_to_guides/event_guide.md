@@ -90,18 +90,18 @@ LL_TYPE_INSTANCE_HOOK(
     PlayerAttackEventHook,
     HookPriority::Normal,
     Player,
-    &Player::_attack,
-    bool,
-    Actor&                                         ac,
-    ::SharedTypes::Legacy::ActorDamageCause const& cause,
-    bool                                           doPredictiveSound
+    &Player::attack,
+    ActorHurtResult,
+    Actor&                                       ac,
+    SharedTypes::Legacy::ActorDamageCause const& cause,
+    Player::AttackParameters const&              parameters
 ) {
     auto ev = PlayerAttackEvent(*this, ac, cause);
     EventBus::getInstance().publish(ev);
     if (ev.isCancelled()) {
-        return false;
+        return {};
     }
-    return origin(ac, cause, doPredictiveSound);
+    return origin(ac, cause, parameters);
 }
 ```
 
@@ -132,7 +132,7 @@ ServerInstance& ServerStartedEvent::server() const { return mInstance; }
 
 LL_TYPE_INSTANCE_HOOK(
     ServerStartedEventHook,
-    ll::memory::HookPriority::Normal,
+    ll::memory::HookPriority::Low,
     ServerScriptManager,
     &ServerScriptManager::$onServerThreadStarted,
     EventResult,

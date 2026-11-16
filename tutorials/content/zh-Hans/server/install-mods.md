@@ -17,7 +17,7 @@
 3. 点**安装**。对话框里可以选择**变体**和**版本**，并在“在服务端目录中用 lip 运行：”下面给出命令，例如：
 
    ```shell
-   lip install github.com/LiteLDev/LeviOptimize@1.8.1
+   lip install github.com/LiteLDev/LeviOptimize@0.18.0
    ```
 
    去掉末尾的 `@<版本>`，`lip` 会自己选出与你的服务器相配的最新版本。
@@ -32,7 +32,7 @@
 2. 按 `↑` 直到进入**搜索**，输入 `optim`，按 `Enter`。LeviOptimize 已被选中。
 3. 按 `Enter`，再在**安装…**上按一次 `Enter`。
 4. `lip` 只列出与你的游戏和 LeviLamina 相配的版本。保持选中最新版本，按 `Enter`。
-5. `lip` 给出计划，例如 `Dry run: would install LeviOptimize 1.8.1`。如果这个模组还需要别的模组，它们也会列出来。在**应用**上按 `Enter`。
+5. `lip` 给出计划，例如 `Dry run: would install LeviOptimize 0.18.0`。如果这个模组还需要别的模组，它们也会列出来。在**应用**上按 `Enter`。
 6. 你应该看到 **✓ 完成。**，回到列表后，LeviOptimize 前面多了一个 **✓**。
 
 ![安装之后的获取模组页面：LeviOptimize 这一行以对勾开头。](https://levimc.org/lip/screenshots/zh-Hans/first-server-19-mod-installed.svg)
@@ -55,7 +55,7 @@ lip install LeviOptimize
 
 ## 3. 安装 LegacyScriptEngine
 
-LegacyScriptEngine（LSE）运行用脚本语言写的插件。它有四个**变体**，每种语言一个；按你的插件所用的语言安装：
+LegacyScriptEngine（LSE）运行用脚本语言写的插件。它有四个**变体**，每种语言一个；按你的插件所用的语言安装。不指定变体时，`lip install LegacyScriptEngine` 会同时安装 QuickJS 和 Lua 两个引擎。
 
 | 变体 | 语言 |
 | --- | --- |
@@ -89,12 +89,12 @@ LegacyScriptEngine（LSE）运行用脚本语言写的插件。它有四个**变
 安装 `#python` 之前，先在服务器所在的机器上安装 Python：LSE 0.16.2 及以后的版本需要 Python 3.12.10。
 :::
 
-插件放在服务器的 `plugins/` 文件夹里。下次启动时，LSE 会迁移它们，并为每个插件生成 LeviLamina 模组清单；再重启一次服务器，插件就会被加载。
+插件放在服务器的 `mods/` 文件夹里，每个插件一个文件夹，里面有 LeviLamina 模组清单。LSE 启动时会把 `plugins/` 文件夹做成指向 `mods/` 的链接；直接丢进去的单个旧式脚本，LSE 会在下次启动时为它生成文件夹和清单；再重启一次服务器，它就会被加载。
 
 ## 4. 确认模组已加载
 
 1. 启动服务器：在「主页」上选**启动服务器**，或者运行 `lip run`。
-2. 在输出里找带 `[LeviLamina]` 的几行。你应该看到每个模组一行 `Loaded`，例如 `Loaded LeviOptimize v1.8.1`，还有一行数量，例如 `5 mod(s) loaded`（依赖也算模组）。
+2. 在输出里找带 `[LeviLamina]` 的几行。你应该看到每个模组各有一行 `Loading` 和一行 `loaded`，例如 `Loading LeviOptimize v0.18.0` 和 `LeviOptimize loaded`，还有一行数量，例如 `5 mod(s) loaded`（依赖也算模组）。
 3. 按 `Ctrl+C` 停止服务器。
 
 如果某个模组不在其中，输出里会说明原因。126、127 等错误码的含义见 [LeviLamina 问题排除](https://levimc.org/zh-Hans/LeviLamina/user_guides/troubleshooting/)。

@@ -35,7 +35,7 @@ See the [NbtList - List Type](./NBTList.md) and [NbtCompound - Tag Type](./NBTCo
   - data: `Number` / `Float` / `Double` / `ByteBuffer` / `String` (Optional parameter)  
     Set the initial data according to the type of object you want to create. The incoming data type needs to be able to initialize the corresponding type of data.  
 - Return value: The generated NBT object.
-- Return value type:`NbtByte` / `NbtShort` / `NbtInt` / `NbtLong` / `NbtFloat` / `NbtDouble` / `NbtByteBuffer` / `NbtString` , depending on the type of the data.
+- Return value type:`NbtByte` / `NbtShort` / `NbtInt` / `NbtLong` / `NbtFloat` / `NbtDouble` / `NbtByteArray` / `NbtString` , depending on the type of the data.
   - If the creation fails, an exception will be thrown.
 
 

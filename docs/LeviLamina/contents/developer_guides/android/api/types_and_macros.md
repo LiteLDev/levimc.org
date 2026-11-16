@@ -11,10 +11,18 @@ The SDK installs only these headers:
 #include <pl/Logger.hpp>
 #include <pl/Mod.hpp>
 #include <pl/ModMenu.hpp>
+#include <pl/ModMenuConfig.hpp>
+#include <pl/Platform.hpp>
 #include <pl/memory/Hook.hpp>
 #include <pl/memory/Patch.hpp>
 #include <pl/memory/Signature.hpp>
+#include <pl/memory/Vtable.hpp>
 ```
+
+`<pl/Platform.hpp>` has small Android helpers in `pl::platform`:
+`setClipboardText(text)` sets the clipboard text, and
+`httpGet(url, timeoutMs = 5000)` performs an HTTP GET and returns an
+`HttpResponse` (`status`, `body`, `retryAfter`, `ok()`).
 
 ## PL_EXPORT
 

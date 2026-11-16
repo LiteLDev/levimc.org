@@ -53,7 +53,7 @@ Your bot lives in a package of the workspace, so that it gets its own dependenci
    }
    ```
 
-   `bedboo` comes from the workspace. `mineflayer-pathfinder` is the usual mineflayer plugin for walking to places; it works on Bedrock unchanged.
+   `bedboo` comes from the workspace. `mineflayer-pathfinder` is the usual mineflayer plugin for walking to places; it works on Bedrock with a patch that the bedboo workspace applies to it, and your code uses it as on Java Edition.
 
 3. In the root of the repository, run `pnpm install` again. You should see it add `mineflayer-pathfinder`.
 

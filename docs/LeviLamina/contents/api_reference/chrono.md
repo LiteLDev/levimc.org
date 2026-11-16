@@ -24,7 +24,7 @@ Game time is measured in **ticks** (20 ticks = 1 real-time second). The followin
 | `game::minutes` | ~16.67 ticks | 1 Minecraft minute |
 | `game::weeks` | 7 game days | 1 Minecraft week |
 | `game::months` | ~1/12 of a game year | 1 Minecraft month |
-| `game::years` | 365 game days | 1 Minecraft year |
+| `game::years` | 365.2425 game days (146097/400) | 1 Minecraft year |
 
 ### User-Defined Literals
 
@@ -41,18 +41,18 @@ auto halfDay    = 12000_tick;
 
 ### GameTickClock
 
-A clock that tracks game ticks. Time advances only when the game is ticking.
+A clock that reads the level's current server tick (`Level::getCurrentServerTick()`). Time advances only when the game is ticking; `now()` returns `time_point::min()` while no level is loaded.
 
 ```cpp
 #include "ll/api/chrono/GameChrono.h"
 
 auto now = ll::chrono::GameTickClock::now();
-auto tp  = ll::chrono::GameTickClock::fromTick(100);
+auto tp  = ll::chrono::GameTickClock::fromTick(level.getCurrentServerTick()); // takes a `Tick`
 ```
 
 ### ServerClock
 
-A clock that tracks real wall-clock time on the server.
+A steady clock that counts server level ticks (`ServerLevelTickEvent`) since it was first queried. Its unit is also `ticks`; it is not a wall clock.
 
 ```cpp
 auto serverNow = ll::chrono::ServerClock::now();
@@ -92,5 +92,5 @@ auto realSeconds = std::chrono::duration_cast<std::chrono::seconds>(ticks); // 5
 
 ## Related
 
-- [Thread](thread.md) — `TickSyncSleep` uses game chrono types
+- [Thread](thread.md) — `ServerTickSyncSleep` uses game chrono types
 - [Coroutine](coro.md) — `SleepAwaiter` works with chrono durations

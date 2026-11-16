@@ -17,7 +17,7 @@ A server in Docker installs mods through its `PACKAGES` variable instead: see [A
 3. Press **Install**. The dialog lets you choose a **Variant** and a **Version**, and shows the command under "Run this in your server folder with lip:", for example:
 
    ```shell
-   lip install github.com/LiteLDev/LeviOptimize@1.8.1
+   lip install github.com/LiteLDev/LeviOptimize@0.18.0
    ```
 
    Without the `@<version>` at the end, `lip` picks the newest version that fits your server by itself.
@@ -32,7 +32,7 @@ You do not need the website to install: the **Get mods** page of `lip` shows the
 2. Press `↑` until you are in **Search**, type `optim`, and press `Enter`. LeviOptimize is selected.
 3. Press `Enter`, then `Enter` again on **Install…**.
 4. `lip` lists only the versions that fit your game and your LeviLamina. Keep the newest and press `Enter`.
-5. `lip` shows its plan, such as `Dry run: would install LeviOptimize 1.8.1`. If the mod needs other mods, they are listed too. Press `Enter` on **Apply**.
+5. `lip` shows its plan, such as `Dry run: would install LeviOptimize 0.18.0`. If the mod needs other mods, they are listed too. Press `Enter` on **Apply**.
 6. You should see **✓ Done.**, and back in the list LeviOptimize has a **✓**.
 
 ![The Get mods page after the installation: the row of LeviOptimize starts with a tick.](https://levimc.org/lip/screenshots/en/first-server-19-mod-installed.svg)
@@ -55,7 +55,7 @@ A short name like `LeviOptimize` means `github.com/LiteLDev/LeviOptimize`; mods 
 
 ## 3. Install LegacyScriptEngine
 
-LegacyScriptEngine (LSE) runs plugins written in a script language. It comes in four **variants**, one per language; install the one your plugins are written in:
+LegacyScriptEngine (LSE) runs plugins written in a script language. It comes in four **variants**, one per language; install the one your plugins are written in. Without a variant, `lip install LegacyScriptEngine` installs the QuickJS and Lua engines together.
 
 | Variant | Language |
 | --- | --- |
@@ -89,12 +89,12 @@ LegacyScriptEngine (LSE) runs plugins written in a script language. It comes in 
 Before you install `#python`, install Python on the server machine: Python 3.12.10 for LSE 0.16.2 and later.
 :::
 
-Plugins go into the folder `plugins/` of the server. On the next start, LSE migrates them and gives each one a LeviLamina mod manifest; restart the server once more to load them.
+Plugins go into the folder `mods/` of the server, each in a folder of its own with a LeviLamina mod manifest. LSE makes the folder `plugins/` a link to `mods/` when it starts, and gives a single old-style script dropped there a folder and a manifest on the next start; restart the server once more to load it.
 
 ## 4. Check that the mods load
 
 1. Start the server: **Start the server** on **Home**, or `lip run`.
-2. Look for the lines of `[LeviLamina]` in the output. You should see one `Loaded` line per mod, such as `Loaded LeviOptimize v1.8.1`, and a count such as `5 mod(s) loaded` (the dependencies are mods too).
+2. Look for the lines of `[LeviLamina]` in the output. You should see a `Loading` and a `loaded` line per mod, such as `Loading LeviOptimize v0.18.0` and `LeviOptimize loaded`, and a count such as `5 mod(s) loaded` (the dependencies are mods too).
 3. Stop the server with `Ctrl+C`.
 
 If a mod is missing from the list, the output says why. Error codes such as 126 and 127 are explained in [LeviLamina troubleshooting](https://levimc.org/LeviLamina/user_guides/troubleshooting/).

@@ -470,6 +470,45 @@ optional_ref<ResourcePackRepository> getResourcePackRepository(bool isClientSide
 服务端目标上不可用时是空的。使用前请检查是否为空，不要假设某个 mod 生命周期
 阶段它一定存在。
 
+### 特定构建目标的访问器
+
+`ll/api/service/TargetedBedrock.h` 提供仅在某一构建目标中存在的访问器，同样位于 `ll::service::bedrock` 命名空间：
+
+```cpp
+#include "ll/api/service/TargetedBedrock.h"
+
+// 服务端构建（src-server/）
+optional_ref<PropertiesSettings> getPropertiesSettings();
+optional_ref<DedicatedServer>    getDedicatedServer();
+
+// 客户端构建（src-client/）
+optional_ref<ClientInstance> getClientInstance();
+optional_ref<Level>          getMultiPlayerLevel();
+optional_ref<AppPlatform>    getAppPlatform();
+```
+
+### 其他工具
+
+同一目录还提供 `GamingStatus.h`（`ll::getGamingStatus()`）、`PlayerInfo.h`（已知玩家 UUID、XUID 与名称的缓存，
+可通过 `fromUuid` / `fromXuid` / `fromName` 查询）以及 `ServerInfo.h`
+（`ll::setServerMotd`、`ll::getWorldPath`、`ll::getWorldDataRoot`、`ll::getWorldConfigRoot`）：
+
+```cpp
+#include "ll/api/service/GamingStatus.h"
+#include "ll/api/service/PlayerInfo.h"
+#include "ll/api/service/ServerInfo.h"
+
+ll::GamingStatus status = ll::getGamingStatus(); // Default、Starting、Running 或 Stopping
+
+auto& players = ll::service::PlayerInfo::getInstance();
+if (auto entry = players.fromName("Steve")) {
+    // entry->uuid, entry->xuid, entry->name
+}
+
+std::optional<std::filesystem::path> world = ll::getWorldPath();
+ll::setServerMotd("My Server");
+```
+
 ## 相关模块
 
 - [Event（事件系统）](event.zh.md) — `ServiceRegisterEvent`、`ServiceUnregisterEvent`

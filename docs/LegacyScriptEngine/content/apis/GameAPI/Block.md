@@ -17,7 +17,7 @@ Use this function to manually generate objects. Note that the block you want to 
 `mc.getBlock(x,y,z,dimid)`
 
 - Parameters: 
-  - pos : `IntPos `  
+  - pos : `IntPos` or `FloatPos`  
     The coordinates of the block (or use x, y, z, dimid to determine the block position)
 - Return value: The generated `Block` object. 
 - Return value type: `Block`

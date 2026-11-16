@@ -141,6 +141,7 @@
 | en.type                  | 实体标准类型名                      | `String`         |
 | en.id                    | 实体的游戏内 id                     | `Integer`        |
 | en.pos                   | 实体所在坐标                        | `FloatPos`       |
+| en.posDelta              | 实体的运动量（每刻的坐标变化量）    | `FloatPos`       |
 | en.feetPos               | 实体腿部所在坐标                    | `FloatPos`       |
 | en.blockPos              | 实体所在的方块坐标                  | `IntPos`         |
 | en.maxHealth             | 实体最大生命值                      | `Integer`        |
@@ -188,7 +189,7 @@
 #### 传送实体至指定位置
 
 `en.teleport(pos[,rot])`  
-`en.teleport(x,y,z,dimid,[,rot])`
+`en.teleport(x,y,z,dimid[,rot])`
 
 - 参数：
     - pos :`IntPos `/ `FloatPos`  
@@ -198,6 +199,17 @@
 
       （可选参数）传送后实体的朝向，若缺省则与传送前朝向相同
 - 返回值：是否成功传送
+- 返回值类型：`Boolean`
+
+#### 设置实体的运动量
+
+`en.setPosDelta(delta)`  
+`en.setPosDelta(x,y,z)`
+
+- 参数：
+    - delta : `FloatPos`  
+      实体新的运动量（每刻的坐标变化量）（或者使用x, y, z来设置）
+- 返回值：是否成功设置
 - 返回值类型：`Boolean`
 
 #### 杀死指定实体
@@ -223,15 +235,15 @@
 
 #### 对实体造成伤害
 
-`en.hurt(damage,type,source)`
+`en.hurt(damage[,type[,source]])`
 
 - 参数：
     - damage : `Float`  
       对实体造成的伤害数值
     - type : `Integer`  
-      伤害类型
+      （可选参数）伤害类型，默认为 `0`（`ActorDamageCause.Override`）
     - source : `Entity`
-      伤害来源
+      （可选参数）伤害来源
 - 返回值：是否造成伤害
 - 返回值类型：`Boolean`
 
@@ -700,6 +712,13 @@
 | 不祥之兆   | bad_omen        | 28   |
 | 村庄英雄   | village_hero    | 29   |
 | 黑暗     | darkness        | 30   |
+| 试炼之兆   | trial_omen      | 31   |
+| 蓄风     | wind_charged    | 32   |
+| 盘丝     | weaving         | 33   |
+| 渗浆     | oozing          | 34   |
+| 寄生     | infested        | 35   |
+| 袭击之兆   | raid_omen       | 36   |
+| 鹦鹉螺之息  | breath_of_the_nautilus | 37   |
 
 ### 其他实体函数 API
 
@@ -708,7 +727,9 @@
 #### 在指定位置制造一次爆炸
 
 `mc.explode(pos,source,maxResistance,radius,isDestroy,isFire)`  
-`mc.explode(x,y,z,dimid,source,maxResistance,radius,isDestroy,isFire)`
+`mc.explode(x,y,z,dimid,source,maxResistance,radius,isDestroy,isFire)`  
+`mc.explode(pos,source,radius,isDestroy,isFire)`  
+`mc.explode(x,y,z,dimid,source,radius,isDestroy,isFire)`
 
 - 参数：
     - pos : `IntPos `/ `FloatPos`  
@@ -716,7 +737,7 @@
     - source : `Entity`  
       设置爆炸来源的实体对象，可以为`Null`
     - maxResistance : `Float`  
-      方块最大爆炸抗性，低于此值的方块会被破坏
+      方块最大爆炸抗性，低于此值的方块会被破坏。若省略则不作限制
     - radius : `Float`  
       爆炸的范围半径，影响爆炸的波及范围
     - isDestroy : `Boolean`  

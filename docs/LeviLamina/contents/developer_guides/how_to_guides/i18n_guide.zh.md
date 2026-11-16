@@ -38,6 +38,7 @@ bool MyMod::load() {
   - ru.json
   - th.json
   - tr.json
+  - uk.json
   - vi.json
   - zh_CN.json
   - zh_TW.json

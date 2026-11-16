@@ -33,7 +33,7 @@ features:
   - title: Welt-Tools
     details: Exportiere Backups, sieh dir Weltdaten an und bearbeite ausgewählte level.dat-Felder, ohne den Launcher zu verlassen.
   - title: Benutzereinstellungen
-    details: Passe Sprache, Erscheinungsbild, Download-Verhalten, Datenschutzoptionen, Update-Kanäle und Komponentenstatus an.
+    details: Passe Sprache, Erscheinungsbild, Download-Verhalten, Datenschutzoptionen, Update-Kanäle und Paketverwaltung an.
   - title: Android-Extras
     details: "Xbox-Kontowechsel und Schnellstart per URI-Aktionen im selben Launcher."
     link: /de-DE/guide/accounts-quick-launch

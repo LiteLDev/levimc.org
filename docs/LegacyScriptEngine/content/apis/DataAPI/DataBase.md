@@ -148,6 +148,11 @@ To achieve cross-database compatibility, connecting to a database requires passi
 | `create` | Auto-create if file doesn't exist | `SQLite` | `true`/`false` | `true` |
 | `readonly` | Open in read-only mode | `SQLite` | `true`/`false` | `false` |
 | `readwrite` | Open in read-write mode | `SQLite` | `true`/`false` | `true` |
+| `host` | Address of the database server | `MySQL` | `localhost` | - |
+| `port` | Port of the database server | `MySQL` | `3306` | `3306` |
+| `user` | User name | `MySQL` | `root` | - |
+| `password` | Password | `MySQL` | `password` | - |
+| `database` | Database to use | `MySQL` | `db` | - |
 
 ---
 
@@ -342,7 +347,7 @@ stmt.bind(114514, 7);  // Binds to h (index 7)
 
 #### Step to Next Result Row
 
-`stmt.step()` or `stmt.next()`
+`stmt.step()`
 
 * **Returns:** Whether the step was successful (true if a row exists).
 * **Return Type:** `Boolean`

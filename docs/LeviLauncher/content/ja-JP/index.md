@@ -33,7 +33,7 @@ features:
   - title: ワールドツール
     details: ランチャーを離れずに、バックアップのエクスポート、ワールドデータの確認、level.datの一部フィールドの編集ができます。
   - title: ユーザー設定
-    details: 言語、外観、ダウンロード動作、プライバシー設定、更新チャンネル、コンポーネントの状態を調整できます。
+    details: 言語、外観、ダウンロード動作、プライバシー設定、更新チャンネル、パッケージ管理を調整できます。
   - title: Android 版の機能
     details: "同じランチャーで Xbox アカウントの切り替えと URI によるクイック起動。"
     link: /ja-JP/guide/accounts-quick-launch

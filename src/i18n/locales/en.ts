@@ -91,7 +91,7 @@ const en = {
       "KawaiiNahida": { role: "Maintainer of Header Generator", bio: "Maintains the header generation system, ensuring efficient and accurate header files. Author of LeviAntiCheat." },
       "RimuruChan": { role: "Maintainer of Header Generator", bio: "Maintains the header generation system, ensuring efficient and accurate header files." },
       "Dofes": { role: "Author of LeviOptimize", bio: "Creates and maintains LeviOptimize, a performance optimization mod for LeviLamina servers and clients. Developer of LeviLamina and LegacyScriptEngine." },
-      "futrime": { role: "Author of lip", bio: "Develops and maintains lip, the general package installer. Developer of LegacyScriptEngine." },
+      "futrime": { role: "Author of lip", bio: "Develops and maintains lip, which runs LeviLamina servers and manages their packages. Developer of LegacyScriptEngine." },
       "wu-vincent": { role: "Author of Endstone", bio: "Creates and maintains Endstone, a popular plugin loader for Bedrock Dedicated Server. Provides support for LeviStone." },
       "quizhizhe": { role: "Author of MoreDimensions", bio: "Brings custom dimensions to Minecraft Bedrock Edition with the MoreDimensions API. Developer of LeviLamina, author of LiteLoaderBDS 1.16.40." },
       "Lovelylavender4": { role: "Maintainer of LeviLamina", bio: "Maintains LeviLamina, contributing to its development and community support." },
@@ -204,13 +204,15 @@ const en = {
       "A lightweight, modular and versatile mod loader for Minecraft Bedrock Edition.",
     legacyscriptengine:
       "Run LLSE plugins written in JavaScript, Node.js, Lua or Python on LeviLamina.",
-    lip: "A general package installer: install mods and their dependencies with one command.",
+    lip: "Run a LeviLamina server and manage its packages: set it up, install and update its mods, and start it.",
     levilauncher: "A launcher for Minecraft Bedrock Edition on Windows (GDK / UWP) and Android.",
     levioptimize: "Performance optimization mod for LeviLamina servers and clients.",
     levianticheat: "Anti-cheating solution for LeviLamina servers.",
     moredimensions:
-      "An API for adding custom dimensions to Minecraft Bedrock Edition.",
+      "An API for LeviLamina mods to add custom dimensions to Bedrock Dedicated Server.",
     levistone: "A runtime for running Endstone plugins on LeviLamina.",
+    bedd:
+      "End-to-end tests of LeviLamina client mods in the background: scripts or agents play several games at once while your mouse and keyboard stay yours.",
     bedboo:
       "A Minecraft Bedrock Edition bot library with a mineflayer-compatible API: run bots and mineflayer plugins against a Bedrock Dedicated Server.",
   },

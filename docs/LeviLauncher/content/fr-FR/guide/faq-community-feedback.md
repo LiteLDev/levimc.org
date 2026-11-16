@@ -30,6 +30,10 @@ Oui. LeviLauncher fournit des vues dédiées pour les mondes, les packs de resso
 
 Oui, mais cela relève d'un workflow avancé. Il est conseillé de commencer avec une version isolée propre et de procéder par étapes.
 
+### Puis-je utiliser LeviLauncher en ligne de commande ?
+
+Oui, sous Windows. `LeviLauncher.exe` sans argument ouvre la fenêtre ; avec une commande comme `install latest`, `play`, `instance list` ou `mod install <mod>`, il s'exécute dans le terminal puis se ferme. Lancez `LeviLauncher.exe help` pour voir toutes les commandes, et `LeviLauncher.exe help <commande>` pour les options et les exemples de l'une d'elles.
+
 ### De quoi la version Android a-t-elle besoin ?
 
 Android 9.0 ou version ultérieure sur un appareil ARM64, et Minecraft Bedrock Edition 1.21.80 ou version ultérieure installé depuis Google Play. Voir [Téléchargements](../download?platform=android).

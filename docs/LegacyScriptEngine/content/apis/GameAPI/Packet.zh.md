@@ -139,6 +139,18 @@
 - 返回值：是否成功
 - 返回值类型： `Boolean`
 
+#### 预留二进制流容量
+
+`bs.reserve(size)`
+
+- 参数：
+
+  - size : `Integer`  
+    要预留的字节数
+
+- 返回值：是否成功
+- 返回值类型： `Boolean`
+
 #### 获取二进制流读指针
 
 !!! warning
@@ -233,7 +245,7 @@
 | writeVarInt                  | `Number` / `String`  |
 | writeVarInt64                | `Number` / `String`  |
 | writeVec3                    | `FloatPos`           |
-| writeBlockPos (0.9.5 时加入) | `BlockPos`           |
+| writeBlockPos (0.9.5 时加入) | `IntPos`             |
 | writeCompoundTag             | `NbtCompound`        |
 | writeItem (0.9.5 时加入)     | `Item`               |
 | writeUuid (0.19.1 时加入)    | `String`             |

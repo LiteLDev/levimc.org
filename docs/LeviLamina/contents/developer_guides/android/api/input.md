@@ -27,6 +27,10 @@ struct KeyEvent {
   bool isKeyDown;
 };
 
+struct TextInputEvent {
+  std::string text;
+};
+
 struct MouseEvent {
   int button;
   bool isDown;
@@ -40,11 +44,20 @@ Callbacks return `true` to consume the event.
 ```cpp
 void registerTouchCallback(pl::input::TouchCallback callback);
 void registerKeyCallback(pl::input::KeyCallback callback);
+void registerTextInputCallback(pl::input::TextInputCallback callback);
 void registerMouseCallback(pl::input::MouseCallback callback);
 
 void showKeyboard();
 void hideKeyboard();
+
+bool openDocument(std::string mimeType, pl::input::DocumentCallback callback);
 ```
+
+`registerTextInputCallback()` receives text committed through the soft keyboard.
+`openDocument()` opens the Android document picker for `mimeType` (`*/*` when
+empty) and calls the callback once with a `DocumentResult` (`success`, `path`,
+`displayName`, `error`); it returns `false` when another request is pending or
+the picker cannot be opened.
 
 ## Example
 

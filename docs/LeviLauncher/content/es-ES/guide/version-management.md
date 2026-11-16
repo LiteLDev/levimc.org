@@ -48,6 +48,8 @@ LeviLauncher trata cada entorno instalado como una versión que se puede gestion
 
 Completa la instalación en la página **Descargar** y luego vuelve a **Iniciar** para iniciarla.
 
+El interruptor **Instalar LeviLamina** de la página de instalación empieza activado; desactívalo para instalar el juego sin LeviLamina. Solo se aplica a las versiones compatibles con LeviLamina.
+
 ### Renombrar una versión
 
 En **Instancias** o en **Configuración de instancia**, asigna un nombre descriptivo al entorno, por ejemplo, `Release Survival` o `Preview Test`.

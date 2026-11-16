@@ -33,7 +33,7 @@ features:
   - title: World utilities
     details: Export backups, inspect world data, and edit selected level.dat fields without leaving the launcher.
   - title: User-focused settings
-    details: Tune language, appearance, download behavior, privacy choices, update channels, and component status.
+    details: Tune language, appearance, download behavior, privacy choices, update channels, and package management.
   - title: Android extras
     details: "Xbox account switching and Quick Launch URI actions, in the same launcher."
     link: /guide/accounts-quick-launch

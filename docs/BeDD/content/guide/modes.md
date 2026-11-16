@@ -15,7 +15,7 @@ needs `--server-host <host>`, added to `allowHosts` when off the PC; `--server-h
 
 ```powershell
 BeDD.exe server init s1                     # %LOCALAPPDATA%\BeDD\servers\s1
-BeDD.exe server start s1 --json             # pid, port, portV6, url, token, dir, log
+BeDD.exe server start s1 --json             # name, pid, port, portV6, url, token, dir, logPath
 BeDD.exe mod config 1.26.60.05-1 --world-mode ClientServer
 BeDD.exe launch --slot 1 --json             # then: join 127.0.0.1:<port>
 BeDD.exe server stop s1                     # sends stop (saves); kills after 30 s
@@ -31,23 +31,27 @@ server mod (`mods\BeDD-server`). Idempotent, one at a time per PC, never prompts
 
 | Flag | Default / meaning |
 |---|---|
-| `<name>` | `server`; a folder under `servers` (`BEDD_SERVERS_DIR`) |
-| `--port`, `--port-v6` | earlier ports, else the first free pair from 19140/19141 up (never 19132) |
-| `--transport` | `nethernet` (`raknet` fails: "Terracotta"): TCP `server-port` signaling, UDP `127.0.0.1:<port>` (`server-udp-ports`). First join asks "Trust this server?" |
-| `--server-ip` | `127.0.0.1` (only this PC joins); `''`: all interfaces |
-| `--online-mode` | off; on: Xbox sign-in required |
-| `--property key=value` | any `server.properties` key, repeatable; BeDD defaults `gamemode=creative`, `difficulty=peaceful`, `allow-cheats=true` |
-| `--set key=value` | a server mod config key, repeatable: `timeScale`, `trace`, … |
+| `<name>` | required; a folder under `servers` (`BEDD_SERVERS_DIR`): letters, digits, `.`, `_`, `-` |
+| `--port N` | IPv4 port, IPv6 N+1; default: the server's own, else the first free pair from 19140/19141 up (never 19132) |
+| `--from <dir>` | the server mod; default `BEDD_SERVER_MOD_DIR`, else `mod\BeDD-server` next to `BeDD.exe`, else the nearest `bin\BeDD-server` |
+| `--set key=value` | any `server.properties` key, repeatable |
 
-`server list` shows folders, ports and state; `server remove <name>` deletes one. For parallel runs give each
-server its own name (e.g. its game's slot) and omit `--port`.
+A new server gets `transport=nethernet` (`raknet` fails: "Terracotta"): TCP `server-port` signaling, UDP
+`127.0.0.1:<port>` (`server-udp-ports`), first join asks "Trust this server?"; `server-ip=127.0.0.1` (only this PC
+joins; `--set server-ip=`: all interfaces); `online-mode=false` (`true`: Xbox sign-in required); `gamemode=creative`,
+`difficulty=peaceful`, `allow-cheats=true`. The server mod's own keys (`timeScale`, `trace`, …) are in
+`mods\BeDD-server\config\config.json`.
+
+`server list` shows folders, ports and state; `server path <name>` prints a folder; `server remove <name> --yes`
+deletes one; `server stop --all` stops every one. For parallel runs give each server its own name (e.g. its game's
+slot) and omit `--port`.
 
 ### Starting
 
 `server start <name>` runs `bedrock_server_mod.exe` windowless (output: `logs\console.log`) and waits for the WebSocket
 (`--timeout`, 180 s). Against firewall prompts it refuses a server whose `mods\BeDD-server` lacks BeDD's mod, holds
 another, or sets `"loopbackOnly": false`, and stops it if the mod fails to load; `server init` sets
-`server-ip=127.0.0.1`, LAN visibility off. `--allow-firewall-prompt` overrides (other PCs: `--server-ip ''`).
+`server-ip=127.0.0.1`, LAN visibility off. `--allow-firewall-prompt` overrides (other PCs: `server init --set server-ip=`).
 
 ## Remote
 

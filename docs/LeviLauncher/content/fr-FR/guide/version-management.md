@@ -48,6 +48,8 @@ LeviLauncher considère chaque environnement installé comme une version pouvant
 
 Installez-la depuis la page **Télécharger**, puis retournez à **Lancer** pour la lancer.
 
+L'interrupteur **Installer LeviLamina** de la page d'installation est activé par défaut ; désactivez-le pour installer le jeu sans LeviLamina. Il ne s'applique qu'aux versions prises en charge par LeviLamina.
+
 ### Renommer une version
 
 Dans **Instances** ou dans **Paramètres de l'instance**, attribuez-lui un nom plus descriptif de son usage, par exemple `Release Survival` ou `Preview Test`.

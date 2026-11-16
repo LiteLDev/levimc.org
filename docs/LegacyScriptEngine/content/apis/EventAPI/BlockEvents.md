@@ -27,16 +27,7 @@ Intercept events have no effect on chests, shulker boxes, and workbenches.
   - afterBlock : `Block`  
     The block object after the change.
 
-- Intercept events: function returns `false`
-  <details>
-    <summary>Intercepting this event requires attention to the following issues</summary>
-
-         1. Block changes caused by some events cannot be intercepted, such as players digging and placing.
-         2. For the changes caused by the relationship between blocks, some of them cannot be intercepted, such as explosions destroying surrounding blocks
-         (Actually, the client still looks like there is a block there, but it's already a fake one)
-         3. But for a block such as a torch that needs to be attached to other blocks, if the block is destroyed because of the attached block, the torch will not be destroyed.
-         4. Some specific features can be tested by themselves.
-    </details>
+- Intercept event: cannot be intercepted.
 
 
 
@@ -116,8 +107,8 @@ Intercept events have no effect on chests, shulker boxes, and workbenches.
 - Parameters: 
   - cmd : `String`  
     The command executed.
-  - pos : `IntPos`  
-    The coordinates of the command block where the command was executed.
+  - pos : `FloatPos`  
+    The coordinates of the command block (or command block minecart) where the command was executed.
   - isMinecart : `Boolean`  
     Whether the command is executed by a command block minecart.
   
@@ -184,7 +175,7 @@ Only triggers when dispenser/dropper ejects normal items (non-projectiles).
     The block that was hit.
   - source : `Entity`  
     The projectile entities fired (arrows).
-- Intercept event: cannot be intercepted.
+- Intercept events: function returns `false`
 
 
 
@@ -266,7 +257,7 @@ If the piston is blocked by a block and cannot be pushed, this event will loop c
     The pushed block object.
 - Intercept event: Unable to intercept.
 
-Note: This event is different from the previous event, the last Try event is fired when the piston is trying to push, this event is fired after the push is complete.
+Note: This event fires at the same time as the previous Try event (before the push), but it cannot be intercepted and also fires when the pushed position is air.
 
 
 

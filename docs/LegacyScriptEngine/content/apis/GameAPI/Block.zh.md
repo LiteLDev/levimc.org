@@ -17,7 +17,7 @@
 `mc.getBlock(x,y,z,dimid)`
 
 - 参数：
-  - pos : `IntPos `  
+  - pos : `IntPos` / `FloatPos`  
     方块所在坐标（或者使用x, y, z, dimid来确定方块位置）
 - 返回值：生成的方块对象 
 - 返回值类型：`Block`

@@ -48,7 +48,10 @@ MyMod::MyMod() : mSelf(*ll::mod::NativeMod::current()) {}
 ```
 
 `load()` is required. `enable()`, `disable()`, and `unload()` are optional; the
-registration helper treats missing optional phases as success.
+registration helper treats missing optional phases as success. Each phase may
+instead take a `ll::mod::ModContext &` (for example `bool load(ll::mod::ModContext &context)`),
+which gives the Java VM, the manifest `info()`, the `logger()` and the
+`dataDir()` / `configDir()` / `resourceDir()` of the mod.
 
 Use `PL_REGISTER_MOD` once in a source file for each native mod library.
 
@@ -97,7 +100,7 @@ Common members:
 | `getManifestPath()` | Resolved path to `manifest.json`. |
 | `getLibraryPath()` | Resolved path to the loaded native library. |
 | `getState()` | Current native mod lifecycle state. |
-| `isLoaded()` / `isEnabled()` / `isDisabled()` | Convenience state checks. |
+| `isLoaded()` / `isEnabled()` / `isDisabled()` / `isUnloaded()` | Convenience state checks. |
 
 Runtime UI, floating buttons, and HUD overlay drawing are documented in
 [Mod Menu API](./mod_menu.md).

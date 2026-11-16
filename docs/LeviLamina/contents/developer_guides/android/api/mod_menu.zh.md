@@ -53,6 +53,15 @@ bool MyMod::enable() {
 | `ConfigType::SliderFloat` | 浮点数滑块。 |
 | `ConfigType::Radio` | 多选一字符串值。 |
 | `ConfigType::Color` | 颜色值。 |
+| `ConfigType::Keybind` | 按键绑定，通过 `onKeybind` 回调。 |
+| `ConfigType::Text` | 自由文本值。 |
+| `ConfigType::Button` | 操作按钮。 |
+
+配置值变化时，`ModuleBuilder::onConfigChanged()` 收到 `(moduleId, key, value)`；
+`Keybind` 配置项通过 `onKeybind()` 收到 `(moduleId, key, isDown)`。需要更丰富的
+设置页（分类、选项、范围、条件）时，使用 `<pl/ModMenuConfig.hpp>` 中的
+`pl::modmenu::ConfigSchemaBuilder` 构建 schema，并把其 `toJson()` 传给
+`setConfigSchemaJson(moduleId, json)`；`clearConfigSchema(moduleId)` 将其移除。
 
 ## 浮动按钮
 
@@ -78,7 +87,7 @@ bool registerQuickButton() {
 ```
 
 按钮图标可以通过 `ButtonBuilder::pngIcon()`、`webpIcon()`、`svgIcon()` 或通用
-`icon()` helper 传入 PNG、WebP 或 SVG 数据。
+`icon()` helper 传入 PNG、WebP 或 SVG 数据；`resourceIcon()` 则使用具名资源。
 
 ## 覆盖层绘制
 
@@ -91,6 +100,8 @@ bool registerQuickButton() {
 | `registerFont(fontId, ttfData)` | 为文本命令注册 TrueType 字体。 |
 | `registerImage(imageId, imageData, width, height)` | 为图片命令注册原始 RGBA 图片像素。 |
 | `submitDrawCommands(moduleId, commands)` | 替换模块当前的覆盖层绘制命令列表。 |
+| `submitHudEditorElements(moduleId, elements)` | 声明模块中可由 HUD 编辑器移动的元素。 |
+| `getHudSurfaceSize()` | 返回 HUD 表面的宽和高。 |
 
 `registerImage()` 要求 `imageData.size()` 必须等于 `width * height * 4`。
 对 `DrawCommandType::Text`，请把 `DrawCommand::fontId` 设置为已注册的 font id。
@@ -127,6 +138,14 @@ void submitOverlay() {
   pl::modmenu::submitDrawCommands(ModuleId, commands);
 }
 ```
+
+## 菜单控制
+
+| API | 用途 |
+| --- | --- |
+| `setModuleEnabled(moduleId, enabled)` | 更新模块的启用状态。 |
+| `requestOpenMenu()` / `requestCloseMenu()` | 打开或关闭 Mod Menu。 |
+| `setFloatingMenuButtonVisible(visible)` | 显示或隐藏 Mod Menu 浮动按钮。 |
 
 ## 清理
 

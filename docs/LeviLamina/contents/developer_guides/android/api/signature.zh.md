@@ -54,3 +54,15 @@ if (update == 0) {
 ```
 
 同一模块解析多个特征时优先使用 `resolveSignatures()`。
+
+## 虚表函数
+
+`<pl/memory/Vtable.hpp>` 通过 RTTI 而不是字节特征解析虚函数：
+
+```cpp
+uintptr_t resolveVtableFunction(std::string_view typeInfoName, size_t slot,
+                                std::string_view moduleName);
+```
+
+`typeInfoName` 是 Itanium typeinfo-name 符号（`"_ZTS9CameraAPI"`）或其存储的名称
+（`"9CameraAPI"`），`slot` 是函数从虚表地址点起的索引。无法解析时返回 `0`。

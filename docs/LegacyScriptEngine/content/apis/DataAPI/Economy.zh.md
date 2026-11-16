@@ -113,8 +113,8 @@ LegacyMoney 是 LegacyScriptEngine 的依赖（并非随 LeviLamina 附带），
 
 | 键             | 值的意义                   | 数据类型  |
 | -------------- | -------------------------- | --------- |
-| `record.from`  | 此项交易的发起者玩家XUID   | `String`  |
-| `record.to`    | 此项交易的接收者玩家XUID   | `String`  |
+| `record.from`  | 此项交易的发起者玩家名     | `String`  |
+| `record.to`    | 此项交易的接收者玩家名     | `String`  |
 | `record.money` | 此项交易的金额             | `Integer` |
 | `record.time`  | 此项交易发生时的时间字符串 | `String`  |
 | `record.note`  | 此交易的附加说明信息       | `String`  |
@@ -129,7 +129,7 @@ LegacyMoney 是 LegacyScriptEngine 的依赖（并非随 LeviLamina 附带），
 
 - 参数：
   - time : `Integer`  
-    删除从现在开始往前time秒的记录
+    删除time秒以前的记录
 - 返回值：是否删除成功
 - 返回值类型：`Boolean`
 

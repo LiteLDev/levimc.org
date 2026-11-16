@@ -19,6 +19,8 @@ The Coroutine module provides C++20 coroutine infrastructure for asynchronous pr
 | `ll/api/coro/YieldAwaiter.h` | Yield to executor awaiter |
 | `ll/api/coro/ForwardAwaiter.h` | Forward awaiter |
 | `ll/api/coro/Collect.h` | Collect multiple coroutine results |
+| `ll/api/coro/ConditionVariable.h` | Coroutine condition variable (`wait`, `waitFor`, `waitUntil`) |
+| `ll/api/coro/CallbackTransformer.h` | Turns callback-style producers into an awaitable stream |
 
 ## Key Classes
 
@@ -44,6 +46,9 @@ public:
 
     // co_await this to get Expected<T> (never throws)
     auto tryGet();                // -> ExpectedAwaiter
+
+    // co_await this to run the task on another executor, then resume on the current one
+    auto via(NonNullExecutorRef executor); // -> ViaAwaiter
 
     // Launch on an executor with callback
     template <std::invocable<ExpectedResult> F>

@@ -120,11 +120,13 @@ Among them, daytime is the number of game ticks since dawn, gametime is the age 
 
 ### Set Sever Weather  
 
-`mc.setWeather(WeatherID)`
+`mc.setWeather(WeatherID[, duration])`
 
 - Parameters:
   - WeatherID : `Integer`  
     The weather you want to set (0 represents Clear, 1 represents Rain, 2 represents Thunder)
+  - duration : `Integer`  
+    (Optional) How long the weather lasts, in game ticks. Defaults to a random duration of 300 to 900 seconds
 - Return value: Whether the setting was successful.
 - Return value type: `Boolean`
 

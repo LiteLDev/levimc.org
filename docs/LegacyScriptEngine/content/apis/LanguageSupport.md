@@ -108,6 +108,8 @@ This will allow the module to be loaded correctly.
   execution environment for different plugins
 - Created interface to implement programmic support for npm. Support installing third-party extension dependencies via
   package.json
+- Supports ES Modules: set `"type": "module"` in `package.json` to load the plugin as an ES module
+- Use `nodejsdebug` command in the BDS console to enter and exit the Node.js interactive command line environment
 
 #### ⭐ **Node.js Plugin Development**
 
@@ -127,7 +129,7 @@ This will allow the module to be loaded correctly.
 - Distribute the **.llplugin** file as a plugin. When installing the plugin, just place this file directly into the
   plugins directory
 - LSE will automatically recognize the **.llplugin** file when BDS launch, extract it to the
-  `plugins/nodejs/<PluginName>` directory, and automatically execute `npm install --omit=dev` in the directory to install the
+  `plugins/<PluginName>` directory, and automatically execute `npm install --omit=dev` in the directory to install the
   dependency packages. No manual intervention is needed for the whole process
 
 ## Python language support description
@@ -176,14 +178,16 @@ This will allow the module to be loaded correctly.
 
 #### ⭐ **Python Plugin Packaging & Deployment**
 
-- After the plugin is finished, package `pyproject.toml` and all plugin source code into a zip archive and **change the
-  filename suffix to .llplugin**
-- Do not include the `__pycache__` and `__pypackages__` directories in the zip archive
-- Distribute the **.llplugin** file as a plugin. When installing the plugin, place it directly into the `plugins`
-  directory.
-- The scripting engine will automatically recognize the **.llplugin** file and unzip it to the
-  `plugins/python/plugin name` directory, and automatically execute `pip install` to install the dependencies. No manual
-  intervention is needed for the whole process.
+- After the plugin is finished, put `pyproject.toml`, all plugin source code and a `manifest.json` in a directory named
+  after the plugin. In `manifest.json`, set `type` to `lse-python`, `entry` to `__init__.py` and `name` to the name of
+  the directory (see [Your first script plugin](https://levimc.org/tutorials/develop/first-script-plugin/) for the
+  format)
+- Do not include the `__pycache__`, `__pypackages__` and `site-packages` directories
+- Distribute this directory as a plugin (for example in a zip archive). When installing the plugin, place the directory
+  into the `plugins` directory.
+- When the plugin is loaded and has no `site-packages` directory yet, the scripting engine automatically executes
+  `pip install` to install the dependencies listed in `pyproject.toml` and `requirements.txt` into `site-packages`. No
+  manual intervention is needed for the whole process.
 
 #### **Known issues with Python plugin development**
 

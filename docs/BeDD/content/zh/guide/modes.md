@@ -15,7 +15,7 @@
 
 ```powershell
 BeDD.exe server init s1                     # %LOCALAPPDATA%\BeDD\servers\s1
-BeDD.exe server start s1 --json             # pid, port, portV6, url, token, dir, log
+BeDD.exe server start s1 --json             # name, pid, port, portV6, url, token, dir, logPath
 BeDD.exe mod config 1.26.60.05-1 --world-mode ClientServer
 BeDD.exe launch --slot 1 --json             # then: join 127.0.0.1:<port>
 BeDD.exe server stop s1                     # sends stop (saves); kills after 30 s
@@ -31,23 +31,26 @@ BeDD.exe server stop s1                     # sends stop (saves); kills after 30
 
 | 参数 | 默认 / 含义 |
 |---|---|
-| `<name>` | `server`；`servers`（`BEDD_SERVERS_DIR`）下的一个目录 |
-| `--port`、`--port-v6` | 以前用的端口，否则从 19140/19141 起第一对空闲的（从不用 19132） |
-| `--transport` | `nethernet`（`raknet` 会失败："Terracotta"）：TCP `server-port` 做信令，UDP `127.0.0.1:<port>`（`server-udp-ports`）。第一次加入会问"信任此服务器吗？" |
-| `--server-ip` | `127.0.0.1`（只有本机能加入）；`''`：所有网卡 |
-| `--online-mode` | 关；开：需要 Xbox 登录 |
-| `--property key=value` | 任意 `server.properties` 键，可重复；BeDD 默认 `gamemode=creative`、`difficulty=peaceful`、`allow-cheats=true` |
-| `--set key=value` | 服务端模组配置项，可重复：`timeScale`、`trace` 等 |
+| `<name>` | 必填；`servers`（`BEDD_SERVERS_DIR`）下的一个目录：字母、数字、`.`、`_`、`-` |
+| `--port N` | IPv4 端口，IPv6 为 N+1；默认：服务器已有的端口，否则从 19140/19141 起第一对空闲的（从不用 19132） |
+| `--from <dir>` | 服务端模组；默认 `BEDD_SERVER_MOD_DIR`，否则 `BeDD.exe` 旁的 `mod\BeDD-server`，否则最近的 `bin\BeDD-server` |
+| `--set key=value` | 任意 `server.properties` 键，可重复 |
 
-`server list` 显示目录、端口和状态；`server remove <name>` 删除一个。并行运行时给每台服务器起自己的名字（如其游戏的槽位），
-不指定 `--port`。
+新服务器默认 `transport=nethernet`（`raknet` 会失败："Terracotta"）：TCP `server-port` 做信令，UDP
+`127.0.0.1:<port>`（`server-udp-ports`），第一次加入会问"信任此服务器吗？"；`server-ip=127.0.0.1`（只有本机能加入；
+`--set server-ip=`：所有网卡）；`online-mode=false`（`true`：需要 Xbox 登录）；`gamemode=creative`、
+`difficulty=peaceful`、`allow-cheats=true`。服务端模组自己的配置项（`timeScale`、`trace` 等）在
+`mods\BeDD-server\config\config.json`。
+
+`server list` 显示目录、端口和状态；`server path <name>` 输出目录；`server remove <name> --yes` 删除一个；
+`server stop --all` 停掉所有服务器。并行运行时给每台服务器起自己的名字（如其游戏的槽位），不指定 `--port`。
 
 ### 启动
 
 `server start <name>` 无窗口运行 `bedrock_server_mod.exe`（输出：`logs\console.log`），并等待 WebSocket
 （`--timeout`，180 秒）。为避免防火墙提示，它拒绝启动这样的服务器：`mods\BeDD-server` 里没有 BeDD 的模组、放着别的模组、
 或设了 `"loopbackOnly": false`；模组加载失败时停掉服务器。`server init` 设置 `server-ip=127.0.0.1` 并关闭局域网可见。
-`--allow-firewall-prompt` 跳过这些检查（其他电脑加入：`--server-ip ''`）。
+`--allow-firewall-prompt` 跳过这些检查（其他电脑加入：`server init --set server-ip=`）。
 
 ## 远程
 

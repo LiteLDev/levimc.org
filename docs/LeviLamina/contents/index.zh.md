@@ -50,8 +50,8 @@ LeviLamina 是一个非官方的 Minecraft 基岩版模组加载器。它加载�
 
 LeviLamina 是 LeviMC 各项目的核心：
 
-- [lip](https://levimc.org/zh-Hans/lip/) 是包管理器：它搭建服务器、把 LeviLamina 装进服务器，并从
-  [模组目录](https://levimc.org/zh-Hans/mods/)安装模组。
+- [lip](https://levimc.org/zh-Hans/lip/) 运行 LeviLamina 服务器并管理其包：它搭建服务器、把 LeviLamina 装进服务器、
+  从[模组目录](https://levimc.org/zh-Hans/mods/)安装模组，并启动服务器。
 - [LegacyScriptEngine](https://levimc.org/zh-Hans/LegacyScriptEngine/) 是一个 LeviLamina 模组，运行用
   JavaScript、Lua 或 Python 编写的插件，适合不需要 C++ 的场合。
 - [LeviLauncher](https://levimc.org/zh-Hans/LeviLauncher/) 是 Minecraft 客户端的启动器：它为你安装游戏版本、

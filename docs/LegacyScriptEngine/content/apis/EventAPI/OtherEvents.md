@@ -23,7 +23,7 @@
   `function()`
 - Parameters: 
   - None
-- Intercept events: function returns `false`
+- Intercept event: cannot be intercepted.
 
 
 

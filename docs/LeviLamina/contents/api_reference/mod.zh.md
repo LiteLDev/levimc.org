@@ -15,6 +15,7 @@ Mod 模块管理模组生命周期、元数据（清单）、目录结构，并�
 | `ll/api/mod/ModManager.h` | 模组管理器基类 |
 | `ll/api/mod/ModManagerRegistry.h` | 所有模组管理器的注册表 |
 | `ll/api/mod/NativeMod.h` | 原生（DLL）模组实现 |
+| `ll/api/mod/RegisterHelper.h` | `LL_REGISTER_MOD` 入口宏 |
 
 ## 核心类
 
@@ -139,8 +140,32 @@ struct Manifest {
 #include "ll/api/mod/NativeMod.h"
 
 ll::mod::NativeMod& getSelfMod() {
-    return ll::mod::NativeMod::current();
+    return *ll::mod::NativeMod::current(); // current() 返回 std::shared_ptr<NativeMod>
 }
+```
+
+### 注册模组入口
+
+`ll/api/mod/RegisterHelper.h` 提供 `LL_REGISTER_MOD(Class, instance)`。它导出 LeviLamina 加载 DLL 时调用的入口函数：
+该入口会调用 `instance.load()`，并在类定义了 `enable()`、`disable()` 和 `unload()` 时将它们绑定为模组的回调。它们都返回 `bool`。
+
+```cpp
+#include "ll/api/mod/NativeMod.h"
+#include "ll/api/mod/RegisterHelper.h"
+
+class MyMod {
+public:
+    static MyMod& getInstance() {
+        static MyMod instance;
+        return instance;
+    }
+
+    bool load() { return true; }    // 必需
+    bool enable() { return true; }  // 可选
+    bool disable() { return true; } // 可选
+};
+
+LL_REGISTER_MOD(MyMod, MyMod::getInstance());
 ```
 
 ### 使用模组资源

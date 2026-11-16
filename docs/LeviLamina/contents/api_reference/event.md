@@ -49,6 +49,8 @@ public:
     template <class T> size_t getListenerCount();
     bool hasEvent(EventIdView const& eventId) const;
     bool hasListener(ListenerId id) const;
+    ListenerPtr getListener(ListenerId id) const;
+    bool removeListener(ListenerId id);
 
     // Set emitter factory
     template <class T> bool setEventEmitter(FactoryFn fn, std::weak_ptr<mod::Mod> mod);
@@ -127,23 +129,25 @@ public:
 
 | Event | Description | Cancellable |
 |-------|-------------|:-----------:|
-| `PlayerJoinEvent` | Player joins the server | No |
+| `PlayerConnectEvent` | Player connects (before joining) | Yes |
+| `PlayerJoinEvent` | Player joins the server | Yes |
 | `PlayerDisconnectEvent` | Player disconnects | No |
 | `PlayerChatEvent` | Player sends a chat message | Yes |
 | `PlayerAttackEvent` | Player attacks an entity | Yes |
 | `PlayerDestroyBlockEvent` | Player destroys a block | Yes |
-| `PlayerPlaceBlockEvent` | Player places a block | Yes |
+| `PlayerPlacingBlockEvent` | Player is about to place a block | Yes |
+| `PlayerPlacedBlockEvent` | Player placed a block | No |
 | `PlayerInteractBlockEvent` | Player interacts with a block | Yes |
 | `PlayerUseItemEvent` | Player uses an item | Yes |
 | `PlayerSwingEvent` | Player swings arm | No |
-| `PlayerJumpEvent` | Player jumps | No |
-| `PlayerSneakEvent` | Player starts/stops sneaking | No |
-| `PlayerSprintEvent` | Player starts/stops sprinting | No |
+| `PlayerJumpEvent` | Player jumps | Yes |
+| `PlayerSneakingEvent` / `PlayerSneakedEvent` | Player starts/stops sneaking | Yes |
+| `PlayerSprintingEvent` / `PlayerSprintedEvent` | Player starts/stops sprinting | No |
 | `PlayerPickUpItemEvent` | Player picks up an item | Yes |
 | `PlayerRespawnEvent` | Player respawns | No |
 | `PlayerDieEvent` | Player dies | No |
-| `PlayerChangePermEvent` | Player permission level changes | No |
-| `PlayerAddExperienceEvent` | Player gains experience | No |
+| `PlayerChangePermEvent` | Player permission level changes | Yes |
+| `PlayerAddExperienceEvent` | Player gains experience | Yes |
 
 ### Entity Events `[Common]`
 
@@ -156,8 +160,9 @@ public:
 
 | Event | Description | Cancellable |
 |-------|-------------|:-----------:|
-| `LevelTickEvent` | Each server tick | No |
-| `SpawnMobEvent` | A mob spawns | Yes |
+| `ServerLevelTickEvent` | Each server level tick | No |
+| `SpawningMobEvent` | A mob is about to spawn | Yes |
+| `SpawnedMobEvent` | A mob spawned | No |
 | `BlockChangedEvent` | A block changes | No |
 | `FireSpreadEvent` | Fire spreads | Yes |
 
@@ -172,7 +177,16 @@ public:
 
 | Event | Description | Cancellable |
 |-------|-------------|:-----------:|
-| `ExecuteCommandEvent` | A command is executed | Yes |
+| `ExecutingCommandEvent` | A command is about to be executed | Yes |
+| `ExecutedCommandEvent` | A command was executed | No |
+| `ServerCommandRegisterEvent` | Server commands are being registered | No |
+
+### IO Events `[Common]`
+
+| Event | Description | Cancellable |
+|-------|-------------|:-----------:|
+| `ConsoleOutputtingEvent` | Console output is about to be written | Yes |
+| `ConsoleOutputtedEvent` | Console output was written | No |
 
 ### Service Events `[Common]`
 
@@ -189,9 +203,11 @@ public:
 | `ClientExitLevelEvent` | Client exits a level | No |
 | `ClientStartJoinLevelEvent` | Client starts joining a level | No |
 | `ClientCancelJoinLevelEvent` | Client cancels level join | No |
+| `ClientLevelTickEvent` | Each client level tick | No |
+| `ClientCommandRegisterEvent` | Client commands are being registered | No |
 | `KeyInputEvent` | Keyboard input | Yes |
 | `MouseInputEvent` | Mouse input | Yes |
-| `BeforeUIRenderEvent` | Before UI rendering | No |
+| `BeforeUIRenderEvent` | Before UI rendering | Yes |
 | `AfterUIRenderEvent` | After UI rendering | No |
 
 ## Usage

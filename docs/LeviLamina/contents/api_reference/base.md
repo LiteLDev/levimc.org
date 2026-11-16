@@ -20,6 +20,8 @@ The Base module provides the foundational building blocks used throughout the Le
 | `ll/api/base/SourceLocation.h` | Source code location information |
 | `ll/api/base/ToString.h` | To-string conversion utilities |
 | `ll/api/base/CompilerPredefine.h` | Compiler detection and `LL_SHARED_EXPORT`/`LL_SHARED_IMPORT` |
+| `ll/api/base/Alias.h` | Storage helpers (`UntypedStorage`, `TypedStorage`) used by game headers |
+| `ll/api/base/ScopedValue.h` | `ScopedValue<T>`: replaces a variable for a scope and restores it on exit |
 
 ## Export Macros
 

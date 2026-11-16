@@ -120,11 +120,13 @@
 
 ### 设置服务器天气  
 
-`mc.setWeather(WeatherID)`
+`mc.setWeather(WeatherID[, duration])`
 
 - 参数：
   - WeatherID : `Integer`  
     想要设置的天气 (0 代表晴天，1 代表雨天，2 代表雷暴)
+  - duration : `Integer`  
+    （可选）天气持续的时长，单位为游戏刻。默认为 300 到 900 秒之间的随机时长
 - 返回值：是否设置成功
 - 返回值类型：`Boolean`
 

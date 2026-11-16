@@ -24,7 +24,7 @@ Chrono 模块提供了基于 `std::chrono` 的游戏专用时间类型，包括�
 | `game::minutes` | ~16.67 刻 | 1 Minecraft 分钟 |
 | `game::weeks` | 7 游戏天 | 1 Minecraft 周 |
 | `game::months` | ~1/12 游戏年 | 1 Minecraft 月 |
-| `game::years` | 365 游戏天 | 1 Minecraft 年 |
+| `game::years` | 365.2425 游戏天（146097/400） | 1 Minecraft 年 |
 
 ### 用户自定义字面量
 
@@ -41,18 +41,18 @@ auto halfDay    = 12000_tick;
 
 ### GameTickClock
 
-跟踪游戏刻的时钟。时间仅在游戏运行时推进。
+读取当前世界服务器刻（`Level::getCurrentServerTick()`）的时钟。时间仅在游戏运行时推进；未加载世界时 `now()` 返回 `time_point::min()`。
 
 ```cpp
 #include "ll/api/chrono/GameChrono.h"
 
 auto now = ll::chrono::GameTickClock::now();
-auto tp  = ll::chrono::GameTickClock::fromTick(100);
+auto tp  = ll::chrono::GameTickClock::fromTick(level.getCurrentServerTick()); // 参数为 `Tick`
 ```
 
 ### ServerClock
 
-跟踪服务器真实墙钟时间的时钟。
+稳定时钟，从首次查询起统计服务器世界刻（`ServerLevelTickEvent`）的数量。其单位同样是 `ticks`，并非墙钟时间。
 
 ```cpp
 auto serverNow = ll::chrono::ServerClock::now();
@@ -92,5 +92,5 @@ auto realSeconds = std::chrono::duration_cast<std::chrono::seconds>(ticks); // 5
 
 ## 相关模块
 
-- [Thread（线程工具）](thread.zh.md) — `TickSyncSleep` 使用游戏时间类型
+- [Thread（线程工具）](thread.zh.md) — `ServerTickSyncSleep` 使用游戏时间类型
 - [Coroutine（协程）](coro.zh.md) — `SleepAwaiter` 与时间类型配合使用

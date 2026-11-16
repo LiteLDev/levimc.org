@@ -113,7 +113,7 @@ Instead of `docker run`, download [wine/compose.yaml](https://github.com/LiteLDe
 | `PACKAGES` | | Packages to install on the first start, separated by spaces. |
 | `GITHUB_MIRROR_URL` | | A GitHub mirror for the downloads. |
 | `TZ` | `UTC` | The time zone, for the timestamps of the log. |
-| `LANG`, `LC_ALL` | `en_US.UTF-8` | The locale in the container. |
+| `LANG`, `LC_ALL` | | The locale in the container, such as `en_US.UTF-8` (the Wine image has every locale). |
 | `WINEDEBUG` | `-all` | The debug output of Wine (Wine image only). |
 
 ## What you have now

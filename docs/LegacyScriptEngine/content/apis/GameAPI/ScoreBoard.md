@@ -10,13 +10,13 @@ Obtain a scoring item object through the following interface and perform related
 
 #### Create a New Scoring Item
 
-`mc.newScoreObjective(name,displayName)`
+`mc.newScoreObjective(name[,displayName])`
 
 - Parameters: 
   -  name : `String`  
      Scoring item name.  
   -  displayName : `String`  
-     Scoring item display name.  
+     (Optional) Scoring item display name. Defaults to `name`.  
 - Return type: The newly created scoring item object.
 - Return value type: `Objective`
   - If it returns `Null`, it means the creation failed.

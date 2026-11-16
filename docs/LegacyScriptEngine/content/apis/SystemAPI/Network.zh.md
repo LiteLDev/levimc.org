@@ -63,6 +63,24 @@
 
 
 
+### 发送一个同步HTTP(s) Get请求
+
+`network.httpGetSync(url)`
+
+- 参数：
+  - url : `String`  
+    请求的目标地址（包括 Get 请求附带的参数）
+- 返回值：响应结果，一个包含以下成员的对象：
+  - status : `Integer`  
+    返回的HTTP(s)响应码
+  - data : `String`  
+    返回的具体数据
+- 返回值类型：`Object`
+
+此函数会阻塞直到请求返回，能用 `network.httpGet` 时请优先使用它
+
+
+
 ## 🔌 WebSocket 客户端对象 API
 
 在脚本引擎中，使用「WebSocket 对象」来操作某个 WebSocket 客户端的连接和工作
@@ -89,9 +107,9 @@
 
 其中，wsc.status 枚举有如下几种情况：
 
-`wsc.Open` - 处于正常连接中  
-`wsc.Closing` - 正在断开连接  
-`wsc.Closed` - 未连接  
+`WSClient.Open` - 处于正常连接中  
+`WSClient.Closing` - 正在断开连接  
+`WSClient.Closed` - 未连接  
 
 
 
@@ -395,12 +413,12 @@ svr.onGet('/test/123', (req, res) => {
 
 ### 监听端口并开启服务器
 
-`svr.listen(addr, port)`  
-`svr.startAt(addr, port)`
+`svr.listen([addr,] port)`  
+`svr.startAt([addr,] port)`
 
 - 参数：
   - addr : `String`  
-    监听地址，可以是IP地址或域名
+    （可选参数）监听地址，可以是IP地址或域名，默认为 `127.0.0.1`
   - port : `Integer`  
     监听端口
 - 返回值：处理完毕的服务器对象（便于连锁进行其他操作）
@@ -410,7 +428,8 @@ svr.onGet('/test/123', (req, res) => {
 
 ### 停止服务器
 
-`svr.stop()`
+`svr.stop()`  
+`svr.close()`
 
 - 返回值：无
 

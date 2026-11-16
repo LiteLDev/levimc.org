@@ -20,7 +20,7 @@ The comparison of the LSE type with the NBT data type is as follows:
 | `Long`        | `NbtLong`                     | Signed Long (64-bit)                            |
 | `Float`       | `NbtFloat`                    | Single precision floating point number          |
 | `Double`      | `NbtDouble`                   | Double precision floating point number          |
-| `ByteArray`   | `NbtByteBuffer`               | Byte Array                                      |
+| `ByteArray`   | `NbtByteArray`                | Byte Array                                      |
 | `String`      | `NbtString`                   | UTF-8 string                                    |
 | `List`        | `NbtList`                     | NBT List (similar to array)                     |
 | `Compound`    | `NbtCompound`                 | NBT Tags (Similar to a list of Key-Value pairs) |

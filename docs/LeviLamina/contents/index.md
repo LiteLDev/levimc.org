@@ -52,8 +52,8 @@ game's own classes. It is the successor to LiteLoaderBDS.
 
 LeviLamina is the core of the LeviMC projects:
 
-- [lip](https://levimc.org/lip/) is the package manager: it sets up a server, installs LeviLamina into it and
-  installs mods from the [mods catalog](https://levimc.org/mods/).
+- [lip](https://levimc.org/lip/) runs a LeviLamina server and manages its packages: it sets up a server, installs
+  LeviLamina into it, installs mods from the [mods catalog](https://levimc.org/mods/) and starts the server.
 - [LegacyScriptEngine](https://levimc.org/LegacyScriptEngine/) is a LeviLamina mod that runs plugins written in
   JavaScript, Lua or Python, for when C++ is more than you need.
 - [LeviLauncher](https://levimc.org/LeviLauncher/) is the launcher for the Minecraft client: it installs game

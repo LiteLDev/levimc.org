@@ -112,7 +112,7 @@ These object properties are read-only and cannot be modified. in:
 - **coordinates** and **leg coordinates**: player is two blocks high, and `pos` are the coordinates of the player's
   view's height, `feetPos` are the coordinates of the block position displayed in the game
 - The value of the **Player Game Mode** attribute is: `0` for survival mode, `1` for creative mode, `2` for adventure
-  mode, `3` for spectator mode
+  mode, `6` for spectator mode
 - **Player's real name** attribute stored strings can be considered reliable, they will not be changed by name changes
 - **Player device IP address** attribute stores the player's device IP and port number, the format is similar to
   `12.34.567.89:1111`
@@ -231,11 +231,11 @@ pl.tell("Welcome back ~ ", 5);
 
     - stayTime: `Integer`
 
-      (optional) Stay time, in `Tick` , default is 10
+      (optional) Stay time, in `Tick` , default is 70
 
     - fadeOutTime:`Integer`
 
-      (optional) Fade out time, in `Tick` , default is 10
+      (optional) Fade out time, in `Tick` , default is 20
 
 - Return value: Is send successfully?
 
@@ -385,15 +385,15 @@ pl.kill();
 
 #### Damage the Player
 
-`pl.hurt(damage,type,source)`
+`pl.hurt(damage[,type[,source]])`
 
 - Parameters:
     - damage : `Float`  
       The amount of damage to deal to the player.
     - type : `Integer`  
-      Actor Damage Cause
+      (Optional) Actor Damage Cause, default is `0` (`ActorDamageCause.Override`)
     - source: `Entity`  
-      Source of damage
+      (Optional) Source of damage
 - Return value: Whether the damage was dealt.
 - Return value type:  `Boolean`
 
@@ -718,13 +718,13 @@ If the player's inventory is full, excess items will be drop.
 
 #### Clears All Items of the Specified Type From the Player’s Backpack
 
-`pl.clearItem(type[, count)`
+`pl.clearItem(type[, count])`
 
 - Parameters:
     - type : `String`  
       Item object type name to clear
     - count : `Integer`  
-      (Optional)Item count to be clear
+      (Optional) Item count to be clear, default is 1
 - Return value: The number of items cleared
 - Return value type: `Integer`
 
@@ -1056,7 +1056,7 @@ pl.removeSidebar();
     - percent : `Integer`  
       The percentage of health in the boss bar, the valid range is 0~100. `0` is empty boss bar, `100` is full.
     - colour : `Integer`
-      Health bar color (default is 2 (RED))
+      Health bar color (for example, `2` is RED)
 - Return value: Whether the setting was successful or not.
 - Return value type: `Boolean`
 
@@ -1162,7 +1162,7 @@ Using this API, you can delete saved offline player nbt data by UUID.
 
 - Parameters:
     - isOnlineMode : `Boolean` (Optional parameter)  
-      `true` returns UUIDs of players who logged in with a Microsoft account; `false` returns UUIDs of offline mode players, default is `false`.
+      `true` returns UUIDs of players who logged in with a Microsoft account; `false` returns UUIDs of offline mode players, default is `true`.
 - Return value: List of saved player UUID strings.
 - Return value type: `Array<String,String,...>`
 
@@ -1380,17 +1380,35 @@ such as `Base` `Current` `DefaultMax` `DefaultMin` `Max` `Min` `Name` by default
 | bad_omen        | 28 |
 | village_hero    | 29 |
 | darkness        | 30 |
+| trial_omen      | 31 |
+| wind_charged    | 32 |
+| weaving         | 33 |
+| oozing          | 34 |
+| infested        | 35 |
+| raid_omen       | 36 |
+| breath_of_the_nautilus | 37 |
+
+#### Quick execute Molang expression
+
+`pl.quickEvalMolangScript(str)`
+
+- Parameters:
+    - str : `String`  
+      Molang expression string.
+- Return value: The result of the Molang expression.
+- Return value type:  `Float`
+
+For detailed usage of Molang, refer to [MOLANG Doc bedrock.dev](https://bedrock.dev/docs/stable/Molang)
 
 #### Convert Player Object to Entity Object
 
-`en.toEntity()`
+`pl.toEntity()`
 
 - Return value: The converted `Entity` object.
 - Return value type:  `Entity`
     - Returns `Null` if the transition fails.
 
-If the current entity object points to a player, you can use this function to convert the entity object to a player
-object to use more player-related APIs.
+You can use this function to convert the player object to an entity object to use the entity-related APIs.
 
 ### Determine whether it is a simulated player
 
@@ -1403,15 +1421,15 @@ object to use more player-related APIs.
 
 ### Create a simulated player
 
-`mc.spawnSimulatedPlayer(name,pos)`  
+`mc.spawnSimulatedPlayer(name[,pos])`  
 `mc.spawnSimulatedPlayer(name,x,y,z,dimid)`
 
 - Parameters:
     - name : `String`  
       Name of simulted player
     - pos : `IntPos `/ `FloatPos`  
-      The coordinate object of the position of the spawned creature (or use x, y, z, dimid to determine the spawning
-      position)
+      (Optional) The coordinate object of the position of the spawned creature (or use x, y, z, dimid to determine the spawning
+      position). Defaults to the world spawn point
 - Return value: Generated (simulated) player object
 - Return type: `Player`
     - If the return value is `Null`, it means the generation failed.
@@ -1501,6 +1519,13 @@ Reference: [mojang-gametest docs](https://learn.microsoft.com/en-us/minecraft/cr
 
 Reference: [mojang-gametest docs](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-gametest/simulatedplayer?view=minecraft-bedrock-experimental#jump)
 
+#### Simulate Sneak
+
+`sp.simulateSneak()`
+
+- Return value: Whether the simulation operation was successful
+- Return type: `Boolean`
+
 #### Simulate Look At a Block or Entity
 
 `sp.simulateLookAt(pos, [lookDuration])`
@@ -1543,7 +1568,7 @@ Reference: [mojang-gametest docs](https://learn.microsoft.com/en-us/minecraft/cr
 
 #### Move Relative to Player Coordinate System
 
-`sp.simulateLocalMove()`
+`sp.simulateLocalMove(pos[,speed])`
 
 - Parameters:
     - pos : `IntPos` / `FloatPos`  
@@ -1556,7 +1581,7 @@ Reference: [mojang-gametest docs](https://learn.microsoft.com/en-us/minecraft/cr
 
 #### Move Relative to World Coordinate System
 
-`sp.simulateWorldMove()`
+`sp.simulateWorldMove(pos[,speed])`
 
 - Parameters:
     - pos : `IntPos` / `FloatPos`  
@@ -1569,7 +1594,7 @@ Reference: [mojang-gametest docs](https://learn.microsoft.com/en-us/minecraft/cr
 
 #### Move Straight to Coordinate
 
-`sp.simulateMoveTo()`
+`sp.simulateMoveTo(pos[,speed])`
 
 - Parameters:
     - pos : `IntPos` / `FloatPos`  
@@ -1585,7 +1610,7 @@ Note: If you need automatic pathfinding, consider using `Simulate Navigate Move`
 
 #### Simulate Navigate Move
 
-`sp.simulateNavigateTo(entity[,speed)`
+`sp.simulateNavigateTo(entity[,speed])`
 `sp.simulateNavigateTo(pos[,speed])`
 
 - Parameters:
@@ -1729,3 +1754,10 @@ Reference: [mojang-gametest docs](https://learn.microsoft.com/en-us/minecraft/cr
 - Return type: `Boolean`
 
 Reference: [mojang-gametest docs](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-gametest/simulatedplayer?view=minecraft-bedrock-experimental#stopusingitem)
+
+#### Simulate Stop Sneaking
+
+`sp.simulateStopSneaking()`
+
+- Return value: Whether the simulation operation was successful
+- Return type: `Boolean`

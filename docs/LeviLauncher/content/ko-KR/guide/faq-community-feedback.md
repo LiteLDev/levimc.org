@@ -30,6 +30,10 @@ LeviLauncher에는 **Windows 버전**과 **Android 버전**([Android 가이드](
 
 가능하지만, 이는 고급 작업 흐름에 해당합니다. 깨끗한 격리된 버전부터 시작하여 점진적으로 테스트하는 것을 권장합니다.
 
+### 명령줄에서 LeviLauncher를 사용할 수 있나요?
+
+네, Windows 버전에서 가능합니다. 인수 없이 `LeviLauncher.exe`를 실행하면 창이 열리고, `install latest`, `play`, `instance list`, `mod install <모드>` 같은 명령을 붙이면 터미널에서 실행된 뒤 종료됩니다. 모든 명령은 `LeviLauncher.exe help`로, 각 명령의 옵션과 예시는 `LeviLauncher.exe help <명령>`으로 확인하세요.
+
 ### Android 버전에는 무엇이 필요한가요?
 
 ARM64 기기의 Android 9.0 이상과 Google Play에서 설치한 Minecraft Bedrock Edition 1.21.80 이상이 필요합니다. [다운로드](../download?platform=android)를 참고하세요.

@@ -48,6 +48,8 @@ LeviLauncher behandelt jede installierte Umgebung als eine eigenständig verwalt
 
 Führe die Installation auf der Seite **Herunterladen** durch und kehre anschließend zu **Starten** zurück, um zu starten.
 
+Der Schalter **LeviLamina installieren** auf der Installationsseite ist anfangs eingeschaltet; schalte ihn aus, um das Spiel ohne LeviLamina zu installieren. Er gilt nur für Versionen, die LeviLamina unterstützt.
+
 ### Version umbenennen
 
 Lege unter **Instanzen** oder **Instanz-Einstellungen** einen aussagekräftigeren Namen für die Umgebung fest, z. B. `Release Survival` oder `Preview Test`.
