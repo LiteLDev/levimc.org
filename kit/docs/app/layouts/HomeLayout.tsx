@@ -30,24 +30,45 @@ export function HomeLayout({ route, page, t }: { route: RouteMeta; page: PageDat
   // prerendered with the author's order; the visitor's platform (?platform=, earlier choice, device) only in the browser
   const [platform, setPlatform] = useState<DevicePlatform>();
   useEffect(() => setPlatform(preferredPlatform()), []);
+  // kit 2.22.1: the site's column starts under the banner and stays hidden while any of the banner is on screen
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [heroInView, setHeroInView] = useState(true);
+  useEffect(() => {
+    const el = heroRef.current;
+    if (!el) return;
+    // gone = its bottom is above the sticky LeviMC bar's bottom (what the bar covers is not on screen either)
+    const update = () => {
+      const bar = document.querySelector('[data-kit-globalbar]')?.getBoundingClientRect().bottom ?? 0;
+      setHeroInView(el.getBoundingClientRect().bottom > Math.max(0, bar));
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, []);
   return (
-    // kit 2.22: the home page has the site's column too (the docs have no header row any more)
-    <div className="kit-doc-layout kit-home-layout" data-sidebar="">
-      <div className="kit-doc-sidebar">
-        <div className="kit-doc-sidebar-inner">
-          <SiteNav route={route} locale={route.locale} t={t} />
-        </div>
-      </div>
     <main id="kit-main" className="kit-home" tabIndex={-1}>
-      <PaintedHero
-        eyebrow={site.project && /^[\x00-\x7f]+$/.test(site.project) ? `LeviMC · Docs` : undefined}
-        name={hero.name ?? site.title}
-        text={hero.text}
-        tagline={hero.tagline}
-        image={hero.image ? { src: hero.image.src, alt: hero.image.alt ?? '' } : undefined}
-        actions={actionsForPlatform(hero.actions ?? [], platform)}
-        linkComponent={KitLink}
-      />
+      <div ref={heroRef} className="kit-home-hero">
+        <PaintedHero
+          eyebrow={site.project && /^[\x00-\x7f]+$/.test(site.project) ? `LeviMC · Docs` : undefined}
+          name={hero.name ?? site.title}
+          text={hero.text}
+          tagline={hero.tagline}
+          image={hero.image ? { src: hero.image.src, alt: hero.image.alt ?? '' } : undefined}
+          actions={actionsForPlatform(hero.actions ?? [], platform)}
+          linkComponent={KitLink}
+        />
+      </div>
+      <div className="kit-doc-layout kit-home-layout" data-sidebar="" data-hero-in-view={heroInView ? '' : undefined}>
+        <div className="kit-doc-sidebar" inert={heroInView ? true : undefined}>
+          <div className="kit-doc-sidebar-inner">
+            <SiteNav route={route} locale={route.locale} t={t} />
+          </div>
+        </div>
+        <div className="kit-home-body">
       {features.length ? (
         <section className="kit-home-features" aria-label={hero.name ?? site.title}>
           <div className="kit-home-features-grid">
@@ -77,7 +98,8 @@ export function HomeLayout({ route, page, t }: { route: RouteMeta; page: PageDat
       ) : (
         <div ref={contentRef} data-doc-content="" hidden />
       )}
+        </div>
+      </div>
     </main>
-    </div>
   );
 }

@@ -370,8 +370,8 @@ One model on every docs site (and the Doxygen API, which generates its chrome fr
   `sidebar: false` opts a page out). Groups: all open when the section has ≤ 24 links, otherwise only the group holding
   the current page (`collapsed: false` keeps a group open, `collapsed: true` closed; `sidebarExpand` opens all).
 * **Prev / next** stays inside the active section, never targets the home page and behaves the same in every locale.
-* **Home** = `layout: home` (hero + features + optional markdown body below), beside the site column: no section tree,
-  no edit link, no current section.
+* **Home** = `layout: home` (hero + features + optional markdown body below): the site column starts under the
+  banner and shows once the banner has scrolled away; no edit link, no current section.
   Its `<meta name="description">` is the config `description` unless the frontmatter sets one.
 * **Order**: sections — guides first, then topic guides, then reference (API, CLI, protocol), contributor material
   last; inside a section — getting started first, FAQ / troubleshooting / supported versions / privacy last, in a
@@ -954,6 +954,13 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.22.1
+
+* **Home pages: the site column waits for the banner to leave.** The hero keeps the full width; the column starts
+  under it and stays hidden (and inert) while any of the banner is on screen below the LeviMC bar, then fades in
+  (no fade with `prefers-reduced-motion`). The area under the banner is at least a screen tall above 960px, so a
+  short home page can still scroll the banner away. The prerendered page starts hidden: no flash.
 
 ### 2.22.0
 

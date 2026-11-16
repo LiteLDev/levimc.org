@@ -229,9 +229,38 @@
   .kit-sn-resource:hover {
     color: var(--color-ink);
   }
-  /* the home page with the site's column: the hero and the cards share the main column */
-  .kit-home-layout > .kit-home {
+  /* the home page (kit 2.22.1): the banner keeps the full width; the site's column starts under it and shows only once
+     the banner has left the screen (HomeLayout sets data-hero-in-view while any of it is visible) */
+  .kit-home-layout > .kit-home-body {
     min-width: 0;
+  }
+  /* at least a screen under the banner, so a short home page can still scroll the banner away (and show the column) */
+  @media (width > 960px) {
+    .kit-home-layout {
+      min-height: calc(100dvh - var(--kit-sticky-offset, var(--spacing-globalbar)));
+    }
+  }
+  .kit-home-body :is(.kit-home-features, .kit-home-content) {
+    padding-inline: 0;
+  }
+  /* its own height (at most the screen's): a full-height column would outgrow a short home page and not stick */
+  .kit-home-layout > .kit-doc-sidebar {
+    height: auto;
+    max-height: calc(100dvh - var(--kit-sticky-offset, var(--spacing-globalbar)));
+    display: flex;
+    flex-direction: column;
+    transition:
+      opacity 0.2s ease,
+      visibility 0.2s;
+  }
+  .kit-home-layout[data-hero-in-view] > .kit-doc-sidebar {
+    opacity: 0;
+    visibility: hidden;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kit-home-layout > .kit-doc-sidebar {
+      transition: none;
+    }
   }
   .kit-sb-title {
     margin: 0 0 0.75rem 0.75rem;
