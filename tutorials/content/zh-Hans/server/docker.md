@@ -6,7 +6,7 @@
 
 | 镜像 | 运行在 | 方式 |
 | --- | --- | --- |
-| `ghcr.io/liteldev/levilamina-server:latest-wine` | Linux 容器：x64 的 Linux 宿主机，或 Docker Desktop | 通过 Wine 运行 Windows 服务器 |
+| `ghcr.io/liteldev/levilamina-server:latest-wine` | Linux 容器：x64 的 Linux 宿主机，或 Docker Desktop | `lip` 原生运行，并用它自己安装的 Wine 运行 Windows 服务器 |
 | `ghcr.io/liteldev/levilamina-server:latest-windows` | Windows 容器：Windows Server，或切换到 Windows 容器的 Docker Desktop | 直接运行 Windows 服务器 |
 
 本教程使用 Wine 镜像。Windows 镜像见第 2 步末尾的提示。
@@ -39,7 +39,7 @@
    docker logs -f levilamina
    ```
 
-   第一次启动时，容器会准备 Wine，用 `lip` 安装 LeviLamina 和游戏，然后启动服务器，需要几分钟。最后你应该看到 `Server started.`。按 `Ctrl+C` 停止查看日志，服务器会继续运行。
+   第一次启动时，`lip` 会把一切装进卷里：先是它的 Wine 和 Visual C++ 运行库，然后是游戏、LeviLamina 和 `PACKAGES` 里的模组，再启动服务器。这需要几分钟；之后的启动只要几秒。最后你应该看到 `Server started.`。按 `Ctrl+C` 停止查看日志，服务器会继续运行。
 
 ::: tip 从 GitHub 下载很慢
 在 `docker run` 命令里加上 `-e GITHUB_MIRROR_URL=<GitHub 镜像地址>`，例如 `-e GITHUB_MIRROR_URL=https://v4.gh-proxy.org/https://github.com/`。
@@ -89,7 +89,13 @@ docker exec -it levilamina lip install github.com/LiteLDev/LeviOptimize
 
 ## 4. 停止和启动服务器
 
-1. 接入（`docker attach levilamina`）后输入 `stop`。服务器保存世界后退出，容器也随之停止。你应该在输出里看到 `Quit correctly`。
+1. 停止容器：
+
+   ```shell
+   docker stop -t 60 levilamina
+   ```
+
+   `lip` 会向服务器输入 `stop`，服务器保存世界后退出，容器也随之停止。`docker logs levilamina` 的最后应当是 `Quit correctly`。在控制台（`docker attach levilamina`）里输入 `stop` 效果相同。
 2. 以后再启动它：
 
    ```shell
@@ -98,7 +104,7 @@ docker exec -it levilamina lip install github.com/LiteLDev/LeviOptimize
 
    第二次启动很快：服务器已经装在卷里了。
 
-`docker stop` 也能用，但它只给服务器 10 秒，之后就会强行结束。输入 `stop` 才是安全的做法。
+`-t 60` 让服务器最多有一分钟保存较大的世界，之后 Docker 才会强行结束它；不加它，Docker 只等 10 秒。compose 文件也设置了同样的一分钟（`stop_grace_period`）。
 
 ## 使用 Docker Compose
 

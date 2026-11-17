@@ -6,7 +6,7 @@ There are two images, both from [LiteLDev/docker-levilamina-server](https://gith
 
 | Image | Runs on | How |
 | --- | --- | --- |
-| `ghcr.io/liteldev/levilamina-server:latest-wine` | Linux containers: a Linux x64 host, or Docker Desktop | The Windows server under Wine |
+| `ghcr.io/liteldev/levilamina-server:latest-wine` | Linux containers: a Linux x64 host, or Docker Desktop | `lip` runs natively and runs the Windows server under a Wine it installs itself |
 | `ghcr.io/liteldev/levilamina-server:latest-windows` | Windows containers: Windows Server, or Docker Desktop switched to Windows containers | The Windows server directly |
 
 This tutorial uses the Wine image. For the Windows image, see the tip at the end of step 2.
@@ -39,7 +39,7 @@ This tutorial uses the Wine image. For the Windows image, see the tip at the end
    docker logs -f levilamina
    ```
 
-   On the first start it prepares Wine, installs LeviLamina and the game with `lip`, and starts the server. This takes several minutes. You should finally see `Server started.` Press `Ctrl+C` to stop following the log; the server keeps running.
+   On the first start `lip` installs everything into the volume: its Wine and the Visual C++ runtime, then the game, LeviLamina and the mods of `PACKAGES`. Then it starts the server. This takes several minutes; later starts take seconds. You should finally see `Server started.` Press `Ctrl+C` to stop following the log; the server keeps running.
 
 ::: tip Slow downloads from GitHub
 Add `-e GITHUB_MIRROR_URL=<address of a GitHub mirror>` to the `docker run` command, for example `-e GITHUB_MIRROR_URL=https://v4.gh-proxy.org/https://github.com/`.
@@ -89,7 +89,13 @@ The server loads the mod the next time it starts: stop it and start it again as 
 
 ## 4. Stop and start the server
 
-1. Attach (`docker attach levilamina`) and type `stop`. The server saves the world and exits, and the container stops with it. You should see `Quit correctly` in the output.
+1. Stop the container:
+
+   ```shell
+   docker stop -t 60 levilamina
+   ```
+
+   `lip` types `stop` into the server, which saves the world and exits; the container stops with it. `docker logs levilamina` should end with `Quit correctly`. Typing `stop` in the console (`docker attach levilamina`) does the same.
 2. Start it again later:
 
    ```shell
@@ -98,7 +104,7 @@ The server loads the mod the next time it starts: stop it and start it again as 
 
    A second start is quick: the server is already set up in the volume.
 
-`docker stop` works too, but it gives the server only 10 seconds before it is killed. Typing `stop` is the safe way.
+`-t 60` gives the server up to a minute to save a large world before Docker kills it; without it, Docker waits only 10 seconds. The compose files set the same minute (`stop_grace_period`).
 
 ## With Docker Compose
 

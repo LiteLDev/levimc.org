@@ -24,7 +24,9 @@ await agent.stop()
 
 `Agent.create(opts)` 的选项：`host`、`port`、`username`（默认 `Agent`）、`bot`（使用一个已经生成的机器人）、
 `botOptions`、`safety`（`true` / 选项对象 / `false`）、`autoEat`、`keepFed`（任务间隙饥饿时去寻找食物）、
-`recoverItems`（死亡后回去捡掉落物）、`log`（日志行输出）、`skills`（技能注册表）。
+`recoverItems`（死亡后回去捡掉落物）、`rest`（默认 `true`：用随身携带的床睡过夜晚）、`shelter`（默认 `false`：没有床
+也没有盔甲时，在房子里或封闭的洞里度过夜晚）、`maxEvents`（报告保留的事件数，默认 `5000`）、`watchdogInterval`（卡住检测的间隔毫秒数，
+默认 `5000`）、`log`（日志行输出）、`skills`（技能注册表）。
 
 `agent.run(skill, args, { timeout, retries })` 将一个技能作为任务运行；`agent.runScenario({ name, steps, timeout,
 verify })` 按顺序运行各个步骤（在第一次失败时停止）并返回报告；`agent.on('event', e)` 以流的形式推送
