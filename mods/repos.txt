@@ -90,6 +90,7 @@ LiteLDev/LeviAntiCheat
 LiteLDev/LeviLamina
 LiteLDev/levilamina-mod-template
 LiteLDev/LeviOptimize
+LiteLDev/LeviSchematic
 LiteLDev/mimalloc
 LiteLDev/MoreDimensions
 LL-LSE-Lab/MelonRind
