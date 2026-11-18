@@ -1,47 +1,34 @@
----
-layout: home
+# LeviMC FAQ
 
-hero:
-  name: LeviMC FAQ
-  text: Short answers to what people ask
-  tagline: More than 1,300 questions from the LeviMC community about servers, the launcher, mods and script plugins, each answered and checked against the current versions. Search with Ctrl K, or pick a topic.
-  actions:
-    - theme: brand
-      text: Run a server
-      link: /server/levilamina/install/
-    - theme: alt
-      text: Play
-      link: /play/levilauncher/
-    - theme: alt
-      text: Make mods
-      link: /develop/levilamina/basics/
-    - theme: alt
-      text: Script plugins
-      link: /scripts/lse/basics/
+More than 1,300 questions from the LeviMC community about servers, the launcher, mods and script plugins, each
+answered and checked against the current versions. Search with Ctrl K, or pick a topic.
 
-features:
-  - title: LeviLamina on a server
-    details: Installing, versions, configuration, errors and crash logs.
-    link: /server/levilamina/install/
-  - title: lip
-    details: Setting up a server, installing packages, mirrors and proxies, what the errors mean.
-    link: /server/lip/basics/
-  - title: Docker
-    details: The LeviLamina server images, on Linux through Wine.
-    link: /server/docker/
-  - title: Server mods
-    details: LeviAntiCheat, LeviOptimize, LeviStone, MoreDimensions, LegacyMoney and more.
-    link: /server/mods/levianticheat/
-  - title: LeviLauncher
-    details: Installing the game, versions and isolation, mods, on Windows and Android.
-    link: /play/levilauncher/
-  - title: LeviLamina mods in C++
-    details: The toolchain, commands, events, hooks, and what crashes mean.
-    link: /develop/levilamina/build/
-  - title: LegacyScriptEngine
-    details: Engines, the script API by topic, errors and performance.
-    link: /scripts/lse/basics/
----
+## Run a server
+
+- [LeviLamina](server/levilamina/install.md) — installing, versions, configuration, errors and crash logs.
+- [lip](server/lip/basics.md) — setting up a server, installing packages, mirrors and proxies, what the errors mean.
+- [Docker images](server/docker.md) — the LeviLamina server images, on Linux through Wine.
+- [Server mods](server/mods/levianticheat.md) — LeviAntiCheat, LeviOptimize, LeviStone, MoreDimensions, LegacyMoney
+  and more.
+
+## Play
+
+- [LeviLauncher](play/levilauncher.md) — installing the game, versions and isolation, mods.
+- [On Windows](play/windows/install.md) and [on Android](play/android/install.md) — installing, settings, versions,
+  errors and crashes.
+
+## Make mods
+
+- [LeviLamina mods in C++](develop/levilamina/basics.md) — the toolchain, building, and what crashes mean.
+- [LeviLamina API](develop/levilamina/api-commands.md) — commands, events, hooks, players, the world, forms and
+  network, data, threads.
+- [iListenAttentively](develop/ilistenattentively.md)
+
+## Script plugins
+
+- [LegacyScriptEngine](scripts/lse/basics.md) — engines, installing and configuring, errors and performance.
+- [LegacyScriptEngine API](scripts/lse/api-players.md) — the script API by topic.
+- [LegacyRemoteCall](scripts/legacyremotecall.md)
 
 ## Where the answers come from
 
