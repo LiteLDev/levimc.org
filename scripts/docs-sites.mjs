@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // The docs builds of this repository (2026-11-16: every LeviMC docs site is built here, see docs/README.md): the
-// tutorials (tutorials/) and one docs root per project (docs/<Project>/, each with its own package.json). Each is a
+// tutorials (tutorials/), the FAQ (faq/) and one docs root per project (docs/<Project>/, each with its own package.json). Each is a
 // levimc-kit docs site with `i18n.localeFirst`, so its dist/ mirrors the host root (dist/<Project>/…,
 // dist/zh-Hans/<Project>/…) and merges into levimc.org's dist/ as it is.
 //
-//   node scripts/docs-sites.mjs list              the docs roots, one per line (tutorials first)
+//   node scripts/docs-sites.mjs list              the docs roots, one per line (tutorials, then the FAQ, first)
 //   node scripts/docs-sites.mjs build [root …]    per root: npm ci, npm run typecheck, npm run build (npm runs the
 //                                                 root's prebuild / postbuild scripts around it), npm run linkcheck
 //   node scripts/docs-sites.mjs merge <dist>      copy each root's dist/ into <dist>, without the root's 404.html and
@@ -14,7 +14,7 @@
 //   node scripts/docs-sites.mjs linkcheck <dist> [linkcheck options]
 //                                                 levimc.org's link check (npm run linkcheck) with those other sites
 //
-// No docs root under docs/ is fine: the tutorials are the only one then.
+// No docs root under docs/ is fine: the tutorials and the FAQ are the only ones then.
 import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
@@ -23,9 +23,9 @@ import { DOCS_PROJECTS, NETWORK_LANGUAGE_SEGMENTS } from '../kit/components/proj
 
 export const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** The docs roots (repository-relative, '/'-separated): tutorials, then docs/<name>/ for each docs/<name>/package.json. */
+/** The docs roots (repository-relative, '/'-separated): tutorials, faq, then docs/<name>/ for each docs/<name>/package.json. */
 export function docsRoots(repo = REPO) {
-  const roots = existsSync(join(repo, 'tutorials', 'package.json')) ? ['tutorials'] : [];
+  const roots = ['tutorials', 'faq'].filter((root) => existsSync(join(repo, root, 'package.json')));
   const docs = join(repo, 'docs');
   if (existsSync(docs)) {
     for (const name of readdirSync(docs).sort()) {

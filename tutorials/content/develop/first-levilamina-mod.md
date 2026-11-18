@@ -175,7 +175,7 @@ Build again with `xmake`. You should see `build ok` again.
 After each change: stop the server, run `xmake`, copy the folder again, start the server.
 
 ::: tip Error codes when the mod does not load
-If LeviLamina reports an error such as 126 or 127 instead of loading `my-mod`, the mod was usually built against another LeviLamina version than the server's. Check the pin of step 3. [LeviLamina troubleshooting](https://levimc.org/LeviLamina/user_guides/troubleshooting/) explains the codes.
+If LeviLamina reports an error such as 126 or 127 instead of loading `my-mod`, the mod was usually built against another LeviLamina version than the server's. Check the pin of step 3. [LeviLamina troubleshooting](https://levimc.org/faq/server/levilamina/errors/) explains the codes.
 :::
 
 ## What you have now
@@ -193,5 +193,5 @@ If LeviLamina reports an error such as 126 or 127 instead of loading `my-mod`, t
 - Ask players with dialogs: [Form guide](https://levimc.org/LeviLamina/developer_guides/how_to_guides/form_guide/).
 - Change how the game behaves: [Hook guide](https://levimc.org/LeviLamina/developer_guides/how_to_guides/hook_guide/).
 - Every class and function: [LeviLamina API](https://levimc.org/LeviLamina/api/).
-- Questions developers often ask: [Developer FAQ](https://levimc.org/LeviLamina/developer_guides/faq/).
+- Questions developers often ask: [Developer FAQ](https://levimc.org/faq/develop/levilamina/basics/).
 - Prefer a script language: [Your first script plugin](first-script-plugin.md).

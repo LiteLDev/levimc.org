@@ -64,6 +64,7 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             tutorials/package-lock.json
+            faq/package-lock.json
             docs/*/package-lock.json
 
       - run: npm ci
@@ -75,7 +76,7 @@ jobs:
 
       - run: npm run build
 
-      # the docs (docs/README.md): the tutorials and every docs/<Project>/ root, with this checkout's kit; then the
+      # the docs (docs/README.md): the tutorials, the FAQ and every docs/<Project>/ root, with this checkout's kit; then the
       # merge into dist/ (a file two builds publish fails). The link check of the whole site runs in the deploy.
       - name: docs
         run: node scripts/docs-sites.mjs build && node scripts/docs-sites.mjs merge dist

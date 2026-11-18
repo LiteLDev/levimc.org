@@ -180,12 +180,23 @@ What goes where:
 * **Tutorials** (here, `tutorials/`): a newcomer starts from a clean PC and ends with one thing done end to end —
   a server, a modded game, a first mod, a published package. Every project's tutorials live here, once, even when
   they span projects (a server needs lip and LeviLamina: one tutorial, not one per project).
+* **FAQ** (here, `faq/`): one question, one short answer, for every project — what server owners, players and mod
+  developers ask, by section (run a server, play, make mods, script plugins). A project's docs have no FAQ page of
+  their own; an answer that needs more than a few paragraphs is a guide in the project's docs, linked from the FAQ.
 * **Project docs** (here, `docs/<Project>/`): the home page introduces the project; every other page is a guide (one
   topic, assumes the basics), reference, or an explanation of how it works.
 * **Maintainer material** (each repository's `CONTRIBUTING.md` and the files it links): building the project
   itself, code style, releasing. Never on a site.
 
-## Tutorials
+## Tutorials and FAQ
+
+`levimc.org/faq/` (and `/zh-Hans/faq/`, `/zh-Hant/faq/`) is a docs build of `faq/`, the same shape as the tutorials
+described below (`npm ci`, `npm run dev`, `npm run build && npm run linkcheck` in `faq/`). A page is a list of
+questions: `## Question` then the answer (a page with several groups uses `## Group` and `### Question`); the pages
+and their order are in `faq/nav.ts`. English in `content/`, Simplified Chinese in `content/zh-Hans/` (the same file
+names, the same questions in the same order), Traditional Chinese converted from it. Most answers come from the
+community groups (2023–2026), checked against each project in November 2026: keep an answer short, say which
+versions it is for when it is not every current one, and delete it when it stops being true.
 
 `levimc.org/tutorials/` (and `/zh-Hans/tutorials/`, `/zh-Hant/tutorials/`) is a docs build of `tutorials/`
 (levimc-kit's docs engine, with this checkout's kit: its `npm ci` vendors `../kit` into `tutorials/kit/`). Its

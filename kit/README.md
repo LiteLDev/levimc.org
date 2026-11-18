@@ -956,6 +956,16 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 ## Changelog
 
+### 2.25.0
+
+**FAQ tab.** The bar reads Home · Tutorials · **FAQ** · Projects ▾ · Mods · Blog · Community · About:
+`LINKS.faq` (`https://levimc.org/faq/`), `SiteId` `'faq'`, UI string `faq` in every chrome locale (问答 / 問答 in
+Chinese, ЧаВо in Russian, FAQ elsewhere). The FAQ is a docs build of levimc.org's repository at `/faq/`
+(`project: 'faq'` marks its tab, like the tutorials); `localizeNetworkUrl` and kit.js put the language first for it
+(`/zh-Hans/faq/`). The projects' own FAQ pages moved there.
+* **Migration**: none for a docs site. A site whose nav or router lists the other builds of levimc.org adds `/faq/`;
+  a smoke test that lists the bar's tabs adds FAQ after Tutorials.
+
 ### 2.24.2
 
 * Project blurbs (the Projects menu, the docs' 404 cards) follow the repositories: lip runs a LeviLamina server and

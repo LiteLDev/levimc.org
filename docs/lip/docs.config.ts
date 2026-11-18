@@ -30,7 +30,6 @@ interface Labels {
   configuration: string;
   linuxMacos: string;
   troubleshooting: string;
-  faq: string;
   help: string;
   authors: string;
   migratingPackages: string;
@@ -66,7 +65,6 @@ const LABELS: Record<Locale, Labels> = {
     configuration: 'Configuration',
     linuxMacos: 'Linux and macOS',
     troubleshooting: 'Troubleshooting',
-    faq: 'FAQ',
     help: 'Help',
     authors: 'For package authors',
     migratingPackages: 'Migrating packages',
@@ -98,7 +96,6 @@ const LABELS: Record<Locale, Labels> = {
     configuration: '配置',
     linuxMacos: 'Linux 与 macOS',
     troubleshooting: '故障排查',
-    faq: '常见问题',
     help: '帮助',
     authors: '写给包作者',
     migratingPackages: '迁移包',
@@ -132,7 +129,6 @@ const LABELS: Record<Locale, Labels> = {
     configuration: '設定',
     linuxMacos: 'Linux 與 macOS',
     troubleshooting: '疑難排解',
-    faq: '常見問題',
     help: '說明',
     authors: '寫給套件作者',
     migratingPackages: '移轉套件',
@@ -187,10 +183,7 @@ const nav = (p: string, t: Labels): NavEntry[] => [
       },
       {
         text: t.help,
-        items: [
-          { text: t.troubleshooting, link: `${p}guides/troubleshooting` },
-          { text: t.faq, link: `${p}faq` },
-        ],
+        items: [{ text: t.troubleshooting, link: `${p}guides/troubleshooting` }],
       },
     ],
   },
@@ -219,12 +212,13 @@ const nav = (p: string, t: Labels): NavEntry[] => [
 // The tutorials of lip are at levimc.org/tutorials/, with those of the other LeviMC projects: English at the root,
 // Simplified Chinese at zh-Hans/tutorials/, Traditional Chinese at zh-Hant/tutorials/.
 const LEVIMC = 'https://levimc.org/';
-/** A tutorial, as a target of MOVED. */
-const tutorial = (path: string) => ({ tutorial: path });
-type Target = string | { tutorial: string };
+/** A tutorial, or a page of the FAQ (levimc.org/faq/, the same languages), as a target of MOVED. */
+const tutorial = (path: string) => ({ site: 'tutorials', path });
+const faq = (path: string) => ({ site: 'faq', path });
+type Target = string | { site: string; path: string };
 
 // Pages that moved or were removed: their old URLs, in every locale, open the page that took their place (a page of
-// this site, '' for its home page, or a tutorial in the same language).
+// this site, '' for its home page, or a tutorial or FAQ page in the same language).
 const MOVED: Record<string, Target> = {
   // The tutorials moved to levimc.org/tutorials/; "What is lip?" became the home page.
   'intro/what_is_lip': '',
@@ -232,6 +226,8 @@ const MOVED: Record<string, Target> = {
   'intro/first_server': tutorial('server/first-server/'),
   'guides/server_from_commands': tutorial('server/command-line/'),
   'authors/creating_packages': tutorial('develop/publish-a-package/'),
+  // The FAQ moved to levimc.org/faq/, with the questions of the other LeviMC projects.
+  faq: faq('server/lip/basics/'),
   // The documentation was rebuilt around the interface (lip 0.41).
   'intro/quick_start': tutorial('server/first-server/'),
   'guides/running_server': tutorial('server/command-line/'),
@@ -277,7 +273,7 @@ const redirects = Object.fromEntries(
   ).flatMap(([p, folder, to, tutorials]) =>
     Object.entries(MOVED)
       .filter(([from]) => !isPage(folder, from))
-      .map(([from, target]) => [p + from, typeof target === 'string' ? to + target : `${LEVIMC}${tutorials}tutorials/${target.tutorial}`]),
+      .map(([from, target]) => [p + from, typeof target === 'string' ? to + target : `${LEVIMC}${tutorials}${target.site}/${target.path}`]),
   ),
 );
 

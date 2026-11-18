@@ -94,6 +94,6 @@ There is no release for Linux on ARM64, where a LeviLamina server does not run. 
 
 ## The rest of this site
 
-- **Guide**: [using the interface](interface/tour.md), page by page; [managing packages](guides/managing_packages.md), [configuration](guides/configuration.md) and [Linux and macOS](guides/linux_macos.md) with the commands; [migrating packages](authors/migrating_packages.md) of lip v0.x; [troubleshooting](guides/troubleshooting.md) and the [FAQ](faq.md).
+- **Guide**: [using the interface](interface/tour.md), page by page; [managing packages](guides/managing_packages.md), [configuration](guides/configuration.md) and [Linux and macOS](guides/linux_macos.md) with the commands; [migrating packages](authors/migrating_packages.md) of lip v0.x; [troubleshooting](guides/troubleshooting.md). Short answers to common questions are in the [LeviMC FAQ](https://levimc.org/faq/server/lip/basics/).
 - **Concepts**: [how lip works](concepts/how_lip_works.md), [lip.toml](concepts/lip_toml.md), the [state file](concepts/state_file.md) and the [internals](concepts/internals.md).
 - **Reference**: the [command line](reference/cli.md), every [command](reference/commands/setup.md), the [interface](reference/interface.md), the [configuration](reference/configuration.md) and the [files](reference/files.md).

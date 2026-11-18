@@ -136,4 +136,4 @@ When your connection has no public IP, a tunnel such as frp forwards a port of a
 - Give your players something to do: [Install mods on your server](install-mods.md).
 - Change the server name, the game mode, the allowlist and the permissions: [Game config](https://levimc.org/lip/interface/game_config.html).
 - Keep the server running without a terminal: [A server from the command line](command-line.md#_4-keep-it-running-without-a-terminal).
-- Error codes of LeviLamina: [Troubleshooting](https://levimc.org/LeviLamina/user_guides/troubleshooting/).
+- Error codes of LeviLamina: [Troubleshooting](https://levimc.org/faq/server/levilamina/errors/).

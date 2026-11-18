@@ -72,10 +72,12 @@ LeviLamina 是 LeviMC 各项目的核心：
 
 ## 本站内容
 
-- **指南**：面向服主的[使用准则](common_guides/usage_guidelines.md)和[故障排除](user_guides/troubleshooting.md)；
+- **指南**：面向服主的[使用准则](common_guides/usage_guidelines.md)；
   面向模组开发者的[如何做到](developer_guides/how_to_guides/event_guide.md)系列（事件、命令、表单、钩子、国际化……）、
   [Android 原生模组 API](developer_guides/android/api/mod.md) 和 LeviLamina 的[项目架构](developer_guides/architecture.md)；
-  以及[常见问题](developer_guides/faq.md)和[支持的版本](versions.md)。
+  以及[支持的版本](versions.md)。
+- **问答**：[LeviMC 问答](https://levimc.org/zh-Hans/faq/)回答服主常问的问题（安装、[错误码](https://levimc.org/zh-Hans/faq/server/levilamina/errors/)、崩溃）
+  和[模组开发者](https://levimc.org/zh-Hans/faq/develop/levilamina/basics/)常问的问题。
 - **API**：[API 的各个部分](api_reference/index.md)，附带示例。
 - **C++ 参考**：从头文件生成的[所有类和函数](https://levimc.org/LeviLamina/api/)。
 

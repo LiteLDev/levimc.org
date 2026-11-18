@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # full history for the docs' "Last updated" dates (tutorials/, docs/<Project>/)
+          # full history for the docs' "Last updated" dates (tutorials/, faq/, docs/<Project>/)
           fetch-depth: 0
 
       - uses: actions/setup-node@v7
@@ -35,6 +35,7 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             tutorials/package-lock.json
+            faq/package-lock.json
             docs/*/package-lock.json
 
       - run: npm ci
@@ -99,7 +100,7 @@ jobs:
           mkdir -p dist/api/v4/mc/versions
           cp versions/versions.json dist/api/v4/mc/versions/index.json
 
-      # The docs (docs/README.md): the tutorials (tutorials/) and every project's docs root (docs/<Project>/), each a
+      # The docs (docs/README.md): the tutorials (tutorials/), the FAQ (faq/) and every project's docs root (docs/<Project>/), each a
       # docs build with this checkout's kit (its install vendors it). Per root: npm ci, typecheck, build (with the
       # root's prebuild / postbuild scripts), linkcheck.
       - run: node scripts/docs-sites.mjs build

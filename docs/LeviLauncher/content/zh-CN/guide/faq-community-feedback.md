@@ -1,46 +1,6 @@
-# 常见问题、社区与反馈
+# 社区与反馈
 
-## 常见问题
-
-### 我必须拥有 Minecraft 基岩版正版吗？
-
-是的。LeviLauncher 设计目标是配合**正版 Minecraft 基岩版（GDK / UWP）** 使用。
-
-### 能在 macOS 或 Linux 上使用吗？
-
-LeviLauncher 提供 **Windows 版**和 **Android 版**（[Android 版文档](/zh-Hans/guide/version-management?platform=android)），没有 macOS 或 Linux 版本。
-
-### 有 iOS 版吗？
-
-没有。我们没有开发 iOS 版 LeviLauncher 的计划。
-
-### 我应该选正式版还是预览版？
-
-日常游玩优先选 Minecraft **正式版（Release）**。只有你明确需要体验即将到来的内容，并且能接受不稳定时，再考虑 **预览版（Preview）**。
-
-### 隔离是必须的吗？
-
-不是必须，但对测试、Minecraft 预览版（Preview）环境和模组环境来说非常推荐。GDK 版本以及 1.19.70.2 及以上的 UWP x64 版本支持隔离。
-
-### 能在启动器里管理世界和资源包吗？
-
-可以。LeviLauncher 提供世界、资源包、行为包、皮肤包、截图与服务器列表等内容视图。
-
-### 能安装模组吗？
-
-可以，但这属于高级工作流。建议先从一个干净的隔离版本开始，逐步测试。
-
-### 能通过命令行使用 LeviLauncher 吗？
-
-可以（Windows 版）。不带参数运行 `LeviLauncher.exe` 会打开窗口；带上 `install latest`、`play`、`instance list` 或 `mod install <模组>` 等命令时，它会在终端中运行并在完成后退出。运行 `LeviLauncher.exe help` 查看所有命令，运行 `LeviLauncher.exe help <命令>` 查看某个命令的参数和示例。
-
-### Android 版需要什么？
-
-ARM64 设备上的 Android 9.0 或更高版本，以及从 Google Play 安装的 Minecraft 基岩版 1.21.80 或更高版本。参见[下载](../download?platform=android)。
-
-### Android 上能运行多个 Minecraft 版本吗？
-
-可以。导入官方 Minecraft APK 即可在启动器内运行其他版本，启用版本隔离可让它们的数据相互独立。
+关于 LeviLauncher 的常见问题及简短回答，见 [LeviMC 问答](https://levimc.org/zh-Hans/faq/play/levilauncher/)。
 
 ## 社区入口
 

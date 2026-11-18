@@ -136,4 +136,4 @@ server-udp-ports=203.0.113.4:11451:11451
 - 给玩家们添点乐子：[给服务器安装模组](install-mods.md)。
 - 修改服务器名称、游戏模式、白名单和权限：[游戏配置](https://levimc.org/zh-Hans/lip/interface/game_config.html)。
 - 不开终端也让服务器运行：[用命令行开服](command-line.md#_4-不开终端也让它运行)。
-- LeviLamina 的错误码：[问题排除](https://levimc.org/zh-Hans/LeviLamina/user_guides/troubleshooting/)。
+- LeviLamina 的错误码：[问题排除](https://levimc.org/zh-Hans/faq/server/levilamina/errors/)。

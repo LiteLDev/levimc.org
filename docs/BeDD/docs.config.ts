@@ -63,7 +63,7 @@ const LABELS: Record<string, Labels> = {
     modes: '世界在哪里运行',
     integrating: '接入你的测试',
     configuration: '配置',
-    troubleshooting: '常见问题',
+    troubleshooting: '故障排查',
     websocket: 'WebSocket 接口',
     ui: 'UI 控件树',
     tap: 'Tap 协议',

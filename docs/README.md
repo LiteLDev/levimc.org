@@ -17,7 +17,7 @@ page at each old URL (query and #hash kept).
 ## How a docs root is built
 
 `scripts/docs-sites.mjs` (used by `.github/workflows/deploy.yml` and `ci.yml`) finds every `docs/*/package.json`
-— no list to edit — and, for the tutorials and each of them:
+— no list to edit — and, for the tutorials, the FAQ (`faq/`) and each of them:
 
 1. `npm ci` (its `postinstall` vendors this checkout's `kit/` into the root's `kit/`),
 2. `npm run typecheck`,

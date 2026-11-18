@@ -7,13 +7,13 @@
 import type { Messages } from './i18n';
 import { DEFAULT_LOCALE, LOCALES, localeOfTag, splitLocale, withLocale, type Locale } from './i18n/config';
 import { BLOG_ROUTES, blog, resolveBlogPath, type BlogView } from './blog/data';
-import { MODS_PATH, OTHER_SITES, TUTORIALS_PATH, withoutLanguage } from './other-sites';
+import { FAQ_PATH, MODS_PATH, OTHER_SITES, TUTORIALS_PATH, withoutLanguage } from './other-sites';
 import { localizeNetworkUrl } from '../kit/components/projects.ts';
 
 export const SITE_ORIGIN = 'https://levimc.org';
 
 /** LeviMC Mods: its own app in mods/, built separately and deployed into dist/mods/ (see .github/workflows/deploy.yml). */
-export { MODS_PATH, TUTORIALS_PATH } from './other-sites.ts';
+export { FAQ_PATH, MODS_PATH, TUTORIALS_PATH } from './other-sites.ts';
 
 export type RouteId = 'home' | 'community' | 'about' | 'support' | 'blog';
 
@@ -109,8 +109,8 @@ export function localizePath(path: string, locale: Locale): string {
   return withLocale(path, locale);
 }
 
-/** The builds with the same locales as this site (zh-Hans, zh-Hant): LeviMC Mods and the tutorials. */
-const LOCALIZED_SITES = [MODS_PATH, TUTORIALS_PATH];
+/** The builds with the same locales as this site (zh-Hans, zh-Hant): LeviMC Mods, the tutorials and the FAQ. */
+const LOCALIZED_SITES = [MODS_PATH, TUTORIALS_PATH, FAQ_PATH];
 const PROJECT_PATHS = OTHER_SITES.filter((p) => !LOCALIZED_SITES.includes(p));
 const LOCALE_SEGMENT = new RegExp(`^(?:${LOCALES.filter((l) => l.prefix).map((l) => l.prefix.slice(0, -1)).join('|')})(?:/|$)`);
 

@@ -75,7 +75,7 @@ LeviLamina mod manifest (`manifest.json`). Restart the server to load them.
 - **API Reference**: [every API](apis/README.md) of LSE: events, players, blocks, items, NBT, forms, files, network
   and more. For editor hints and project scaffolding, see
   [legacy-script-engine-api](https://github.com/LiteLDev/legacy-script-engine-api).
-- **Guide**: the [FAQ](faq.md).
+- **Questions**: the [LegacyScriptEngine FAQ](https://levimc.org/faq/scripts/lse/basics/), with the questions of every LeviMC project.
 
 LegacyScriptEngine is open source: see its [repository](https://github.com/LiteLDev/LegacyScriptEngine) and
 [how to contribute](https://github.com/LiteLDev/LegacyScriptEngine/blob/develop/CONTRIBUTING.md) (issues,

@@ -13,6 +13,8 @@ export const LINKS = {
   support: 'https://levimc.org/support/',
   /** Tutorials for every project, end to end (kit 2.21): a docs build of levimc.org's repository. */
   tutorials: 'https://levimc.org/tutorials/',
+  /** Questions and answers for every project (kit 2.25): a docs build of levimc.org's repository. */
+  faq: 'https://levimc.org/faq/',
   /** LeviMC Mods (it was pkg.levimc.org). */
   mods: 'https://levimc.org/mods/',
   /** The blog moved into levimc.org (blog.levimc.org no longer resolves). */
@@ -26,7 +28,7 @@ export const LINKS = {
  * Tabs of the GlobalBar. `projects` is the Projects menu (kit 2: it replaces the Docs menu and the former
  * levimc.org/projects/ page); on a project's docs (levimc.org/<Project>/) it is the current tab, with the open project marked in it.
  */
-export type SiteId = 'home' | 'tutorials' | 'projects' | 'community' | 'about' | 'mods' | 'blog';
+export type SiteId = 'home' | 'tutorials' | 'faq' | 'projects' | 'community' | 'about' | 'mods' | 'blog';
 
 export type ProjectGroupId = 'core' | 'mods';
 
@@ -171,12 +173,13 @@ export interface GlobalNavEntry {
 
 /**
  * The canonical tabs of the GlobalBar, identical on every LeviMC site (kit ≥ 2.0):
- * Home · Tutorials · Projects ▾ · Mods · Blog · Community · About.
+ * Home · Tutorials · FAQ · Projects ▾ · Mods · Blog · Community · About.
  */
 export function globalNav(t: UiStrings): GlobalNavEntry[] {
   return [
     { id: 'home', label: t.home, url: LINKS.home },
     { id: 'tutorials', label: t.tutorials, url: LINKS.tutorials },
+    { id: 'faq', label: t.faq, url: LINKS.faq },
     { id: 'projects', label: t.projects, url: LINKS.github },
     { id: 'mods', label: t.mods, url: LINKS.mods },
     { id: 'blog', label: t.blog, url: LINKS.blog },
@@ -185,7 +188,7 @@ export function globalNav(t: UiStrings): GlobalNavEntry[] {
   ];
 }
 
-/** The origin every LeviMC site shares (the site, /mods/, /tutorials/, each project's docs). */
+/** The origin every LeviMC site shares (the site, /mods/, /tutorials/, /faq/, each project's docs). */
 export const NETWORK_ORIGIN = 'https://levimc.org';
 
 /**
@@ -218,7 +221,7 @@ const TRADITIONAL = /^zh-(tw|hk|mo|hant)\b/i;
 
 /**
  * A levimc.org link in the visitor's language (kit 2.22.2; language first since kit 2.23): every LeviMC site —
- * levimc.org itself, /mods/, /tutorials/ and each project's docs — puts the language FIRST in the path
+ * levimc.org itself, /mods/, /tutorials/, /faq/ and each project's docs — puts the language FIRST in the path
  * (levimc.org/zh-Hans/about/, /zh-Hans/mods/, /zh-Hant/tutorials/, /zh-Hans/lip/, /ja/LeviLauncher/), so the bar, the
  * Projects menu and the footer link the target in the reader's language directly — without it the target's root
  * would redirect (a second page load: a flash, and a wasted prerender). Chinese goes to zh-Hans / zh-Hant everywhere;
@@ -234,7 +237,7 @@ export function localizeNetworkUrl(url: string, lang: string | undefined): strin
   if (LOCALE_SEGMENT.test(path.slice(1))) return url;
   const tag = lang.toLowerCase().replace(/_/g, '-');
   const project = PROJECTS.find((p) => p.docs && path.startsWith(new URL(p.docs).pathname));
-  const base = project ? new URL(project.docs!).pathname : path.startsWith('/mods/') ? '/mods/' : path.startsWith('/tutorials/') ? '/tutorials/' : '';
+  const base = project ? new URL(project.docs!).pathname : path.startsWith('/mods/') ? '/mods/' : path.startsWith('/tutorials/') ? '/tutorials/' : path.startsWith('/faq/') ? '/faq/' : '';
   if (base) {
     const rest = path.slice(base.length);
     if (LOCALE_SEGMENT.test(rest) || project?.docsUnlocalized?.some((u) => rest.startsWith(u))) return url;

@@ -16,10 +16,10 @@ function tree(files) {
   return dir;
 }
 
-test('docs roots: the tutorials, then every docs/<name>/ with a package.json', () => {
-  const repo = tree({ 'tutorials/package.json': '{}', 'docs/lip/package.json': '{}', 'docs/LeviLamina/package.json': '{}', 'docs/README.md': '', 'docs/notes/x.md': '' });
+test('docs roots: the tutorials, the FAQ, then every docs/<name>/ with a package.json', () => {
+  const repo = tree({ 'tutorials/package.json': '{}', 'faq/package.json': '{}', 'docs/lip/package.json': '{}', 'docs/LeviLamina/package.json': '{}', 'docs/README.md': '', 'docs/notes/x.md': '' });
   try {
-    assert.deepEqual(docsRoots(repo), ['tutorials', 'docs/LeviLamina', 'docs/lip']);
+    assert.deepEqual(docsRoots(repo), ['tutorials', 'faq', 'docs/LeviLamina', 'docs/lip']);
     assert.deepEqual(externalProjects(repo), ['LegacyScriptEngine', 'LeviLauncher', 'BeDD', 'bedboo']);
     const other = otherSites(repo);
     assert.ok(other.includes('/LeviLauncher/') && other.includes('/ja/LeviLauncher/') && other.includes('/zh-Hant/bedboo/'));

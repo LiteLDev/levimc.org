@@ -36,6 +36,7 @@ const samePage = (href, url) => href === url || unlang(new URL(href).pathname) =
 const CANONICAL_TABS = [
   ['home', 'https://levimc.org/'],
   ['tutorials', 'https://levimc.org/tutorials/'],
+  ['faq', 'https://levimc.org/faq/'],
   ['projects', null],
   ['mods', 'https://levimc.org/mods/'],
   ['blog', 'https://levimc.org/blog/'],

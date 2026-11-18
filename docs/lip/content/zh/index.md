@@ -94,6 +94,6 @@ ARM64 的 Linux 没有发行版，因为 LeviLamina 服务器无法在那里运�
 
 ## 本站的其他内容
 
-- **指南**：逐页说明[界面的用法](interface/tour.md)；用命令[管理包](guides/managing_packages.md)、[配置](guides/configuration.md)，以及 [Linux 与 macOS](guides/linux_macos.md)；[迁移](authors/migrating_packages.md) lip v0.x 的包；[故障排查](guides/troubleshooting.md)和[常见问题](faq.md)。
+- **指南**：逐页说明[界面的用法](interface/tour.md)；用命令[管理包](guides/managing_packages.md)、[配置](guides/configuration.md)，以及 [Linux 与 macOS](guides/linux_macos.md)；[迁移](authors/migrating_packages.md) lip v0.x 的包；[故障排查](guides/troubleshooting.md)。常见问题的简短回答见 [LeviMC 问答](https://levimc.org/zh-Hans/faq/server/lip/basics/)。
 - **概念**：[lip 的工作方式](concepts/how_lip_works.md)、[lip.toml](concepts/lip_toml.md)、[状态文件](concepts/state_file.md)和[内部机制](concepts/internals.md)。
 - **参考**：[命令行](reference/cli.md)、每一条[命令](reference/commands/setup.md)、[界面](reference/interface.md)、[配置](reference/configuration.md)和[文件](reference/files.md)。

@@ -150,10 +150,10 @@ const MENU_PROJECTS = PROJECTS.filter((p) => p.docs);
 /** The Projects menu: every project with a documentation site, each leading to its docs, then the GitHub organisation. */
 /**
  * The current tab: a project's docs are under Projects; a docs build that is one of the bar's own sites (kit 2.21.2:
- * the tutorials, `project: 'tutorials'`) is its own tab.
+ * the tutorials, `project: 'tutorials'`; kit 2.25: the FAQ, `project: 'faq'`) is its own tab.
  */
 function barTab(project: string | undefined, current: SiteId | undefined): SiteId | undefined {
-  if (project && (['home', 'tutorials', 'mods', 'blog', 'community', 'about'] as const).includes(project as never)) return project as SiteId;
+  if (project && (['home', 'tutorials', 'faq', 'mods', 'blog', 'community', 'about'] as const).includes(project as never)) return project as SiteId;
   return project ? 'projects' : current;
 }
 

@@ -97,7 +97,7 @@ LegacyScriptEngine（LSE）运行用脚本语言写的插件。它有四个**变
 2. 在输出里找带 `[LeviLamina]` 的几行。你应该看到每个模组各有一行 `Loading` 和一行 `loaded`，例如 `Loading LeviOptimize v0.18.0` 和 `LeviOptimize loaded`，还有一行数量，例如 `5 mod(s) loaded`（依赖也算模组）。
 3. 按 `Ctrl+C` 停止服务器。
 
-如果某个模组不在其中，输出里会说明原因。126、127 等错误码的含义见 [LeviLamina 问题排除](https://levimc.org/zh-Hans/LeviLamina/user_guides/troubleshooting/)。
+如果某个模组不在其中，输出里会说明原因。126、127 等错误码的含义见 [LeviLamina 问题排除](https://levimc.org/zh-Hans/faq/server/levilamina/errors/)。
 
 ## 5. 更新和移除模组
 

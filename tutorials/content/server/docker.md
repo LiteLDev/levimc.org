@@ -134,4 +134,4 @@ Instead of `docker run`, download [wine/compose.yaml](https://github.com/LiteLDe
 - A server without Docker: [Your first server](first-server.md) or [A server from the command line](command-line.md).
 - Package names, versions and refs that `PACKAGES` accepts: [Managing packages](https://levimc.org/lip/guides/managing_packages.html).
 - The images, their Dockerfiles and their changelog: [LiteLDev/docker-levilamina-server](https://github.com/LiteLDev/docker-levilamina-server).
-- Something went wrong: [LeviLamina troubleshooting](https://levimc.org/LeviLamina/user_guides/troubleshooting/).
+- Something went wrong: [LeviLamina troubleshooting](https://levimc.org/faq/server/levilamina/errors/).

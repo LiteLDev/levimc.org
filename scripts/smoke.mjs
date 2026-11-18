@@ -372,7 +372,7 @@ await check('mobile (390px): the bar folds its entries into its menu; it closes 
   const panel = page.locator('.kit-gbar-more-panel');
   await panel.waitFor({ state: 'visible' });
   const labels = await panel.locator('.kit-gbar-more-link').allInnerTexts();
-  assert(labels.join('|') === 'Home|Tutorials|Projects|Mods|Blog|Community|About', `menu entries: ${labels.join('|')}`);
+  assert(labels.join('|') === 'Home|Tutorials|FAQ|Projects|Mods|Blog|Community|About', `menu entries: ${labels.join('|')}`);
   await page.keyboard.press('Escape');
   await panel.waitFor({ state: 'hidden' });
   assert(await page.evaluate(() => !!document.activeElement?.closest('.kit-gbar-more')), 'focus not returned to the menu button');

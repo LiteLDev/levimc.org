@@ -133,6 +133,6 @@ Your editor does not know `mc`, `log` and the rest of the API by itself. The [le
 - Commands with arguments and permissions, for players too: [Command API](https://levimc.org/LegacyScriptEngine/apis/GameAPI/Command/).
 - Dialogs for players: [Form API](https://levimc.org/LegacyScriptEngine/apis/GuiAPI/Form/). Settings in a file: [Config file API](https://levimc.org/LegacyScriptEngine/apis/DataAPI/ConfigFile/).
 - The whole API, and the other languages: [LegacyScriptEngine API](https://levimc.org/LegacyScriptEngine/apis/) and [Language support](https://levimc.org/LegacyScriptEngine/apis/LanguageSupport/).
-- Common questions: [LegacyScriptEngine FAQ](https://levimc.org/LegacyScriptEngine/faq/).
+- Common questions: [LegacyScriptEngine FAQ](https://levimc.org/faq/scripts/lse/basics/).
 - Share your plugin as a `lip` package: a `self` asset in [lip.toml](https://levimc.org/lip/concepts/lip_toml.html) installs the files of your repository, and [Publish your mod with lip](publish-a-package.md) shows the release steps.
 - Need more speed or access to the game's internals: [Your first LeviLamina mod](first-levilamina-mod.md).

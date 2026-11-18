@@ -219,7 +219,7 @@
     var prim = tag.split('-')[0];
     var proj = null;
     for (var i = 0; i < NET.length; i++) if (path.indexOf(NET[i].b) === 0) proj = NET[i];
-    var base = proj ? proj.b : path.indexOf('/mods/') === 0 ? '/mods/' : path.indexOf('/tutorials/') === 0 ? '/tutorials/' : '';
+    var base = proj ? proj.b : path.indexOf('/mods/') === 0 ? '/mods/' : path.indexOf('/tutorials/') === 0 ? '/tutorials/' : path.indexOf('/faq/') === 0 ? '/faq/' : '';
     if (base) {
       var rest = path.slice(base.length);
       if (LANGSEG.test(rest)) return url;

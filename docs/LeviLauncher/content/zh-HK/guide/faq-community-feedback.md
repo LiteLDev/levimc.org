@@ -1,46 +1,6 @@
-# 常見問題、社群與回饋
+# 社群與回饋
 
-## 常見問題
-
-### 我必須擁有 Minecraft Bedrock 正版嗎？
-
-是的。LeviLauncher 的設計目標是配合**正版 Minecraft Bedrock Edition (GDK / UWP)** 使用。
-
-### 能在 macOS 或 Linux 上使用嗎？
-
-LeviLauncher 提供 **Windows 版**和 **Android 版**（[Android 版文檔](/zh-Hant/guide/version-management?platform=android)），沒有 macOS 或 Linux 版本。
-
-### 有 iOS 版嗎？
-
-沒有。我們沒有開發 iOS 版 LeviLauncher 的計劃。
-
-### 我應該選 Release 還是 Preview？
-
-日常遊玩優先選擇 Minecraft **正式版（Release）**。只有當你明確需要體驗即將推出的內容，並且能接受不穩定性時，才考慮 **預覽版（Preview）**。
-
-### 隔離是必須的嗎？
-
-不是必須，但對於測試、Minecraft 預覽版（Preview）環境及 模組環境來說，強烈建議使用。GDK 版本以及 1.19.70.2 或以上的 UWP x64 版本支援隔離。
-
-### 能在啟動器裡管理世界和資源包嗎？
-
-可以。LeviLauncher 提供世界、資源包、行為包、皮膚包、截圖與伺服器列表等內容視圖。
-
-### 能安裝模組嗎？
-
-可以，但這屬於進階工作流程。建議先從一個乾淨的隔離版本開始，逐步進行測試。
-
-### 能透過命令列使用 LeviLauncher 嗎？
-
-可以（Windows 版）。不帶參數執行 `LeviLauncher.exe` 會開啟視窗；加上 `install latest`、`play`、`instance list` 或 `mod install <模組>` 等命令時，它會在終端機中執行並在完成後結束。執行 `LeviLauncher.exe help` 查看所有命令，執行 `LeviLauncher.exe help <命令>` 查看某個命令的參數和範例。
-
-### Android 版需要甚麼？
-
-ARM64 裝置上的 Android 9.0 或更高版本，以及從 Google Play 安裝的 Minecraft Bedrock Edition 1.21.80 或更高版本。參見[下載](../download?platform=android)。
-
-### Android 上能執行多個 Minecraft 版本嗎？
-
-可以。匯入官方 Minecraft APK 即可在啟動器內執行其他版本，啟用版本隔離可讓它們的資料相互獨立。
+關於 LeviLauncher 的常見問題及簡短回答，見 [LeviMC 問答](https://levimc.org/zh-Hant/faq/play/levilauncher/)。
 
 ## 社群入口
 

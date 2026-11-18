@@ -127,4 +127,4 @@ While the server runs, `lip` does not install, update or remove anything in its 
 - Add a second server, or change the game version: [Workspaces](https://levimc.org/lip/interface/workspaces.html).
 - Learn every page of the interface: [A tour of the interface](https://levimc.org/lip/interface/tour.html).
 - How `lip` runs the Windows server on Linux and macOS: [Linux and macOS](https://levimc.org/lip/guides/linux_macos.html).
-- Something went wrong: [lip troubleshooting](https://levimc.org/lip/guides/troubleshooting.html) and [LeviLamina troubleshooting](https://levimc.org/LeviLamina/user_guides/troubleshooting/).
+- Something went wrong: [lip troubleshooting](https://levimc.org/lip/guides/troubleshooting.html) and [LeviLamina troubleshooting](https://levimc.org/faq/server/levilamina/errors/).

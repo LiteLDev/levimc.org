@@ -43,7 +43,6 @@ export default defineDocsConfig({
   // your first plugin) live at https://levimc.org/tutorials/. The API Reference section has more than 24 links, so
   // only the group holding the current page starts open.
   nav: [
-    { Guide: [{ Help: ['faq.md'] }] },
     {
       'API Reference': [
         'apis/README.md',
@@ -122,8 +121,13 @@ export default defineDocsConfig({
     'zh-Hans/tutorials/create_your_first_plugin/': 'https://levimc.org/zh-Hans/tutorials/develop/first-script-plugin/',
     'zh/tutorials/create_your_first_plugin/': 'https://levimc.org/zh-Hans/tutorials/develop/first-script-plugin/',
     'zh-Hant/tutorials/create_your_first_plugin/': 'https://levimc.org/zh-Hant/tutorials/develop/first-script-plugin/',
+    // The FAQ moved to levimc.org/faq/, with the questions of the other LeviMC projects.
+    'faq/': 'https://levimc.org/faq/scripts/lse/basics/',
+    'zh-Hans/faq/': 'https://levimc.org/zh-Hans/faq/scripts/lse/basics/',
+    'zh/faq/': 'https://levimc.org/zh-Hans/faq/scripts/lse/basics/',
+    'zh-Hant/faq/': 'https://levimc.org/zh-Hant/faq/scripts/lse/basics/',
   },
   navTranslations: {
-    zh: { Guide: '指南', Help: '帮助', 'API Reference': 'API 参考' },
+    zh: { 'API Reference': 'API 参考' },
   },
 });

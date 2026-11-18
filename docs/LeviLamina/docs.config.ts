@@ -17,6 +17,8 @@ const tutorial = (path: string) => ({
   zhHans: `${SITE}zh-Hans/tutorials/${path}`,
   zhHant: `${SITE}zh-Hant/tutorials/${path}`,
 });
+/** A page of the FAQ (levimc.org/faq/), which has the same locales. */
+const faq = (path: string) => ({ en: `${SITE}faq/${path}`, zhHans: `${SITE}zh-Hans/faq/${path}`, zhHant: `${SITE}zh-Hant/faq/${path}` });
 /** A contributor guide in the repository (docs/contributing/): English, and the Chinese text beside it. */
 const repoFile = (file: string) => ({ en: BLOB + file, zhHans: BLOB + file.replace(/\.md$/, '.zh.md'), zhHant: BLOB + file.replace(/\.md$/, '.zh.md') });
 function moved(pages: Record<string, { en: string; zhHans: string; zhHant: string }>): Record<string, string> {
@@ -67,12 +69,13 @@ export default defineDocsConfig({
   // The LeviMC navigation model (kit/README.md "Navigation model"): every top-level entry is a section, i.e. a header
   // tab and the sidebar tree of its pages; the brand (logo + name) is the only link to the home page, which introduces
   // the project. Step-by-step tutorials (install a server, play with mods, your first mod) live at
-  // https://levimc.org/tutorials/; this site keeps guides, reference and explanations. Help (FAQ, supported versions)
+  // https://levimc.org/tutorials/; this site keeps guides, reference and explanations; questions and answers are at
+  // https://levimc.org/faq/. Help (supported versions)
   // comes last. Sections with up to 24 links open every group; longer ones only the group holding the current page.
   nav: [
     {
       Guides: [
-        { Server: ['common_guides/usage_guidelines.md', 'user_guides/troubleshooting.md'] },
+        { Server: ['common_guides/usage_guidelines.md'] },
         {
           Developer: [
             {
@@ -107,7 +110,7 @@ export default defineDocsConfig({
             { Architecture: 'developer_guides/architecture.md' },
           ],
         },
-        { Help: [{ FAQ: 'developer_guides/faq.md' }, { 'Supported Versions': 'versions.md' }] },
+        { Help: [{ 'Supported Versions': 'versions.md' }] },
       ],
     },
     // Guides to LeviLamina's API by topic (URLs api_reference/…), next to the generated C++ reference below.
@@ -153,10 +156,12 @@ export default defineDocsConfig({
     'developer_guides/android/': tutorial('develop/first-android-mod/'),
     'developer_guides/how_to_guides/build_guide/': repoFile('docs/contributing/building.md'),
     'maintainer_guides/cpp_style_guide/': repoFile('docs/contributing/cpp_style.md'),
+    // The FAQ and the error codes moved to levimc.org/faq/, with the questions of the other LeviMC projects.
+    'developer_guides/faq/': faq('develop/levilamina/basics/'),
+    'user_guides/troubleshooting/': faq('server/levilamina/errors/'),
   }),
   navTranslations: {
     zh: {
-      FAQ: '常见问题',
       Help: '帮助',
       Guides: '指南',
       Server: '服务器',

@@ -74,11 +74,12 @@ New to LeviLamina? The tutorials take you from nothing to one thing done, step b
 
 ## On this site
 
-- **Guides**: the [usage guidelines](common_guides/usage_guidelines.md) and
-  [troubleshooting](user_guides/troubleshooting.md) for servers; [how-to guides](developer_guides/how_to_guides/event_guide.md)
+- **Guides**: the [usage guidelines](common_guides/usage_guidelines.md) for servers; [how-to guides](developer_guides/how_to_guides/event_guide.md)
   for mod developers (events, commands, forms, hooks, i18n …), the
   [Android native mods API](developer_guides/android/api/mod.md) and the [architecture](developer_guides/architecture.md)
-  of LeviLamina; the [FAQ](developer_guides/faq.md) and the [supported versions](versions.md).
+  of LeviLamina; the [supported versions](versions.md).
+- **Questions**: the [LeviMC FAQ](https://levimc.org/faq/) answers what server owners ask (installing, [error codes](https://levimc.org/faq/server/levilamina/errors/),
+  crashes) and what [mod developers](https://levimc.org/faq/develop/levilamina/basics/) ask.
 - **API**: [each part of the API](api_reference/index.md) explained with examples.
 - **C++ Reference**: [every class and function](https://levimc.org/LeviLamina/api/), generated from the headers.
 

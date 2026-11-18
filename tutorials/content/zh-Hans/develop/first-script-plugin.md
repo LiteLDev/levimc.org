@@ -133,6 +133,6 @@ mc.listen("onJoin", (player) => {
 - 带参数和权限、也供玩家使用的命令：[命令 API](https://levimc.org/zh-Hans/LegacyScriptEngine/apis/GameAPI/Command/)。
 - 给玩家的对话框：[表单 API](https://levimc.org/zh-Hans/LegacyScriptEngine/apis/GuiAPI/Form/)。文件中的设置：[配置文件 API](https://levimc.org/zh-Hans/LegacyScriptEngine/apis/DataAPI/ConfigFile/)。
 - 完整的 API 和其他语言：[LegacyScriptEngine API](https://levimc.org/zh-Hans/LegacyScriptEngine/apis/)和[语言支持](https://levimc.org/zh-Hans/LegacyScriptEngine/apis/LanguageSupport/)。
-- 常见问题：[LegacyScriptEngine FAQ](https://levimc.org/zh-Hans/LegacyScriptEngine/faq/)。
+- 常见问题：[LegacyScriptEngine FAQ](https://levimc.org/zh-Hans/faq/scripts/lse/basics/)。
 - 把插件作为 `lip` 包分享：[lip.toml](https://levimc.org/zh-Hans/lip/concepts/lip_toml.html) 中的 `self` 资源会安装你仓库中的文件，[用 lip 发布你的模组](publish-a-package.md)介绍了发布步骤。
 - 需要更快的速度或访问游戏内部：[你的第一个 LeviLamina 模组](first-levilamina-mod.md)。

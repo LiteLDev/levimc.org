@@ -5,7 +5,7 @@ import { isOtherSitePath } from '../other-sites';
 import { localeAlternates, localizePath, SITE_ORIGIN, type RouteId } from '../routes';
 
 /**
- * Paths of this origin the app's router renders: everything but the other builds (/mods/, /tutorials/, the docs),
+ * Paths of this origin the app's router renders: everything but the other builds (/mods/, /tutorials/, /faq/, the docs),
  * in any language (/zh-Hans/mods/, /ja/LeviLauncher/).
  */
 export const isAppPath = (path: string) => !isOtherSitePath(path);

@@ -97,7 +97,7 @@ Plugins go into the folder `mods/` of the server, each in a folder of its own wi
 2. Look for the lines of `[LeviLamina]` in the output. You should see a `Loading` and a `loaded` line per mod, such as `Loading LeviOptimize v0.18.0` and `LeviOptimize loaded`, and a count such as `5 mod(s) loaded` (the dependencies are mods too).
 3. Stop the server with `Ctrl+C`.
 
-If a mod is missing from the list, the output says why. Error codes such as 126 and 127 are explained in [LeviLamina troubleshooting](https://levimc.org/LeviLamina/user_guides/troubleshooting/).
+If a mod is missing from the list, the output says why. Error codes such as 126 and 127 are explained in [LeviLamina troubleshooting](https://levimc.org/faq/server/levilamina/errors/).
 
 ## 5. Update and remove mods
 

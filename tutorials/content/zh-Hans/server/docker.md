@@ -134,4 +134,4 @@ docker exec -it levilamina lip install github.com/LiteLDev/LeviOptimize
 - 不用 Docker 开服：[开你的第一个服务器](first-server.md)或[用命令行开服](command-line.md)。
 - `PACKAGES` 接受的包名、版本和引用：[管理包](https://levimc.org/zh-Hans/lip/guides/managing_packages.html)。
 - 镜像、它们的 Dockerfile 和更新日志：[LiteLDev/docker-levilamina-server](https://github.com/LiteLDev/docker-levilamina-server)。
-- 出了问题：[LeviLamina 问题排除](https://levimc.org/zh-Hans/LeviLamina/user_guides/troubleshooting/)。
+- 出了问题：[LeviLamina 问题排除](https://levimc.org/zh-Hans/faq/server/levilamina/errors/)。

@@ -10,6 +10,8 @@ test('Chinese: zh-Hans / zh-Hant first in the path on every LeviMC site, absolut
   assert.equal(L('https://levimc.org/mods/', 'zh-HK'), 'https://levimc.org/zh-Hant/mods/');
   assert.equal(L('https://levimc.org/mods/github.com/LiteLDev/LeviOptimize/', 'zh-Hant'), 'https://levimc.org/zh-Hant/mods/github.com/LiteLDev/LeviOptimize/');
   assert.equal(L('https://levimc.org/tutorials/', 'zh-TW'), 'https://levimc.org/zh-Hant/tutorials/');
+  assert.equal(L('https://levimc.org/faq/', 'zh-CN'), 'https://levimc.org/zh-Hans/faq/');
+  assert.equal(L('/faq/zh-Hans/server/lip/', 'zh-Hans'), '/faq/zh-Hans/server/lip/');
   assert.equal(L('https://levimc.org/lip/', 'zh'), 'https://levimc.org/zh-Hans/lip/');
   assert.equal(L('/LeviLauncher/', 'zh-Hans'), '/zh-Hans/LeviLauncher/');
   assert.equal(L('/LeviLamina/user_guides/install/', 'zh-Hans'), '/zh-Hans/LeviLamina/user_guides/install/');

@@ -267,9 +267,9 @@ export const LANGUAGE_SEGMENTS = {
 };
 
 /**
- * The sites whose pages this repository builds (levimc.org's dist): /mods/, /tutorials/ and every project with a
+ * The sites whose pages this repository builds (levimc.org's dist): /mods/, /tutorials/, /faq/ and every project with a
  * docs root (docs/<Project>/package.json, see docs/README.md). The others are still their repositories' Pages.
  */
 export function builtSites(repoRoot) {
-  return ['mods', 'tutorials', ...PROJECT_SITES.filter((p) => existsSync(join(repoRoot, 'docs', p, 'package.json')))];
+  return ['mods', 'tutorials', 'faq', ...PROJECT_SITES.filter((p) => existsSync(join(repoRoot, 'docs', p, 'package.json')))];
 }

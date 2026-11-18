@@ -72,7 +72,7 @@ LeviLauncher 会为你选用正确的版本。
 
 - **API 参考**：LSE 的[所有 API](apis/README.md)：事件、玩家、方块、物品、NBT、表单、文件、网络等。编辑器提示和项目脚手架见
   [legacy-script-engine-api](https://github.com/LiteLDev/legacy-script-engine-api)。
-- **指南**：[常见问题](faq.md)。
+- **问答**：[LegacyScriptEngine 问答](https://levimc.org/zh-Hans/faq/scripts/lse/basics/)，与 LeviMC 其他项目的问答在一起。
 
 LegacyScriptEngine 是开源项目：参见它的[仓库](https://github.com/LiteLDev/LegacyScriptEngine)和
 [如何参与贡献](https://github.com/LiteLDev/LegacyScriptEngine/blob/develop/CONTRIBUTING.md)（issue、翻译、PR）。
