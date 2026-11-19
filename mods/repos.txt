@@ -136,6 +136,7 @@ Nico6719/YEssential
 odorajbotoj/lualoader
 odorajbotoj/lualoader-plugin-demo
 OEOTYAN/BedrockServerClientInterface
+owoser/ServerListEnhancer
 pingguo114514/AddonsManager
 pingguo114514/BetterStop
 pingguo114514/DisconnectScreen
