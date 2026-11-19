@@ -28,13 +28,13 @@
 - **监听。** 监听器是针对一种事件类型、带有 `EventPriority` 的回调。监听器按从 `Highest` 到 `Lowest` 的顺序被调用；
   优先级相同的监听器按创建的先后顺序调用。
 - **取消。** 派生自 `Cancellable` 的事件可以被监听器取消。此时事件总线不再调用后面的监听器，取消意味着什么由发布者决定：
-  例如被取消的 `PlayerAttackEvent` 会阻止这次攻击。哪些内置事件可以取消，见 [Event（事件系统）](../api_reference/event.md)页面中的“内置事件”。
+  例如被取消的 `PlayerAttackEvent` 会阻止这次攻击。哪些内置事件可以取消，见 [Event（事件系统）](../api_reference/event.md#内置事件)页面中的“内置事件”。
 - **错误。** 监听器抛出的异常会被捕获，并连同其所属模组的名称记入日志；下一个监听器照常运行。
 
 ## 事件如何使用钩子
 
 大多数内置事件是由钩子发布的。例如 `PlayerAttackEvent` 由 `Player::attack` 上的一个钩子发布：detour 发布该事件，
-如果有监听器取消了它，就不调用原函数直接返回（参见[事件指南](../developer_guides/how_to_guides/event_guide.md)中的“发布事件”）。
+如果有监听器取消了它，就不调用原函数直接返回（参见[事件指南](../developer_guides/how_to_guides/event_guide.md#发布事件)中的“发布事件”）。
 
 这些钩子并不是一直安装着的。每种事件类型都有一个**发射器**（emitter），它是持有该事件钩子的类（放在一个 `HookRegistrar` 中）。
 LeviLamina 在添加该事件的第一个监听器时创建发射器，在移除最后一个监听器时销毁它，同时移除它的钩子。

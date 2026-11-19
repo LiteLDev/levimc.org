@@ -102,7 +102,7 @@ LSE v0.23.1 仍无容器界面 API。
 官方发布的 LSE 不提供断点调试器（要实现需自行修改 LSE 源码重新编译；且即使服务端暂停在断点上，客户端也会因超时断开）。
 
 - 常规做法是加日志输出后用 `ll reload <插件名>` 重载插件，无需重启整个服务器。
-- LSE 还提供交互式命令行用于简单测试：在 BDS 控制台输入 `jsdebug`（QuickJS）、`nodejsdebug`、`luadebug`、`pydebug` 进入/退出对应引擎的交互环境。
+- LSE 还提供交互式命令行用于简单测试：在 BDS 控制台输入 `jsdebug`（QuickJS）、`luadebug`、`pydebug`（Node.js 没有） 进入/退出对应引擎的交互环境。
 - TypeScript 需先用 `tsc` 编译为 JS，报错位置对应的是编译后的 JS，需借助 sourcemap 手动对照回 TS 源码。
 - C++ mod 则可以直接挂 Visual Studio 调试器。
 

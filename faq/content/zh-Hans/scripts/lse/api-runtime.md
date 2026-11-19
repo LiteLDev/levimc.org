@@ -102,7 +102,7 @@ LSE 的 `setTimeout`/`setInterval` 用 LeviLamina 协程（`ll::coro`）在 `Ser
 
 ## LSE 中用 `jsdebug` 进入 JS 调试模式后如何退出？以及如何获取玩家的 IP？
 
-再输入一次 `jsdebug` 即可退出调试模式（Node.js 为 `nodejsdebug`，Lua 为 `luadebug`，Python 为 `pydebug`）。游戏内能否使用该命令由 LSE 配置文件 `config.json` 中的 `debugCommandLevel` 决定，默认为 GameDirectors（OP）。
+再输入一次 `jsdebug` 即可退出调试模式（Lua 为 `luadebug`，Python 为 `pydebug`；Node.js 没有调试模式）。游戏内能否使用该命令由 LSE 配置文件 `config.json` 中的 `debugCommandLevel` 决定，默认为 GameDirectors（OP）。
 
 获取玩家 IP：`pl.getDevice().ip`（返回 IP:端口）；`pl.ip` 属性也存在，返回不带端口的地址。
 

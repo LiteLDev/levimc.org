@@ -172,7 +172,7 @@ export default defineDocsConfig({
       API: 'API',
       'C++ Reference': 'C++ 参考',
       'Android Native Mods API': 'Android 原生模组 API',
-      'Usage Guidelines': '使用准则',
+      'Usage Guidelines': '使用指南',
       Base: '基础类型',
       Chrono: '游戏时间',
       Command: '命令系统',

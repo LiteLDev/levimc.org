@@ -99,13 +99,12 @@ Here, there are some suggestions when developing plugins, I hope they can help y
 
 ## 📡 Debug Plugins
 
-You can type these commands to enter the corresponding debug mode:
+You can type these commands in the server console to enter the corresponding debug mode (the Node.js engine has none):
 
 * `jsdebug`: JavaScript debug mode
-* `nodejsdebug`: Node.js debug mode
 * `luadebug`: Lua debug mode
 * `pydebug`: Python debug mode
 
 In debug mode, all texts you type will be parsed as scripts and be executed in real time, as the console of developer tools of browsers do. If any error occurs, you will see an error report.
 
-You can type the same command (`jsdebug` / `nodejsdebug` / `luadebug` / `pydebug`) and press Enter to exit the debug mode.
+You can type the same command (`jsdebug` / `luadebug` / `pydebug`) and press Enter to exit the debug mode.

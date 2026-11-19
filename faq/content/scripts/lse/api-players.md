@@ -222,7 +222,7 @@ In the server console, run LSE's script debug command:
 jsdebug mc.getPlayer('player name').setMaxHealth(20)
 ```
 
-This restores the player's max health to 20. Note that the debug command depends on the backend: `jsdebug` for the QuickJS backend, `nodejsdebug` for the Node.js backend, `luadebug` for Lua and `pydebug` for Python.
+This restores the player's max health to 20. Note that the debug command depends on the backend: `jsdebug` for the QuickJS backend, `luadebug` for Lua and `pydebug` for Python; the Node.js backend has none.
 
 *Applies to: LeviLamina + LSE (with the matching script backend installed)*
 
@@ -282,7 +282,7 @@ If the list looks normal, check whether a plugin has a backdoor. When an LSE plu
 
 ## Can I rename a player in LSE (without paying for an Xbox name change)?
 
-Yes, use the `rename` method of the player object: `pl.rename("Steve")` in JS, `pl:rename("Steve")` in Lua. It returns whether it succeeded (`Boolean`). For a temporary rename, run `mc.getPlayer("original name").rename("new name")` in the console with the QuickJS engine's debug command `/jsdebug` (the Node.js engine's equivalent is `nodejsdebug`). This only changes the name shown on the server; it does not change the player's Xbox account name.
+Yes, use the `rename` method of the player object: `pl.rename("Steve")` in JS, `pl:rename("Steve")` in Lua. It returns whether it succeeded (`Boolean`). For a temporary rename, run `mc.getPlayer("original name").rename("new name")` in the console with the QuickJS engine's debug command `/jsdebug` (the Node.js engine has no debug command). This only changes the name shown on the server; it does not change the player's Xbox account name.
 
 *Applies to: LSE all current versions*
 

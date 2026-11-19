@@ -222,7 +222,7 @@ BossBar 的原理是给该玩家发一个假实体（AddActor）再发 BossEvent
 jsdebug mc.getPlayer('玩家名').setMaxHealth(20)
 ```
 
-即可把该玩家最大血量恢复为 20。注意调试命令随后端不同：QuickJS 后端为 `jsdebug`，Node.js 后端为 `nodejsdebug`，Lua 为 `luadebug`，Python 为 `pydebug`。
+即可把该玩家最大血量恢复为 20。注意调试命令随后端不同：QuickJS 后端为 `jsdebug`，Lua 为 `luadebug`，Python 为 `pydebug`；Node.js 后端没有调试命令。
 
 *适用版本：LeviLamina + LSE（对应脚本后端已安装）*
 
@@ -282,7 +282,7 @@ jsdebug JSON.parse(File.readFrom("permissions.json")).map(item => data.xuid2name
 
 ## 能否在 LSE 中给玩家改名（不通过 Xbox 付费改名）？
 
-可以使用玩家对象的 `rename` 方法：JS 中 `pl.rename("Steve")`，Lua 中 `pl:rename("Steve")`，返回是否成功（`Boolean`）。临时改名可在控制台用 QuickJS 引擎的调试命令 `/jsdebug` 执行 `mc.getPlayer("玩家原名").rename("新名字")`（Node.js 引擎对应命令为 `nodejsdebug`）。这只是服务器内显示名，不会修改玩家的 Xbox 账号名。
+可以使用玩家对象的 `rename` 方法：JS 中 `pl.rename("Steve")`，Lua 中 `pl:rename("Steve")`，返回是否成功（`Boolean`）。临时改名可在控制台用 QuickJS 引擎的调试命令 `/jsdebug` 执行 `mc.getPlayer("玩家原名").rename("新名字")`（Node.js 引擎没有调试命令）。这只是服务器内显示名，不会修改玩家的 Xbox 账号名。
 
 *适用版本：LSE 当前所有版本*
 
