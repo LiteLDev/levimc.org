@@ -113,7 +113,10 @@ export interface NavBuildResult {
 /** Sections whose sidebar holds at most this many links open every group; longer ones only the current page's. */
 export const OPEN_ALL_MAX_LINKS = 24;
 
-/** The home page is never a section's page, a pager target or a tab (the brand links it). */
+/**
+ * The home page is never a page of a section's tree or a pager target. It may be the site's first section, a link with
+ * no tree (kit 2.26: Overview), which is then the current section on the home page; the brand links it too.
+ */
 export const HOME_KEY = 'index';
 
 export function countLinks(items: NavItem[]): number {
@@ -230,7 +233,10 @@ export function buildNavigation({ cfg, scan, titles, warn }: NavBuildInput): Nav
             continue;
           }
           if (it.external) warnOnce(`nav: top-level entry '${it.text}' is not a section (an external link: put it in header.links)`);
-          else if (it.key === HOME_KEY) warnOnce(`nav: top-level entry '${it.text}' is not a section (the home page: the brand already links it, remove the entry)`);
+          else if (it.key === HOME_KEY) {
+            // the Overview section (kit 2.26): the home page, first
+            if (tree.indexOf(it) !== 0) warnOnce(`nav: the home page's section '${it.text}' must come first`);
+          }
           else if (it.key) warnOnce(`nav: top-level entry '${it.text}' is not a section (a single page: put it into a section, e.g. its 'Help' group)`);
         }
       }
@@ -249,7 +255,8 @@ export function buildNavigation({ cfg, scan, titles, warn }: NavBuildInput): Nav
       const flatAll = mode === 'tree' ? flatten(tree) : [];
       for (const r of scan.routes.filter((x) => x.locale === code)) {
         const isHome = r.key === HOME_KEY;
-        const idx = isHome ? -1 : tree.findIndex((it) => contains(it, r.key));
+        // the home page is current in its Overview section (a top-level link to it), and in no tree
+        const idx = isHome ? tree.findIndex((it) => !it.items && it.key === HOME_KEY) : tree.findIndex((it) => contains(it, r.key));
         const sidebar = isHome ? undefined : mode === 'tree' ? `${code}:tree` : idx >= 0 && tree[idx]!.items ? `${code}:tab${idx}` : undefined;
         placement.set(r.id, {
           sidebar,

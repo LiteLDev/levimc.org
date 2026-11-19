@@ -38,15 +38,28 @@ export default defineDocsConfig({
   // and LanguageSupport are h5 headings, so keep the full depth instead of the kit default [2, 4].
   outline: [2, 6],
   sidebar: 'tabs',
-  // The LeviMC navigation model (kit/README.md "Navigation model"): every top-level entry is a section (a header tab
-  // and its sidebar tree); the brand links the home page, which introduces the project. Tutorials (installing LSE,
-  // your first plugin) live at https://levimc.org/tutorials/. The API Reference section has more than 24 links, so
-  // only the group holding the current page starts open.
+  // The LeviMC navigation model (kit/README.md "Navigation model"): every top-level entry is a section with its
+  // sidebar tree, the same four on every project's docs, in this order: Overview (the home page: what LSE is, the
+  // engines and a minimal plugin; a link with no tree), Guides (one task each, step by step), Concepts (how plugins,
+  // engines and the API work) and Reference (the API). Tutorials (installing LSE, your first plugin) live at
+  // https://levimc.org/tutorials/, the questions at https://levimc.org/faq/. The pages keep their URLs: Language
+  // Support explains the engines and is in Concepts, but stays at apis/LanguageSupport/. The Reference section has
+  // more than 24 links, so only the group holding the current page starts open.
   nav: [
+    { Overview: 'index.md' },
     {
-      'API Reference': [
+      Guides: [
+        'guides/events.md',
+        'guides/commands.md',
+        'guides/forms.md',
+        'guides/storing_data.md',
+        'guides/logging_and_timers.md',
+      ],
+    },
+    { Concepts: ['concepts/plugins.md', 'concepts/script_api.md', 'apis/LanguageSupport.md'] },
+    {
+      Reference: [
         'apis/README.md',
-        'apis/LanguageSupport.md',
         {
           DataAPI: [
             'apis/DataAPI/ConfigFile.md',
@@ -127,7 +140,8 @@ export default defineDocsConfig({
     'zh/faq/': 'https://levimc.org/zh-Hans/faq/scripts/lse/basics/',
     'zh-Hant/faq/': 'https://levimc.org/zh-Hant/faq/scripts/lse/basics/',
   },
+  // Section titles; the pages are titled by their H1 in each locale.
   navTranslations: {
-    zh: { 'API Reference': 'API 参考' },
+    zh: { Overview: '概览', Guides: '指南', Concepts: '概念', Reference: '参考' },
   },
 });

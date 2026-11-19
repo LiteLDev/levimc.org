@@ -24,3 +24,4 @@ LeviLauncher 可以在启动器内管理多个 Xbox 账号。启动 Minecraft �
 
 - [版本管理](./version-management)
 - [内容管理](./content-management)
+- [快速启动 URI](../reference/quick-launch-uri)

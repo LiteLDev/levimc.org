@@ -43,6 +43,21 @@ page forwards its language-first URLs (`/zh-Hans/lip/x.html`) to where the repos
 `docs/<Project>/package.json` turns both off for it: nothing else to edit. Once its docs are built here, an old URL
 without a redirect page (`/<Project>/zh/missing`) is forwarded language first.
 
+## The shape of a project's docs
+
+Every project's docs have the same four sections in the site column, in this order and no others (kit 2.26,
+"Navigation model" in `kit/README.md`):
+
+1. **Overview** (概览) — the home page, `content/index.md` of each locale: a plain doc page (`# <Project>`, a lead,
+   the introduction and a short demo — no `layout: home` banner) and a section with no pages of its own:
+   `{ text: 'Overview', link: '/' }` (the locale's home) first in `nav`.
+2. **Guides** (指南) — how to do one thing with one feature, step by step; troubleshooting last, in a `Help` group.
+3. **Concepts** (概念) — how it works and why: the model behind the features.
+4. **Reference** (参考) — the complete external interface: API, protocol, CLI, configuration, files, supported versions
+   (LeviLamina's Doxygen C++ Reference is its first link).
+
+Step-by-step tutorials from a clean PC are at levimc.org/tutorials/, questions and answers at levimc.org/faq/.
+
 ## Importing a project
 
 1. Copy the docs sources (markdown, `public/`, layouts) into `docs/<Project>/`; keep the git history if you can.
@@ -118,7 +133,8 @@ export default defineDocsConfig({
     ],
   },
   sidebar: 'tabs',
-  nav: [/* as the project had it */],
+  // Overview (the home page), Guides, Concepts, Reference: see "The shape of a project's docs"
+  nav: [{ Overview: 'index.md' }, { Guides: [/* … */] }, { Concepts: [/* … */] }, { Reference: [/* … */] }],
 });
 ```
 

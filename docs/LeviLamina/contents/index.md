@@ -1,33 +1,7 @@
----
-layout: home
-hero:
-  name: LeviLamina
-  text: Mod loader for Minecraft Bedrock Edition
-  tagline: A lightweight, modular mod loader for Bedrock Dedicated Server and the Windows client, the successor to LiteLoaderBDS
-  image:
-    src: logo.svg
-    alt: LeviLamina
-  actions:
-    - theme: brand
-      text: Run your first server
-      link: https://levimc.org/tutorials/server/first-server/
-    - theme: alt
-      text: Write your first mod
-      link: https://levimc.org/tutorials/develop/first-levilamina-mod/
-    - theme: alt
-      text: C++ Reference
-      link: /LeviLamina/api/
-features:
-  - title: Comprehensive API
-    details: Commands, forms, configuration, events, hooks, services and more for mods written in C++.
-    link: api_reference/index.md
-  - title: Powerful event system
-    details: Subscribe to what happens in the game, from players joining to blocks breaking.
-    link: developer_guides/how_to_guides/event_guide.md
-  - title: Server and client
-    details: Runs on Bedrock Dedicated Server and in the Minecraft client on Windows.
-    link: versions.md
----
+# LeviLamina
+
+A lightweight, modular mod loader for Minecraft Bedrock Edition: for Bedrock Dedicated Server and the Windows client,
+the successor to LiteLoaderBDS.
 
 [![Discord](https://img.shields.io/discord/849252980430864384?style=for-the-badge&logo=discord)](https://discord.gg/v5R5P4vRZk)
 [![Telegram](https://img.shields.io/badge/Telegram-blue?style=for-the-badge&logo=telegram)](https://t.me/LiteLoader)
@@ -39,14 +13,61 @@ features:
 
 LeviLamina is an unofficial mod loader for Minecraft Bedrock Edition. It loads into Bedrock Dedicated Server (BDS)
 or into the Minecraft client on Windows, loads the mods you install, and gives them the API they are written
-against: a comprehensive C++ API, a powerful event system, commands, forms, configuration, hooks and access to the
-game's own classes. It is the successor to LiteLoaderBDS.
+against. It is the successor to LiteLoaderBDS.
 
 - **For server owners**, LeviLamina is the base every server mod builds on: install it into a server and add mods
   to it.
 - **For players**, LeviLamina runs the client mods of a Minecraft installation on Windows.
 - **For mod developers**, LeviLamina is the C++ API (`ll::` and the game's classes) your mod is built against,
   documented on this site and in the [C++ Reference](https://levimc.org/LeviLamina/api/).
+
+What it gives a mod:
+
+- **A comprehensive API**: commands, forms, configuration, events, hooks, services and more for mods written in C++
+  ([the API by topic](api_reference/index.md)).
+- **A powerful event system**: subscribe to what happens in the game, from players joining to blocks breaking
+  ([events and hooks](concepts/events_and_hooks.md), [the event guide](developer_guides/how_to_guides/event_guide.md)).
+- **Server and client**: the same API on Bedrock Dedicated Server and in the Minecraft client on Windows, with a
+  few parts for one of them only ([supported versions](versions.md), [server and client builds](developer_guides/architecture.md#server-vs-client-builds)).
+
+## A mod in a few lines
+
+A LeviLamina mod is a DLL with a `manifest.json` in its own folder under `plugins/` (`mods/` on the client). Its
+entry is a class registered with `LL_REGISTER_MOD`: LeviLamina calls `load()` when it loads the DLL and `enable()`
+once the game has started. This one greets every player who joins:
+
+```cpp
+#include "ll/api/event/EventBus.h"
+#include "ll/api/event/player/PlayerJoinEvent.h"
+#include "ll/api/mod/NativeMod.h"
+#include "ll/api/mod/RegisterHelper.h"
+#include "mc/world/actor/player/Player.h"
+
+class MyMod {
+public:
+    static MyMod& getInstance() {
+        static MyMod instance;
+        return instance;
+    }
+
+    bool load() { return true; }
+
+    bool enable() {
+        ll::event::EventBus::getInstance().emplaceListener<ll::event::PlayerJoinEvent>(
+            [](ll::event::PlayerJoinEvent& event) {
+                ll::mod::NativeMod::current()->getLogger().info("Welcome, {}!", event.self().getRealName());
+            }
+        );
+        return true;
+    }
+};
+
+LL_REGISTER_MOD(MyMod, MyMod::getInstance());
+```
+
+[Mod lifecycle](concepts/mod_lifecycle.md) explains when each of these runs, and
+[Your first LeviLamina mod](https://levimc.org/tutorials/develop/first-levilamina-mod/) builds a mod like it from the
+template, step by step.
 
 ## Where it fits
 
@@ -74,14 +95,21 @@ New to LeviLamina? The tutorials take you from nothing to one thing done, step b
 
 ## On this site
 
-- **Guides**: the [usage guidelines](common_guides/usage_guidelines.md) for servers; [how-to guides](developer_guides/how_to_guides/event_guide.md)
-  for mod developers (events, commands, forms, hooks, i18n …), the
-  [Android native mods API](developer_guides/android/api/mod.md) and the [architecture](developer_guides/architecture.md)
-  of LeviLamina; the [supported versions](versions.md).
-- **Questions**: the [LeviMC FAQ](https://levimc.org/faq/) answers what server owners ask (installing, [error codes](https://levimc.org/faq/server/levilamina/errors/),
-  crashes) and what [mod developers](https://levimc.org/faq/develop/levilamina/basics/) ask.
-- **API**: [each part of the API](api_reference/index.md) explained with examples.
-- **C++ Reference**: [every class and function](https://levimc.org/LeviLamina/api/), generated from the headers.
+- **Guides**: how to use one part of the API, step by step: [events](developer_guides/how_to_guides/event_guide.md),
+  [commands](developer_guides/how_to_guides/command_guide.md), [forms](developer_guides/how_to_guides/form_guide.md),
+  [hooks](developer_guides/how_to_guides/hook_guide.md), [i18n](developer_guides/how_to_guides/i18n_guide.md),
+  [coroutines](developer_guides/how_to_guides/coro_guide.md) and more.
+- **Concepts**: how LeviLamina works: the [mod lifecycle](concepts/mod_lifecycle.md),
+  [events and hooks](concepts/events_and_hooks.md) and the [architecture](developer_guides/architecture.md) of the
+  project.
+- **Reference**: the [C++ Reference](https://levimc.org/LeviLamina/api/) (every class and function, generated from
+  the headers), [the API by topic](api_reference/index.md) with examples, the
+  [Android native mods API](developer_guides/android/api/mod.md), the [supported versions](versions.md) and the
+  [usage guidelines](common_guides/usage_guidelines.md).
+
+Questions? The [LeviMC FAQ](https://levimc.org/faq/) answers what server owners ask (installing,
+[error codes](https://levimc.org/faq/server/levilamina/errors/), crashes) and what
+[mod developers](https://levimc.org/faq/develop/levilamina/basics/) ask.
 
 LeviLamina is open source: see its [repository](https://github.com/LiteLDev/LeviLamina) and
 [how to contribute](https://github.com/LiteLDev/LeviLamina/blob/main/CONTRIBUTING.md).

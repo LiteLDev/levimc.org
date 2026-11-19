@@ -24,3 +24,4 @@ LeviLauncher는 런처 안에서 여러 Xbox 계정을 관리할 수 있습니�
 
 - [버전 관리](./version-management)
 - [콘텐츠 관리](./content-management)
+- [빠른 실행 URI](../reference/quick-launch-uri)

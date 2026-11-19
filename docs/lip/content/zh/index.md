@@ -1,38 +1,6 @@
----
-layout: home
+# lip
 
-hero:
-  name: "lip"
-  text: "运行 LeviLamina 服务器，管理它的模组"
-  tagline: 在终端的一个界面里，搭建 Minecraft 基岩版服务器、安装模组并把它运行起来。
-  image:
-    src: /logo.webp
-    alt: lip
-  actions:
-    - theme: brand
-      text: 第一个服务器
-      link: https://levimc.org/zh-Hans/tutorials/server/first-server/
-    - theme: alt
-      text: 指南
-      link: /zh/interface/tour
-    - theme: alt
-      text: 参考
-      link: /zh/reference/cli
-
-features:
-  - title: 三步开服
-    details: 选好文件夹、游戏版本和加载器，lip 会下载基岩版专用服务器和 LeviLamina，并替你启动服务器。
-    link: https://levimc.org/zh-Hans/tutorials/server/first-server/
-  - title: 来自 levimc.org 的模组
-    details: 浏览模组，看哪些版本与你的服务器相配，连同它们的依赖一起安装、更新或移除。
-    link: /zh/interface/get_mods
-  - title: 一个界面，不用背命令
-    details: 输入 lip，用方向键和 Enter 操作。每一次改动，lip 都会先给你看计划，再去执行。
-    link: /zh/interface/tour
-  - title: 需要时也有命令
-    details: 界面能做的事都有对应的命令，适合写脚本，也适合没有屏幕的服务器。支持 Windows、Linux 和 macOS。
-    link: /zh/reference/cli
----
+在终端的一个界面里，搭建 Minecraft 基岩版服务器、安装模组并把它运行起来。
 
 ## lip 是什么
 

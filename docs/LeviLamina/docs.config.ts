@@ -63,87 +63,89 @@ export default defineDocsConfig({
   markdown: { compat: 'python-markdown', lineNumbers: true, codeTitle: 'pygments' },
   lastUpdated: true,
   sidebar: 'tabs',
-  // The header row (logo + name, the sections, search, the repository icon) fits itself to the width (kit
-  // `header.tabsRow` 'auto'): one row on wide screens, the sections in their own row below when they no longer fit,
-  // then the drawer (opened by the LeviMC bar's menu button).
-  // The LeviMC navigation model (kit/README.md "Navigation model"): every top-level entry is a section, i.e. a header
-  // tab and the sidebar tree of its pages; the brand (logo + name) is the only link to the home page, which introduces
-  // the project. Step-by-step tutorials (install a server, play with mods, your first mod) live at
-  // https://levimc.org/tutorials/; this site keeps guides, reference and explanations; questions and answers are at
-  // https://levimc.org/faq/. Help (supported versions)
-  // comes last. Sections with up to 24 links open every group; longer ones only the group holding the current page.
+  // The LeviMC navigation model (kit/README.md "Navigation model"): every top-level entry is a section, i.e. a tab of
+  // the site column and the sidebar tree of its pages. Every LeviMC project has the same four, in this order:
+  // Overview (the home page alone: what LeviLamina is, with a small mod as the example; no pages below it), Guides
+  // (how to use one part of the API, step by step), Concepts (how LeviLamina works) and Reference (the complete
+  // interface: the C++ reference, the API by topic, the Android native mods API, the supported versions, the usage
+  // guidelines). Step-by-step tutorials (install a server, play with mods, your first mod) live at
+  // https://levimc.org/tutorials/; questions and answers are at https://levimc.org/faq/. Sections with up to 24 links
+  // open every group; longer ones (Reference) only the group holding the current page.
   nav: [
+    { Overview: 'index.md' },
     {
       Guides: [
-        { Server: ['common_guides/usage_guidelines.md'] },
+        'developer_guides/how_to_guides/event_guide.md',
+        'developer_guides/how_to_guides/interface_export_guide.md',
+        'developer_guides/how_to_guides/find_function_guide.md',
+        'developer_guides/how_to_guides/data_driven_ui_guide.md',
+        'developer_guides/how_to_guides/form_guide.md',
+        'developer_guides/how_to_guides/hook_guide.md',
+        'developer_guides/how_to_guides/i18n_guide.md',
+        'developer_guides/how_to_guides/item_guide.md',
+        'developer_guides/how_to_guides/command_guide.md',
+        'developer_guides/how_to_guides/coro_guide.md',
+      ],
+    },
+    {
+      Concepts: [
+        'concepts/mod_lifecycle.md',
+        'concepts/events_and_hooks.md',
+        { Architecture: 'developer_guides/architecture.md' },
+      ],
+    },
+    {
+      Reference: [
+        // The Doxygen C++ reference, first: it makes the section's link /LeviLamina/api/, so the Doxygen header (made
+        // by levimc.org's deploy after this build, into dist/LeviLamina/api/ from api/Doxyfile, its header generated
+        // from dist/LeviLamina/_kit/nav.json) shows this section as the current one. Opened in place, not a new tab.
+        { 'C++ Reference': 'https://levimc.org/LeviLamina/api/' },
+        // LeviLamina's API by topic (URLs api_reference/…), with examples.
         {
-          Developer: [
-            {
-              'How-to Guides': [
-                'developer_guides/how_to_guides/event_guide.md',
-                'developer_guides/how_to_guides/interface_export_guide.md',
-                'developer_guides/how_to_guides/find_function_guide.md',
-                'developer_guides/how_to_guides/data_driven_ui_guide.md',
-                'developer_guides/how_to_guides/form_guide.md',
-                'developer_guides/how_to_guides/hook_guide.md',
-                'developer_guides/how_to_guides/i18n_guide.md',
-                'developer_guides/how_to_guides/item_guide.md',
-                'developer_guides/how_to_guides/command_guide.md',
-                'developer_guides/how_to_guides/coro_guide.md',
-              ],
-            },
-            // Native mods for Minecraft on Android: loaded by LeviLauncher's Android version through the Preloader
-            // SDK, not by LeviLamina (the tutorial is develop/first-android-mod/); titles are the pages' own.
-            {
-              'Android Native Mods API': [
-                'developer_guides/android/api/mod.md',
-                'developer_guides/android/api/mod_menu.md',
-                'developer_guides/android/api/config.md',
-                'developer_guides/android/api/input.md',
-                'developer_guides/android/api/hook.md',
-                'developer_guides/android/api/signature.md',
-                'developer_guides/android/api/patch.md',
-                'developer_guides/android/api/memory_hook_macros.md',
-                'developer_guides/android/api/types_and_macros.md',
-              ],
-            },
-            { Architecture: 'developer_guides/architecture.md' },
+          API: [
+            { Overview: 'api_reference/index.md' },
+            { Base: 'api_reference/base.md' },
+            { Chrono: 'api_reference/chrono.md' },
+            { Command: 'api_reference/command.md' },
+            { Config: 'api_reference/config.md' },
+            { Coroutine: 'api_reference/coro.md' },
+            { Data: 'api_reference/data.md' },
+            { 'Data-driven UI': 'api_reference/data_driven_ui.md' },
+            { Event: 'api_reference/event.md' },
+            { Expected: 'api_reference/expected.md' },
+            { Form: 'api_reference/form.md' },
+            { I18n: 'api_reference/i18n.md' },
+            { 'IO & Logger': 'api_reference/io.md' },
+            { 'Memory & Hook': 'api_reference/memory.md' },
+            { Mod: 'api_reference/mod.md' },
+            { Network: 'api_reference/network.md' },
+            { Reflection: 'api_reference/reflection.md' },
+            { 'Reflection (Advanced)': 'api_reference/reflection_advanced.md' },
+            { Service: 'api_reference/service.md' },
+            { Thread: 'api_reference/thread.md' },
+            { Utils: 'api_reference/utils.md' },
+            { 'Input (Client)': 'api_reference/input.md' },
           ],
         },
-        { Help: [{ 'Supported Versions': 'versions.md' }] },
+        // Native mods for Minecraft on Android: loaded by LeviLauncher's Android version through the Preloader
+        // SDK, not by LeviLamina (the tutorial is develop/first-android-mod/); titles are the pages' own.
+        {
+          'Android Native Mods API': [
+            'developer_guides/android/api/mod.md',
+            'developer_guides/android/api/mod_menu.md',
+            'developer_guides/android/api/config.md',
+            'developer_guides/android/api/input.md',
+            'developer_guides/android/api/hook.md',
+            'developer_guides/android/api/signature.md',
+            'developer_guides/android/api/patch.md',
+            'developer_guides/android/api/memory_hook_macros.md',
+            'developer_guides/android/api/types_and_macros.md',
+          ],
+        },
+        { 'Supported Versions': 'versions.md' },
+        { 'Usage Guidelines': 'common_guides/usage_guidelines.md' },
       ],
     },
-    // Guides to LeviLamina's API by topic (URLs api_reference/…), next to the generated C++ reference below.
-    {
-      API: [
-        { Overview: 'api_reference/index.md' },
-        { Base: 'api_reference/base.md' },
-        { Chrono: 'api_reference/chrono.md' },
-        { Command: 'api_reference/command.md' },
-        { Config: 'api_reference/config.md' },
-        { Coroutine: 'api_reference/coro.md' },
-        { Data: 'api_reference/data.md' },
-        { 'Data-driven UI': 'api_reference/data_driven_ui.md' },
-        { Event: 'api_reference/event.md' },
-        { Expected: 'api_reference/expected.md' },
-        { Form: 'api_reference/form.md' },
-        { I18n: 'api_reference/i18n.md' },
-        { 'IO & Logger': 'api_reference/io.md' },
-        { 'Memory & Hook': 'api_reference/memory.md' },
-        { Mod: 'api_reference/mod.md' },
-        { Network: 'api_reference/network.md' },
-        { Reflection: 'api_reference/reflection.md' },
-        { 'Reflection (Advanced)': 'api_reference/reflection_advanced.md' },
-        { Service: 'api_reference/service.md' },
-        { Thread: 'api_reference/thread.md' },
-        { Utils: 'api_reference/utils.md' },
-        { 'Input (Client)': 'api_reference/input.md' },
-      ],
-    },
-    // The Doxygen C++ reference, a section of this site with its own tree (opened in place, not a new tab): made by
-    // levimc.org's deploy after this build, into dist/LeviLamina/api/ (api/Doxyfile); its header is generated from
-    // dist/LeviLamina/_kit/nav.json, with this tab current.
-    { 'C++ Reference': 'https://levimc.org/LeviLamina/api/' },
   ],
   // Moved pages. Tutorials went to levimc.org/tutorials/ (each locale to the tutorial's own locale); the contributor
   // guides (building LeviLamina, the C++ style) went to docs/contributing/ in the repository (see CONTRIBUTING.md).
@@ -162,16 +164,15 @@ export default defineDocsConfig({
   }),
   navTranslations: {
     zh: {
-      Help: '帮助',
+      Overview: '概览',
       Guides: '指南',
-      Server: '服务器',
-      Developer: '开发者',
-      'How-to Guides': '如何做到······',
-      'Android Native Mods API': 'Android 原生模组 API',
+      Concepts: '概念',
+      Reference: '参考',
       Architecture: '项目架构',
       API: 'API',
       'C++ Reference': 'C++ 参考',
-      Overview: '概览',
+      'Android Native Mods API': 'Android 原生模组 API',
+      'Usage Guidelines': '使用准则',
       Base: '基础类型',
       Chrono: '游戏时间',
       Command: '命令系统',

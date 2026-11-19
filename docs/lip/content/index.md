@@ -1,38 +1,6 @@
----
-layout: home
+# lip
 
-hero:
-  name: "lip"
-  text: "Run a LeviLamina server and manage its mods"
-  tagline: Set up a Minecraft Bedrock server, add mods, and run it, from one screen in your terminal.
-  image:
-    src: /logo.webp
-    alt: lip
-  actions:
-    - theme: brand
-      text: Your first server
-      link: https://levimc.org/tutorials/server/first-server/
-    - theme: alt
-      text: Guide
-      link: /interface/tour
-    - theme: alt
-      text: Reference
-      link: /reference/cli
-
-features:
-  - title: A server in three steps
-    details: Pick a folder, a game version and a loader. lip downloads the Bedrock Dedicated Server and LeviLamina, and starts the server for you.
-    link: https://levimc.org/tutorials/server/first-server/
-  - title: Mods from levimc.org
-    details: Browse the mods, see which versions fit your server, and install, update or remove them together with what they depend on.
-    link: /interface/get_mods
-  - title: One interface, no commands to learn
-    details: Type lip and use the arrow keys and Enter. Every change is shown as a plan before lip applies it.
-    link: /interface/tour
-  - title: Commands when you want them
-    details: Everything the interface does is also a command, for scripts and for servers without a screen. On Windows, Linux and macOS.
-    link: /reference/cli
----
+Set up a Minecraft Bedrock server, add mods, and run it, from one screen in your terminal.
 
 ## What lip is
 

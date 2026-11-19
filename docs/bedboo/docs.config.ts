@@ -8,16 +8,18 @@ const repo = 'https://github.com/LiteLDev/bedboo';
 const site = 'https://github.com/LiteLDev/liteldev.github.io';
 
 const root = {
-  guide: 'Guide',
+  overview: 'Overview',
+  guide: 'Guides',
+  concepts: 'Concepts',
   reference: 'Reference',
-  using: 'Using bedboo',
   connecting: 'Connecting to a server',
   plugins: 'Ecosystem plugins',
   bedd: 'Driving a real client (BeDD)',
   agent: 'Survival agent',
   api: 'API',
+  howItWorks: 'How bedboo works',
+  serverAuthority: 'Server authority',
   differences: 'Bedrock differences',
-  overview: 'Overview',
   connection: 'Connection and versions',
   data: 'Names, ids and data',
   world: 'World and blocks',
@@ -40,16 +42,18 @@ const root = {
 type Labels = typeof root;
 
 const zh: Labels = {
+  overview: '概览',
   guide: '指南',
+  concepts: '概念',
   reference: '参考',
-  using: '使用 bedboo',
   connecting: '连接服务器',
   plugins: '生态插件',
   bedd: '驱动真实客户端（BeDD）',
   agent: '生存智能体',
   api: 'API',
-  differences: 'Bedrock 差异',
-  overview: '概览',
+  howItWorks: 'bedboo 的工作方式',
+  serverAuthority: '服务端权威',
+  differences: '基岩版差异',
   connection: '连接与版本',
   data: '名称、ID 与数据',
   world: '世界与方块',
@@ -70,42 +74,39 @@ const zh: Labels = {
   v12660: 'Bedrock 1.26.60',
 };
 
-// The LeviMC navigation model (kit/README.md "Navigation model"): every top-level entry is a section, i.e. a header
-// tab and the sidebar tree of its pages; the brand links the home page. `p` is the locale's prefix ('/' or '/zh-Hans/');
-// zh-Hant is converted from zh by the kit.
+// The LeviMC navigation model (kit/README.md "Navigation model"): every top-level entry is a section, i.e. an entry
+// of the site column with the sidebar tree of its pages. Four sections, in this order: Overview (the home page itself:
+// what bedboo is, with a code sample; no pages below it), Guides (how to do one thing: connect, load plugins, drive a
+// real client, run the agent), Concepts (how bedboo works and why it behaves as it does) and Reference (the API, the
+// Bedrock differences topic by topic, the BDS notes, the supported versions). The "Overview" entries inside the
+// Reference groups are the groups' index pages. `p` is the locale's prefix ('/' or '/zh-Hans/'); zh-Hant is converted
+// from zh by the kit.
 const nav = (p: string, t: Labels): NavEntry[] => {
   const d = `${p}reference/differences/`;
   const v = `${p}reference/versions/`;
   return [
+    // the home page: what bedboo is, with a bot in a few lines (no pages below it)
+    { text: t.overview, link: p },
     {
       text: t.guide,
       items: [
-        {
-          text: t.using,
-          items: [
-            { text: t.connecting, link: `${p}guide/connecting` },
-            { text: t.plugins, link: `${p}guide/plugins` },
-            { text: t.bedd, link: `${p}guide/bedd` },
-            { text: t.agent, link: `${p}guide/agent` },
-          ],
-        },
+        { text: t.connecting, link: `${p}guide/connecting` },
+        { text: t.plugins, link: `${p}guide/plugins` },
+        { text: t.bedd, link: `${p}guide/bedd` },
+        { text: t.agent, link: `${p}guide/agent` },
+      ],
+    },
+    {
+      text: t.concepts,
+      items: [
+        { text: t.howItWorks, link: `${p}concepts/how-bedboo-works` },
+        { text: t.serverAuthority, link: `${p}concepts/server-authority` },
       ],
     },
     {
       text: t.reference,
       items: [
         { text: t.api, link: `${p}reference/api` },
-        { text: t.bdsNotes, link: `${p}reference/bds` },
-        {
-          text: t.versions,
-          items: [
-            { text: t.overview, link: v },
-            { text: t.v12640, link: `${v}1.26.40` },
-            { text: t.v12645, link: `${v}1.26.45` },
-            { text: t.v12651, link: `${v}1.26.51` },
-            { text: t.v12660, link: `${v}1.26.60` },
-          ],
-        },
         {
           text: t.differences,
           items: [
@@ -122,6 +123,17 @@ const nav = (p: string, t: Labels): NavEntry[] => {
             { text: t.digging, link: `${d}digging` },
             { text: t.pluginPatches, link: `${d}plugins` },
             { text: t.beddMode, link: `${d}bedd` },
+          ],
+        },
+        { text: t.bdsNotes, link: `${p}reference/bds` },
+        {
+          text: t.versions,
+          items: [
+            { text: t.overview, link: v },
+            { text: t.v12640, link: `${v}1.26.40` },
+            { text: t.v12645, link: `${v}1.26.45` },
+            { text: t.v12651, link: `${v}1.26.51` },
+            { text: t.v12660, link: `${v}1.26.60` },
           ],
         },
       ],

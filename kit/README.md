@@ -324,7 +324,7 @@ export default defineDocsConfig({ … });
 | `markdown.admonitionTitles` | `'mkdocs'` ("Note") \| `'vitepress'` ("TIP") | default titles |
 | `markdown.autoTitle` | default `true` for python-markdown | MkDocs Material: pages without `# H1` get one from their nav title / file name |
 | `markdown.literalBackslashes` | `false` | python-markdown only: keep backslashes Python-Markdown does not treat as escapes (`\<T\>` → `\<T>`, byte-identical to MkDocs) |
-| `nav` | `NavEntry[]` or `{ [locale]: NavEntry[] }` | the sections (see [Navigation model](#navigation-model-kit-219)); MkDocs `nav` (verbatim YAML structure works) / VitePress `{ text, items }` objects |
+| `nav` | `NavEntry[]` or `{ [locale]: NavEntry[] }` | the sections (see [Navigation model](#navigation-model-kit-226)); MkDocs `nav` (verbatim YAML structure works) / VitePress `{ text, items }` objects |
 | `navTranslations` | `{ [locale]: { 'User Guides': '用户指南' } }` | static-i18n `nav_translations` |
 | `sidebar` | `'tabs'` (default) \| `'tree'` \| `false` \| `SidebarConfig` \| `{ [locale]: SidebarConfig }` | `'tabs'` = the LeviMC model: every top-level `nav` entry is a section (a tab) and its tree is the sidebar of its pages. The object forms (VitePress array / `{ '/guide/': [...] }` multi-sidebar) are **deprecated** (kit 2.19, build warning) but keep working |
 | `layouts` | `{ name: './path/Component.tsx' }` | custom page layouts for `layout: <name>` frontmatter (props: `CustomLayoutProps` from `kit/docs/app/layout-api.ts`) |
@@ -338,7 +338,7 @@ export default defineDocsConfig({ … });
 | `ui` | `{ [locale]: Partial<UiStrings> }` | override the docs UI strings (e.g. VitePress `docFooter`, `editLink.text`); leave the bar's and footer's labels to the kit |
 | `titleTemplate` | `':title - :site Docs'` | every LeviMC docs site uses the default; home pages (every locale's `index`, and `layout: home`) get the template without `:title` (`LeviLamina Docs`), the 404 page `Page not found - LeviLamina Docs` |
 | `header` | `{ tabsRow?, links? }` | layout of the docs row and its resources slot: see [Header](#header-the-docs-own-row) |
-| `sidebarExpand` | `false` | open every sidebar group (overrides the collapse policy of the [navigation model](#navigation-model-kit-219)) |
+| `sidebarExpand` | `false` | open every sidebar group (overrides the collapse policy of the [navigation model](#navigation-model-kit-226)) |
 | `outDir` | `'dist'` | |
 | `searchExclude` | globs on page keys | |
 | `redirects` | `{ 'old/page': 'new/page' \| 'https://…' }` — a redirect page at each old URL (keeps the `#hash`) | mkdocs-redirects |
@@ -356,36 +356,46 @@ export default defineDocsConfig({ … });
 { text: 'Developer', items: [ … ], collapsed: true }      // VitePress group / dropdown
 ```
 
-### Navigation model (kit 2.22)
+### Navigation model (kit 2.26)
 
 One model on every docs site (and the Doxygen API, which generates its chrome from the LeviLamina docs' `dist/_kit/nav.json`):
 
 * **No header row of the docs' own.** Search is in the LeviMC bar (GlobalBar `search`), which sticks at the top.
-* **The site column** (SiteNav) on every page, home included: the brand (logo + name: the **only** link to the docs
-  home — no Home section), then **2–5 sections**, then the **resources** (`header.links`, then the `repo` GitHub
-  link). Each section is exactly one sidebar tree: the current one is open, the others open in place on a click. A
-  same-site reference that has its own tree and no docs pages (LeviLamina's Doxygen API,
-  `{ 'API Reference': '/LeviLamina/api/' }`) is a section that is a link.
+* **The site column** (SiteNav) on every page, home included: the brand (logo + name → the docs home), then the
+  **sections**, then the **resources** (`header.links`, then the `repo` GitHub link). Each section is exactly one
+  sidebar tree: the current one is open, the others open in place on a click.
+* **The four sections of a project's docs**, in this order and no others (kit 2.26; levimc.org's `docs/<Project>/`):
+  1. **Overview** — the home page itself, a section that is a link and has no pages (`{ text: 'Overview', link: '/' }`,
+     the locale's home: `/zh-Hans/` …); it is the current section on the home page. The project introduced, with a
+     short demo (a code sample, a screenshot).
+  2. **Guides** — task guides, one feature each; troubleshooting last, in a `Help` group.
+  3. **Concepts** — explanations: how it works, the model behind it.
+  4. **Reference** — the complete external interface: API, protocol, CLI, configuration, files, supported versions.
+     A same-site reference with its own tree and no docs pages (LeviLamina's Doxygen API,
+     `{ 'C++ Reference': 'https://levimc.org/LeviLamina/api/' }`) is the **first** link of the Reference tree, so that
+     the section's link in `nav.json` leads into it and the Doxygen pages mark Reference current.
+
+  Labels: Overview / Guides / Concepts / Reference; 概览 / 指南 / 概念 / 参考 (Traditional Chinese 概覽 / 指南 / 概念 /
+  參考). The tutorials and the FAQ are sites of their own sections (by task, by topic).
 * **Sections' trees**: every doc page belongs
   to exactly one section — the build warns `nav: page '<key>' … is in no section` (home and 404 excepted; frontmatter
   `sidebar: false` opts a page out). Groups: all open when the section has ≤ 24 links, otherwise only the group holding
   the current page (`collapsed: false` keeps a group open, `collapsed: true` closed; `sidebarExpand` opens all).
 * **Prev / next** stays inside the active section, never targets the home page and behaves the same in every locale.
-* **Home** = `layout: home` (hero + features + optional markdown body below): the site column starts under the
-  banner and shows once the banner has scrolled away; no edit link, no current section.
-  Its `<meta name="description">` is the config `description` unless the frontmatter sets one.
-* **Order**: sections — guides first, then topic guides, then reference (API, CLI, protocol), contributor material
-  last; inside a section — getting started first, FAQ / troubleshooting / supported versions / privacy last, in a
-  `Help` group.
-* **Lint** (build warnings, tabs mode): `nav: top-level entry 'X' is not a section (…)` for a top-level page, the home
-  page or an external link; `nav: section 'X' has no page`.
+* **Home** = a doc page (`index.md`: an H1, a lead paragraph, the introduction), in the Overview section: no banner.
+  Its `<meta name="description">` is the config `description` unless the frontmatter sets one. (`layout: home`, the
+  hero + features banner, still renders for sites outside levimc.org's docs, see below.)
+* **Lint** (build warnings, tabs mode): `nav: top-level entry 'X' is not a section (…)` for a top-level page other than
+  the home page, or an external link; `nav: the home page's section 'X' must come first`; `nav: section 'X' has no page`.
 
 ```ts
 nav: [
-  { Guide: [{ 'Getting Started': ['guide/install.md', 'guide/first-steps.md'] }, 'guide/usage.md', { Help: ['faq.md', 'troubleshooting.md'] }] },
-  { 'API Reference': ['api/README.md', { Events: ['api/events/listen.md'] }] },
+  { Overview: 'index.md' },
+  { Guides: [{ 'Getting Started': ['guide/install.md', 'guide/first-steps.md'] }, 'guide/usage.md', { Help: ['troubleshooting.md'] }] },
+  { Concepts: ['concepts/how-it-works.md'] },
+  { Reference: ['api/README.md', { Events: ['api/events/listen.md'] }, 'versions.md'] },
 ],
-navTranslations: { zh: { Guide: '指南', 'Getting Started': '入门', Help: '帮助', 'API Reference': 'API 参考' } },
+navTranslations: { zh: { Overview: '概览', Guides: '指南', 'Getting Started': '入门', Help: '帮助', Concepts: '概念', Reference: '参考' } },
 header: { links: [{ kind: 'download', link: 'https://github.com/LiteLDev/<project>/releases/latest' }] },
 repo: 'https://github.com/LiteLDev/<project>',
 ```
@@ -857,7 +867,7 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   docs header's resources slot (`repo`), nowhere else.
 * Don't give a docs site a Home tab, dropdown tabs, single-page tabs or external tabs: tabs are sections (one sidebar
   tree each), the brand is the home link, and downloads / changelogs go to `header.links`
-  ([Navigation model](#navigation-model-kit-219)). Don't leave a doc page outside every section (the build warns).
+  ([Navigation model](#navigation-model-kit-226)). Don't leave a doc page outside every section (the build warns).
 * Don't add a second menu button: on phones and tablets the LeviMC bar's menu button opens the site's own menu.
 
 ## Porting checklist: MkDocs sites (LeviLamina, LegacyScriptEngine)
@@ -955,6 +965,18 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
   `LEVIMC_KIT_SOURCE=<checkout>/kit` and run `scripts/chrome-parity.mjs` against the previews.
 
 ## Changelog
+
+### 2.26.0
+
+**Overview, Guides, Concepts, Reference.** A project's docs have these four sections, in this order, and no banner:
+the home page is a doc page and the first section, Overview, a link with no tree that is current on the home page
+(`{ text: 'Overview', link: '/' }`). See [Navigation model](#navigation-model-kit-226).
+* Docs engine: the home page may be a top-level nav entry (no longer the warning "is not a section"); placed anywhere
+  but first it warns `nav: the home page's section 'X' must come first`. The home page's route gets that section as
+  its `nav`, so the site column marks it current.
+* **Migration**: a site that had `layout: home` writes its home as a doc page (H1, lead, introduction, a demo) and adds
+  `{ Overview: 'index.md' }` (or `{ text, link: '<locale home>' }`) first in `nav`; a same-site reference that was a
+  section of its own becomes the first link of the Reference section.
 
 ### 2.25.0
 

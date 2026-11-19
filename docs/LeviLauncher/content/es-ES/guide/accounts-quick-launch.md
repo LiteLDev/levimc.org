@@ -24,3 +24,4 @@ El inicio rápido (Quick Launch) usa acciones URI de Minecraft para ir directame
 
 - [Gestión de versiones](./version-management)
 - [Gestión de contenido](./content-management)
+- [URI de inicio rápido](../reference/quick-launch-uri)

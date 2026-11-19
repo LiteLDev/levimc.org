@@ -11,11 +11,16 @@ import { defineDocsConfig, type LocaleConfig, type NavEntry } from './kit/docs/n
 const repo = 'https://github.com/LiteLDev/LeviLauncher';
 
 // --- Navigation -----------------------------------------------------------------------------------
-// The LeviMC navigation model (kit/README.md "Navigation model"): one section, the Guide (a header tab and its sidebar
-// tree), with the Help group (troubleshooting, FAQ, the Android privacy policy) last. The brand links the home page,
-// which introduces the project and starts newcomers on the tutorial (levimc.org/tutorials/play/play-with-mods/); the
-// Download page opens Core Workflows and is in the header's resources slot (`header.links`), next to the
-// repository's GitHub icon (`repo`).
+// The LeviMC navigation model (kit/README.md "Navigation model"), the same four sections on every project's site:
+//   Overview  - the home page (what LeviLauncher is, both downloads, a short example), no pages below it;
+//   Guides    - one task per page: Core Workflows (the Download page first), Advanced, then the Help group
+//               (troubleshooting, community & feedback);
+//   Concepts  - how it works: instances and game versions, instance isolation, how mods are loaded;
+//   Reference - the complete interface: the Windows command line, every setting, the folders and files, the Android
+//               Quick Launch URIs, and the Android app's privacy policy.
+// Guide pages stay in guide/ (their URLs are unchanged); the new pages are in concepts/ and reference/. The Download
+// page is also in the resources slot of the site column (`header.links`), next to the repository's GitHub link
+// (`repo`). Every label is translated in the tables below, for each of the nine locales.
 
 interface SidebarLabels {
   coreWorkflows: string;
@@ -31,14 +36,46 @@ interface SidebarLabels {
   faq: string;
   accounts: string;
   privacy: string;
+  instances: string;
+  isolation: string;
+  modLoading: string;
+  commandLine: string;
+  allSettings: string;
+  files: string;
+  quickLaunchUri: string;
 }
 
 /** The sections of one locale; `prefix` is the locale's route prefix ('/' or '/ja/'). */
 function buildNav(prefix: string, t: SidebarLabels, n: NavLabels): NavEntry[] {
-  return [{ text: n.guide, items: buildGuide(`${prefix}guide/`, prefix, t, n) }];
+  return [
+    // the home page: what LeviLauncher is and where to get it (no pages below it)
+    { text: n.overview, link: prefix },
+    { text: n.guides, items: buildGuides(`${prefix}guide/`, prefix, t, n) },
+    {
+      text: n.concepts,
+      items: [
+        { text: t.instances, link: `${prefix}concepts/instances` },
+        { text: t.isolation, link: `${prefix}concepts/isolation` },
+        { text: t.modLoading, link: `${prefix}concepts/mod-loading` },
+      ],
+    },
+    {
+      text: n.reference,
+      items: [
+        // Windows
+        { text: t.commandLine, link: `${prefix}reference/command-line` },
+        { text: t.allSettings, link: `${prefix}reference/settings` },
+        { text: t.files, link: `${prefix}reference/files` },
+        // Android
+        { text: t.quickLaunchUri, link: `${prefix}reference/quick-launch-uri` },
+        // the Android app's privacy policy (English, at the site's root; every locale shows it through i18n.fallback)
+        { text: t.privacy, link: `${prefix}privacy-policy` },
+      ],
+    },
+  ];
 }
 
-function buildGuide(guide: string, prefix: string, t: SidebarLabels, n: NavLabels): NavEntry[] {
+function buildGuides(guide: string, prefix: string, t: SidebarLabels, n: NavLabels): NavEntry[] {
   return [
     {
       text: t.coreWorkflows,
@@ -64,8 +101,6 @@ function buildGuide(guide: string, prefix: string, t: SidebarLabels, n: NavLabel
       items: [
         { text: t.troubleshooting, link: `${guide}update-troubleshooting` },
         { text: t.faq, link: `${guide}faq-community-feedback` },
-        // the Android app's privacy policy (English, outside guide/; every locale shows it through i18n.fallback)
-        { text: t.privacy, link: `${prefix}privacy-policy` },
       ],
     },
   ];
@@ -86,6 +121,13 @@ const SIDEBAR: Record<string, SidebarLabels> = {
     faq: 'Community & Feedback',
     accounts: 'Accounts & Quick Launch',
     privacy: 'Privacy Policy (Android)',
+    instances: 'Instances & Game Versions',
+    isolation: 'Instance Isolation',
+    modLoading: 'How Mods Are Loaded',
+    commandLine: 'Command Line',
+    allSettings: 'All Settings',
+    files: 'Folders & Files',
+    quickLaunchUri: 'Quick Launch URIs (Android)',
   },
   'es-ES': {
     coreWorkflows: 'Flujos principales',
@@ -101,6 +143,13 @@ const SIDEBAR: Record<string, SidebarLabels> = {
     faq: 'Preguntas frecuentes, comunidad y comentarios',
     accounts: 'Cuentas e inicio rápido',
     privacy: 'Política de privacidad (Android)',
+    instances: 'Instancias y versiones del juego',
+    isolation: 'Aislamiento de instancias',
+    modLoading: 'Cómo se cargan los mods',
+    commandLine: 'Línea de comandos',
+    allSettings: 'Todos los ajustes',
+    files: 'Carpetas y archivos',
+    quickLaunchUri: 'URI de inicio rápido (Android)',
   },
   'zh-CN': {
     coreWorkflows: '核心功能',
@@ -116,6 +165,13 @@ const SIDEBAR: Record<string, SidebarLabels> = {
     faq: '社区与反馈',
     accounts: '账号与快速启动',
     privacy: '隐私政策（Android）',
+    instances: '实例与游戏版本',
+    isolation: '实例隔离',
+    modLoading: '模组如何加载',
+    commandLine: '命令行',
+    allSettings: '全部设置',
+    files: '文件夹与文件',
+    quickLaunchUri: '快速启动 URI（Android）',
   },
   'zh-HK': {
     coreWorkflows: '核心功能',
@@ -131,6 +187,13 @@ const SIDEBAR: Record<string, SidebarLabels> = {
     faq: '社群與回饋',
     accounts: '帳號與快速啟動',
     privacy: '私隱政策（Android）',
+    instances: '實例與遊戲版本',
+    isolation: '實例隔離',
+    modLoading: '模組如何載入',
+    commandLine: '命令列',
+    allSettings: '全部設定',
+    files: '資料夾與檔案',
+    quickLaunchUri: '快速啟動 URI（Android）',
   },
   'ru-RU': {
     coreWorkflows: 'Основные рабочие процессы',
@@ -146,6 +209,13 @@ const SIDEBAR: Record<string, SidebarLabels> = {
     faq: 'ЧаВО, сообщество и обратная связь',
     accounts: 'Аккаунты и быстрый запуск',
     privacy: 'Политика конфиденциальности (Android)',
+    instances: 'Инстансы и версии игры',
+    isolation: 'Изоляция инстансов',
+    modLoading: 'Как загружаются моды',
+    commandLine: 'Командная строка',
+    allSettings: 'Все настройки',
+    files: 'Папки и файлы',
+    quickLaunchUri: 'URI быстрого запуска (Android)',
   },
   'de-DE': {
     coreWorkflows: 'Kernabläufe',
@@ -161,6 +231,13 @@ const SIDEBAR: Record<string, SidebarLabels> = {
     faq: 'FAQ, Community & Feedback',
     accounts: 'Konten & Schnellstart',
     privacy: 'Datenschutzerklärung (Android)',
+    instances: 'Instanzen & Spielversionen',
+    isolation: 'Instanz-Isolierung',
+    modLoading: 'Wie Mods geladen werden',
+    commandLine: 'Befehlszeile',
+    allSettings: 'Alle Einstellungen',
+    files: 'Ordner & Dateien',
+    quickLaunchUri: 'Schnellstart-URIs (Android)',
   },
   'ja-JP': {
     coreWorkflows: 'コア機能',
@@ -176,6 +253,13 @@ const SIDEBAR: Record<string, SidebarLabels> = {
     faq: 'FAQ、コミュニティ、フィードバック',
     accounts: 'アカウントとクイック起動',
     privacy: 'プライバシーポリシー（Android）',
+    instances: 'インスタンスとゲームバージョン',
+    isolation: 'インスタンスの隔離',
+    modLoading: 'Mod の読み込み',
+    commandLine: 'コマンドライン',
+    allSettings: 'すべての設定',
+    files: 'フォルダーとファイル',
+    quickLaunchUri: 'クイック起動 URI（Android）',
   },
   'ko-KR': {
     coreWorkflows: '핵심 워크플로우',
@@ -191,6 +275,13 @@ const SIDEBAR: Record<string, SidebarLabels> = {
     faq: '자주 묻는 질문, 커뮤니티 및 피드백',
     accounts: '계정 및 빠른 실행',
     privacy: '개인정보 처리방침(Android)',
+    instances: '인스턴스와 게임 버전',
+    isolation: '인스턴스 격리',
+    modLoading: '모드 로드 방식',
+    commandLine: '명령줄',
+    allSettings: '모든 설정',
+    files: '폴더 및 파일',
+    quickLaunchUri: '빠른 실행 URI(Android)',
   },
   'fr-FR': {
     coreWorkflows: 'Fonctionnalités principales',
@@ -206,25 +297,35 @@ const SIDEBAR: Record<string, SidebarLabels> = {
     faq: 'FAQ, communauté & Retour',
     accounts: 'Comptes & Lancement rapide',
     privacy: 'Politique de confidentialité (Android)',
+    instances: 'Instances & versions du jeu',
+    isolation: 'Isolation des instances',
+    modLoading: 'Chargement des mods',
+    commandLine: 'Ligne de commande',
+    allSettings: 'Tous les paramètres',
+    files: 'Dossiers & fichiers',
+    quickLaunchUri: 'URI de lancement rapide (Android)',
   },
 };
 
-// The section's name (the header tab and the sidebar title) and the Download page's title.
+// The four sections' names (the site column and the sidebar titles) and the Download page's title.
 interface NavLabels {
-  guide: string;
+  overview: string;
+  guides: string;
+  concepts: string;
+  reference: string;
   download: string;
 }
 
 const NAV: Record<string, NavLabels> = {
-  'en-US': { guide: 'Guide', download: 'Download' },
-  'es-ES': { guide: 'Guía', download: 'Descargas' },
-  'zh-CN': { guide: '文档', download: '下载' },
-  'zh-HK': { guide: '文檔', download: '下載' },
-  'ru-RU': { guide: 'Документация', download: 'Загрузки' },
-  'de-DE': { guide: 'Dokumentation', download: 'Downloads' },
-  'ja-JP': { guide: 'ドキュメント', download: 'ダウンロード' },
-  'ko-KR': { guide: '가이드', download: '다운로드' },
-  'fr-FR': { guide: 'Guide', download: 'Téléchargements' },
+  'en-US': { overview: 'Overview', guides: 'Guides', concepts: 'Concepts', reference: 'Reference', download: 'Download' },
+  'es-ES': { overview: 'Resumen', guides: 'Guías', concepts: 'Conceptos', reference: 'Referencia', download: 'Descargas' },
+  'zh-CN': { overview: '概览', guides: '指南', concepts: '概念', reference: '参考', download: '下载' },
+  'zh-HK': { overview: '概覽', guides: '指南', concepts: '概念', reference: '參考', download: '下載' },
+  'ru-RU': { overview: 'Обзор', guides: 'Руководства', concepts: 'Концепции', reference: 'Справочник', download: 'Загрузки' },
+  'de-DE': { overview: 'Überblick', guides: 'Anleitungen', concepts: 'Konzepte', reference: 'Referenz', download: 'Downloads' },
+  'ja-JP': { overview: '概要', guides: 'ガイド', concepts: '概念', reference: 'リファレンス', download: 'ダウンロード' },
+  'ko-KR': { overview: '개요', guides: '가이드', concepts: '개념', reference: '참조', download: '다운로드' },
+  'fr-FR': { overview: "Vue d'ensemble", guides: 'Guides', concepts: 'Concepts', reference: 'Référence', download: 'Téléchargements' },
 };
 
 // --- Locales & UI labels --------------------------------------------------------------------------

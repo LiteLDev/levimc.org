@@ -1,44 +1,7 @@
----
-layout: home
+# Be.D.D.
 
-hero:
-  name: Be.D.D.
-  text: 在后台跑的 Minecraft 测试
-  tagline: 脚本玩 Minecraft 基岩版，你的鼠标、键盘和窗口照常归你用。
-  image:
-    src: /logo.png
-    alt: Be.D.D.
-  actions:
-    - theme: brand
-      text: 从这里开始
-      link: https://levimc.org/zh-Hans/tutorials/automate/bedd/
-    - theme: alt
-      text: 下载
-      link: https://github.com/LiteLDev/BeDD/releases/latest
-    - theme: alt
-      text: 展示
-      link: /zh/gallery
-
-features:
-  - title: 测试时照常用电脑
-    details: 游戏从不抢前台、光标或你的按键。
-    link: /zh/reference/how-it-works
-  - title: 三种驱动方式，省的优先
-    details: 先用 bedboo 的游戏层操作，再把菜单读成文本，最后才模拟输入。
-    link: /zh/guide/operation-modes
-  - title: 多开一起测
-    details: 每个游戏一条 WebSocket；克隆一个实例只要几秒。
-    link: /zh/guide/several-games
-  - title: 一个窗口看全部
-    details: 电脑上所有游戏实时显示在一个管理窗口里；关掉它就关掉全部。
-    link: /zh/guide/several-games#管理窗口
-  - title: 结果确定
-    details: 每个请求都等游戏处理完才返回。
-    link: /zh/reference/how-it-works
-  - title: 任何语言
-    details: 本地 WebSocket 上的 JSON，附 AsyncAPI 规范。
-    link: /zh/guide/integrating
----
+在后台跑的 Minecraft 测试：脚本玩 Minecraft 基岩版，你的鼠标、键盘和窗口照常归你用。
+[下载](https://github.com/LiteLDev/BeDD/releases/latest)，或者[从这里开始](https://levimc.org/zh-Hans/tutorials/automate/bedd/)。
 
 ![管理窗口里的三个无头 Minecraft 游戏跟着测试脚本动](/showcase/desktop.webp)
 
@@ -59,11 +22,48 @@ bot.once('spawn', () => bot.setControlState('forward', true));
 
 按键、聊天、键位绑定、菜单、悬停提示、点击和视角都和玩家操作一样生效。每个请求处理完才返回。
 
+- **测试时照常用电脑。** 游戏从不抢前台、光标或你的按键（[工作原理](/zh/reference/how-it-works)）。
+- **三种驱动方式，省的优先：** 先用 bedboo 的游戏层操作，再把菜单读成文本，最后才模拟输入（[操作模式](/zh/guide/operation-modes)）。
+- **多开一起测。** 每个游戏一条 WebSocket；克隆一个实例只要几秒（[多开](/zh/guide/several-games)）。
+- **一个窗口看全部。** 电脑上所有游戏实时显示在一个管理窗口里；关掉它就关掉全部（[管理窗口](/zh/guide/several-games#管理窗口)）。
+- **结果确定。** 每个请求都等游戏处理完才返回（[工作原理](/zh/reference/how-it-works)）。
+- **任何语言。** 本地 WebSocket 上的 JSON，附 AsyncAPI 规范（[接入你的测试](/zh/guide/integrating)）。
+
 ![你的输入只到你自己的应用；脚本通过各自的 WebSocket 驱动三个后台游戏](/showcase/how-it-feels.svg)
 
 ::: warning 这是测试工具
 `mods\` 里有 Be.D.D. 的游戏不理会你真实的鼠标和键盘，只显示在管理窗口里。Be.D.D. 只装进它自己的克隆，从不装进你玩的实例。
 :::
+
+## 看它运行
+
+直接录制管理窗口和终端（[方法](https://github.com/LiteLDev/BeDD/blob/main/CONTRIBUTING.md#docs-and-showcase)）。
+
+### 三个无头游戏，一个管理窗口
+
+<video controls muted playsinline preload="none" poster="/BeDD/showcase/desktop-poster.webp" src="/BeDD/showcase/desktop.mp4" width="1280" height="720" style="width:100%;height:auto"></video>
+
+一个脚本驱动三个游戏，每个都显示实例、pid 和输入活动。
+
+### 脚本每一行，游戏里立刻生效
+
+<video controls muted playsinline preload="none" poster="/BeDD/showcase/script-and-game-poster.webp" src="/BeDD/showcase/script-and-game.mp4" width="1020" height="360" style="width:100%;height:auto"></video>
+
+`key E` 打开背包，`mouse` 挪动剑，`key ESC` 关闭背包。
+
+### 聊天命令，替你输入
+
+![text 操作在聊天栏里输入 /summon sheep 和 /summon cow](/showcase/chat-summon.webp)
+
+### 指哪儿悬停，指哪儿点
+
+![虚拟光标在背包里触发物品提示](/showcase/inventory-hover.webp)
+
+对移出屏幕的窗口截的 `screenshot`。
+
+### 所有游戏，一个窗口
+
+![管理窗口里的三个无头游戏，旁边是运行脚本的终端](/showcase/desktop-poster.webp)
 
 ## 给谁用
 
@@ -101,6 +101,14 @@ LeviLamina 客户端模组的作者，以及任何要对真实 Minecraft 基岩�
 
 不用 bedboo 时，任何有 WebSocket 客户端的语言都行（[操作模式](/zh/guide/operation-modes)、
 [接入你的测试](/zh/guide/integrating)）。
+
+## 本站的其他内容
+
+- **指南**：[驱动游戏](/zh/guide/usage)、[多开](/zh/guide/several-games)、[接入你的测试](/zh/guide/integrating)、
+  [安装与克隆](/zh/guide/installs)（升级、CI、目录），以及[故障排查](/zh/guide/troubleshooting)。
+- **概念**：三种[操作模式](/zh/guide/operation-modes)、[世界在哪里运行](/zh/guide/modes)和[工作原理](/zh/reference/how-it-works)。
+- **参考**：[命令行](/zh/reference/cli)、[配置](/zh/guide/configuration)、[WebSocket 接口](/zh/reference/websocket)、
+  [UI 控件树](/zh/reference/ui)和 [Tap 协议](/zh/reference/tap)。
 
 ## 名字
 
