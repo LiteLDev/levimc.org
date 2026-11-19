@@ -109,7 +109,7 @@ This will allow the module to be loaded correctly.
 - Created interface to implement programmic support for npm. Support installing third-party extension dependencies via
   package.json
 - Supports ES Modules: set `"type": "module"` in `package.json` to load the plugin as an ES module
-- Use `nodejsdebug` command in the BDS console to enter and exit the Node.js interactive command line environment
+- The Node.js engine has no debug mode: unlike `jsdebug`, `luadebug` and `pydebug`, there is no interactive command line for it in the BDS console
 
 #### ⭐ **Node.js Plugin Development**
 

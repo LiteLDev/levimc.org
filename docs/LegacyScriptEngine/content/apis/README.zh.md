@@ -99,13 +99,12 @@
 
 ## 📡 调试插件
 
-你可以输入这些命令来进入相应的调试模式：
+你可以在服务器控制台输入这些命令来进入相应的调试模式（Node.js 引擎没有调试模式）：
 
 - `jsdebug`: JavaScript调试模式
-- `nodejsdebug`: Node.js调试模式
 - `luadebug`: Lua调试模式
 - `pydebug`: Python调试模式
 
 在调试模式下，你输入的所有文本将被解析为脚本并实时执行，就像浏览器的开发工具的控制台那样。如果发生任何错误，你会看到一个错误报告。
 
-你可以再次输入相同的命令（`jsdebug`/`nodejsdebug`/`luadebug`/`pydebug`）并回车以退出调试模式。
+你可以再次输入相同的命令（`jsdebug`/`luadebug`/`pydebug`）并回车以退出调试模式。

@@ -126,7 +126,7 @@ In addition, there are other settings to change the format of the output log
 
 "Header" is the text at the beginning of the log output entry, which is used to visually distinguish the output source
 of the log.
-By default, message headers are empty by default, i.e. output without headers.
+By default, the header is the plugin's name: LSE gives each plugin a logger named after it.
 
 For example: set a custom header as `logger.setTitle("LeviLamina")`  
 Then the following log output will become like:

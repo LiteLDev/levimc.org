@@ -90,7 +90,7 @@ import { initCommand } from "./plugins/your_plugin/command/command.js"
 - LSE 通过自行实现 Node.js 启动代码，使其可以在嵌入式模式下工作，并实现了不同插件的执行环境隔离
 - 自行编写接口实现了对 npm 的 programmic 支持。支持通过 package.json 安装第三方扩展依赖包
 - 支持 ES 模块：在 `package.json` 中设置 `"type": "module"` 即可将插件作为 ES 模块加载
-- 在BDS控制台中使用`nodejsdebug`命令进入和退出 Node.js 交互式命令行环境
+- Node.js 引擎没有调试模式：不像 `jsdebug`、`luadebug` 和 `pydebug`，BDS 控制台里没有它的交互式命令行
 
 #### ⭐ **Node.js 插件开发方法**
 

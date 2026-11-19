@@ -102,7 +102,7 @@ A separate thread that times by system clock is not used because MC interfaces c
 
 ## In LSE, how do I exit JS debug mode after entering it with `jsdebug`? And how do I get a player's IP?
 
-Enter `jsdebug` again to exit debug mode (`nodejsdebug` for Node.js, `luadebug` for Lua, `pydebug` for Python). Whether the command can be used in game is determined by `debugCommandLevel` in the LSE configuration file `config.json`, which defaults to GameDirectors (OP).
+Enter `jsdebug` again to exit debug mode (`luadebug` for Lua, `pydebug` for Python; Node.js has no debug mode). Whether the command can be used in game is determined by `debugCommandLevel` in the LSE configuration file `config.json`, which defaults to GameDirectors (OP).
 
 To get a player's IP, use `pl.getDevice().ip` (returns IP:port). The `pl.ip` property also exists and returns the address without the port.
 

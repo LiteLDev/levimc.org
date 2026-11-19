@@ -966,6 +966,18 @@ External link verdicts: `ok`, `ok-redirect` (`/releases/latest` and allow-listed
 
 ## Changelog
 
+### 2.26.1
+
+* **Korean and Japanese heading ids are composed (NFC).** The VitePress slug (`slug: 'vitepress'`) decomposes the
+  heading to drop Latin accents and left it so: `배경` became conjoining jamo and `が` a kana plus a voicing mark, an id
+  that no link typed by hand or by a browser matches. The slug is composed again after the accents are dropped; Latin,
+  Chinese and every other id are unchanged.
+* **React and react-router in their own chunk** (`assets/react.<hash>.js`). The app chunk keeps the site's code and
+  its route table, which grows with pages × locales: LeviLauncher's nine locales had pushed it over Vite's 500 kB
+  warning.
+* **Migration**: none. A link to a Korean or Japanese heading of a VitePress-slug site written with the decomposed id
+  (copied from a page built before) points at the composed one now; `linkcheck` reports any left.
+
 ### 2.26.0
 
 **Overview, Guides, Concepts, Reference.** A project's docs have these four sections, in this order, and no banner:

@@ -28,7 +28,9 @@ export function uniquePymdownx(id: string, used: Set<string>): string {
   return out;
 }
 
-// @mdit-vue/shared slugify (VitePress default).
+// @mdit-vue/shared slugify (VitePress default), with one change (kit 2.26.1): the text is composed again (NFC) after
+// the Latin accents are dropped. VitePress leaves it decomposed, so a Korean or Japanese heading (배경, が) got an id
+// in conjoining jamo / separate voicing marks that no link written by hand (or by a browser) ever matches.
 const rControl = /[\u0000-\u001f]/g;
 const rSpecial = /[\s~`!@#$%^&*()\-_+=[\]{}|\\;:"'“”‘’<>,.?/]+/g;
 const rCombining = /[̀-ͯ]/g;
@@ -37,6 +39,7 @@ export function slugVitepress(text: string): string {
   return text
     .normalize('NFKD')
     .replace(rCombining, '')
+    .normalize('NFC')
     .replace(rControl, '')
     .replace(rSpecial, '-')
     .replace(/-{2,}/g, '-')

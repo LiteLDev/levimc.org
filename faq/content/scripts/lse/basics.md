@@ -102,7 +102,7 @@ Only the Windows client is supported; the Android client is not.
 The official LSE release does not provide a breakpoint debugger (you would have to modify the LSE source and recompile it; and even then, the client disconnects by timeout while the server is paused at a breakpoint).
 
 - The usual approach is to add log output and reload the plugin with `ll reload <plugin name>`, without restarting the whole server.
-- LSE also provides interactive command lines for simple testing: in the BDS console, enter `jsdebug` (QuickJS), `nodejsdebug`, `luadebug` or `pydebug` to enter or leave the interactive environment of the matching engine.
+- LSE also provides interactive command lines for simple testing: in the BDS console, enter `jsdebug` (QuickJS), `luadebug` or `pydebug` (Node.js has none) to enter or leave the interactive environment of the matching engine.
 - TypeScript must first be compiled to JS with `tsc`. Error locations refer to the compiled JS, so you need to map them back to the TS source manually using the sourcemap.
 - C++ mods can attach the Visual Studio debugger directly.
 

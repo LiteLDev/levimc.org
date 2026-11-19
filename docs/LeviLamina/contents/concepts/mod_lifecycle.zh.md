@@ -17,19 +17,19 @@
 模组要么是 `Enabled`（已启用），要么是 `Disabled`（已禁用）（`Mod::State`）：刚加载的模组在启用之前处于禁用状态。
 游戏停止时，模组会被禁用，而不会被卸载。
 
-使用 `LL_REGISTER_MOD(Class, instance)`（参见 [Mod（模组系统）](../api_reference/mod.md)中的“注册模组入口”）时，
+使用 `LL_REGISTER_MOD(Class, instance)`（参见 [Mod（模组系统）](../api_reference/mod.md#注册模组入口)中的“注册模组入口”）时，
 `load()` 是必需的，`enable()`、`disable()` 和 `unload()` 在类定义了它们时才会被使用。没有 `unload()` 的原生模组无法在运行时卸载：
 LeviLamina 会以“The mod does not register an unload function”拒绝。
 
 ## 查找模组
 
 启动时，LeviLamina 会查看模组根目录中的每个文件夹：服务端为 `plugins/`，客户端为 `mods/`（参见
-[Mod（模组系统）](../api_reference/mod.md)中的“目录结构”）。
+[Mod（模组系统）](../api_reference/mod.md#目录结构)中的“目录结构”）。
 
 - 没有 `manifest.json` 或其内容为空的文件夹会被跳过。
 - 清单中的 `name` 必须与文件夹名相同，否则不会加载该模组（“Mod name … do not match folder …”）。
 - 类型为 `preload-native` 的清单会被跳过：它们由 PreLoader 在游戏启动之前加载，不属于 LeviLamina 模组（参见
-  [Mod（模组系统）](../api_reference/mod.md)中的“模组类型”）。
+  [Mod（模组系统）](../api_reference/mod.md#模组类型)中的“模组类型”）。
 
 ## 选择与排序
 
@@ -77,7 +77,7 @@ DLL 的静态对象在 DLL 加载时、`load()` 之前创建：用 `LL_AUTO_` �
 - **卸载**：先禁用该模组；然后运行它的 `unload()`，从事件总线上移除它的监听器和它提供的事件，并释放它的 DLL。
 
 当依赖某个模组的模组仍处于启用或加载状态时，该模组不能被禁用或卸载：LeviLamina 会回答“… still depends on …”。
-`loadBefore` 不会建立这种关系（参见 [Mod（模组系统）](../api_reference/mod.md)中的“依赖语义”）。
+`loadBefore` 不会建立这种关系（参见 [Mod（模组系统）](../api_reference/mod.md#依赖语义)中的“依赖语义”）。
 
 ## 在运行时管理模组
 

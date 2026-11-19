@@ -158,6 +158,10 @@ export function kitDocs(userConfig: DocsConfig, options: KitDocsPluginOptions = 
                 input: { app: appHtml },
                 output: {
                   chunkFileNames: (chunk) => (chunk.facadeModuleId?.startsWith(R_PAGE) ? 'assets/pages/[name].[hash].js' : 'assets/[name].[hash].js'),
+                  // React and the router in a chunk of their own (kit 2.26.1): the app chunk keeps the site's code and
+                  // its route table, which grows with the pages × locales (LeviLauncher: 9 locales), and the
+                  // libraries stay cached across deploys that change only the content.
+                  manualChunks: (id: string) => (/[\\/]node_modules[\\/](react|react-dom|react-router|scheduler)[\\/]/.test(id) ? 'react' : undefined),
                 },
               },
             },
