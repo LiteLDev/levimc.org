@@ -24,3 +24,4 @@ Der Schnellstart (Quick Launch) nutzt Minecraft-URI-Aktionen, um direkt in häuf
 
 - [Versionsverwaltung](./version-management)
 - [Inhaltsverwaltung](./content-management)
+- [Schnellstart-URIs](../reference/quick-launch-uri)

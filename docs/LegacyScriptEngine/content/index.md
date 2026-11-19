@@ -1,31 +1,7 @@
----
-layout: home
-hero:
-  name: LegacyScriptEngine
-  tagline: A plugin engine for running LLSE plugins on LeviLamina
-  image:
-    src: img/logo.png
-    alt: LegacyScriptEngine
-  actions:
-    - theme: brand
-      text: Your first script plugin
-      link: https://levimc.org/tutorials/develop/first-script-plugin/
-    - theme: alt
-      text: Install it on your server
-      link: https://levimc.org/tutorials/server/install-mods/
-    - theme: alt
-      text: API Reference
-      link: apis/README.md
-features:
-  - title: Four script engines
-    details: Lua, QuickJS, Node.js and Python, each installed with lip as its own package variant.
-    link: apis/LanguageSupport.md
-  - title: Runs LLSE plugins
-    details: Put LLSE plugins in plugins/ and start the server; they are migrated automatically and get a LeviLamina mod manifest.
-  - title: The LLSE API
-    details: Events, players, blocks, items, NBT, forms, files, network and more.
-    link: apis/README.md
----
+# LegacyScriptEngine
+
+A plugin engine for running LLSE plugins on LeviLamina: write plugins for a Minecraft Bedrock server in JavaScript,
+Lua or Python instead of C++.
 
 ## What LegacyScriptEngine is
 
@@ -35,12 +11,55 @@ on LeviLamina with little or no change, and new plugins use the same API, docume
 
 LSE runs on Bedrock Dedicated Server and in the Minecraft client on Windows. Like every LeviLamina mod, it is
 installed with [lip](https://levimc.org/lip/) on a server and with [LeviLauncher](https://levimc.org/LeviLauncher/)
-on the client.
+on the client: see [Install mods on your server](https://levimc.org/tutorials/server/install-mods/).
+
+With LSE you get:
+
+- **Four script engines**: Lua, QuickJS, Node.js and Python, each installed with lip as its own package variant (see
+  [Language support](apis/LanguageSupport.md)).
+- **LLSE plugins that keep running**: put LLSE plugins in `plugins/` and start the server; they are migrated
+  automatically and get a LeviLamina mod manifest (see [Plugins and engines](concepts/plugins.md)).
+- **The LLSE API**: events, players, blocks, items, NBT, forms, files, network and more (see the
+  [API reference](apis/README.md)).
+
+## A plugin in a few lines
+
+A plugin is a folder in `mods/` (or `plugins/`, the same folder) with a script and a `manifest.json` that names the
+engine to run it. This one, in JavaScript, greets every player who joins and adds a console command:
+
+```json
+{
+    "entry": "main.js",
+    "name": "MyPlugin",
+    "type": "lse-quickjs",
+    "dependencies": [
+        {
+            "name": "legacy-script-engine-quickjs"
+        }
+    ]
+}
+```
+
+```js
+log("MyPlugin is running!");
+
+mc.regConsoleCmd("greet", "Greets someone from the console", (args) => {
+    log(`Hello, ${args[0] ?? "world"}!`);
+});
+
+mc.listen("onJoin", (player) => {
+    player.tell(`Welcome, ${player.name}!`);
+});
+```
+
+Start the server and the console shows `MyPlugin is running!`; type `greet Steve` and it answers `Hello, Steve!`.
+[Your first script plugin](https://levimc.org/tutorials/develop/first-script-plugin/) builds this plugin step by
+step, from installing the engine to seeing it in the game.
 
 ## Engines
 
 Each language has its own engine, installed as a variant of the `LegacyScriptEngine` package. One API serves all of
-them, so the reference applies to every language (see [Language Support](apis/LanguageSupport.md) for what differs).
+them, so the reference applies to every language (see [Language support](apis/LanguageSupport.md) for what differs).
 
 | Variant | Language | Engine |
 |---|---|---|
@@ -72,10 +91,17 @@ LeviLamina mod manifest (`manifest.json`). Restart the server to load them.
 
 ## On this site
 
-- **API Reference**: [every API](apis/README.md) of LSE: events, players, blocks, items, NBT, forms, files, network
+- **Guides**: how to do one thing in a plugin, step by step: [listen to events](guides/events.md),
+  [register commands](guides/commands.md), [show forms](guides/forms.md), [store data](guides/storing_data.md), and
+  [log and schedule](guides/logging_and_timers.md).
+- **Concepts**: [plugins and engines](concepts/plugins.md) (the manifest, loading, migration),
+  [language support](apis/LanguageSupport.md) (what differs per engine) and [how the API works](concepts/script_api.md)
+  (globals, objects, callbacks).
+- **Reference**: [every API](apis/README.md) of LSE: events, players, blocks, items, NBT, forms, files, network
   and more. For editor hints and project scaffolding, see
   [legacy-script-engine-api](https://github.com/LiteLDev/legacy-script-engine-api).
-- **Questions**: the [LegacyScriptEngine FAQ](https://levimc.org/faq/scripts/lse/basics/), with the questions of every LeviMC project.
+- **Questions**: the [LegacyScriptEngine FAQ](https://levimc.org/faq/scripts/lse/basics/), with the questions of every
+  LeviMC project.
 
 LegacyScriptEngine is open source: see its [repository](https://github.com/LiteLDev/LegacyScriptEngine) and
 [how to contribute](https://github.com/LiteLDev/LegacyScriptEngine/blob/develop/CONTRIBUTING.md) (issues,

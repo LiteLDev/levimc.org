@@ -8,12 +8,11 @@ import { defineDocsConfig, type NavEntry } from './kit/docs/node/config.ts';
 const repo = 'https://github.com/LiteLDev/BeDD';
 
 interface Labels {
-  guide: string;
+  overview: string;
+  guides: string;
+  concepts: string;
   reference: string;
-  gallery: string;
-  showcase: string;
   help: string;
-  scripts: string;
   usage: string;
   installs: string;
   severalGames: string;
@@ -22,6 +21,7 @@ interface Labels {
   integrating: string;
   configuration: string;
   troubleshooting: string;
+  cli: string;
   websocket: string;
   ui: string;
   tap: string;
@@ -30,12 +30,11 @@ interface Labels {
 
 const LABELS: Record<string, Labels> = {
   root: {
-    guide: 'Guide',
+    overview: 'Overview',
+    guides: 'Guides',
+    concepts: 'Concepts',
     reference: 'Reference',
-    gallery: 'Gallery',
-    showcase: 'Showcase',
     help: 'Help',
-    scripts: 'Writing tests',
     usage: 'Driving the game',
     installs: 'Installs and clones',
     severalGames: 'Several games at once',
@@ -44,18 +43,18 @@ const LABELS: Record<string, Labels> = {
     integrating: 'Integrating with your tests',
     configuration: 'Configuration',
     troubleshooting: 'Troubleshooting',
+    cli: 'Command line',
     websocket: 'WebSocket API',
     ui: 'UI tree',
     tap: 'Tap protocol',
     howItWorks: 'How it works',
   },
   zh: {
-    guide: '指南',
+    overview: '概览',
+    guides: '指南',
+    concepts: '概念',
     reference: '参考',
-    gallery: '展示',
-    showcase: '作品展示',
     help: '帮助',
-    scripts: '编写测试',
     usage: '驱动游戏',
     installs: '安装与克隆',
     severalGames: '多开',
@@ -64,6 +63,7 @@ const LABELS: Record<string, Labels> = {
     integrating: '接入你的测试',
     configuration: '配置',
     troubleshooting: '故障排查',
+    cli: '命令行',
     websocket: 'WebSocket 接口',
     ui: 'UI 控件树',
     tap: 'Tap 协议',
@@ -71,43 +71,48 @@ const LABELS: Record<string, Labels> = {
   },
 };
 
-// The LeviMC navigation model (kit/README.md "Navigation model"): every top-level entry is a section, i.e. a header
-// tab and the sidebar tree of its pages; the brand links the home page. `p` is the locale's URL prefix ('/' or '/zh-Hans/');
+// The LeviMC navigation model (kit/README.md "Navigation model"): every top-level entry is a section with the sidebar
+// tree of its pages, the same four on every LeviMC docs site, in this order: Overview (the home page alone: what
+// Be.D.D. is, with the recordings of it running), Guides (one task each; Help last), Concepts (the ideas behind it)
+// and Reference (the whole interface: command line, configuration, WebSocket, UI tree, tap). The pages keep the URLs
+// they had: the concepts are still under guide/ and reference/. `p` is the locale's URL prefix ('/' or '/zh-Hans/');
 // zh-Hant is converted from zh by the kit.
 const nav = (p: string, t: Labels): NavEntry[] => [
+  { text: t.overview, link: p },
   {
-    text: t.guide,
+    text: t.guides,
     items: [
-      {
-        text: t.scripts,
-        items: [
-          { text: t.usage, link: `${p}guide/usage` },
-          { text: t.operationModes, link: `${p}guide/operation-modes` },
-          { text: t.severalGames, link: `${p}guide/several-games` },
-          { text: t.modes, link: `${p}guide/modes` },
-          { text: t.integrating, link: `${p}guide/integrating` },
-          { text: t.configuration, link: `${p}guide/configuration` },
-          { text: t.installs, link: `${p}guide/installs` },
-        ],
-      },
-      { text: t.showcase, items: [{ text: t.gallery, link: `${p}gallery` }] },
+      { text: t.usage, link: `${p}guide/usage` },
+      { text: t.severalGames, link: `${p}guide/several-games` },
+      { text: t.integrating, link: `${p}guide/integrating` },
+      { text: t.installs, link: `${p}guide/installs` },
       { text: t.help, items: [{ text: t.troubleshooting, link: `${p}guide/troubleshooting` }] },
+    ],
+  },
+  {
+    text: t.concepts,
+    items: [
+      { text: t.operationModes, link: `${p}guide/operation-modes` },
+      { text: t.modes, link: `${p}guide/modes` },
+      { text: t.howItWorks, link: `${p}reference/how-it-works` },
     ],
   },
   {
     text: t.reference,
     items: [
+      { text: t.cli, link: `${p}reference/cli` },
+      { text: t.configuration, link: `${p}guide/configuration` },
       { text: t.websocket, link: `${p}reference/websocket` },
       { text: t.ui, link: `${p}reference/ui` },
       { text: t.tap, link: `${p}reference/tap` },
-      { text: t.howItWorks, link: `${p}reference/how-it-works` },
     ],
   },
 ];
 
 // Pages that left the site (kit README "Site config API", `redirects`): every URL they had, in every locale and under
 // the former zh/ prefix, answers with a redirect. Setting up and the first run are the levimc.org tutorial; the
-// introduction is the home page; building and contributing is CONTRIBUTING.md in the repository.
+// introduction and the gallery (its recordings) are the home page; building and contributing is CONTRIBUTING.md in
+// the repository.
 const TUTORIAL = 'https://levimc.org/tutorials/automate/bedd/';
 const TUTORIAL_HANS = 'https://levimc.org/zh-Hans/tutorials/automate/bedd/';
 const TUTORIAL_HANT = 'https://levimc.org/zh-Hant/tutorials/automate/bedd/';
@@ -122,6 +127,7 @@ for (const [prefix, tutorial, home] of [
   redirects[`${prefix}guide/installation`] = tutorial;
   redirects[`${prefix}guide/new-pc`] = tutorial;
   redirects[`${prefix}guide/introduction`] = home;
+  redirects[`${prefix}gallery`] = home;
   redirects[`${prefix}reference/building`] = CONTRIBUTING;
 }
 

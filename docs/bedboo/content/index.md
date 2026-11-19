@@ -1,41 +1,6 @@
----
-layout: home
+# bedboo
 
-hero:
-  name: bedboo
-  text: Bedrock bots with the mineflayer API
-  tagline: A Minecraft Bedrock Edition bot library with a mineflayer-compatible API. Your mineflayer bot and its plugins join a Bedrock Dedicated Server unchanged.
-  image:
-    src: /logo.png
-    alt: bedboo
-  actions:
-    - theme: brand
-      text: Start here
-      link: https://levimc.org/tutorials/automate/first-bedboo-bot/
-    - theme: alt
-      text: API
-      link: /reference/api
-
-features:
-  - title: The mineflayer API
-    details: createBot(), every bot.* property, method and event, and the TypeScript types of mineflayer 4.39.0, with the same arguments, errors and event order.
-    link: /reference/api
-  - title: Plugins run unchanged
-    details: mineflayer-pathfinder, -pvp, -collectblock, -tool, -armor-manager and -auto-eat load with bot.loadPlugin() and work on Bedrock.
-    link: /guide/plugins
-  - title: RakNet and NetherNet
-    details: Joins every stable BDS from 1.26.42.1 to 1.26.63.1 (four protocol families) over RakNet or NetherNet, offline or with a Microsoft account.
-    link: /guide/connecting
-  - title: Every difference documented
-    details: Bedrock block names, server-authoritative inventory, digging and movement. Each inherent Java/Bedrock difference is written down.
-    link: /reference/differences/
-  - title: Drive a real client
-    details: With transport 'bedd' the same script drives a real Minecraft Bedrock client hosted by Be.D.D.
-    link: /guide/bedd
-  - title: A survival agent included
-    details: "@bedboo/agent plays survival from wood to diamonds, builds and fights, all through the public API."
-    link: /guide/agent
----
+Bedrock bots with the mineflayer API: your mineflayer bot and its plugins join a Bedrock Dedicated Server unchanged.
 
 bedboo is a Minecraft Bedrock Edition bot library with a mineflayer-compatible API. It offers the same `createBot()`,
 the same `bot.*` properties, methods and events, the same TypeScript types and the same plugin system as
@@ -57,13 +22,28 @@ New to bedboo? The tutorial [Your first bedboo bot](https://levimc.org/tutorials
 code, prepares a server and connects a bot that walks to you.
 :::
 
+## What it offers {#features}
+
+- **The mineflayer API.** `createBot()`, every `bot.*` property, method and event, and the TypeScript types of
+  mineflayer 4.39.0, with the same arguments, errors and event order ([API](reference/api.md)).
+- **Plugins run unchanged.** mineflayer-pathfinder, -pvp, -collectblock, -tool, -armor-manager and -auto-eat load with
+  `bot.loadPlugin()` and work on Bedrock ([Ecosystem plugins](guide/plugins.md)).
+- **RakNet and NetherNet.** It joins every stable BDS from 1.26.42.1 to 1.26.63.1 (four protocol families) over
+  RakNet or NetherNet, offline or with a Microsoft account ([Connecting to a server](guide/connecting.md)).
+- **Every difference documented.** Bedrock block names, server-authoritative inventory, digging and movement: each
+  inherent Java/Bedrock difference is written down ([Bedrock differences](reference/differences/index.md)).
+- **Drive a real client.** With `transport: 'bedd'` the same script drives a real Minecraft Bedrock client hosted by
+  Be.D.D. ([Driving a real client](guide/bedd.md)).
+- **A survival agent included.** `@bedboo/agent` plays survival from wood to diamonds, builds and fights, all through
+  the public API ([Survival agent](guide/agent.md)).
+
 ## Who it is for
 
 - **mineflayer users** who want their bots and plugins on a Bedrock server: mineflayer's documentation, examples and
   plugins apply unchanged.
 - **Server and mod authors** who test a BDS (or a [LeviLamina](https://levimc.org/LeviLamina/) server) with scripted
   players.
-- **Client mod authors** who drive a real Minecraft client through [Be.D.D.](/guide/bedd) with the same bot code.
+- **Client mod authors** who drive a real Minecraft client through [Be.D.D.](guide/bedd.md) with the same bot code.
 
 ## Why
 
@@ -73,18 +53,18 @@ and block breaking, and its own movement physics, so Java bots and their plugins
 closes that gap without inventing a new API.
 
 The only differences are inherent Java/Bedrock ones: Bedrock block and item names, no teams, server-authoritative
-inventory and block breaking, and so on. Each of them is listed in the [Bedrock differences](/reference/differences/).
+inventory and block breaking, and so on. Each of them is listed in the [Bedrock differences](reference/differences/index.md).
 
 ## What is supported
 
 - **Servers:** every stable BDS from 1.26.42.1 (August 7, 2026) to 1.26.63.1 (November 6, 2026), in four protocol
   families: 1.26.40 (protocol 2168), 1.26.45 (2169), 1.26.51 (2193, the default) and 1.26.60 (2225).
   `createBot({ version })` takes the family or the BDS build; `bot.version` is the family. See
-  [Supported versions](/reference/versions/).
+  [Supported versions](reference/versions/index.md).
 - **Transports:** RakNet by default; NetherNet (BDS's default transport) with `transport: 'nethernet'`
-  ([Connecting to a server](/guide/connecting#transports)).
+  ([Connecting to a server](guide/connecting.md#transports)).
 - **Auth:** `auth: 'offline'` (default) for `online-mode=false` servers, `auth: 'microsoft'` for Xbox Live.
-- **Real client:** `transport: 'bedd'` drives a real Bedrock client hosted by [Be.D.D.](/guide/bedd) instead.
+- **Real client:** `transport: 'bedd'` drives a real Bedrock client hosted by [Be.D.D.](guide/bedd.md) instead.
 - **Runtime:** Node.js 24 or newer. RakNet needs x64 (raknet-native ships x64 prebuilds only); NetherNet is pure
   JavaScript.
 
@@ -93,7 +73,7 @@ inventory and block breaking, and so on. Each of them is listed in the [Bedrock 
 | Project | Role |
 |---|---|
 | [mineflayer](https://github.com/PrismarineJS/mineflayer) | the API bedboo implements, and the source of its plugins |
-| [Be.D.D.](https://levimc.org/BeDD/) | hosts a real Minecraft Bedrock client that bedboo drives with `transport: 'bedd'` ([guide](/guide/bedd)) |
+| [Be.D.D.](https://levimc.org/BeDD/) | hosts a real Minecraft Bedrock client that bedboo drives with `transport: 'bedd'` ([guide](guide/bedd.md)) |
 | [LeviLamina](https://levimc.org/LeviLamina/) | the mod loader for BDS and the client: a LeviLamina server is a BDS that bedboo joins like any other |
 
 ## How it is built
@@ -109,6 +89,7 @@ inventory and block breaking, and so on. Each of them is listed in the [Bedrock 
 
 Small fixes to those dependencies are pnpm patches in the repository's `patches/` folder, which is why bedboo is used
 from its monorepo for now (the [tutorial](https://levimc.org/tutorials/automate/first-bedboo-bot/) shows how).
+[How bedboo works](concepts/how-bedboo-works.md) explains how these parts fit together.
 
 ## Packages
 
@@ -116,9 +97,21 @@ from its monorepo for now (the [tutorial](https://levimc.org/tutorials/automate/
 |---|---|
 | `bedboo` | the library |
 | `@bedboo/bedrock-data` | the Bedrock data overlays for minecraft-data, one per supported family |
-| `@bedboo/agent` | a scripted survival agent built on bedboo ([Survival agent](/guide/agent)) |
+| `@bedboo/agent` | a scripted survival agent built on bedboo ([Survival agent](guide/agent.md)) |
 
 ## The name
 
 bedboo (Bedrock + Bangboo) is named after the Bangboo of Zenless Zone Zero: a Bangboo goes into the Hollows on a
 Proxy's behalf, your bot goes into a Bedrock server on yours.
+
+## On this site {#on-this-site}
+
+- **Guides**: [connecting to a server](guide/connecting.md) (server settings, versions, accounts, transports),
+  [ecosystem plugins](guide/plugins.md), [driving a real client](guide/bedd.md) with Be.D.D. and the
+  [survival agent](guide/agent.md). A first bot from zero is the tutorial
+  [Your first bedboo bot](https://levimc.org/tutorials/automate/first-bedboo-bot/).
+- **Concepts**: [how bedboo works](concepts/how-bedboo-works.md) (the layers under the mineflayer API) and
+  [server authority](concepts/server-authority.md) (how bedboo keeps the API on Bedrock's server-authoritative
+  movement, inventory and digging).
+- **Reference**: the [API](reference/api.md), the [Bedrock differences](reference/differences/index.md) topic by
+  topic, the [BDS notes](reference/bds.md) and the [supported versions](reference/versions/index.md).

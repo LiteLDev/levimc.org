@@ -12,6 +12,7 @@ const repo = 'https://github.com/LiteLDev/lip';
 const SOURCES = 'https://github.com/LiteLDev/liteldev.github.io';
 
 interface Labels {
+  overview: string;
   guide: string;
   usingInterface: string;
   tour: string;
@@ -48,7 +49,8 @@ type Locale = 'root' | 'zh' | 'zh-Hant';
 
 const LABELS: Record<Locale, Labels> = {
   root: {
-    guide: 'Guide',
+    overview: 'Overview',
+    guide: 'Guides',
     usingInterface: 'Using the interface',
     tour: 'A tour of the interface',
     home: 'Home',
@@ -79,6 +81,7 @@ const LABELS: Record<Locale, Labels> = {
     commands: 'Commands',
   },
   zh: {
+    overview: '概览',
     guide: '指南',
     usingInterface: '使用界面',
     tour: '界面导览',
@@ -112,6 +115,7 @@ const LABELS: Record<Locale, Labels> = {
   // Written by hand, with the words of the interface in Traditional Chinese: the conversion of the kit works on
   // characters only (服務器, 設置, 界面), and the pages are made by scripts/zh-hant.mjs (see CONTRIBUTING.md).
   'zh-Hant': {
+    overview: '概覽',
     guide: '指南',
     usingInterface: '使用介面',
     tour: '介面導覽',
@@ -151,6 +155,8 @@ const COMMANDS = ['cache_clean', 'config', 'daemon', 'install', 'list', 'pkg_ini
  * a link of the nav names a page by its source, and the kit gives it the URL of its locale (zh/ is at zh-Hans/).
  */
 const nav = (p: string, t: Labels): NavEntry[] => [
+  // the home page: what lip is, with a picture of it running (no pages below it)
+  { text: t.overview, link: p },
   {
     text: t.guide,
     items: [

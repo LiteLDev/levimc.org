@@ -24,3 +24,4 @@ LeviLauncher может управлять несколькими аккаунт
 
 - [Управление версиями](./version-management)
 - [Управление контентом](./content-management)
+- [URI быстрого запуска](../reference/quick-launch-uri)

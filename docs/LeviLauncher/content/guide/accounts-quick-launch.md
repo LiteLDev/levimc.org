@@ -24,3 +24,4 @@ Quick Launch uses Minecraft URI actions to jump directly into common flows. Depe
 
 - [Version Management](./version-management)
 - [Content Management](./content-management)
+- [Quick Launch URIs](../reference/quick-launch-uri)

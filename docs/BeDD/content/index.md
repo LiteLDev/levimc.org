@@ -1,44 +1,8 @@
----
-layout: home
+# Be.D.D.
 
-hero:
-  name: Be.D.D.
-  text: Minecraft tests that run in the background
-  tagline: Your script plays Minecraft Bedrock while your mouse, keyboard and windows stay yours.
-  image:
-    src: /logo.png
-    alt: Be.D.D.
-  actions:
-    - theme: brand
-      text: Start here
-      link: https://levimc.org/tutorials/automate/bedd/
-    - theme: alt
-      text: Download
-      link: https://github.com/LiteLDev/BeDD/releases/latest
-    - theme: alt
-      text: Gallery
-      link: /gallery
-
-features:
-  - title: Keep using your PC
-    details: The game never takes the foreground, the cursor or your keystrokes.
-    link: /reference/how-it-works
-  - title: Three ways to drive it, cheapest first
-    details: bedboo's game ops, then menus as text, then simulated input.
-    link: /guide/operation-modes
-  - title: Several games at once
-    details: One WebSocket per game; a clone of an instance takes seconds.
-    link: /guide/several-games
-  - title: One window for all of them
-    details: Every game on the PC shows live in one manager window; closing it closes them all.
-    link: /guide/several-games#the-manager-window
-  - title: Deterministic
-    details: Every request returns once the game has handled it.
-    link: /reference/how-it-works
-  - title: Any language
-    details: JSON over a local WebSocket, with an AsyncAPI spec.
-    link: /guide/integrating
----
+Minecraft tests that run in the background: your script plays Minecraft Bedrock while your mouse, keyboard and
+windows stay yours. [Download](https://github.com/LiteLDev/BeDD/releases/latest), or
+[start here](https://levimc.org/tutorials/automate/bedd/).
 
 ![Three headless Minecraft games react to a test script in the manager window](/showcase/desktop.webp)
 
@@ -61,12 +25,53 @@ bot.once('spawn', () => bot.setControlState('forward', true));
 Keys, chat, key bindings, menus, tooltips, clicks and the camera work as for a player. Every request returns once
 handled.
 
+- **Keep using your PC.** The game never takes the foreground, the cursor or your keystrokes
+  ([How it works](/reference/how-it-works)).
+- **Three ways to drive it, cheapest first:** bedboo's game ops, then menus as text, then simulated input
+  ([Operation modes](/guide/operation-modes)).
+- **Several games at once.** One WebSocket per game; a clone of an instance takes seconds
+  ([Several games at once](/guide/several-games)).
+- **One window for all of them.** Every game on the PC shows live in one manager window; closing it closes them all
+  ([The manager window](/guide/several-games#the-manager-window)).
+- **Deterministic.** Every request returns once the game has handled it ([How it works](/reference/how-it-works)).
+- **Any language.** JSON over a local WebSocket, with an AsyncAPI spec ([Integrating with your tests](/guide/integrating)).
+
 ![Your input goes to your apps; the script drives three background games over one WebSocket each](/showcase/how-it-feels.svg)
 
 ::: warning A testing tool
 A game with Be.D.D. in `mods\` ignores your real mouse and keyboard and shows only in the manager window. Be.D.D.
 installs itself only into its own clones, never into the instance you play.
 :::
+
+## See it run
+
+Recorded from the manager window and the terminal ([how](https://github.com/LiteLDev/BeDD/blob/main/CONTRIBUTING.md#docs-and-showcase)).
+
+### Three headless games, one manager window
+
+<video controls muted playsinline preload="none" poster="/BeDD/showcase/desktop-poster.webp" src="/BeDD/showcase/desktop.mp4" width="1280" height="720" style="width:100%;height:auto"></video>
+
+One script, three games, each with instance, pid and input activity.
+
+### Every line, live in the game
+
+<video controls muted playsinline preload="none" poster="/BeDD/showcase/script-and-game-poster.webp" src="/BeDD/showcase/script-and-game.mp4" width="1020" height="360" style="width:100%;height:auto"></video>
+
+`key E` opens the inventory, `mouse` moves the sword, `key ESC` closes it.
+
+### Chat commands, typed for you
+
+![The text op types '/summon sheep' and '/summon cow' into chat](/showcase/chat-summon.webp)
+
+### Hover and click where you aim
+
+![A virtual cursor brings up a tooltip in the inventory](/showcase/inventory-hover.webp)
+
+A `screenshot` of an off-screen window.
+
+### One window for every game
+
+![The manager window with three headless games next to the terminal running the script](/showcase/desktop-poster.webp)
 
 ## Who it is for
 
@@ -104,6 +109,16 @@ No PowerShell, lip or .NET runtime needed.
 
 Without bedboo, any language with a WebSocket client works ([Operation modes](/guide/operation-modes),
 [Integrating with your tests](/guide/integrating)).
+
+## The rest of this site
+
+- **Guides**: [driving the game](/guide/usage), [several games at once](/guide/several-games),
+  [integrating with your tests](/guide/integrating), [installs and clones](/guide/installs) (upgrades, CI, folders),
+  and [troubleshooting](/guide/troubleshooting).
+- **Concepts**: the three [operation modes](/guide/operation-modes), [where the world runs](/guide/modes) and
+  [how it works](/reference/how-it-works).
+- **Reference**: the [command line](/reference/cli), the [configuration](/guide/configuration), the
+  [WebSocket API](/reference/websocket), the [UI tree](/reference/ui) and the [tap protocol](/reference/tap).
 
 ## The name
 

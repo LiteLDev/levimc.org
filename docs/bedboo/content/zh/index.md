@@ -1,41 +1,6 @@
----
-layout: home
+# bedboo
 
-hero:
-  name: bedboo
-  text: 用 mineflayer API 编写基岩版机器人
-  tagline: 兼容 mineflayer API 的 Minecraft 基岩版机器人库。你的 mineflayer 机器人及其插件无需修改即可加入基岩版专用服务器（BDS）。
-  image:
-    src: /logo.png
-    alt: bedboo
-  actions:
-    - theme: brand
-      text: 从这里开始
-      link: https://levimc.org/zh-Hans/tutorials/automate/first-bedboo-bot/
-    - theme: alt
-      text: API
-      link: /zh/reference/api
-
-features:
-  - title: mineflayer API
-    details: createBot()、所有 bot.* 属性、方法和事件，以及 mineflayer 4.39.0 的 TypeScript 类型，参数、错误和事件顺序完全一致。
-    link: /zh/reference/api
-  - title: 插件无需修改
-    details: mineflayer-pathfinder、-pvp、-collectblock、-tool、-armor-manager 和 -auto-eat 通过 bot.loadPlugin() 加载，在基岩版上照常工作。
-    link: /zh/guide/plugins
-  - title: RakNet 与 NetherNet
-    details: 可加入 1.26.42.1 至 1.26.63.1 的所有稳定版 BDS（4 个协议族），通过 RakNet 或 NetherNet，支持离线模式或 Microsoft 账号。
-    link: /zh/guide/connecting
-  - title: 差异逐条记录
-    details: 基岩版方块名称、服务端权威的物品栏、挖掘和移动。每一处 Java 版与基岩版之间的固有差异都有文档说明。
-    link: /zh/reference/differences/
-  - title: 驱动真实客户端
-    details: 使用 transport 'bedd' 时，同一个脚本可以驱动由 Be.D.D. 托管的真实 Minecraft 基岩版客户端。
-    link: /zh/guide/bedd
-  - title: 内置生存智能体
-    details: "@bedboo/agent 能玩生存模式：从木头一路到钻石，还会建造和战斗，全部通过公开 API 完成。"
-    link: /zh/guide/agent
----
+用 mineflayer API 编写基岩版机器人：你的 mineflayer 机器人及其插件无需修改即可加入基岩版专用服务器（BDS）。
 
 bedboo 是一个兼容 mineflayer API 的 Minecraft 基岩版机器人库。它提供与
 [mineflayer](https://github.com/PrismarineJS/mineflayer) 4.39.0 相同的 `createBot()`、相同的 `bot.*` 属性、方法和事件、
@@ -57,11 +22,26 @@ bot.on('chat', (username, message) => {
 获取代码、准备服务器，并连接一个会走到你身边的机器人。
 :::
 
+## 功能 {#features}
+
+- **mineflayer API。** `createBot()`、所有 `bot.*` 属性、方法和事件，以及 mineflayer 4.39.0 的 TypeScript 类型，参数、错误和
+  事件顺序完全一致（[API](reference/api.md)）。
+- **插件无需修改。** mineflayer-pathfinder、-pvp、-collectblock、-tool、-armor-manager 和 -auto-eat 通过 `bot.loadPlugin()`
+  加载，在基岩版上照常工作（[生态插件](guide/plugins.md)）。
+- **RakNet 与 NetherNet。** 可加入 1.26.42.1 至 1.26.63.1 的所有稳定版 BDS（4 个协议族），通过 RakNet 或 NetherNet，支持
+  离线模式或 Microsoft 账号（[连接服务器](guide/connecting.md)）。
+- **差异逐条记录。** 基岩版方块名称、服务端权威的物品栏、挖掘和移动：每一处 Java 版与基岩版之间的固有差异都有文档说明
+  （[基岩版差异](reference/differences/index.md)）。
+- **驱动真实客户端。** 使用 `transport: 'bedd'` 时，同一个脚本可以驱动由 Be.D.D. 托管的真实 Minecraft 基岩版客户端
+  （[驱动真实客户端](guide/bedd.md)）。
+- **内置生存智能体。** `@bedboo/agent` 能玩生存模式：从木头一路到钻石，还会建造和战斗，全部通过公开 API 完成
+  （[生存智能体](guide/agent.md)）。
+
 ## 给谁用
 
 - **mineflayer 用户**：想让自己的机器人和插件进入基岩版服务器；mineflayer 的文档、示例和插件都可以原样使用。
 - **服务器和模组作者**：用脚本化的玩家测试 BDS（或 [LeviLamina](https://levimc.org/zh-Hans/LeviLamina/) 服务器）。
-- **客户端模组作者**：通过 [Be.D.D.](/zh/guide/bedd) 用同一套机器人代码驱动真实的 Minecraft 客户端。
+- **客户端模组作者**：通过 [Be.D.D.](guide/bedd.md) 用同一套机器人代码驱动真实的 Minecraft 客户端。
 
 ## 为什么
 
@@ -70,17 +50,17 @@ mineflayer 是用 JavaScript 编写 Minecraft 机器人的常用方式，拥有�
 bedboo 在不发明新 API 的前提下弥合了这一差距。
 
 唯一的差异是 Java 版与基岩版之间的固有差异：基岩版的方块和物品名称、没有队伍、服务端权威的物品栏和方块破坏等等。每一项都列在
-[基岩版差异](/zh/reference/differences/)中。
+[基岩版差异](reference/differences/index.md)中。
 
 ## 支持范围
 
 - **服务器：** 从 1.26.42.1（2026 年 8 月 7 日）到 1.26.63.1（2026 年 11 月 6 日）的所有稳定版 BDS，分属 4 个协议族：
   1.26.40（protocol 2168）、1.26.45（2169）、1.26.51（2193，默认）和 1.26.60（2225）。`createBot({ version })` 接受协议族
-  或 BDS 版本；`bot.version` 为协议族。见[支持的版本](/zh/reference/versions/)。
+  或 BDS 版本；`bot.version` 为协议族。见[支持的版本](reference/versions/index.md)。
 - **传输层：** 默认 RakNet；使用 `transport: 'nethernet'` 时为 NetherNet（BDS 的默认传输层）
-  （[连接服务器](/zh/guide/connecting#transports)）。
+  （[连接服务器](guide/connecting.md#transports)）。
 - **认证：** `auth: 'offline'`（默认）用于 `online-mode=false` 的服务器，`auth: 'microsoft'` 用于 Xbox Live。
-- **真实客户端：** `transport: 'bedd'` 改为驱动由 [Be.D.D.](/zh/guide/bedd) 托管的真实基岩版客户端。
+- **真实客户端：** `transport: 'bedd'` 改为驱动由 [Be.D.D.](guide/bedd.md) 托管的真实基岩版客户端。
 - **运行时：** Node.js 24 或更高版本。RakNet 需要 x64（raknet-native 只提供 x64 预编译包）；NetherNet 是纯
   JavaScript 实现。
 
@@ -89,7 +69,7 @@ bedboo 在不发明新 API 的前提下弥合了这一差距。
 | 项目 | 作用 |
 |---|---|
 | [mineflayer](https://github.com/PrismarineJS/mineflayer) | bedboo 实现的 API，也是其插件的来源 |
-| [Be.D.D.](https://levimc.org/zh-Hans/BeDD/) | 托管真实的 Minecraft 基岩版客户端，bedboo 用 `transport: 'bedd'` 驱动它（[指南](/zh/guide/bedd)） |
+| [Be.D.D.](https://levimc.org/zh-Hans/BeDD/) | 托管真实的 Minecraft 基岩版客户端，bedboo 用 `transport: 'bedd'` 驱动它（[指南](guide/bedd.md)） |
 | [LeviLamina](https://levimc.org/zh-Hans/LeviLamina/) | BDS 和客户端的模组加载器：LeviLamina 服务器就是 BDS，bedboo 照常加入 |
 
 ## 构建方式
@@ -105,6 +85,7 @@ bedboo 在不发明新 API 的前提下弥合了这一差距。
 
 对这些依赖的小修复以 pnpm 补丁的形式放在仓库的 `patches/` 目录中，因此目前需要在 bedboo 的 monorepo 中使用它
 （[教程](https://levimc.org/zh-Hans/tutorials/automate/first-bedboo-bot/)里有做法）。
+[bedboo 的工作方式](concepts/how-bedboo-works.md)解释了这些部分如何组合在一起。
 
 ## 包
 
@@ -112,8 +93,18 @@ bedboo 在不发明新 API 的前提下弥合了这一差距。
 |---|---|
 | `bedboo` | 库本体 |
 | `@bedboo/bedrock-data` | minecraft-data 的基岩版数据补充层，每个支持的协议族一份 |
-| `@bedboo/agent` | 基于 bedboo 的脚本化生存智能体（[生存智能体](/zh/guide/agent)） |
+| `@bedboo/agent` | 基于 bedboo 的脚本化生存智能体（[生存智能体](guide/agent.md)） |
 
 ## 名字
 
 bedboo（Bedrock + Bangboo）得名自《绝区零》的邦布：邦布替绳匠深入空洞，你的机器人替你进入基岩版服务器。
+
+## 本站内容 {#on-this-site}
+
+- **指南**：[连接服务器](guide/connecting.md)（服务器设置、版本、账号、传输层）、[生态插件](guide/plugins.md)、用 Be.D.D.
+  [驱动真实客户端](guide/bedd.md)和[生存智能体](guide/agent.md)。从零开始写第一个机器人见教程
+  [你的第一个 bedboo 机器人](https://levimc.org/zh-Hans/tutorials/automate/first-bedboo-bot/)。
+- **概念**：[bedboo 的工作方式](concepts/how-bedboo-works.md)（mineflayer API 之下的各个层次）和
+  [服务端权威](concepts/server-authority.md)（bedboo 如何在基岩版服务端权威的移动、物品栏和挖掘之上保留这套 API）。
+- **参考**：[API](reference/api.md)、按主题划分的[基岩版差异](reference/differences/index.md)、[BDS 备忘](reference/bds.md)
+  和[支持的版本](reference/versions/index.md)。

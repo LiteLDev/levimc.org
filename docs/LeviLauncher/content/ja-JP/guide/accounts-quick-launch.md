@@ -24,3 +24,4 @@ LeviLauncher はランチャー内で複数の Xbox アカウントを管理で�
 
 - [バージョン管理](./version-management)
 - [コンテンツ管理](./content-management)
+- [クイック起動 URI](../reference/quick-launch-uri)
