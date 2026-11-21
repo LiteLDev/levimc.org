@@ -73,8 +73,8 @@ importers:
         specifier: 17.14.0
         version: 17.14.0
       lucide-static:
-        specifier: 1.62.0
-        version: 1.62.0
+        specifier: 1.74.0
+        version: 1.74.0
       sharp:
         specifier: 0.34.5
         version: 0.34.5
@@ -1272,8 +1272,8 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lucide-static@1.62.0:
-    resolution: {integrity: sha512-WBZA/m2PvkFpMGHDtsBck5P2A9G4ehLlYu4GwwICcmEm1BvYVgj00lCDxKRWLlbMlOibLaiwdQ88G5pHkSWgwA==}
+  lucide-static@1.74.0:
+    resolution: {integrity: sha512-+USG34tDoFrWhZGLaF+KrjWPtB1yhGY1h/jRzxasEUP5v3SoE34DIBIiaCoHC4fqkJHegCoumEOF4YgV0jjZMA==}
 
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
@@ -2825,7 +2825,7 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-static@1.62.0: {}
+  lucide-static@1.74.0: {}
 
   magic-string@0.30.21:
     dependencies:
