@@ -49,17 +49,17 @@ The files are described by the JSON Schemas [`config.schema.toml`](https://githu
 
 ### github_proxy
 
-How lip sends its network requests to GitHub: git repositories and downloads.
+How lip sends its **GitHub requests**: its HTTPS requests to `github.com`, or to an address ending with `.github.com` or `.githubusercontent.com`. They are git repositories, downloads, and the releases and updates of lip.
 
 | Value | Effect |
 | --- | --- |
-| A URI, such as `https://proxy.example.com/` | lip sends the requests through this URI prefix. A request that fails through it is sent to GitHub directly. |
+| A URI, such as `https://proxy.example.com` | lip sends a request for the address U to the URI, followed by `/` unless it ends with one, followed by U: `https://proxy.example.com/https://github.com/…`. A request that fails through it is sent to U directly. A URI that ends with `/github.com` or `/https://github.com`, optionally followed by `/`, is read without that ending. |
 | The empty string (`lip config set github_proxy ""`) | lip sends the requests to GitHub directly. |
 | No value (`lip config delete github_proxy`) | lip sends the requests to GitHub directly, and `github_proxy` is **not configured**. |
 
 The last two differ only for the interface: while `github_proxy` is not configured, the interface checks at start whether it reaches GitHub, and asks you how to reach it when it does not. With any value, the empty string included, it does not ask.
 
-[`lip self-update`](commands/self_update.md) reads the list of releases and the checksums from GitHub directly, whatever `github_proxy` is, and downloads only the update itself through it.
+[`lip self-update`](commands/self_update.md) reads the list of releases and downloads the update through it too.
 
 ### language
 

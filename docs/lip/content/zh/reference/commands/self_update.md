@@ -14,7 +14,7 @@ lip self-update [--check] [-h | --help]
 
 ### 检查
 
-lip 从 GitHub API 读取 [lip 的发布](https://github.com/LiteLDev/lip/releases)，地址是 `https://api.github.com/repos/LiteLDev/lip/releases?per_page=100`。草稿，以及标签不是 `v` 加 SemVer 版本的发布，会被忽略。
+lip 从 lip 仓库 `https://github.com/LiteLDev/lip.git` 的标签读取 [lip 的发布](https://github.com/LiteLDev/lip/releases)，方式和读取任何包的版本一样：每个 `v` 加 SemVer 版本的标签就是一个发布。其他标签会被忽略。
 
 **最新发布**是版本最高的那个。像 `1.1.0-beta.1` 这样的预发布版本，只有在正在运行的 lip 本身也是预发布版本时才计入。
 
@@ -36,7 +36,7 @@ lip 从 GitHub API 读取 [lip 的发布](https://github.com/LiteLDev/lip/releas
 不带 `--check` 且存在更新的发布 `V` 时，lip 依次：
 
 1. 读取安装类型。
-2. 选定发布中要安装的文件。发布中没有这个文件，或者没有 `SHA256SUMS` 文件时，命令失败。在 Windows 以外的系统上，类型 `msi` 也会失败。
+2. 选定发布中要安装的文件。在 Windows 以外的系统上，类型 `msi` 会失败。
 
    | 类型 | 文件 |
    | --- | --- |
@@ -45,11 +45,10 @@ lip 从 GitHub API 读取 [lip 的发布](https://github.com/LiteLDev/lip/releas
    | Windows 和 macOS 上的 `portable` | `lip-V-<platform>.zip` |
 
 3. 清空并创建[缓存目录](../files.md#缓存目录)中的 `self-update` 目录。
-4. 下载 `SHA256SUMS`，即该发布的校验和。
-5. 把文件下载到 `self-update` 中。如果 `SHA256SUMS` 中没有这个文件的行，或者下载内容的 SHA-256 不一致，lip 删除下载的文件并失败。
-6. 按安装类型安装该文件；见下文。
+4. 从 `https://github.com/LiteLDev/lip/releases/download/vV/<文件>` 把文件下载到 `self-update` 中。下载失败时（例如发布中还没有这个文件），命令失败。
+5. 按安装类型安装该文件；见下文。
 
-第 1 到 5 步中的失败不会更改安装目录中的任何文件。
+第 1 到 4 步中的失败不会更改安装目录中的任何文件。
 
 **`msi`。** lip 以管理员身份启动 `msiexec /i <file> /qn /norestart`；Windows 会请你允许。你拒绝，或者 `msiexec` 没能启动时，命令失败。否则 lip 写明安装程序正在运行，并立即以退出码 0 退出，不等待它结束。安装程序在后台静默地替换 lip，不会重启 Windows。请关闭其他正在运行的 `lip` 进程，让它能够完成。
 
@@ -65,7 +64,7 @@ lip 从 GitHub API 读取 [lip 的发布](https://github.com/LiteLDev/lip/releas
 
 ### 网络
 
-发布列表和 `SHA256SUMS` 始终直接从 GitHub 读取，这样代理无法改变 lip 安装的内容。只有更新文件本身通过 [`github_proxy`](../configuration.md#github-proxy) 下载。
+设置了 [`github_proxy`](../configuration.md#github-proxy) 时，标签和更新文件都通过它获取，代理失败时再直接连接 GitHub。lip 不读取 `SHA256SUMS`，也不访问 GitHub API。代理有可能改变 lip 安装的内容，所以请使用你信任的代理。
 
 ## 选项
 

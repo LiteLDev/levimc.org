@@ -58,7 +58,7 @@ lip talks to git repositories with a client of its own, for version 2 of git's s
 - **Reading a `lip.toml`.** lip fetches only the trees of the one commit: a shallow, partial fetch (`deepen 1`, `filter blob:none`) that transfers no file contents. Then it fetches that one file, or `tooth.json` when there is no `lip.toml`. Looking at a version therefore costs a few kilobytes, however large the repository is.
 - **Installing.** File contents are fetched only when a package is installed, and only the files it places from its own archive.
 - **Integrity.** Every git object is checked against its object id.
-- **Proxy.** With `github_proxy` set to a URL, requests for `github.com` repositories go through it first, and to `github.com` directly when that fails. Files downloaded from `github.com` URLs follow the same rule. See [When GitHub is slow or blocked](../guides/configuration.md#when-github-is-slow-or-blocked).
+- **Proxy.** With `github_proxy` set to a URL, requests for `github.com` repositories go through it first, as the URL followed by `/` and the whole address of the request, and to `github.com` directly when that fails. Files downloaded from GitHub addresses (`github.com`, `*.github.com`, `*.githubusercontent.com`) follow the same rule. See [When GitHub is slow or blocked](../guides/configuration.md#when-github-is-slow-or-blocked).
 
 A server must support these features, as GitHub does. A proxy that only passes on file downloads cannot serve repositories.
 

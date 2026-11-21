@@ -49,17 +49,17 @@ restart = "on-failure"
 
 ### github_proxy
 
-lip 怎样向 GitHub 发送网络请求：git 仓库和下载。
+lip 怎样发送 **GitHub 请求**：发往 `github.com`，或发往以 `.github.com`、`.githubusercontent.com` 结尾的地址的 HTTPS 请求，包括 git 仓库、下载，以及 lip 自身的发布和更新。
 
 | 值 | 作用 |
 | --- | --- |
-| 一个 URI，例如 `https://proxy.example.com/` | lip 通过这个 URI 前缀发送请求。通过它失败的请求会直接发往 GitHub。 |
+| 一个 URI，例如 `https://proxy.example.com` | 对地址 U 的请求发往：这个 URI，加上 `/`（URI 已以 `/` 结尾时不加），再加上 U，即 `https://proxy.example.com/https://github.com/…`。通过它失败的请求会直接发往 U。以 `/github.com` 或 `/https://github.com` 结尾（其后可再有一个 `/`）的 URI，按去掉这个结尾来读取。 |
 | 空字符串（`lip config set github_proxy ""`） | lip 直接向 GitHub 发送请求。 |
 | 没有值（`lip config delete github_proxy`） | lip 直接向 GitHub 发送请求，并且 `github_proxy` **未配置**。 |
 
 后两种只对界面有区别：`github_proxy` 未配置时，界面在启动时检查能否连上 GitHub，连不上就询问你怎样连接。只要它有值（包括空字符串），界面就不再询问。
 
-无论 `github_proxy` 是什么，[`lip self-update`](commands/self_update.md) 都直接从 GitHub 读取发布列表和校验和，只有更新文件本身通过它下载。
+[`lip self-update`](commands/self_update.md) 读取发布列表和下载更新时也使用它。
 
 ### language
 

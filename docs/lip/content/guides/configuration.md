@@ -128,48 +128,48 @@ hint: lip could not reach the server. Check your network connection. If GitHub i
 
 ### What a GitHub proxy is
 
-A GitHub proxy is a web service that fetches from GitHub on your behalf. You give lip its address, and lip puts that address in front of what it asks GitHub for.
+A GitHub proxy is a web service that fetches from GitHub on your behalf. You give lip its address, and lip puts that address, and a `/`, in front of the whole address it asks GitHub for.
 
-With `github_proxy` set to `https://proxy.example.com/`, a request for
+With `github_proxy` set to `https://proxy.example.com`, a request for
 
 ```text
-https://github.com/LiteLDev/LeviLamina.git/info/refs
+https://github.com/LiteLDev/lip.git/info/refs
 ```
 
 is sent to
 
 ```text
-https://proxy.example.com/LiteLDev/LeviLamina.git/info/refs
+https://proxy.example.com/https://github.com/LiteLDev/lip.git/info/refs
 ```
 
-So the address you set must be one where adding `<owner>/<repository>/…` leads to the same thing on GitHub. Some services want the whole GitHub address after their own. For those, include it in the setting, as in `https://proxy.example.com/https://github.com/`.
+So the address you set is the address of the service itself, the one before which you would paste a GitHub link in a browser. An address that already ends with `/github.com` or `/https://github.com`, as older versions of lip needed, still works: lip leaves that ending out. lip 0.41.1 and earlier need that ending.
 
 Three things to know:
 
-- **Only GitHub goes through it.** Requests to `github.com`, for repositories and for files, use the proxy. Downloads from other sites, such as the game from minecraft.net, do not.
+- **Only GitHub goes through it.** Requests to `github.com`, and to any address ending with `.github.com` or `.githubusercontent.com` (such as `raw.githubusercontent.com`), use the proxy: repositories, files, and the updates of lip itself. Downloads from other sites, such as the game from minecraft.net, do not.
 - **lip falls back.** When a request through the proxy fails, lip sends it to GitHub directly.
 - **lip does not recommend a proxy.** A proxy sees everything you download through it and could change it. Use one that you or someone you trust runs.
 
 ### Set a proxy
 
 ```sh
-lip config set github_proxy https://proxy.example.com/
+lip config set github_proxy https://proxy.example.com
 ```
 
 Replace the address with that of your proxy. The setting applies to every command from then on.
 
 ### Test a proxy
 
-lip checks that it can reach GitHub by asking for the list of versions of LeviLamina. You can ask for the same through your proxy. A proxy that works answers `200`:
+lip checks that it can reach GitHub by asking for the list of versions of lip. You can ask for the same through your proxy. A proxy that works answers `200`:
 
 ::: code-group
 
 ```powershell [Windows]
-curl.exe -s -o NUL -w "%{http_code}" "https://proxy.example.com/LiteLDev/LeviLamina.git/info/refs?service=git-upload-pack"
+curl.exe -s -o NUL -w "%{http_code}" "https://proxy.example.com/https://github.com/LiteLDev/lip.git/info/refs?service=git-upload-pack"
 ```
 
 ```sh [Linux / macOS]
-curl -s -o /dev/null -w "%{http_code}\n" "https://proxy.example.com/LiteLDev/LeviLamina.git/info/refs?service=git-upload-pack"
+curl -s -o /dev/null -w "%{http_code}\n" "https://proxy.example.com/https://github.com/LiteLDev/lip.git/info/refs?service=git-upload-pack"
 ```
 
 :::

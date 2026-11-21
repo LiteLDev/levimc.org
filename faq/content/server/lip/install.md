@@ -62,12 +62,12 @@ This is a network problem reaching GitHub. Most lip packages are downloaded from
 lip config set github_proxy https://v4.gh-proxy.org/https://github.com/
 ```
 
-You can replace the mirror address with another working GitHub prefix proxy that you trust; some services need the full `https://github.com/` after the address.
+You can replace the mirror address with another working GitHub prefix proxy that you trust; with lip 0.41.1 and earlier, some services need the full `https://github.com/` after the address (lip after 0.41.1 adds it itself, and accepts it when it is there).
 
 Key points:
 
 1. The current version of lip has only `github_proxy` as a network setting. The old `GoModuleProxyURL` / `GitHubMirrorURL` / `ProxyURL`, `go_module_proxy` / `go_module_proxies` / `github_proxies` no longer exist, and Go module proxies such as `goproxy.cn` are no longer used, so setting them has no effect.
-2. Only requests to `github.com` go through `github_proxy`; BDS itself is downloaded from minecraft.net and is not affected.
+2. Only requests to GitHub go through `github_proxy` (`github.com`; in lip after 0.41.1 also `*.github.com` and `*.githubusercontent.com`, and `lip self-update`); BDS itself is downloaded from minecraft.net and is not affected.
 3. When a request through the proxy fails, lip falls back to connecting to GitHub directly, so a successful command does not mean the proxy works. You can test a proxy like this: `curl.exe -s -o NUL -w "%{http_code}" "<proxy address>LiteLDev/LeviLamina.git/info/refs?service=git-upload-pack"`; a result of `200` means the proxy works. If a mirror stops working (blocked), switch to another; if an error says the proxy does not support git repositories, replace it as well.
 4. If you have an ordinary HTTP proxy (for example a local Clash port `http://127.0.0.1:7890`; make sure the port is right), you do not need to set `github_proxy`. Set `HTTPS_PROXY` / `HTTP_PROXY` / `ALL_PROXY` / `NO_PROXY` in the terminal where you run lip (PowerShell: `$env:HTTPS_PROXY = "http://127.0.0.1:7890"`); without these environment variables, lip uses the system proxy. You can also turn on the TUN mode of your proxy software.
 5. To remove the proxy: `lip config delete github_proxy`; to state explicitly that you connect directly: `lip config set github_proxy ""` (in PowerShell, write `lip config set github_proxy --% ""`). Use `lip config list` to view the current configuration.

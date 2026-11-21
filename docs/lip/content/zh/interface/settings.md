@@ -59,7 +59,7 @@ lip config delete language
 
 ## GitHub 代理
 
-lip 从 GitHub 下载 LeviLamina 和大多数模组。GitHub 访问缓慢或者连不上时，可以使用 **GitHub 代理**：lip 会把这个网址加在每个 GitHub 下载地址的前面。
+lip 从 GitHub 下载 LeviLamina 和大多数模组。GitHub 访问缓慢或者连不上时，可以使用 **GitHub 代理**：lip 会把这个网址加上一个 `/`，放在每个 GitHub 下载地址的前面。
 
 这一行的值有三种：
 
@@ -81,11 +81,11 @@ lip 不会推荐代理，本文档也不会。请使用你信任的代理：lip 
 
 ### 设置代理
 
-1. 在**设置代理…**上按 `Enter`，输入或粘贴代理的网址。网址以 `https://` 开头，通常以 `/` 结尾。
+1. 在**设置代理…**上按 `Enter`，输入或粘贴代理的网址。网址以 `https://` 开头。填这个服务本身的地址即可：lip 会把完整的 GitHub 地址接在后面。
 
    ![“GitHub 代理”对话框，“代理网址”输入框里是一个以 https 开头的示例网址。](/screenshots/zh-Hans/settings-07-proxy-url.svg)
 
-2. 按 `Enter`。lip 会测试这个代理：通过它向 GitHub 请求 LeviLamina，最多等待 10 秒。按 `Esc` 中止测试，回到网址输入框。
+2. 按 `Enter`。lip 会测试这个代理：通过它向 GitHub 请求 lip 的版本列表，最多等待 10 秒。按 `Esc` 中止测试，回到网址输入框。
 
    ![“测试代理”对话框显示“处理中…”。](/screenshots/zh-Hans/settings-08-testing.svg)
 

@@ -14,7 +14,7 @@ lip self-update [--check] [-h | --help]
 
 ### Checking
 
-lip reads the [releases of lip](https://github.com/LiteLDev/lip/releases) from the GitHub API, at `https://api.github.com/repos/LiteLDev/lip/releases?per_page=100`. Drafts, and releases whose tag is not `v` followed by a SemVer version, are ignored.
+lip reads the [releases of lip](https://github.com/LiteLDev/lip/releases) from the tags of its repository, `https://github.com/LiteLDev/lip.git`, as it reads the versions of any package: each tag that is `v` followed by a SemVer version is a release. Other tags are ignored.
 
 The **latest release** is the one with the highest version. Pre-releases such as `1.1.0-beta.1` count only when the running lip is itself a pre-release.
 
@@ -36,7 +36,7 @@ When `install.json` exists and is anything other than a JSON object whose `kind`
 Without `--check`, when a newer release `V` exists, lip does, in order:
 
 1. It reads the installation kind.
-2. It picks the file of the release to install. When the release does not have it, or has no `SHA256SUMS` file, the command fails. The kind `msi` on a system other than Windows fails too.
+2. It picks the file of the release to install. The kind `msi` on a system other than Windows fails.
 
    | Kind | File |
    | --- | --- |
@@ -45,11 +45,10 @@ Without `--check`, when a newer release `V` exists, lip does, in order:
    | `portable` on Windows and macOS | `lip-V-<platform>.zip` |
 
 3. It empties and creates the directory `self-update` in the [cache directory](../files.md#cache-directory).
-4. It downloads `SHA256SUMS`, the checksums of the release.
-5. It downloads the file into `self-update`. When `SHA256SUMS` has no line for the file, or the SHA-256 of the download differs, lip deletes the download and fails.
-6. It installs the file, by the installation kind; see below.
+4. It downloads the file, from `https://github.com/LiteLDev/lip/releases/download/vV/<file>`, into `self-update`. When the download fails, for example because the release does not have the file yet, the command fails.
+5. It installs the file, by the installation kind; see below.
 
-A failure in steps 1 to 5 changes no file of the installation.
+A failure in steps 1 to 4 changes no file of the installation.
 
 **`msi`.** lip starts `msiexec /i <file> /qn /norestart` as administrator; Windows asks you to allow it. When you decline, or `msiexec` does not start, the command fails. Otherwise lip writes that the installer runs and exits with code 0 at once, without waiting. The installer replaces lip in the background, silently and without restarting Windows. Close the other running `lip` processes so that it can.
 
@@ -65,7 +64,7 @@ The [daemon](daemon.md) that carried out an update which replaced lip or started
 
 ### Network
 
-The list of releases and `SHA256SUMS` are always read from GitHub directly, so that a proxy cannot change what lip installs. Only the update file itself is downloaded through [`github_proxy`](../configuration.md#github-proxy).
+Both the tags and the update file go through [`github_proxy`](../configuration.md#github-proxy) when it is set, and to GitHub directly when the proxy fails. lip does not read `SHA256SUMS` or the GitHub API. A proxy could change what lip installs, so use one you trust.
 
 ## Options
 
