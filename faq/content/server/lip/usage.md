@@ -59,7 +59,7 @@ You can also edit `github_proxy` in `%APPDATA%\lip\config.toml` directly, or ent
 
 ### Downloads time out when lip installs a package (retrying many times and switching computers did not help). What should I do? How do I choose which folder lip installs into?
 
-If GitHub is slow or blocked, set a GitHub proxy with `lip config set github_proxy <proxy-address>` (the address followed by `<owner>/<repo>/…` must return the corresponding content on GitHub), or set an environment variable such as `HTTPS_PROXY` in the terminal to use a regular network proxy, then retry. You can test whether the proxy returns 200 with `curl "<proxy-address>/LiteLDev/LeviLamina.git/info/refs?service=git-upload-pack"`.
+If GitHub is slow or blocked, set a GitHub proxy with `lip config set github_proxy <proxy-address>` (lip after 0.41.1 sends a request to the address, a `/` and the whole GitHub address, so the address of the service itself is enough; lip 0.41.1 and earlier append only `<owner>/<repo>/…`, so for them the address must already end with `https://github.com/` for services like gh-proxy), or set an environment variable such as `HTTPS_PROXY` in the terminal to use a regular network proxy, then retry. You can test whether the proxy returns 200 with `curl "<proxy-address>/https://github.com/LiteLDev/lip.git/info/refs?service=git-upload-pack"`.
 
 lip's workspace is the current working directory, and there is no option to specify another one: to install into a folder, `cd` to that directory first and then run the lip command.
 
@@ -85,7 +85,7 @@ In addition, when a request through `github_proxy` fails, lip falls back to conn
 
 ### After configuring a GitHub proxy for lip, downloading `bedrock-runtime-data` fails with HTTP 404 (`Failed to download from https://gh-proxy.com/LiteLDev/bedrock-runtime-data/releases/download/...`). How do I set the proxy correctly?
 
-The proxy address is wrong: proxies like gh-proxy require the full GitHub address after their own address (writing only `https://gh-proxy.com/` or `https://gh-proxy.org/` gives a 404). lip appends `<owner>/<repo>/...` directly after `github_proxy`, so set it like this:
+The proxy address is wrong for your lip: proxies like gh-proxy require the full GitHub address after their own address (writing only `https://gh-proxy.com/` or `https://gh-proxy.org/` gives a 404). lip 0.41.1 and earlier append `<owner>/<repo>/...` directly after `github_proxy`, so set it like this (lip after 0.41.1 adds the full GitHub address itself, so the address of the service alone works there, and this form still works too):
 
 ```shell
 lip config set github_proxy https://v4.gh-proxy.org/https://github.com/

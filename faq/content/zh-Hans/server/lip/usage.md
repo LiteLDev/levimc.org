@@ -59,7 +59,7 @@ lip config set github_proxy https://xxx/
 
 ### lip 安装包时下载超时（多次重试、换电脑都不行），怎么办？lip 如何指定安装到哪个文件夹？
 
-GitHub 慢或被屏蔽时，设置 GitHub 代理：`lip config set github_proxy <代理地址>`（地址后接 `<所有者>/<仓库>/…` 必须能得到 GitHub 上对应内容），或在终端设置 `HTTPS_PROXY` 等环境变量使用普通网络代理，然后重试。可用 `curl "<代理地址>/LiteLDev/LeviLamina.git/info/refs?service=git-upload-pack"` 测试代理是否返回 200。
+GitHub 慢或被屏蔽时，设置 GitHub 代理：`lip config set github_proxy <代理地址>`（0.41.1 之后的 lip 会把请求发往“该地址 + `/` + 完整的 GitHub 地址”，所以填服务本身的地址即可；0.41.1 及更早的 lip 只在地址后接 `<所有者>/<仓库>/…`，对 gh-proxy 这类服务，地址必须已经以 `https://github.com/` 结尾），或在终端设置 `HTTPS_PROXY` 等环境变量使用普通网络代理，然后重试。可用 `curl "<代理地址>/https://github.com/LiteLDev/lip.git/info/refs?service=git-upload-pack"` 测试代理是否返回 200。
 
 lip 的工作区就是当前工作目录，没有指定其他目录的选项：要装到哪个文件夹，就先 `cd` 到那个目录再执行 lip 命令。
 
@@ -85,7 +85,7 @@ lip 的工作区就是当前工作目录，没有指定其他目录的选项：�
 
 ### lip 配置 GitHub 代理后下载 `bedrock-runtime-data` 报 HTTP 404（`Failed to download from https://gh-proxy.com/LiteLDev/bedrock-runtime-data/releases/download/...`），如何正确设置代理？
 
-代理地址写错了：gh-proxy 这类代理要求在其地址后接完整的 GitHub 地址（只写 `https://gh-proxy.com/` 或 `https://gh-proxy.org/` 会得到 404）。lip 会把 `<所有者>/<仓库>/...` 直接拼在 `github_proxy` 后面，所以应设置为：
+对你的 lip 来说代理地址写错了：gh-proxy 这类代理要求在其地址后接完整的 GitHub 地址（只写 `https://gh-proxy.com/` 或 `https://gh-proxy.org/` 会得到 404）。0.41.1 及更早的 lip 会把 `<所有者>/<仓库>/...` 直接拼在 `github_proxy` 后面，所以应设置为（0.41.1 之后的 lip 会自己接上完整的 GitHub 地址，只填服务本身的地址即可，下面这种写法也仍然可用）：
 
 ```shell
 lip config set github_proxy https://v4.gh-proxy.org/https://github.com/

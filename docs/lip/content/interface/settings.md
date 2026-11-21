@@ -59,7 +59,7 @@ The values are `en`, `zh-Hans` and `zh-Hant`. Deleting the key is **Follow syste
 
 ## GitHub proxy
 
-lip downloads LeviLamina and most mods from GitHub. Where GitHub is slow or cannot be reached, a **GitHub proxy** helps: a web address that lip puts before the GitHub address of every download.
+lip downloads LeviLamina and most mods from GitHub. Where GitHub is slow or cannot be reached, a **GitHub proxy** helps: a web address that lip puts, with a `/`, before the GitHub address of every download.
 
 The row has one of three values:
 
@@ -81,11 +81,11 @@ lip does not suggest a proxy, and these pages do not either. Use one that you tr
 
 ### Set a proxy
 
-1. Press `Enter` on **Set proxy…**, and type or paste the URL of the proxy. It starts with `https://` and usually ends with `/`.
+1. Press `Enter` on **Set proxy…**, and type or paste the URL of the proxy. It starts with `https://`. The address of the service itself is enough: lip adds the whole GitHub address after it.
 
    ![The dialog "GitHub proxy" with the field "Proxy URL", which holds an example address that starts with https.](/screenshots/en/settings-07-proxy-url.svg)
 
-2. Press `Enter`. lip tests the proxy: it asks GitHub for LeviLamina through it, and waits up to 10 seconds. `Esc` stops the test and goes back to the URL.
+2. Press `Enter`. lip tests the proxy: it asks GitHub for the versions of lip through it, and waits up to 10 seconds. `Esc` stops the test and goes back to the URL.
 
    ![The dialog "Testing proxy" shows "Working…".](/screenshots/en/settings-08-testing.svg)
 

@@ -62,12 +62,12 @@ GitHub 访问慢时可先执行 `lip config set github_proxy <代理URL>`；`lip
 lip config set github_proxy https://v4.gh-proxy.org/https://github.com/
 ```
 
-镜像地址可换成其他可用的、你信任的 GitHub 前缀代理；有些服务需要在地址后带完整的 `https://github.com/`。
+镜像地址可换成其他可用的、你信任的 GitHub 前缀代理；使用 0.41.1 及更早的 lip 时，有些服务需要在地址后带完整的 `https://github.com/`（0.41.1 之后的 lip 会自己加上，带着也可以）。
 
 要点：
 
 1. 当前版本的 lip 只有 `github_proxy` 这一项网络配置。旧版的 `GoModuleProxyURL` / `GitHubMirrorURL` / `ProxyURL`、`go_module_proxy` / `go_module_proxies` / `github_proxies` 都已不存在，`goproxy.cn` 之类的 Go 模块代理也不再用到，设置它们没有作用。
-2. 只有发往 `github.com` 的请求走 `github_proxy`；BDS 本体从 minecraft.net 下载，不受它影响。
+2. 只有发往 GitHub 的请求走 `github_proxy`（`github.com`；0.41.1 之后的 lip 还包括 `*.github.com`、`*.githubusercontent.com` 以及 `lip self-update`）；BDS 本体从 minecraft.net 下载，不受它影响。
 3. 通过代理的请求失败时，lip 会回退到直连 GitHub，所以命令成功不代表代理可用。可以这样测试代理：`curl.exe -s -o NUL -w "%{http_code}" "<代理地址>LiteLDev/LeviLamina.git/info/refs?service=git-upload-pack"`，返回 `200` 说明代理可用。镜像失效（被墙）时换一个；如果报错说代理不支持 git 仓库，也要换掉。
 4. 如果有普通的 HTTP 代理（例如 Clash 本地端口 `http://127.0.0.1:7890`，注意端口要填对），不需要设置 `github_proxy`。在运行 lip 的终端里设置 `HTTPS_PROXY` / `HTTP_PROXY` / `ALL_PROXY` / `NO_PROXY` 即可（PowerShell：`$env:HTTPS_PROXY = "http://127.0.0.1:7890"`）；没有这些环境变量时，lip 会使用系统代理。也可以开启代理软件的 TUN 模式。
 5. 移除代理：`lip config delete github_proxy`；明确表示直连：`lip config set github_proxy ""`（PowerShell 里写 `lip config set github_proxy --% ""`）。用 `lip config list` 查看当前配置。

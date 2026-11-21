@@ -58,7 +58,7 @@ lip 用自己的客户端与 git 仓库通信，使用的是 git 智能 HTTP 协
 - **读取 `lip.toml`。** lip 只获取那一个提交的树：一次浅的、部分的获取（`deepen 1`、`filter blob:none`），不传输任何文件内容。然后它只获取那一个文件；没有 `lip.toml` 时获取 `tooth.json`。因此，无论仓库多大，查看一个版本只需要几千字节。
 - **安装。** 文件内容只在安装包时才获取，而且只获取这个包从自己的归档里放置的那些文件。
 - **完整性。** 每个 git 对象都会对照它的对象 ID 进行校验。
-- **代理。** `github_proxy` 设为 URL 后，对 `github.com` 仓库的请求先走代理，失败后再直接发往 `github.com`。从 `github.com` 的 URL 下载的文件遵循同样的规则。见 [GitHub 很慢或被屏蔽时](../guides/configuration.md#github-很慢或被屏蔽时)。
+- **代理。** `github_proxy` 设为 URL 后，对 `github.com` 仓库的请求先走代理（发往这个 URL 加上 `/` 和请求的完整地址），失败后再直接发往 `github.com`。从 GitHub 地址（`github.com`、`*.github.com`、`*.githubusercontent.com`）下载的文件遵循同样的规则。见 [GitHub 很慢或被屏蔽时](../guides/configuration.md#github-很慢或被屏蔽时)。
 
 服务器必须像 GitHub 那样支持这些特性。只转发文件下载的代理无法提供仓库访问。
 

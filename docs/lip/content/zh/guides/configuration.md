@@ -128,48 +128,48 @@ hint: lip could not reach the server. Check your network connection. If GitHub i
 
 ### 什么是 GitHub 代理
 
-GitHub 代理是一个替你从 GitHub 取东西的网络服务。你把它的地址告诉 lip，lip 就会把这个地址放在它要向 GitHub 请求的内容前面。
+GitHub 代理是一个替你从 GitHub 取东西的网络服务。你把它的地址告诉 lip，lip 就会把这个地址加上一个 `/`，放在它要向 GitHub 请求的完整地址前面。
 
-把 `github_proxy` 设为 `https://proxy.example.com/` 之后，对
+把 `github_proxy` 设为 `https://proxy.example.com` 之后，对
 
 ```text
-https://github.com/LiteLDev/LeviLamina.git/info/refs
+https://github.com/LiteLDev/lip.git/info/refs
 ```
 
 的请求会发往
 
 ```text
-https://proxy.example.com/LiteLDev/LeviLamina.git/info/refs
+https://proxy.example.com/https://github.com/LiteLDev/lip.git/info/refs
 ```
 
-所以，你设置的地址必须满足：在它后面加上 `<所有者>/<仓库>/…`，得到的就是 GitHub 上对应的内容。有些服务要求在自己的地址后面跟完整的 GitHub 地址。对这类服务，把它一并写进设置里，例如 `https://proxy.example.com/https://github.com/`。
+所以，你设置的就是这个服务本身的地址，也就是在浏览器里你会把 GitHub 链接贴在它后面的那个地址。以 `/github.com` 或 `/https://github.com` 结尾的地址（旧版 lip 需要这样写）仍然可用：lip 会去掉这个结尾。lip 0.41.1 及更早的版本必须带上这个结尾。
 
 需要知道三点：
 
-- **只有 GitHub 走代理。** 发往 `github.com` 的请求，无论是仓库还是文件，都使用代理。从其他网站下载的内容，例如从 minecraft.net 下载的游戏，不走代理。
+- **只有 GitHub 走代理。** 发往 `github.com`，以及发往以 `.github.com` 或 `.githubusercontent.com` 结尾的地址（例如 `raw.githubusercontent.com`）的请求，都使用代理：仓库、文件，以及 lip 自身的更新。从其他网站下载的内容，例如从 minecraft.net 下载的游戏，不走代理。
 - **lip 会回退。** 通过代理的请求失败时，lip 会直接向 GitHub 发送请求。
 - **lip 不推荐任何代理。** 代理能看到你通过它下载的所有内容，也有可能篡改它。请使用你自己或你信任的人运行的代理。
 
 ### 设置代理
 
 ```sh
-lip config set github_proxy https://proxy.example.com/
+lip config set github_proxy https://proxy.example.com
 ```
 
 把地址换成你的代理地址。此后每条命令都会使用这项设置。
 
 ### 测试代理
 
-lip 检查能否连上 GitHub 的方法，是请求 LeviLamina 的版本列表。你可以通过代理请求同样的内容。可用的代理会返回 `200`：
+lip 检查能否连上 GitHub 的方法，是请求 lip 的版本列表。你可以通过代理请求同样的内容。可用的代理会返回 `200`：
 
 ::: code-group
 
 ```powershell [Windows]
-curl.exe -s -o NUL -w "%{http_code}" "https://proxy.example.com/LiteLDev/LeviLamina.git/info/refs?service=git-upload-pack"
+curl.exe -s -o NUL -w "%{http_code}" "https://proxy.example.com/https://github.com/LiteLDev/lip.git/info/refs?service=git-upload-pack"
 ```
 
 ```sh [Linux / macOS]
-curl -s -o /dev/null -w "%{http_code}\n" "https://proxy.example.com/LiteLDev/LeviLamina.git/info/refs?service=git-upload-pack"
+curl -s -o /dev/null -w "%{http_code}\n" "https://proxy.example.com/https://github.com/LiteLDev/lip.git/info/refs?service=git-upload-pack"
 ```
 
 :::
